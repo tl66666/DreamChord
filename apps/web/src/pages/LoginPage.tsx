@@ -1,0 +1,90 @@
+import { useState } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
+import { Sparkles, Loader2 } from 'lucide-react'
+import { login } from '../api/client'
+import { useAuthStore } from '../stores/authStore'
+
+function getApiError(err: unknown, fallback = '操作失败'): string {
+  if (typeof err === 'object' && err !== null && 'response' in err) {
+    const response = (err as { response?: { data?: { error?: string } } }).response
+    return response?.data?.error || fallback
+  }
+  return err instanceof Error ? err.message || fallback : fallback
+}
+
+export default function LoginPage() {
+  const navigate = useNavigate()
+  const { setToken, setUser } = useAuthStore()
+  const [username, setUsername] = useState('')
+  const [password, setPassword] = useState('')
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setError('')
+    setLoading(true)
+    try {
+      const { token, user } = await login({ username, password })
+      setToken(token)
+      setUser(user)
+      navigate('/')
+    } catch (err: unknown) {
+      setError(getApiError(err, '登录失败'))
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  return (
+    <div className="flex min-h-screen items-center justify-center px-4">
+      <div className="w-full max-w-md rounded-2xl border border-dream-100 bg-white/80 p-8 shadow-xl backdrop-blur-sm">
+        <div className="mb-6 flex items-center justify-center gap-2">
+          <Sparkles className="h-6 w-6 text-dream-600" />
+          <h1 className="text-2xl font-bold text-dream-900">登录梦弦</h1>
+        </div>
+
+        {error && (
+          <div className="mb-4 rounded-lg bg-red-50 px-4 py-2 text-sm text-red-600">{error}</div>
+        )}
+
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label className="mb-1.5 block text-sm font-medium text-dream-700">用户名</label>
+            <input
+              type="text"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              required
+              className="w-full rounded-xl border border-dream-200 px-4 py-2.5 text-sm focus:border-dream-500 focus:outline-none focus:ring-2 focus:ring-dream-500/20"
+            />
+          </div>
+          <div>
+            <label className="mb-1.5 block text-sm font-medium text-dream-700">密码</label>
+            <input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              className="w-full rounded-xl border border-dream-200 px-4 py-2.5 text-sm focus:border-dream-500 focus:outline-none focus:ring-2 focus:ring-dream-500/20"
+            />
+          </div>
+          <button
+            type="submit"
+            disabled={loading}
+            className="flex w-full items-center justify-center gap-2 rounded-xl bg-dream-600 py-2.5 text-sm font-medium text-white transition hover:bg-dream-700 disabled:opacity-50"
+          >
+            {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : '登录'}
+          </button>
+        </form>
+
+        <p className="mt-6 text-center text-sm text-dream-600">
+          还没有账号？{' '}
+          <Link to="/register" className="text-dream-600 hover:underline">
+            立即注册
+          </Link>
+        </p>
+      </div>
+    </div>
+  )
+}

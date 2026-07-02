@@ -1,0 +1,1059 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>梦弦 DreamChord — 视觉小说创作平台</title>
+<meta name="description" content="像写小说一样创作，像玩游戏一样阅读。DreamChord 是一个运行在浏览器里的视觉小说创作平台。">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&family=Noto+Serif+SC:wght@400;700;900&family=Instrument+Serif:ital@1&display=swap" rel="stylesheet">
+<style>
+/* ═══════════════════════════════════════════════
+   梦弦 DreamChord — Showcase Page
+   Aesthetic: "Lucid Dream" — dark, cinematic, dreamy
+   ═══════════════════════════════════════════════ */
+
+:root {
+  --bg: #0a0a0f;
+  --bg-card: #13131a;
+  --bg-card-2: #1a1a24;
+  --accent: #a78bfa;
+  --accent-2: #f0abfc;
+  --accent-3: #67e8f9;
+  --text: #e1e0cc;
+  --text-dim: #9ca3af;
+  --text-muted: #6b7280;
+  --border: rgba(167, 139, 250, 0.15);
+  --ease: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: 'Noto Sans SC', -apple-system, BlinkMacSystemFont, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  overflow-x: hidden;
+  line-height: 1.6;
+}
+
+/* ── Noise Texture Overlays ── */
+.noise-overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.5;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.6'/%3E%3C/svg%3E");
+}
+
+.bg-noise {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.12;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n2'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n2)'/%3E%3C/svg%3E");
+}
+
+/* ── Scroll Animations ── */
+.reveal {
+  opacity: 0;
+  transform: translateY(30px);
+  transition: opacity 0.8s var(--ease), transform 0.8s var(--ease);
+}
+.reveal.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.word-reveal {
+  display: inline-block;
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.6s var(--ease), transform 0.6s var(--ease);
+}
+.word-reveal.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ═══ HERO ═══ */
+.hero {
+  position: relative;
+  min-height: 100vh;
+  display: flex;
+  align-items: flex-end;
+  padding: 1rem;
+  overflow: hidden;
+}
+
+.hero-inner {
+  position: relative;
+  width: 100%;
+  height: calc(100vh - 2rem);
+  border-radius: 1.5rem;
+  overflow: hidden;
+  display: flex;
+  align-items: flex-end;
+}
+
+.hero-bg {
+  position: absolute;
+  inset: 0;
+  background: url('https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260416_101255_3099d3e4-d0cf-4e59-9666-97fbf521ac71.mp4') center/cover no-repeat;
+}
+
+.hero-bg video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.hero-gradient {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(10,10,15,0.4) 0%, transparent 30%, transparent 50%, rgba(10,10,15,0.8) 100%);
+}
+
+.hero-content {
+  position: relative;
+  z-index: 10;
+  width: 100%;
+  padding: 2rem 2rem 3rem;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
+}
+
+@media (min-width: 768px) {
+  .hero-content {
+    grid-template-columns: 2fr 1fr;
+    padding: 2rem 3rem 3rem;
+  }
+}
+
+.hero-title {
+  font-family: 'Noto Serif SC', serif;
+  font-size: clamp(3rem, 12vw, 11rem);
+  font-weight: 900;
+  line-height: 0.85;
+  letter-spacing: -0.04em;
+  color: var(--text);
+  text-shadow: 0 4px 40px rgba(167, 139, 250, 0.3);
+}
+
+.hero-title .accent {
+  font-family: 'Instrument Serif', serif;
+  font-style: italic;
+  font-weight: 400;
+  color: var(--accent);
+}
+
+.hero-title .asterisk {
+  font-size: 0.25em;
+  vertical-align: super;
+  color: var(--accent-2);
+  margin-left: 0.05em;
+}
+
+.hero-right {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  align-self: end;
+}
+
+.hero-desc {
+  font-size: 0.875rem;
+  color: rgba(225, 224, 204, 0.75);
+  line-height: 1.5;
+  max-width: 360px;
+}
+
+@media (min-width: 768px) {
+  .hero-desc { font-size: 1rem; }
+}
+
+.hero-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.625rem 0.625rem 0.625rem 1.5rem;
+  background: var(--text);
+  color: #000;
+  border-radius: 9999px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  text-decoration: none;
+  transition: gap 0.3s var(--ease);
+  width: fit-content;
+}
+
+.hero-cta:hover { gap: 1rem; }
+
+.hero-cta-circle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  background: #000;
+  border-radius: 9999px;
+  transition: transform 0.3s var(--ease);
+}
+
+.hero-cta:hover .hero-cta-circle { transform: scale(1.1); }
+
+.hero-cta-circle svg { width: 1rem; height: 1rem; color: var(--text); }
+
+/* Nav */
+.nav {
+  position: absolute;
+  top: 1rem;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 20;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(12px);
+  border-radius: 0 0 1rem 1rem;
+  padding: 0.5rem 1.5rem;
+  display: flex;
+  gap: 1.5rem;
+}
+
+@media (min-width: 768px) {
+  .nav { gap: 2.5rem; padding: 0.5rem 2rem; }
+}
+
+.nav a {
+  font-size: 0.7rem;
+  color: rgba(225, 224, 204, 0.8);
+  text-decoration: none;
+  transition: color 0.3s;
+}
+
+@media (min-width: 768px) {
+  .nav a { font-size: 0.8rem; }
+}
+
+.nav a:hover { color: var(--text); }
+
+/* ═══ STATS ═══ */
+.stats {
+  padding: 5rem 1.5rem 3rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.5rem;
+}
+
+@media (min-width: 768px) {
+  .stats-grid { grid-template-columns: repeat(4, 1fr); }
+}
+
+.stat-item {
+  text-align: center;
+  padding: 1.5rem 1rem;
+  background: var(--bg-card);
+  border-radius: 1rem;
+  border: 1px solid var(--border);
+  transition: transform 0.4s var(--ease), border-color 0.4s;
+}
+
+.stat-item:hover {
+  transform: translateY(-4px);
+  border-color: rgba(167, 139, 250, 0.3);
+}
+
+.stat-num {
+  font-family: 'Noto Serif SC', serif;
+  font-size: 2.5rem;
+  font-weight: 900;
+  color: var(--accent);
+  line-height: 1;
+}
+
+.stat-label {
+  font-size: 0.75rem;
+  color: var(--text-dim);
+  margin-top: 0.5rem;
+}
+
+/* ═══ SECTION COMMON ═══ */
+.section {
+  padding: 6rem 1.5rem;
+  max-width: 1200px;
+  margin: 0 auto;
+  position: relative;
+}
+
+.section-label {
+  font-size: 0.7rem;
+  color: var(--accent);
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  margin-bottom: 1rem;
+}
+
+.section-title {
+  font-family: 'Noto Serif SC', serif;
+  font-size: clamp(1.75rem, 5vw, 3.5rem);
+  font-weight: 700;
+  line-height: 1.1;
+  margin-bottom: 1.5rem;
+  letter-spacing: -0.02em;
+}
+
+.section-title .italic {
+  font-family: 'Instrument Serif', serif;
+  font-style: italic;
+  font-weight: 400;
+  color: var(--accent);
+}
+
+.section-desc {
+  font-size: 0.9rem;
+  color: var(--text-dim);
+  max-width: 600px;
+  line-height: 1.7;
+}
+
+/* ═══ ABOUT ═══ */
+.about {
+  background: #000;
+  padding: 6rem 1.5rem;
+}
+
+.about-inner {
+  max-width: 900px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.about-card {
+  background: #101010;
+  border-radius: 1.5rem;
+  padding: 3rem 2rem;
+  border: 1px solid var(--border);
+}
+
+@media (min-width: 768px) {
+  .about-card { padding: 4rem 3rem; }
+}
+
+.about-heading {
+  font-family: 'Noto Serif SC', serif;
+  font-size: clamp(1.5rem, 4vw, 2.5rem);
+  line-height: 1.3;
+  margin-bottom: 2rem;
+  font-weight: 400;
+}
+
+.about-heading .italic {
+  font-family: 'Instrument Serif', serif;
+  font-style: italic;
+  color: var(--accent);
+}
+
+.about-text {
+  font-size: 0.875rem;
+  color: var(--text);
+  line-height: 1.8;
+  text-align: left;
+}
+
+@media (min-width: 768px) {
+  .about-text { font-size: 1rem; }
+}
+
+.pain-table {
+  margin-top: 3rem;
+  display: grid;
+  gap: 1rem;
+}
+
+.pain-row {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.5rem;
+  padding: 1.25rem;
+  background: var(--bg-card);
+  border-radius: 0.75rem;
+  border-left: 3px solid var(--accent);
+}
+
+@media (min-width: 768px) {
+  .pain-row {
+    grid-template-columns: 1fr 2fr;
+    align-items: center;
+    gap: 1.5rem;
+  }
+}
+
+.pain-point {
+  font-size: 0.8rem;
+  color: var(--accent-2);
+  font-weight: 500;
+}
+
+.pain-solution {
+  font-size: 0.8rem;
+  color: var(--text-dim);
+  line-height: 1.5;
+}
+
+/* ═══ FEATURES ═══ */
+.features {
+  min-height: 100vh;
+  padding: 6rem 1.5rem;
+  position: relative;
+}
+
+.features-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+  max-width: 1200px;
+  margin: 3rem auto 0;
+}
+
+@media (min-width: 768px) {
+  .features-grid { grid-template-columns: 1fr 1fr; }
+}
+
+@media (min-width: 1024px) {
+  .features-grid { grid-template-columns: repeat(4, 1fr); }
+}
+
+.feature-card {
+  background: var(--bg-card-2);
+  border-radius: 1rem;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  transition: transform 0.5s var(--ease), border-color 0.4s;
+  min-height: 320px;
+  display: flex;
+  flex-direction: column;
+}
+
+.feature-card:hover {
+  transform: translateY(-6px);
+  border-color: rgba(167, 139, 250, 0.35);
+}
+
+.feature-card-video {
+  position: relative;
+  min-height: 380px;
+  padding: 0;
+}
+
+.feature-card-video video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.feature-card-video .overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, transparent 40%, rgba(10, 10, 15, 0.9) 100%);
+}
+
+.feature-card-video .card-text {
+  position: relative;
+  z-index: 2;
+  margin-top: auto;
+  padding: 1.5rem;
+}
+
+.feature-card-body {
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  flex: 1;
+}
+
+.feature-num {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  font-family: 'Instrument Serif', serif;
+  font-style: italic;
+}
+
+.feature-title {
+  font-family: 'Noto Serif SC', serif;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.feature-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-top: auto;
+}
+
+.feature-list li {
+  font-size: 0.75rem;
+  color: var(--text-dim);
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+}
+
+.feature-list li::before {
+  content: '✓';
+  color: var(--accent);
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+/* ═══ TECH STACK ═══ */
+.tech {
+  padding: 6rem 1.5rem;
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+.tech-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+  margin-top: 2.5rem;
+}
+
+@media (min-width: 768px) {
+  .tech-grid { grid-template-columns: 1fr 1fr; }
+}
+
+.tech-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 1rem;
+  padding: 1.5rem;
+}
+
+.tech-card h4 {
+  font-size: 0.8rem;
+  color: var(--accent);
+  margin-bottom: 1rem;
+  font-weight: 500;
+}
+
+.tech-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.tech-tag {
+  font-size: 0.7rem;
+  padding: 0.25rem 0.75rem;
+  background: rgba(167, 139, 250, 0.1);
+  border: 1px solid rgba(167, 139, 250, 0.2);
+  border-radius: 9999px;
+  color: var(--text);
+}
+
+/* ═══ QUICK START ═══ */
+.start {
+  padding: 6rem 1.5rem;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.start-steps {
+  display: grid;
+  gap: 1rem;
+  margin-top: 2.5rem;
+}
+
+.start-step {
+  display: flex;
+  gap: 1.5rem;
+  align-items: flex-start;
+  padding: 1.5rem;
+  background: var(--bg-card);
+  border-radius: 1rem;
+  border: 1px solid var(--border);
+  transition: border-color 0.3s;
+}
+
+.start-step:hover { border-color: rgba(167, 139, 250, 0.3); }
+
+.step-num {
+  font-family: 'Noto Serif SC', serif;
+  font-size: 1.5rem;
+  font-weight: 900;
+  color: var(--accent);
+  flex-shrink: 0;
+  width: 2.5rem;
+}
+
+.step-content h4 {
+  font-size: 0.9rem;
+  color: var(--text);
+  margin-bottom: 0.375rem;
+}
+
+.step-content p {
+  font-size: 0.75rem;
+  color: var(--text-dim);
+}
+
+.step-content code {
+  display: block;
+  margin-top: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  background: #000;
+  border-radius: 0.5rem;
+  font-size: 0.7rem;
+  color: var(--accent-3);
+  font-family: 'JetBrains Mono', monospace;
+  overflow-x: auto;
+}
+
+/* ═══ FOOTER ═══ */
+.footer {
+  padding: 4rem 1.5rem 2rem;
+  text-align: center;
+  border-top: 1px solid var(--border);
+}
+
+.footer-title {
+  font-family: 'Noto Serif SC', serif;
+  font-size: clamp(1.5rem, 4vw, 2.5rem);
+  font-weight: 700;
+  margin-bottom: 1rem;
+}
+
+.footer-title .italic {
+  font-family: 'Instrument Serif', serif;
+  font-style: italic;
+  color: var(--accent);
+}
+
+.footer-links {
+  display: flex;
+  justify-content: center;
+  gap: 1.5rem;
+  margin-top: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.footer-links a {
+  font-size: 0.8rem;
+  color: var(--text-dim);
+  text-decoration: none;
+  padding: 0.5rem 1rem;
+  border: 1px solid var(--border);
+  border-radius: 9999px;
+  transition: all 0.3s;
+}
+
+.footer-links a:hover {
+  color: var(--text);
+  border-color: var(--accent);
+}
+
+.footer-copy {
+  margin-top: 2rem;
+  font-size: 0.7rem;
+  color: var(--text-muted);
+}
+
+/* ── Scroll-linked character reveal ── */
+.char-reveal {
+  display: inline-block;
+  opacity: 0.15;
+  transition: opacity 0.1s;
+}
+
+/* ── Responsive ── */
+@media (max-width: 640px) {
+  .nav { display: none; }
+  .hero-inner { height: calc(100vh - 2rem); }
+}
+</style>
+</head>
+<body>
+
+<!-- ═══════════════ HERO ═══════════════ -->
+<section class="hero">
+  <div class="hero-inner">
+    <div class="hero-bg">
+      <video autoplay loop muted playsinline>
+        <source src="https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260416_101255_3099d3e4-d0cf-4e59-9666-97fbf521ac71.mp4" type="video/mp4">
+      </video>
+    </div>
+    <div class="noise-overlay"></div>
+    <div class="hero-gradient"></div>
+
+    <nav class="nav">
+      <a href="#about">产品定位</a>
+      <a href="#features">核心功能</a>
+      <a href="#tech">技术栈</a>
+      <a href="#start">快速开始</a>
+      <a href="https://github.com/tl66666/DreamChord" target="_blank">GitHub</a>
+    </nav>
+
+    <div class="hero-content">
+      <h1 class="hero-title" id="heroTitle">
+        梦弦<span class="accent">Dream</span>Chord<span class="asterisk">*</span>
+      </h1>
+      <div class="hero-right">
+        <p class="hero-desc">
+          像写小说一样创作，像玩游戏一样阅读。<br>
+          浏览器里的视觉小说创作平台——用镜头卡组织剧情，自动生成分支节点，内置 AI 辅助写作。
+        </p>
+        <a href="https://github.com/tl66666/DreamChord" target="_blank" class="hero-cta">
+          查看源码
+          <span class="hero-cta-circle">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          </span>
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════ STATS ═══════════════ -->
+<section class="stats">
+  <div class="stats-grid">
+    <div class="stat-item reveal">
+      <div class="stat-num">6</div>
+      <div class="stat-label">镜头卡类型</div>
+    </div>
+    <div class="stat-item reveal">
+      <div class="stat-num">5</div>
+      <div class="stat-label">AI 写作模式</div>
+    </div>
+    <div class="stat-item reveal">
+      <div class="stat-num">4</div>
+      <div class="stat-label">LLM 供应商</div>
+    </div>
+    <div class="stat-item reveal">
+      <div class="stat-num">12</div>
+      <div class="stat-label">体检检查项</div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════ ABOUT ═══════════════ -->
+<section class="about" id="about">
+  <div class="bg-noise"></div>
+  <div class="about-inner">
+    <div class="section-label reveal">About</div>
+    <div class="about-card reveal">
+      <h2 class="about-heading">
+        把节点图的复杂性<span class="italic">隐藏在</span>镜头卡背后
+      </h2>
+      <p class="about-text" id="aboutText">
+        DreamChord 是一个面向非技术用户的视觉小说创作平台。用户只需像写小说一样填写背景、选择角色、编写台词，系统自动将其转换为可播放的节点图和运行时场景。无需学习 Ren'Py 脚本语言，无需理解节点连线，用"章节 → 场景 → 镜头卡"的方式组织剧情，一键发布即可在浏览器中播放。
+      </p>
+
+      <div class="pain-table">
+        <div class="pain-row reveal">
+          <div class="pain-point">痛点：节点图太难</div>
+          <div class="pain-solution">镜头卡写作界面，用户只需填写"谁说了什么"，系统自动生成节点和连线</div>
+        </div>
+        <div class="pain-row reveal">
+          <div class="pain-point">痛点：没有可视化预览</div>
+          <div class="pain-solution">编辑器右栏实时预览，每改一个字、换一个背景立刻看到播放效果</div>
+        </div>
+        <div class="pain-row reveal">
+          <div class="pain-point">痛点：分支管理混乱</div>
+          <div class="pain-solution">自动检测分支去向，流程图可视化所有场景和分支连线，汇合点紫色高亮</div>
+        </div>
+        <div class="pain-row reveal">
+          <div class="pain-point">痛点：AI 辅助缺失</div>
+          <div class="pain-solution">编辑器内置 AI 助手，支持润色、续写、生成选项、分支回应、生成剧情图</div>
+        </div>
+        <div class="pain-row reveal">
+          <div class="pain-point">痛点：无法即时分享</div>
+          <div class="pain-solution">一键发布到作品广场，分享链接即可在浏览器中播放</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════ FEATURES ═══════════════ -->
+<section class="features" id="features">
+  <div class="bg-noise"></div>
+  <div class="section">
+    <div class="section-label reveal">Features</div>
+    <h2 class="section-title reveal">
+      为创作者打造的<span class="italic">全套工具链</span>
+    </h2>
+    <p class="section-desc reveal">
+      从镜头卡编辑到实时预览，从 AI 辅助到流程图可视化，每一个功能都围绕"让创作更简单"设计。
+    </p>
+  </div>
+
+  <div class="features-grid">
+    <!-- Card 1: Video -->
+    <div class="feature-card feature-card-video reveal">
+      <video autoplay loop muted playsinline>
+        <source src="https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260324_151826_c7218672-6e92-402c-9e45-f1e0f454bdc4.mp4" type="video/mp4">
+      </video>
+      <div class="overlay"></div>
+      <div class="card-text">
+        <div class="feature-num">Editor</div>
+        <div class="feature-title">镜头卡编辑器</div>
+      </div>
+    </div>
+
+    <!-- Card 2: Video -->
+    <div class="feature-card feature-card-video reveal">
+      <video autoplay loop muted playsinline>
+        <source src="https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260416_101255_3099d3e4-d0cf-4e59-9666-97fbf521ac71.mp4" type="video/mp4">
+      </video>
+      <div class="overlay"></div>
+      <div class="card-text">
+        <div class="feature-num">Player</div>
+        <div class="feature-title">实时预览播放器</div>
+      </div>
+    </div>
+
+    <!-- Card 3: AI -->
+    <div class="feature-card reveal">
+      <div class="feature-card-body">
+        <div class="feature-num">01</div>
+        <div class="feature-title">AI 辅助写作</div>
+        <ul class="feature-list">
+          <li>润色：优化台词表达</li>
+          <li>续写：延续剧情走向</li>
+          <li>生成选项：自动产出分支</li>
+          <li>分支回应：批量生成角色台词</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Card 4: Flowchart -->
+    <div class="feature-card reveal">
+      <div class="feature-card-body">
+        <div class="feature-num">02</div>
+        <div class="feature-title">剧情流程图</div>
+        <ul class="feature-list">
+          <li>galgame 风格全局视图</li>
+          <li>分支连线与选项标注</li>
+          <li>汇合点紫色高亮</li>
+          <li>拖拽调整场景位置</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════ TECH STACK ═══════════════ -->
+<section class="tech" id="tech">
+  <div class="section-label reveal">Tech Stack</div>
+  <h2 class="section-title reveal">
+    现代 Web 全栈<span class="italic">技术架构</span>
+  </h2>
+  <p class="section-desc reveal">
+    React 18 + TypeScript + Vite 前端，Express + Prisma + SQLite 后端，集成多家 LLM 供应商。
+  </p>
+
+  <div class="tech-grid">
+    <div class="tech-card reveal">
+      <h4>前端</h4>
+      <div class="tech-list">
+        <span class="tech-tag">React 18</span>
+        <span class="tech-tag">TypeScript 5</span>
+        <span class="tech-tag">Vite 5</span>
+        <span class="tech-tag">Tailwind CSS 3</span>
+        <span class="tech-tag">@xyflow/react 12</span>
+        <span class="tech-tag">Zustand 4</span>
+        <span class="tech-tag">framer-motion 11</span>
+        <span class="tech-tag">lucide-react</span>
+      </div>
+    </div>
+    <div class="tech-card reveal">
+      <h4>后端</h4>
+      <div class="tech-list">
+        <span class="tech-tag">Express 4</span>
+        <span class="tech-tag">Prisma 5</span>
+        <span class="tech-tag">SQLite</span>
+        <span class="tech-tag">JWT + bcryptjs</span>
+        <span class="tech-tag">multer</span>
+        <span class="tech-tag">tsx</span>
+      </div>
+    </div>
+    <div class="tech-card reveal">
+      <h4>AI 集成</h4>
+      <div class="tech-list">
+        <span class="tech-tag">智谱 GLM</span>
+        <span class="tech-tag">DeepSeek</span>
+        <span class="tech-tag">Kimi</span>
+        <span class="tech-tag">OpenAI 兼容</span>
+        <span class="tech-tag">BaseProvider 基类</span>
+      </div>
+    </div>
+    <div class="tech-card reveal">
+      <h4>工程化</h4>
+      <div class="tech-list">
+        <span class="tech-tag">pnpm workspace</span>
+        <span class="tech-tag">Vite manualChunks</span>
+        <span class="tech-tag">strict TypeScript</span>
+        <span class="tech-tag">FeedbackProvider</span>
+        <span class="tech-tag">类型安全访问器</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════ QUICK START ═══════════════ -->
+<section class="start" id="start">
+  <div class="section-label reveal">Quick Start</div>
+  <h2 class="section-title reveal">
+    三步<span class="italic">启动项目</span>
+  </h2>
+  <p class="section-desc reveal">
+    Node.js 20+ 环境，pnpm 或 npm 均可。
+  </p>
+
+  <div class="start-steps">
+    <div class="start-step reveal">
+      <div class="step-num">01</div>
+      <div class="step-content">
+        <h4>安装依赖</h4>
+        <p>克隆仓库后安装前后端依赖</p>
+        <code>git clone https://github.com/tl66666/DreamChord.git
+cd DreamChord && pnpm install</code>
+      </div>
+    </div>
+    <div class="start-step reveal">
+      <div class="step-num">02</div>
+      <div class="step-content">
+        <h4>初始化数据库</h4>
+        <p>配置 .env，运行 Prisma 迁移和种子</p>
+        <code>cd apps/server
+cp .env.example .env
+npx prisma migrate dev && npx prisma db seed</code>
+      </div>
+    </div>
+    <div class="start-step reveal">
+      <div class="step-num">03</div>
+      <div class="step-content">
+        <h4>启动开发服务器</h4>
+        <p>双击 start-dreamchord.bat 或手动启动前后端</p>
+        <code>cd apps/web && npm run dev
+cd apps/server && npm run dev</code>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════ FOOTER ═══════════════ -->
+<footer class="footer">
+  <h2 class="footer-title">
+    一起把下一个故事<span class="italic">变成作品</span>
+  </h2>
+  <p class="section-desc" style="margin: 0 auto;">
+    DreamChord — 像写小说一样创作，像玩游戏一样阅读。
+  </p>
+  <div class="footer-links">
+    <a href="https://github.com/tl66666/DreamChord" target="_blank">GitHub 仓库</a>
+    <a href="https://github.com/tl66666/DreamChord/blob/main/README.md" target="_blank">项目文档</a>
+    <a href="https://github.com/tl66666/DreamChord/blob/main/CLAUDE.md" target="_blank">开发指南</a>
+    <a href="https://github.com/tl66666/DreamChord/blob/main/docs/AI_HANDOFF.md" target="_blank">AI 交接</a>
+  </div>
+  <p class="footer-copy">
+    MIT License · 2026 唐乐 (tl66666) · Built with React + TypeScript + Vite
+  </p>
+</footer>
+
+<script>
+// ═══ Scroll Reveal Animations ═══
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach((entry, i) => {
+    if (entry.isIntersecting) {
+      const delay = entry.target.dataset.delay || (i * 80);
+      setTimeout(() => entry.target.classList.add('visible'), delay);
+      observer.unobserve(entry.target);
+    }
+  });
+}, { threshold: 0.1, rootMargin: '0px 0px -50px 0px' });
+
+document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+// ═══ Hero Title Pull-Up Animation ═══
+function animateHeroTitle() {
+  const title = document.getElementById('heroTitle');
+  if (!title) return;
+  const html = title.innerHTML;
+  // Wrap each character in a span
+  let inTag = false;
+  let buffer = '';
+  const chars = [];
+  for (let i = 0; i < html.length; i++) {
+    const ch = html[i];
+    if (ch === '<') { inTag = true; buffer += ch; }
+    else if (ch === '>') { inTag = false; buffer += ch; chars.push({ type: 'tag', content: buffer }); buffer = ''; }
+    else if (inTag) { buffer += ch; }
+    else { chars.push({ type: 'char', content: ch }); }
+  }
+  title.innerHTML = chars.map(c =>
+    c.type === 'tag' ? c.content : `<span class="word-reveal">${c.content === ' ' ? '&nbsp;' : c.content}</span>`
+  ).join('');
+
+  const spans = title.querySelectorAll('.word-reveal');
+  spans.forEach((span, i) => {
+    setTimeout(() => span.classList.add('visible'), 200 + i * 60);
+  });
+}
+
+// ═══ Scroll-Linked Character Reveal for About Text ═══
+function setupScrollReveal() {
+  const aboutText = document.getElementById('aboutText');
+  if (!aboutText) return;
+  const text = aboutText.textContent;
+  aboutText.innerHTML = text.split('').map(ch =>
+    ch === ' ' ? ' ' : `<span class="char-reveal">${ch}</span>`
+  ).join('');
+
+  const chars = aboutText.querySelectorAll('.char-reveal');
+  const total = chars.length;
+
+  window.addEventListener('scroll', () => {
+    const rect = aboutText.getBoundingClientRect();
+    const windowHeight = window.innerHeight;
+    const start = windowHeight * 0.8;
+    const end = windowHeight * 0.2;
+
+    const progress = Math.max(0, Math.min(1, (start - rect.top) / (start - end)));
+
+    chars.forEach((char, i) => {
+      const charProgress = i / total;
+      const range = [charProgress - 0.1, charProgress + 0.05];
+      const charOpacity = Math.max(0.15, Math.min(1,
+        (progress - range[0]) / (range[1] - range[0])
+      ));
+      char.style.opacity = charOpacity;
+    });
+  }, { passive: true });
+}
+
+// Initialize on load
+window.addEventListener('DOMContentLoaded', () => {
+  animateHeroTitle();
+  setupScrollReveal();
+});
+</script>
+
+</body>
+</html>

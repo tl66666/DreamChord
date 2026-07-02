@@ -1,0 +1,20 @@
+{
+  "name": "dreamchord",
+  "version": "0.1.0",
+  "private": true,
+  "description": "梦弦 DreamChord - 节点式视觉小说创作平台",
+  "scripts": {
+    "dev": "pnpm -r --parallel dev",
+    "build": "pnpm -r build",
+    "lint": "pnpm -r lint",
+    "db:migrate": "pnpm --filter server prisma migrate dev",
+    "db:generate": "pnpm --filter server prisma generate",
+    "db:seed": "pnpm --filter server prisma db seed",
+    "db:studio": "pnpm --filter server prisma studio"
+  },
+  "devDependencies": {
+    "@types/node": "^20.14.0",
+    "typescript": "^5.4.5"
+  },
+  "packageManager": "pnpm@9.1.0"
+}

@@ -1,0 +1,40 @@
+version: '3.8'
+
+# DreamChord Docker Compose
+# 当前项目使用 SQLite（dev.db），生产部署时可切换为 PostgreSQL。
+# 使用方式：
+#   开发环境：pnpm dev（无需 Docker）
+#   生产部署：docker compose up --build
+
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: dreamchord-web
+    ports:
+      - "5173:80"
+    depends_on:
+      - server
+    environment:
+      - VITE_API_BASE_URL=http://server:3001
+
+  server:
+    build:
+      context: .
+      dockerfile: apps/server/Dockerfile
+    container_name: dreamchord-server
+    ports:
+      - "3001:3001"
+    environment:
+      - JWT_SECRET=${JWT_SECRET:?JWT_SECRET is required}
+      - DATABASE_URL=file:./data/dev.db
+      - CORS_ORIGIN=http://localhost:5173
+      - UPLOAD_DIR=./uploads
+    volumes:
+      - server_data:/app/apps/server/data
+      - server_uploads:/app/apps/server/uploads
+
+volumes:
+  server_data:
+  server_uploads:
