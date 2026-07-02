@@ -135,15 +135,6 @@ body {
 .hero-cta:hover .hero-cta-circle { transform: scale(1.1); }
 .hero-cta-circle svg { width: 1rem; height: 1rem; color: var(--text); }
 
-/* ── Hero 装饰角色 ── */
-.hero-char {
-  position: absolute; right: 3%; bottom: 0;
-  height: 75%; opacity: 0.4; z-index: 5;
-  pointer-events: none; filter: drop-shadow(0 0 30px rgba(167, 139, 250, 0.3));
-  display: none;
-}
-@media (min-width: 1024px) { .hero-char { display: block; } }
-
 /* Nav */
 .nav {
   position: absolute; top: 1rem; left: 50%; transform: translateX(-50%);
@@ -340,6 +331,44 @@ body {
 .char-desc { font-size: 0.7rem; color: var(--text-dim); margin-top: 0.5rem; line-height: 1.5; }
 .char-color { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 0.25rem; vertical-align: middle; }
 
+/* ═══ SCENE GALLERY ═══ */
+.scenes { padding: 6rem 1.5rem; max-width: 1200px; margin: 0 auto; }
+.scenes-grid { display: grid; grid-template-columns: 1fr; gap: 1.5rem; margin-top: 2.5rem; }
+@media (min-width: 768px) { .scenes-grid { grid-template-columns: 1fr 1fr; } }
+
+.scene-card {
+  position: relative; border-radius: 1rem; overflow: hidden;
+  border: 1px solid var(--border); aspect-ratio: 16/10;
+  transition: transform 0.5s var(--ease), border-color 0.4s;
+}
+.scene-card:hover { transform: translateY(-6px); border-color: rgba(167, 139, 250, 0.35); }
+.scene-bg { position: absolute; inset: 0; background-size: cover; background-position: center; }
+.scene-overlay {
+  position: absolute; inset: 0;
+  background: linear-gradient(180deg, rgba(10,10,15,0.15) 0%, transparent 25%, transparent 45%, rgba(10,10,15,0.92) 100%);
+}
+.scene-char {
+  position: absolute; bottom: 22%; left: 50%; transform: translateX(-50%);
+  height: 58%; z-index: 1;
+}
+.scene-char img { height: 100%; object-fit: contain; filter: drop-shadow(0 4px 20px rgba(0,0,0,0.5)); }
+.scene-textbox {
+  position: absolute; bottom: 0; left: 0; right: 0; z-index: 2;
+  padding: 0.75rem 1rem;
+  background: linear-gradient(180deg, rgba(0,0,0,0.72) 0%, rgba(0,0,0,0.94) 100%);
+  border-top: 1px solid rgba(167, 139, 250, 0.2);
+}
+.scene-tag { font-size: 0.6rem; color: var(--accent); font-weight: 500; margin-bottom: 0.25rem; text-transform: uppercase; letter-spacing: 0.12em; }
+.scene-name { font-size: 0.75rem; color: var(--accent); font-weight: 500; margin-bottom: 0.2rem; }
+.scene-text { font-size: 0.7rem; color: var(--text); line-height: 1.5; }
+.scene-choices { display: flex; flex-direction: column; gap: 0.3rem; margin-top: 0.4rem; }
+.scene-choice {
+  font-size: 0.65rem; padding: 0.35rem 0.6rem;
+  border: 1px solid rgba(167, 139, 250, 0.2); border-radius: 0.3rem;
+  color: var(--text); background: rgba(167, 139, 250, 0.05);
+}
+.scene-choice:first-child { border-color: var(--accent); background: rgba(167, 139, 250, 0.12); }
+
 /* ═══ EDITOR DETAIL ═══ */
 .editor-detail { padding: 6rem 1.5rem; max-width: 1200px; margin: 0 auto; }
 .lens-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; margin-top: 2.5rem; }
@@ -441,13 +470,11 @@ body {
     <div class="noise-overlay"></div>
     <div class="hero-gradient"></div>
 
-    <!-- 装饰角色立绘 -->
-    <img class="hero-char" src="../apps/web/public/assets/characters/yuki_normal.png" alt="">
-
     <nav class="nav">
       <a href="#about">产品定位</a>
       <a href="#features">核心功能</a>
       <a href="#characters">角色</a>
+      <a href="#scenes">场景</a>
       <a href="#editor">编辑器</a>
       <a href="#tech">技术栈</a>
       <a href="#start">快速开始</a>
@@ -653,6 +680,65 @@ body {
         <div class="char-name"><span class="char-color" style="background:#34d399"></span>系统幽灵</div>
         <div class="char-en">Ghost</div>
         <div class="char-desc">Meta 叙事元素，引导用户操作</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════ SCENE GALLERY ═══════════════ -->
+<section class="scenes" id="scenes">
+  <div class="section-label reveal">Scenes</div>
+  <h2 class="section-title reveal">四种镜头类型<span class="italic">呈现真实故事场景</span></h2>
+  <p class="section-desc reveal">使用项目内置的 4 张背景图和 4 位角色立绘，展示对话、选项分支、旁白和系统提示在播放器中的实际渲染效果。</p>
+  <div class="scenes-grid">
+    <!-- Scene 1: 对话镜头 -->
+    <div class="scene-card reveal">
+      <div class="scene-bg" style="background: url('../apps/web/public/assets/backgrounds/bg-sakura.png') center/cover no-repeat;"></div>
+      <div class="scene-overlay"></div>
+      <div class="scene-char"><img src="../apps/web/public/assets/characters/yuki_normal.png" alt="雪"></div>
+      <div class="scene-textbox">
+        <div class="scene-tag">dialogue · 角色对话</div>
+        <div class="scene-name">雪</div>
+        <div class="scene-text">樱花又开了呢……和那年一样，你也在。</div>
+      </div>
+    </div>
+
+    <!-- Scene 2: 选项分支（使用未被使用的 bg-cafe.png）-->
+    <div class="scene-card reveal">
+      <div class="scene-bg" style="background: url('../apps/web/public/assets/backgrounds/bg-cafe.png') center/cover no-repeat;"></div>
+      <div class="scene-overlay"></div>
+      <div class="scene-char"><img src="../apps/web/public/assets/characters/miya_normal.png" alt="宫"></div>
+      <div class="scene-textbox">
+        <div class="scene-tag">choice · 选项分支</div>
+        <div class="scene-name">宫</div>
+        <div class="scene-text">那么，你来选吧——</div>
+        <div class="scene-choices">
+          <div class="scene-choice">A. 相信宫的话</div>
+          <div class="scene-choice">B. 去找雪确认</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Scene 3: 旁白镜头 -->
+    <div class="scene-card reveal">
+      <div class="scene-bg" style="background: url('../apps/web/public/assets/backgrounds/bg-starry.png') center/cover no-repeat;"></div>
+      <div class="scene-overlay"></div>
+      <div class="scene-char"><img src="../apps/web/public/assets/characters/sora_normal.png" alt="空"></div>
+      <div class="scene-textbox">
+        <div class="scene-tag">narration · 旁白</div>
+        <div class="scene-text">星空之下，空仰望着银河。那些闪烁的光点，仿佛是无数未曾写下的故事。</div>
+      </div>
+    </div>
+
+    <!-- Scene 4: 系统提示 -->
+    <div class="scene-card reveal">
+      <div class="scene-bg" style="background: url('../apps/web/public/assets/backgrounds/bg-classroom.png') center/cover no-repeat;"></div>
+      <div class="scene-overlay"></div>
+      <div class="scene-char"><img src="../apps/web/public/assets/characters/system-ghost.png" alt="系统幽灵"></div>
+      <div class="scene-textbox">
+        <div class="scene-tag">system · 系统提示</div>
+        <div class="scene-name">系统幽灵</div>
+        <div class="scene-text">检测到空白节点。空白不是结束——是尚未开始的可能性。</div>
       </div>
     </div>
   </div>
