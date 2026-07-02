@@ -543,6 +543,51 @@ body {
 .roadmap-card p { font-size: 0.78rem; color: var(--text-dim); line-height: 1.6; }
 @media (max-width: 768px) { .roadmap-timeline::before { left: 20px; } .roadmap-item, .roadmap-item:nth-child(odd) { flex-direction: row; } .roadmap-card { width: calc(100% - 50px); margin-left: 50px; } .roadmap-dot { left: 20px; } }
 
+/* ═══ PHILOSOPHY ═══ */
+.philosophy { padding: 6rem 1.5rem; max-width: 1200px; margin: 0 auto; }
+.philosophy-grid { display: grid; grid-template-columns: 1fr; gap: 2rem; margin-top: 3rem; }
+@media (min-width: 768px) { .philosophy-grid { grid-template-columns: repeat(3, 1fr); } }
+.philo-card {
+  position: relative; padding: 2.5rem 2rem; background: var(--bg-card); border-radius: 1.25rem;
+  border: 1px solid var(--border); box-shadow: var(--shadow); overflow: hidden;
+  transition: transform 0.5s var(--ease), box-shadow 0.5s, border-color 0.5s;
+}
+.philo-card::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px;
+  background: linear-gradient(90deg, var(--accent), var(--accent-2));
+  transform: scaleX(0); transform-origin: left; transition: transform 0.5s var(--ease);
+}
+.philo-card:hover { transform: translateY(-10px); box-shadow: var(--shadow-lg); border-color: var(--accent-light); }
+.philo-card:hover::before { transform: scaleX(1); }
+.philo-icon {
+  width: 56px; height: 56px; border-radius: 1rem; display: flex; align-items: center; justify-content: center;
+  margin-bottom: 1.5rem; font-size: 1.5rem; font-weight: 700;
+  background: linear-gradient(135deg, rgba(124, 58, 237, 0.1), rgba(192, 38, 211, 0.06));
+  border: 1px solid var(--border-2);
+}
+.philo-icon svg { width: 28px; height: 28px; stroke: var(--accent); fill: none; stroke-width: 2; }
+.philo-card:nth-child(2) .philo-icon { background: linear-gradient(135deg, rgba(8, 145, 178, 0.1), rgba(124, 58, 237, 0.06)); }
+.philo-card:nth-child(2) .philo-icon svg { stroke: var(--accent-3); }
+.philo-card:nth-child(3) .philo-icon { background: linear-gradient(135deg, rgba(217, 119, 6, 0.1), rgba(192, 38, 211, 0.06)); }
+.philo-card:nth-child(3) .philo-icon svg { stroke: var(--accent-warm); }
+.philo-title { font-family: 'Noto Serif SC', serif; font-size: 1.35rem; font-weight: 700; margin-bottom: 0.75rem; color: var(--text); }
+.philo-desc { font-size: 0.9rem; color: var(--text-dim); line-height: 1.7; }
+.philo-tag { display: inline-block; margin-top: 1rem; font-size: 0.75rem; color: var(--accent); background: rgba(124, 58, 237, 0.08); padding: 0.25rem 0.75rem; border-radius: 9999px; font-weight: 500; }
+
+/* ═══ ENHANCED STATS ═══ */
+.stat-item .stat-suffix { font-size: 1.2rem; color: var(--text-dim); font-weight: 500; }
+.stat-item .stat-icon { font-size: 1.5rem; margin-bottom: 0.5rem; opacity: 0.6; }
+
+/* ═══ FOOTER BADGES ═══ */
+.footer-tech-badges { display: flex; justify-content: center; gap: 0.5rem; flex-wrap: wrap; margin-top: 1.5rem; }
+.footer-tech-badge {
+  font-size: 0.7rem; font-family: 'JetBrains Mono', monospace; color: var(--text-dim);
+  padding: 0.3rem 0.7rem; border-radius: 6px; background: rgba(255, 255, 255, 0.5);
+  border: 1px solid var(--border); transition: all 0.3s;
+}
+.footer-tech-badge:hover { color: var(--accent); border-color: var(--accent); transform: translateY(-2px); }
+.footer-divider { width: 60px; height: 2px; background: linear-gradient(90deg, var(--accent), var(--accent-2)); margin: 2rem auto; border-radius: 2px; }
+
 @media (max-width: 640px) {
   .nav { display: none; }
   .hero-inner { height: calc(100vh - 2rem); }
@@ -577,6 +622,7 @@ body {
     <div class="hero-gradient"></div>
 
     <nav class="nav">
+      <a href="#philosophy">理念</a>
       <a href="#about">产品定位</a>
       <a href="#compare">对比</a>
       <a href="#showcase">界面</a>
@@ -629,6 +675,43 @@ body {
     <div class="stat-item reveal"><div class="stat-num">5</div><div class="stat-label">AI 写作模式</div></div>
     <div class="stat-item reveal"><div class="stat-num">4</div><div class="stat-label">LLM 供应商</div></div>
     <div class="stat-item reveal"><div class="stat-num">12</div><div class="stat-label">体检检查项</div></div>
+    <div class="stat-item reveal"><div class="stat-num">3<span class="stat-suffix">级</span></div><div class="stat-label">章节场景结构</div></div>
+    <div class="stat-item reveal"><div class="stat-num">5</div><div class="stat-label">角色立绘系统</div></div>
+    <div class="stat-item reveal"><div class="stat-num">0</div><div class="stat-label">安装门槛</div></div>
+    <div class="stat-item reveal"><div class="stat-num">100<span class="stat-suffix">%</span></div><div class="stat-label">浏览器运行</div></div>
+  </div>
+</section>
+
+<!-- ═══════════════ PHILOSOPHY ═══════════════ -->
+<section class="philosophy" id="philosophy">
+  <div class="section-label reveal">Philosophy</div>
+  <h2 class="section-title reveal">三条<span class="italic">设计理念</span></h2>
+  <p class="section-desc reveal">DreamChord 不是又一个 Ren'Py 克隆，而是重新思考"非技术用户如何创作视觉小说"后的答案。</p>
+  <div class="philosophy-grid">
+    <div class="philo-card reveal">
+      <div class="philo-icon">
+        <svg viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+      </div>
+      <h3 class="philo-title">写作优先，技术隐身</h3>
+      <p class="philo-desc">用户看到的永远是"谁说了什么"的镜头卡，而不是节点图、跳转标签或脚本语法。系统在后台自动完成节点创建、连线生成、场景转换和运行时编译——创作者只管写故事，技术细节全部隐身。</p>
+      <span class="philo-tag">ShotCard → Node → Edge</span>
+    </div>
+    <div class="philo-card reveal">
+      <div class="philo-icon">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+      </div>
+      <h3 class="philo-title">浏览器原生，零安装</h3>
+      <p class="philo-desc">前端 React + Vite，后端 Express + Prisma，全部跑在浏览器里。创作者打开网址就能写，读者打开链接就能玩。不需要安装 Python 运行时，不需要打包 exe，不需要部署服务器——一个链接就是全部。</p>
+      <span class="philo-tag">Web-Native · PWA Ready</span>
+    </div>
+    <div class="philo-card reveal">
+      <div class="philo-icon">
+        <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+      </div>
+      <h3 class="philo-title">AI 原生，创作加速</h3>
+      <p class="philo-desc">不是外挂 AI 工具，而是从编辑器层面深度集成。润色台词、续写剧情、生成选项分支、批量回应、直接生成完整节点图——五种模式覆盖创作全流程。支持 GLM / DeepSeek / Kimi / OpenAI 四家供应商，通过统一接口随时切换。</p>
+      <span class="philo-tag">5 Modes · 4 Providers</span>
+    </div>
   </div>
 </section>
 
@@ -1233,11 +1316,26 @@ cd apps/server && npm run dev</code></div></div>
   <div class="footer-content">
     <h2 class="footer-title">一起把下一个故事<span class="italic">变成作品</span></h2>
     <p class="footer-desc">DreamChord — 像写小说一样创作，像玩游戏一样阅读。</p>
+    <div class="footer-divider"></div>
     <div class="footer-links">
       <a href="https://github.com/tl66666/DreamChord" target="_blank">GitHub 仓库</a>
       <a href="https://github.com/tl66666/DreamChord/blob/main/README.md" target="_blank">项目文档</a>
       <a href="https://github.com/tl66666/DreamChord/blob/main/CLAUDE.md" target="_blank">开发指南</a>
       <a href="https://github.com/tl66666/DreamChord/blob/main/docs/AI_HANDOFF.md" target="_blank">AI 交接</a>
+      <a href="https://github.com/tl66666/DreamChord/blob/main/CHARACTERS.md" target="_blank">角色设定</a>
+      <a href="https://github.com/tl66666/DreamChord/blob/main/ASSETS.md" target="_blank">素材规范</a>
+    </div>
+    <div class="footer-tech-badges">
+      <span class="footer-tech-badge">React 18</span>
+      <span class="footer-tech-badge">TypeScript</span>
+      <span class="footer-tech-badge">Vite 5</span>
+      <span class="footer-tech-badge">Tailwind CSS</span>
+      <span class="footer-tech-badge">@xyflow/react</span>
+      <span class="footer-tech-badge">Zustand</span>
+      <span class="footer-tech-badge">framer-motion</span>
+      <span class="footer-tech-badge">Express</span>
+      <span class="footer-tech-badge">Prisma</span>
+      <span class="footer-tech-badge">SQLite</span>
     </div>
     <p class="footer-copy">MIT License · 2026 唐乐 (tl66666) · Built with React + TypeScript + Vite</p>
   </div>
@@ -1268,15 +1366,18 @@ function animateHeroTitle() {
 function animateStatNumbers() {
   const nums = document.querySelectorAll('.stat-num');
   nums.forEach(el => {
+    const suffix = el.querySelector('.stat-suffix');
+    const suffixHTML = suffix ? suffix.outerHTML : '';
     const target = parseInt(el.textContent);
     if (isNaN(target)) return;
-    el.textContent = '0';
+    el.innerHTML = '0' + suffixHTML;
+    if (target === 0) return;
     let current = 0;
     const step = Math.max(1, Math.ceil(target / 30));
     const timer = setInterval(() => {
       current += step;
       if (current >= target) { current = target; clearInterval(timer); }
-      el.textContent = current;
+      el.innerHTML = current + suffixHTML;
     }, 40);
   });
 }
