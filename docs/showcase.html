@@ -10,7 +10,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&family=Noto+Serif+SC:wght@400;700;900&family=Instrument+Serif:ital@1&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 /* ═══════════════════════════════════════════════
-   梦弦 DreamChord — Showcase Page
+   梦弦 DreamChord — Showcase Page (rev 3)
    Aesthetic: "Lucid Dream" — dark, cinematic, dreamy
    ═══════════════════════════════════════════════ */
 
@@ -24,6 +24,7 @@
   --accent-3: #67e8f9;
   --accent-warm: #fbbf24;
   --accent-green: #34d399;
+  --accent-pink: #f472b6;
   --text: #e1e0cc;
   --text-dim: #9ca3af;
   --text-muted: #6b7280;
@@ -33,9 +34,7 @@
 }
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
-
 html { scroll-behavior: smooth; }
-
 body {
   font-family: 'Noto Sans SC', -apple-system, BlinkMacSystemFont, sans-serif;
   background: var(--bg);
@@ -46,1046 +45,382 @@ body {
 
 /* ── Noise Texture Overlays ── */
 .noise-overlay {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  opacity: 0.5;
-  mix-blend-mode: overlay;
+  position: absolute; inset: 0; pointer-events: none;
+  opacity: 0.5; mix-blend-mode: overlay;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.6'/%3E%3C/svg%3E");
 }
-
 .bg-noise {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  opacity: 0.12;
+  position: absolute; inset: 0; pointer-events: none; opacity: 0.12;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n2'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n2)'/%3E%3C/svg%3E");
 }
 
 /* ── Scroll Animations ── */
-.reveal {
-  opacity: 0;
-  transform: translateY(30px);
-  transition: opacity 0.8s var(--ease), transform 0.8s var(--ease);
-}
-.reveal.visible {
-  opacity: 1;
-  transform: translateY(0);
-}
-
-.word-reveal {
-  display: inline-block;
-  opacity: 0;
-  transform: translateY(20px);
-  transition: opacity 0.6s var(--ease), transform 0.6s var(--ease);
-}
-.word-reveal.visible {
-  opacity: 1;
-  transform: translateY(0);
-}
+.reveal { opacity: 0; transform: translateY(30px); transition: opacity 0.8s var(--ease), transform 0.8s var(--ease); }
+.reveal.visible { opacity: 1; transform: translateY(0); }
+.word-reveal { display: inline-block; opacity: 0; transform: translateY(20px); transition: opacity 0.6s var(--ease), transform 0.6s var(--ease); }
+.word-reveal.visible { opacity: 1; transform: translateY(0); }
 
 /* ═══ HERO ═══ */
 .hero {
-  position: relative;
-  min-height: 100vh;
-  display: flex;
-  align-items: flex-end;
-  padding: 1rem;
-  overflow: hidden;
+  position: relative; min-height: 100vh;
+  display: flex; align-items: flex-end; padding: 1rem; overflow: hidden;
 }
-
 .hero-inner {
-  position: relative;
-  width: 100%;
-  height: calc(100vh - 2rem);
-  border-radius: 1.5rem;
-  overflow: hidden;
-  display: flex;
-  align-items: flex-end;
+  position: relative; width: 100%; height: calc(100vh - 2rem);
+  border-radius: 1.5rem; overflow: hidden;
+  display: flex; align-items: flex-end;
 }
-
-.hero-bg {
-  position: absolute;
-  inset: 0;
-}
-
-.hero-bg video {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
+.hero-bg { position: absolute; inset: 0; }
+.hero-bg video { width: 100%; height: 100%; object-fit: cover; }
 .hero-gradient {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(180deg, rgba(10,10,15,0.4) 0%, transparent 30%, transparent 50%, rgba(10,10,15,0.85) 100%);
+  position: absolute; inset: 0;
+  background: linear-gradient(180deg, rgba(10,10,15,0.35) 0%, transparent 25%, transparent 45%, rgba(10,10,15,0.88) 100%);
 }
 
+/* ── 标题：梦弦一行，DreamChord 一行 ── */
 .hero-content {
-  position: relative;
-  z-index: 10;
-  width: 100%;
+  position: relative; z-index: 10; width: 100%;
   padding: 2rem 2rem 3rem;
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 1.5rem;
+  display: grid; grid-template-columns: 1fr; gap: 1.5rem;
 }
-
 @media (min-width: 768px) {
-  .hero-content {
-    grid-template-columns: 1.5fr 1fr;
-    padding: 2rem 3rem 3rem;
-  }
+  .hero-content { grid-template-columns: 1.5fr 1fr; padding: 2rem 3rem 3.5rem; }
 }
 
-/* ── 修复：DreamChord 不换行，梦弦前移 ── */
 .hero-title {
   font-family: 'Noto Serif SC', serif;
-  font-size: clamp(2.5rem, 10vw, 9rem);
-  font-weight: 900;
-  line-height: 0.9;
-  letter-spacing: -0.03em;
+  line-height: 0.9; letter-spacing: -0.03em;
   color: var(--text);
-  text-shadow: 0 4px 40px rgba(167, 139, 250, 0.3);
-  display: flex;
-  align-items: baseline;
-  gap: 0.15em;
-  flex-wrap: wrap;
+  text-shadow: 0 4px 50px rgba(167, 139, 250, 0.35);
 }
-
-.hero-title .cn-name {
-  white-space: nowrap;
-  margin-right: -0.05em;
+.hero-title .line-cn {
+  display: block;
+  font-size: clamp(3rem, 14vw, 9rem);
+  font-weight: 900;
+  margin-bottom: 0.1em;
 }
-
-.hero-title .en-name {
-  white-space: nowrap;
+.hero-title .line-en {
+  display: block;
   font-family: 'Instrument Serif', serif;
-  font-style: italic;
-  font-weight: 400;
+  font-style: italic; font-weight: 400;
+  font-size: clamp(1.5rem, 6vw, 4rem);
   color: var(--accent);
+  letter-spacing: 0.02em;
 }
-
 .hero-title .asterisk {
-  font-size: 0.25em;
-  vertical-align: super;
-  color: var(--accent-2);
-  margin-left: 0.05em;
+  font-size: 0.3em; vertical-align: super;
+  color: var(--accent-2); margin-left: 0.05em;
 }
 
-.hero-right {
-  display: flex;
-  flex-direction: column;
-  gap: 1.25rem;
-  align-self: end;
-}
-
+.hero-right { display: flex; flex-direction: column; gap: 1.25rem; align-self: end; }
 .hero-desc {
-  font-size: 0.875rem;
-  color: rgba(225, 224, 204, 0.75);
-  line-height: 1.5;
-  max-width: 360px;
+  font-size: 0.875rem; color: rgba(225, 224, 204, 0.8);
+  line-height: 1.6; max-width: 380px;
 }
-
-@media (min-width: 768px) {
-  .hero-desc { font-size: 1rem; }
-}
+@media (min-width: 768px) { .hero-desc { font-size: 1rem; } }
 
 .hero-cta {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.75rem;
+  display: inline-flex; align-items: center; gap: 0.75rem;
   padding: 0.625rem 0.625rem 0.625rem 1.5rem;
-  background: var(--text);
-  color: #000;
-  border-radius: 9999px;
-  font-size: 0.875rem;
-  font-weight: 500;
-  text-decoration: none;
-  transition: gap 0.3s var(--ease);
-  width: fit-content;
+  background: var(--text); color: #000;
+  border-radius: 9999px; font-size: 0.875rem; font-weight: 500;
+  text-decoration: none; transition: gap 0.3s var(--ease); width: fit-content;
 }
-
 .hero-cta:hover { gap: 1rem; }
-
 .hero-cta-circle {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 2.25rem;
-  height: 2.25rem;
-  background: #000;
-  border-radius: 9999px;
+  display: flex; align-items: center; justify-content: center;
+  width: 2.25rem; height: 2.25rem; background: #000; border-radius: 9999px;
   transition: transform 0.3s var(--ease);
 }
-
 .hero-cta:hover .hero-cta-circle { transform: scale(1.1); }
-
 .hero-cta-circle svg { width: 1rem; height: 1rem; color: var(--text); }
+
+/* ── Hero 装饰角色 ── */
+.hero-char {
+  position: absolute; right: 3%; bottom: 0;
+  height: 75%; opacity: 0.4; z-index: 5;
+  pointer-events: none; filter: drop-shadow(0 0 30px rgba(167, 139, 250, 0.3));
+  display: none;
+}
+@media (min-width: 1024px) { .hero-char { display: block; } }
 
 /* Nav */
 .nav {
-  position: absolute;
-  top: 1rem;
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 20;
-  background: rgba(0, 0, 0, 0.6);
-  backdrop-filter: blur(12px);
-  border-radius: 0 0 1rem 1rem;
-  padding: 0.5rem 1.5rem;
-  display: flex;
-  gap: 1.5rem;
+  position: absolute; top: 1rem; left: 50%; transform: translateX(-50%);
+  z-index: 20; background: rgba(0, 0, 0, 0.55); backdrop-filter: blur(12px);
+  border-radius: 0 0 1rem 1rem; padding: 0.5rem 1.5rem;
+  display: flex; gap: 1.5rem;
 }
-
-@media (min-width: 768px) {
-  .nav { gap: 2.5rem; padding: 0.5rem 2rem; }
-}
-
-.nav a {
-  font-size: 0.7rem;
-  color: rgba(225, 224, 204, 0.8);
-  text-decoration: none;
-  transition: color 0.3s;
-}
-
-@media (min-width: 768px) {
-  .nav a { font-size: 0.8rem; }
-}
-
+@media (min-width: 768px) { .nav { gap: 2.5rem; padding: 0.5rem 2rem; } }
+.nav a { font-size: 0.7rem; color: rgba(225, 224, 204, 0.8); text-decoration: none; transition: color 0.3s; }
+@media (min-width: 768px) { .nav a { font-size: 0.8rem; } }
 .nav a:hover { color: var(--text); }
 
 /* ═══ STATS ═══ */
-.stats {
-  padding: 5rem 1.5rem 3rem;
-  max-width: 1200px;
-  margin: 0 auto;
-}
-
-.stats-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 1.5rem;
-}
-
-@media (min-width: 768px) {
-  .stats-grid { grid-template-columns: repeat(4, 1fr); }
-}
-
+.stats { padding: 5rem 1.5rem 3rem; max-width: 1200px; margin: 0 auto; }
+.stats-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.5rem; }
+@media (min-width: 768px) { .stats-grid { grid-template-columns: repeat(4, 1fr); } }
 .stat-item {
-  text-align: center;
-  padding: 1.5rem 1rem;
-  background: var(--bg-card);
-  border-radius: 1rem;
-  border: 1px solid var(--border);
+  text-align: center; padding: 1.5rem 1rem;
+  background: var(--bg-card); border-radius: 1rem; border: 1px solid var(--border);
   transition: transform 0.4s var(--ease), border-color 0.4s;
 }
-
-.stat-item:hover {
-  transform: translateY(-4px);
-  border-color: rgba(167, 139, 250, 0.3);
-}
-
-.stat-num {
-  font-family: 'Noto Serif SC', serif;
-  font-size: 2.5rem;
-  font-weight: 900;
-  color: var(--accent);
-  line-height: 1;
-}
-
-.stat-label {
-  font-size: 0.75rem;
-  color: var(--text-dim);
-  margin-top: 0.5rem;
-}
+.stat-item:hover { transform: translateY(-4px); border-color: rgba(167, 139, 250, 0.3); }
+.stat-num { font-family: 'Noto Serif SC', serif; font-size: 2.5rem; font-weight: 900; color: var(--accent); line-height: 1; }
+.stat-label { font-size: 0.75rem; color: var(--text-dim); margin-top: 0.5rem; }
 
 /* ═══ SECTION COMMON ═══ */
-.section {
-  padding: 6rem 1.5rem;
-  max-width: 1200px;
-  margin: 0 auto;
-  position: relative;
-}
-
-.section-label {
-  font-size: 0.7rem;
-  color: var(--accent);
-  text-transform: uppercase;
-  letter-spacing: 0.2em;
-  margin-bottom: 1rem;
-}
-
+.section { padding: 6rem 1.5rem; max-width: 1200px; margin: 0 auto; position: relative; }
+.section-label { font-size: 0.7rem; color: var(--accent); text-transform: uppercase; letter-spacing: 0.2em; margin-bottom: 1rem; }
 .section-title {
-  font-family: 'Noto Serif SC', serif;
-  font-size: clamp(1.75rem, 5vw, 3.5rem);
-  font-weight: 700;
-  line-height: 1.1;
-  margin-bottom: 1.5rem;
-  letter-spacing: -0.02em;
+  font-family: 'Noto Serif SC', serif; font-size: clamp(1.75rem, 5vw, 3.5rem);
+  font-weight: 700; line-height: 1.1; margin-bottom: 1.5rem; letter-spacing: -0.02em;
 }
-
-.section-title .italic {
-  font-family: 'Instrument Serif', serif;
-  font-style: italic;
-  font-weight: 400;
-  color: var(--accent);
-}
-
-.section-desc {
-  font-size: 0.9rem;
-  color: var(--text-dim);
-  max-width: 600px;
-  line-height: 1.7;
-}
+.section-title .italic { font-family: 'Instrument Serif', serif; font-style: italic; font-weight: 400; color: var(--accent); }
+.section-desc { font-size: 0.9rem; color: var(--text-dim); max-width: 600px; line-height: 1.7; }
 
 /* ═══ ABOUT ═══ */
-.about {
-  background: #000;
-  padding: 6rem 1.5rem;
+.about { background: #000; padding: 6rem 1.5rem; position: relative; overflow: hidden; }
+.about-bg-img {
+  position: absolute; inset: 0; opacity: 0.12;
+  background: url('../apps/web/public/assets/backgrounds/bg-starry.png') center/cover no-repeat;
 }
-
-.about-inner {
-  max-width: 900px;
-  margin: 0 auto;
-  text-align: center;
-}
-
+.about-inner { max-width: 900px; margin: 0 auto; text-align: center; position: relative; z-index: 1; }
 .about-card {
-  background: #101010;
-  border-radius: 1.5rem;
-  padding: 3rem 2rem;
-  border: 1px solid var(--border);
+  background: rgba(16, 16, 16, 0.9); backdrop-filter: blur(10px);
+  border-radius: 1.5rem; padding: 3rem 2rem; border: 1px solid var(--border);
 }
+@media (min-width: 768px) { .about-card { padding: 4rem 3rem; } }
+.about-heading { font-family: 'Noto Serif SC', serif; font-size: clamp(1.5rem, 4vw, 2.5rem); line-height: 1.3; margin-bottom: 2rem; font-weight: 400; }
+.about-heading .italic { font-family: 'Instrument Serif', serif; font-style: italic; color: var(--accent); }
+.about-text { font-size: 0.875rem; color: var(--text); line-height: 1.8; text-align: left; }
+@media (min-width: 768px) { .about-text { font-size: 1rem; } }
 
-@media (min-width: 768px) {
-  .about-card { padding: 4rem 3rem; }
-}
-
-.about-heading {
-  font-family: 'Noto Serif SC', serif;
-  font-size: clamp(1.5rem, 4vw, 2.5rem);
-  line-height: 1.3;
-  margin-bottom: 2rem;
-  font-weight: 400;
-}
-
-.about-heading .italic {
-  font-family: 'Instrument Serif', serif;
-  font-style: italic;
-  color: var(--accent);
-}
-
-.about-text {
-  font-size: 0.875rem;
-  color: var(--text);
-  line-height: 1.8;
-  text-align: left;
-}
-
-@media (min-width: 768px) {
-  .about-text { font-size: 1rem; }
-}
-
-.pain-table {
-  margin-top: 3rem;
-  display: grid;
-  gap: 1rem;
-}
-
+.pain-table { margin-top: 3rem; display: grid; gap: 1rem; text-align: left; }
 .pain-row {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 0.5rem;
-  padding: 1.25rem;
-  background: var(--bg-card);
-  border-radius: 0.75rem;
-  border-left: 3px solid var(--accent);
+  display: grid; grid-template-columns: 1fr; gap: 0.5rem;
+  padding: 1.25rem; background: var(--bg-card); border-radius: 0.75rem; border-left: 3px solid var(--accent);
 }
-
-@media (min-width: 768px) {
-  .pain-row {
-    grid-template-columns: 1fr 2fr;
-    align-items: center;
-    gap: 1.5rem;
-  }
-}
-
-.pain-point {
-  font-size: 0.8rem;
-  color: var(--accent-2);
-  font-weight: 500;
-}
-
-.pain-solution {
-  font-size: 0.8rem;
-  color: var(--text-dim);
-  line-height: 1.5;
-}
+@media (min-width: 768px) { .pain-row { grid-template-columns: 1fr 2fr; align-items: center; gap: 1.5rem; } }
+.pain-point { font-size: 0.8rem; color: var(--accent-2); font-weight: 500; }
+.pain-solution { font-size: 0.8rem; color: var(--text-dim); line-height: 1.5; }
 
 /* ═══ FEATURES ═══ */
-.features {
-  min-height: 100vh;
-  padding: 6rem 1.5rem;
-  position: relative;
-}
-
-.features-grid {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 1rem;
-  max-width: 1200px;
-  margin: 3rem auto 0;
-}
-
-@media (min-width: 768px) {
-  .features-grid { grid-template-columns: 1fr 1fr; }
-}
-
-@media (min-width: 1024px) {
-  .features-grid { grid-template-columns: repeat(4, 1fr); }
-}
+.features { min-height: 100vh; padding: 6rem 1.5rem; position: relative; }
+.features-grid { display: grid; grid-template-columns: 1fr; gap: 1rem; max-width: 1200px; margin: 3rem auto 0; }
+@media (min-width: 768px) { .features-grid { grid-template-columns: 1fr 1fr; } }
+@media (min-width: 1024px) { .features-grid { grid-template-columns: repeat(4, 1fr); } }
 
 .feature-card {
-  background: var(--bg-card-2);
-  border-radius: 1rem;
-  overflow: hidden;
-  border: 1px solid var(--border);
-  transition: transform 0.5s var(--ease), border-color 0.4s;
-  min-height: 340px;
-  display: flex;
-  flex-direction: column;
+  background: var(--bg-card-2); border-radius: 1rem; overflow: hidden;
+  border: 1px solid var(--border); transition: transform 0.5s var(--ease), border-color 0.4s;
+  min-height: 340px; display: flex; flex-direction: column;
 }
-
-.feature-card:hover {
-  transform: translateY(-6px);
-  border-color: rgba(167, 139, 250, 0.35);
-}
+.feature-card:hover { transform: translateY(-6px); border-color: rgba(167, 139, 250, 0.35); }
 
 /* ── 真实界面模拟卡片 ── */
-.feature-card-mockup {
-  padding: 0;
-  min-height: 420px;
-}
+.feature-card-mockup { padding: 0; min-height: 420px; }
+.mockup-screen { flex: 1; position: relative; overflow: hidden; min-height: 280px; }
+.mockup-label { padding: 1rem 1.25rem; border-top: 1px solid var(--border); background: var(--bg-card-2); }
+.mockup-label .feature-num { font-size: 0.65rem; color: var(--text-muted); font-family: 'Instrument Serif', serif; font-style: italic; }
+.mockup-label .feature-title { font-family: 'Noto Serif SC', serif; font-size: 1rem; font-weight: 700; color: var(--text); margin-top: 0.25rem; }
 
-.mockup-screen {
-  flex: 1;
-  position: relative;
-  overflow: hidden;
-  min-height: 280px;
-}
-
-.mockup-label {
-  padding: 1rem 1.25rem;
-  border-top: 1px solid var(--border);
-  background: var(--bg-card-2);
-}
-
-.mockup-label .feature-num {
-  font-size: 0.65rem;
-  color: var(--text-muted);
-  font-family: 'Instrument Serif', serif;
-  font-style: italic;
-}
-
-.mockup-label .feature-title {
-  font-family: 'Noto Serif SC', serif;
-  font-size: 1rem;
-  font-weight: 700;
-  color: var(--text);
-  margin-top: 0.25rem;
-}
-
-/* ── 编辑器模拟 ── */
-.mockup-editor {
-  background: var(--bg-editor);
-  display: flex;
-  height: 100%;
-  position: absolute;
-  inset: 0;
-}
-
+/* ── 编辑器模拟（使用真实背景图）── */
+.mockup-editor { background: var(--bg-editor); display: flex; height: 100%; position: absolute; inset: 0; }
 .mockup-editor .sidebar {
-  width: 25%;
-  background: #181825;
-  border-right: 1px solid rgba(167, 139, 250, 0.1);
-  padding: 0.5rem;
-  font-size: 0.5rem;
+  width: 25%; background: #181825; border-right: 1px solid rgba(167, 139, 250, 0.1);
+  padding: 0.5rem; font-size: 0.5rem;
 }
-
 .mockup-editor .sidebar-item {
-  padding: 0.3rem 0.4rem;
-  border-radius: 0.25rem;
-  color: var(--text-dim);
-  margin-bottom: 0.2rem;
-  display: flex;
-  align-items: center;
-  gap: 0.25rem;
+  padding: 0.3rem 0.4rem; border-radius: 0.25rem; color: var(--text-dim);
+  margin-bottom: 0.2rem; display: flex; align-items: center; gap: 0.25rem;
 }
-
-.mockup-editor .sidebar-item.active {
-  background: rgba(167, 139, 250, 0.15);
-  color: var(--accent);
-}
-
-.mockup-editor .sidebar-item::before {
-  content: '';
-  width: 4px;
-  height: 4px;
-  border-radius: 50%;
-  background: currentColor;
-  opacity: 0.6;
-}
-
-.mockup-editor .main-area {
-  flex: 1;
-  padding: 0.5rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.4rem;
-}
-
+.mockup-editor .sidebar-item.active { background: rgba(167, 139, 250, 0.15); color: var(--accent); }
+.mockup-editor .sidebar-item::before { content: ''; width: 4px; height: 4px; border-radius: 50%; background: currentColor; opacity: 0.6; }
+.mockup-editor .main-area { flex: 1; padding: 0.5rem; display: flex; flex-direction: column; gap: 0.4rem; }
 .mockup-card {
-  background: #1e1e2e;
-  border: 1px solid rgba(167, 139, 250, 0.1);
-  border-radius: 0.4rem;
-  padding: 0.5rem;
-  font-size: 0.5rem;
+  background: #1e1e2e; border: 1px solid rgba(167, 139, 250, 0.1);
+  border-radius: 0.4rem; padding: 0.5rem; font-size: 0.5rem;
 }
-
-.mockup-card.active {
-  border-color: var(--accent);
-  background: rgba(167, 139, 250, 0.08);
-}
-
-.mockup-card-header {
-  display: flex;
-  align-items: center;
-  gap: 0.3rem;
-  margin-bottom: 0.3rem;
-}
-
-.mockup-card-badge {
-  width: 10px;
-  height: 10px;
-  border-radius: 0.2rem;
-  background: var(--accent);
-  opacity: 0.7;
-}
-
+.mockup-card.active { border-color: var(--accent); background: rgba(167, 139, 250, 0.08); }
+.mockup-card-header { display: flex; align-items: center; gap: 0.3rem; margin-bottom: 0.3rem; }
+.mockup-card-badge { width: 10px; height: 10px; border-radius: 0.2rem; background: var(--accent); opacity: 0.7; }
 .mockup-card-badge.choice { background: var(--accent-2); }
 .mockup-card-badge.narration { background: var(--accent-3); }
-
-.mockup-card-text {
-  color: var(--text-dim);
-  font-size: 0.45rem;
-  line-height: 1.4;
-}
-
-.mockup-card-choices {
-  display: flex;
-  gap: 0.3rem;
-  margin-top: 0.3rem;
-}
-
-.mockup-choice-tag {
-  font-size: 0.4rem;
-  padding: 0.1rem 0.3rem;
-  border-radius: 0.2rem;
-  background: rgba(240, 171, 252, 0.15);
-  color: var(--accent-2);
-}
-
-.mockup-choice-tag.warning {
-  background: rgba(251, 191, 36, 0.15);
-  color: var(--accent-warm);
-}
-
+.mockup-card-text { color: var(--text-dim); font-size: 0.45rem; line-height: 1.4; }
+.mockup-card-choices { display: flex; gap: 0.3rem; margin-top: 0.3rem; }
+.mockup-choice-tag { font-size: 0.4rem; padding: 0.1rem 0.3rem; border-radius: 0.2rem; background: rgba(240, 171, 252, 0.15); color: var(--accent-2); }
+.mockup-choice-tag.warning { background: rgba(251, 191, 36, 0.15); color: var(--accent-warm); }
 .mockup-editor .preview-area {
-  width: 30%;
-  background: #11111b;
-  border-left: 1px solid rgba(167, 139, 250, 0.1);
-  display: flex;
-  flex-direction: column;
+  width: 30%; background: #11111b; border-left: 1px solid rgba(167, 139, 250, 0.1);
+  display: flex; flex-direction: column;
 }
-
 .mockup-preview-bg {
-  flex: 1;
-  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
-  position: relative;
+  flex: 1; position: relative; overflow: hidden;
+  background: url('../apps/web/public/assets/backgrounds/bg-sakura.png') center/cover no-repeat;
 }
-
 .mockup-preview-char {
-  position: absolute;
-  bottom: 20%;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 30px;
-  height: 50px;
-  background: linear-gradient(180deg, rgba(167, 139, 250, 0.4) 0%, rgba(240, 171, 252, 0.2) 100%);
-  border-radius: 40% 40% 20% 20%;
+  position: absolute; bottom: 5%; left: 50%; transform: translateX(-50%);
+  height: 70%; opacity: 0.85;
 }
+.mockup-preview-char img { height: 100%; object-fit: contain; filter: drop-shadow(0 2px 8px rgba(0,0,0,0.4)); }
+.mockup-preview-text { padding: 0.4rem; font-size: 0.45rem; color: var(--text); background: rgba(0, 0, 0, 0.7); }
 
-.mockup-preview-text {
-  padding: 0.4rem;
-  font-size: 0.45rem;
-  color: var(--text-dim);
-  background: rgba(0, 0, 0, 0.6);
-}
-
-/* ── 播放器模拟 ── */
+/* ── 播放器模拟（使用真实背景图）── */
 .mockup-player {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(180deg, #0f0f1a 0%, #1a1a2e 40%, #16213e 70%, #0f3460 100%);
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-end;
-  overflow: hidden;
+  position: absolute; inset: 0; overflow: hidden; display: flex; flex-direction: column; justify-content: flex-end;
+  background: url('../apps/web/public/assets/backgrounds/bg-classroom.png') center/cover no-repeat;
 }
-
-.mockup-player-bg-orb {
-  position: absolute;
-  top: 15%;
-  right: 10%;
-  width: 80px;
-  height: 80px;
-  border-radius: 50%;
-  background: radial-gradient(circle, rgba(167, 139, 250, 0.15) 0%, transparent 70%);
+.mockup-player-overlay {
+  position: absolute; inset: 0;
+  background: linear-gradient(180deg, rgba(10,10,15,0.2) 0%, transparent 30%, transparent 50%, rgba(10,10,15,0.92) 100%);
 }
-
-.mockup-player-bg-orb-2 {
-  position: absolute;
-  bottom: 30%;
-  left: 5%;
-  width: 60px;
-  height: 60px;
-  border-radius: 50%;
-  background: radial-gradient(circle, rgba(103, 232, 249, 0.1) 0%, transparent 70%);
-}
-
 .mockup-player-char {
-  position: absolute;
-  bottom: 25%;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 50px;
-  height: 90px;
-  background: linear-gradient(180deg, rgba(167, 139, 250, 0.3) 0%, rgba(240, 171, 252, 0.15) 60%, transparent 100%);
-  border-radius: 45% 45% 15% 15%;
+  position: absolute; bottom: 28%; left: 50%; transform: translateX(-50%);
+  height: 55%; z-index: 1;
 }
-
+.mockup-player-char img { height: 100%; object-fit: contain; filter: drop-shadow(0 4px 20px rgba(0,0,0,0.5)); }
 .mockup-player-textbox {
-  position: relative;
-  z-index: 2;
-  padding: 0.6rem 0.8rem;
+  position: relative; z-index: 2; padding: 0.6rem 0.8rem;
   background: linear-gradient(180deg, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.9) 100%);
   border-top: 1px solid rgba(167, 139, 250, 0.2);
 }
-
-.mockup-player-name {
-  font-size: 0.55rem;
-  color: var(--accent);
-  font-weight: 500;
-  margin-bottom: 0.2rem;
-}
-
-.mockup-player-text {
-  font-size: 0.5rem;
-  color: var(--text);
-  line-height: 1.5;
-}
-
+.mockup-player-name { font-size: 0.55rem; color: var(--accent); font-weight: 500; margin-bottom: 0.2rem; }
+.mockup-player-text { font-size: 0.5rem; color: var(--text); line-height: 1.5; }
 .mockup-player-choices {
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-  padding: 0.4rem 0.8rem 0.6rem;
-  background: rgba(0,0,0,0.85);
+  display: flex; flex-direction: column; gap: 0.25rem;
+  padding: 0.4rem 0.8rem 0.6rem; background: rgba(0,0,0,0.85); position: relative; z-index: 2;
 }
-
 .mockup-player-choice {
-  font-size: 0.48rem;
-  padding: 0.3rem 0.5rem;
-  border: 1px solid rgba(167, 139, 250, 0.2);
-  border-radius: 0.3rem;
-  color: var(--text);
-  background: rgba(167, 139, 250, 0.05);
+  font-size: 0.48rem; padding: 0.3rem 0.5rem;
+  border: 1px solid rgba(167, 139, 250, 0.2); border-radius: 0.3rem;
+  color: var(--text); background: rgba(167, 139, 250, 0.05);
 }
-
-.mockup-player-choice:first-child {
-  border-color: var(--accent);
-  background: rgba(167, 139, 250, 0.12);
-}
+.mockup-player-choice:first-child { border-color: var(--accent); background: rgba(167, 139, 250, 0.12); }
 
 /* ── 功能列表卡片 ── */
-.feature-card-body {
-  padding: 1.5rem;
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-  flex: 1;
-}
+.feature-card-body { padding: 1.5rem; display: flex; flex-direction: column; gap: 1rem; flex: 1; }
+.feature-num { font-size: 0.7rem; color: var(--text-muted); font-family: 'Instrument Serif', serif; font-style: italic; }
+.feature-title { font-family: 'Noto Serif SC', serif; font-size: 1.1rem; font-weight: 700; color: var(--text); }
+.feature-list { list-style: none; display: flex; flex-direction: column; gap: 0.5rem; margin-top: auto; }
+.feature-list li { font-size: 0.75rem; color: var(--text-dim); display: flex; align-items: flex-start; gap: 0.5rem; }
+.feature-list li::before { content: '✓'; color: var(--accent); font-weight: 700; flex-shrink: 0; }
 
-.feature-num {
-  font-size: 0.7rem;
-  color: var(--text-muted);
-  font-family: 'Instrument Serif', serif;
-  font-style: italic;
+/* ═══ CHARACTERS ═══ */
+.characters {
+  padding: 6rem 1.5rem; max-width: 1200px; margin: 0 auto;
+  position: relative;
 }
+.char-grid {
+  display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; margin-top: 2.5rem;
+}
+@media (min-width: 768px) { .char-grid { grid-template-columns: repeat(5, 1fr); } }
 
-.feature-title {
-  font-family: 'Noto Serif SC', serif;
-  font-size: 1.1rem;
-  font-weight: 700;
-  color: var(--text);
+.char-card {
+  background: var(--bg-card); border: 1px solid var(--border); border-radius: 1rem;
+  overflow: hidden; transition: transform 0.5s var(--ease), border-color 0.4s;
+  text-align: center;
 }
+.char-card:hover { transform: translateY(-6px); border-color: rgba(167, 139, 250, 0.35); }
 
-.feature-list {
-  list-style: none;
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  margin-top: auto;
+.char-sprite {
+  height: 200px; display: flex; align-items: flex-end; justify-content: center;
+  background: linear-gradient(180deg, #1a1a2e 0%, #16213e 100%);
+  position: relative; overflow: hidden;
 }
+.char-sprite::before {
+  content: ''; position: absolute; bottom: 0; left: 50%; transform: translateX(-50%);
+  width: 60%; height: 30%; background: radial-gradient(ellipse at center, rgba(167, 139, 250, 0.15) 0%, transparent 70%);
+}
+.char-sprite img { height: 90%; object-fit: contain; position: relative; z-index: 1; filter: drop-shadow(0 4px 12px rgba(0,0,0,0.4)); }
 
-.feature-list li {
-  font-size: 0.75rem;
-  color: var(--text-dim);
-  display: flex;
-  align-items: flex-start;
-  gap: 0.5rem;
-}
-
-.feature-list li::before {
-  content: '✓';
-  color: var(--accent);
-  font-weight: 700;
-  flex-shrink: 0;
-}
+.char-info { padding: 1rem; }
+.char-name { font-family: 'Noto Serif SC', serif; font-size: 1rem; font-weight: 700; color: var(--text); }
+.char-en { font-size: 0.65rem; color: var(--text-muted); font-family: 'Instrument Serif', serif; font-style: italic; margin-top: 0.15rem; }
+.char-desc { font-size: 0.7rem; color: var(--text-dim); margin-top: 0.5rem; line-height: 1.5; }
+.char-color { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 0.25rem; vertical-align: middle; }
 
 /* ═══ EDITOR DETAIL ═══ */
-.editor-detail {
-  padding: 6rem 1.5rem;
-  max-width: 1200px;
-  margin: 0 auto;
-}
-
-.lens-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 1rem;
-  margin-top: 2.5rem;
-}
-
-@media (min-width: 768px) {
-  .lens-grid { grid-template-columns: repeat(3, 1fr); }
-}
+.editor-detail { padding: 6rem 1.5rem; max-width: 1200px; margin: 0 auto; }
+.lens-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; margin-top: 2.5rem; }
+@media (min-width: 768px) { .lens-grid { grid-template-columns: repeat(3, 1fr); } }
 
 .lens-card {
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: 0.75rem;
-  padding: 1.25rem;
-  transition: border-color 0.3s, transform 0.3s var(--ease);
+  background: var(--bg-card); border: 1px solid var(--border); border-radius: 0.75rem;
+  padding: 1.25rem; transition: border-color 0.3s, transform 0.3s var(--ease);
 }
-
-.lens-card:hover {
-  border-color: rgba(167, 139, 250, 0.3);
-  transform: translateY(-3px);
-}
-
-.lens-icon {
-  width: 32px;
-  height: 32px;
-  border-radius: 0.5rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 0.9rem;
-  margin-bottom: 0.75rem;
-}
-
+.lens-card:hover { border-color: rgba(167, 139, 250, 0.3); transform: translateY(-3px); }
+.lens-icon { width: 32px; height: 32px; border-radius: 0.5rem; display: flex; align-items: center; justify-content: center; font-size: 0.9rem; margin-bottom: 0.75rem; }
 .lens-icon.dialogue { background: rgba(167, 139, 250, 0.15); color: var(--accent); }
 .lens-icon.narration { background: rgba(103, 232, 249, 0.15); color: var(--accent-3); }
 .lens-icon.thought { background: rgba(240, 171, 252, 0.15); color: var(--accent-2); }
 .lens-icon.memory { background: rgba(251, 191, 36, 0.15); color: var(--accent-warm); }
 .lens-icon.system { background: rgba(52, 211, 153, 0.15); color: var(--accent-green); }
-.lens-icon.choice { background: rgba(244, 114, 182, 0.15); color: #f472b6; }
-
-.lens-name {
-  font-size: 0.9rem;
-  font-weight: 700;
-  color: var(--text);
-  margin-bottom: 0.25rem;
-}
-
-.lens-desc {
-  font-size: 0.7rem;
-  color: var(--text-dim);
-  line-height: 1.5;
-}
-
-.lens-node {
-  font-size: 0.6rem;
-  color: var(--text-muted);
-  margin-top: 0.5rem;
-  font-family: 'JetBrains Mono', monospace;
-}
+.lens-icon.choice { background: rgba(244, 114, 182, 0.15); color: var(--accent-pink); }
+.lens-name { font-size: 0.9rem; font-weight: 700; color: var(--text); margin-bottom: 0.25rem; }
+.lens-desc { font-size: 0.7rem; color: var(--text-dim); line-height: 1.5; }
+.lens-node { font-size: 0.6rem; color: var(--text-muted); margin-top: 0.5rem; font-family: 'JetBrains Mono', monospace; }
 
 /* ═══ WORKFLOW ═══ */
-.workflow {
-  padding: 6rem 1.5rem;
-  max-width: 1000px;
-  margin: 0 auto;
-}
-
-.workflow-chain {
-  display: flex;
-  flex-direction: column;
-  gap: 0;
-  margin-top: 2.5rem;
-}
-
+.workflow { padding: 6rem 1.5rem; max-width: 1000px; margin: 0 auto; }
+.workflow-chain { display: flex; flex-direction: column; gap: 0; margin-top: 2.5rem; }
 .workflow-step {
-  display: flex;
-  gap: 1.5rem;
-  align-items: flex-start;
-  padding: 1.25rem;
-  background: var(--bg-card);
-  border-radius: 0.75rem;
-  border: 1px solid var(--border);
-  position: relative;
+  display: flex; gap: 1.5rem; align-items: flex-start;
+  padding: 1.25rem; background: var(--bg-card); border-radius: 0.75rem;
+  border: 1px solid var(--border); position: relative;
 }
-
 .workflow-step:not(:last-child)::after {
-  content: '';
-  position: absolute;
-  bottom: -0.5rem;
-  left: 2.5rem;
-  width: 2px;
-  height: 0.5rem;
-  background: var(--border-2);
+  content: ''; position: absolute; bottom: -0.5rem; left: 2.5rem;
+  width: 2px; height: 0.5rem; background: var(--border-2);
 }
-
-.workflow-step:not(:last-child) {
-  margin-bottom: 0.5rem;
-}
-
-.workflow-num {
-  font-family: 'Noto Serif SC', serif;
-  font-size: 1.25rem;
-  font-weight: 900;
-  color: var(--accent);
-  flex-shrink: 0;
-  width: 2rem;
-}
-
-.workflow-content h4 {
-  font-size: 0.85rem;
-  color: var(--text);
-  margin-bottom: 0.25rem;
-}
-
-.workflow-content p {
-  font-size: 0.75rem;
-  color: var(--text-dim);
-}
-
-.workflow-arrow {
-  display: inline-block;
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 0.65rem;
-  color: var(--accent);
-  margin-top: 0.3rem;
-}
+.workflow-step:not(:last-child) { margin-bottom: 0.5rem; }
+.workflow-num { font-family: 'Noto Serif SC', serif; font-size: 1.25rem; font-weight: 900; color: var(--accent); flex-shrink: 0; width: 2rem; }
+.workflow-content h4 { font-size: 0.85rem; color: var(--text); margin-bottom: 0.25rem; }
+.workflow-content p { font-size: 0.75rem; color: var(--text-dim); }
+.workflow-arrow { display: inline-block; font-family: 'JetBrains Mono', monospace; font-size: 0.65rem; color: var(--accent); margin-top: 0.3rem; }
 
 /* ═══ TECH STACK ═══ */
-.tech {
-  padding: 6rem 1.5rem;
-  max-width: 1000px;
-  margin: 0 auto;
-}
-
-.tech-grid {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 1rem;
-  margin-top: 2.5rem;
-}
-
-@media (min-width: 768px) {
-  .tech-grid { grid-template-columns: 1fr 1fr; }
-}
-
-.tech-card {
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: 1rem;
-  padding: 1.5rem;
-}
-
-.tech-card h4 {
-  font-size: 0.8rem;
-  color: var(--accent);
-  margin-bottom: 1rem;
-  font-weight: 500;
-}
-
-.tech-list {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-}
-
-.tech-tag {
-  font-size: 0.7rem;
-  padding: 0.25rem 0.75rem;
-  background: rgba(167, 139, 250, 0.1);
-  border: 1px solid rgba(167, 139, 250, 0.2);
-  border-radius: 9999px;
-  color: var(--text);
-}
+.tech { padding: 6rem 1.5rem; max-width: 1000px; margin: 0 auto; }
+.tech-grid { display: grid; grid-template-columns: 1fr; gap: 1rem; margin-top: 2.5rem; }
+@media (min-width: 768px) { .tech-grid { grid-template-columns: 1fr 1fr; } }
+.tech-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 1rem; padding: 1.5rem; }
+.tech-card h4 { font-size: 0.8rem; color: var(--accent); margin-bottom: 1rem; font-weight: 500; }
+.tech-list { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+.tech-tag { font-size: 0.7rem; padding: 0.25rem 0.75rem; background: rgba(167, 139, 250, 0.1); border: 1px solid rgba(167, 139, 250, 0.2); border-radius: 9999px; color: var(--text); }
 
 /* ═══ QUICK START ═══ */
-.start {
-  padding: 6rem 1.5rem;
-  max-width: 900px;
-  margin: 0 auto;
-}
-
-.start-steps {
-  display: grid;
-  gap: 1rem;
-  margin-top: 2.5rem;
-}
-
-.start-step {
-  display: flex;
-  gap: 1.5rem;
-  align-items: flex-start;
-  padding: 1.5rem;
-  background: var(--bg-card);
-  border-radius: 1rem;
-  border: 1px solid var(--border);
-  transition: border-color 0.3s;
-}
-
+.start { padding: 6rem 1.5rem; max-width: 900px; margin: 0 auto; }
+.start-steps { display: grid; gap: 1rem; margin-top: 2.5rem; }
+.start-step { display: flex; gap: 1.5rem; align-items: flex-start; padding: 1.5rem; background: var(--bg-card); border-radius: 1rem; border: 1px solid var(--border); transition: border-color 0.3s; }
 .start-step:hover { border-color: rgba(167, 139, 250, 0.3); }
-
-.step-num {
-  font-family: 'Noto Serif SC', serif;
-  font-size: 1.5rem;
-  font-weight: 900;
-  color: var(--accent);
-  flex-shrink: 0;
-  width: 2.5rem;
-}
-
-.step-content h4 {
-  font-size: 0.9rem;
-  color: var(--text);
-  margin-bottom: 0.375rem;
-}
-
-.step-content p {
-  font-size: 0.75rem;
-  color: var(--text-dim);
-}
-
-.step-content code {
-  display: block;
-  margin-top: 0.5rem;
-  padding: 0.5rem 0.75rem;
-  background: #000;
-  border-radius: 0.5rem;
-  font-size: 0.7rem;
-  color: var(--accent-3);
-  font-family: 'JetBrains Mono', monospace;
-  overflow-x: auto;
-}
+.step-num { font-family: 'Noto Serif SC', serif; font-size: 1.5rem; font-weight: 900; color: var(--accent); flex-shrink: 0; width: 2.5rem; }
+.step-content h4 { font-size: 0.9rem; color: var(--text); margin-bottom: 0.375rem; }
+.step-content p { font-size: 0.75rem; color: var(--text-dim); }
+.step-content code { display: block; margin-top: 0.5rem; padding: 0.5rem 0.75rem; background: #000; border-radius: 0.5rem; font-size: 0.7rem; color: var(--accent-3); font-family: 'JetBrains Mono', monospace; overflow-x: auto; }
 
 /* ═══ FOOTER ═══ */
-.footer {
-  padding: 4rem 1.5rem 2rem;
-  text-align: center;
-  border-top: 1px solid var(--border);
-  position: relative;
-  overflow: hidden;
-}
-
+.footer { padding: 4rem 1.5rem 2rem; text-align: center; border-top: 1px solid var(--border); position: relative; overflow: hidden; }
 .footer-bg {
-  position: absolute;
-  inset: 0;
+  position: absolute; inset: 0;
   background: linear-gradient(180deg, transparent 0%, rgba(30, 30, 46, 0.5) 50%, rgba(10, 10, 15, 1) 100%);
   z-index: 0;
 }
-
 .footer-bg::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background-image:
-    linear-gradient(90deg, rgba(167, 139, 250, 0.03) 1px, transparent 1px),
-    linear-gradient(0deg, rgba(167, 139, 250, 0.03) 1px, transparent 1px);
+  content: ''; position: absolute; inset: 0;
+  background-image: linear-gradient(90deg, rgba(167, 139, 250, 0.03) 1px, transparent 1px), linear-gradient(0deg, rgba(167, 139, 250, 0.03) 1px, transparent 1px);
   background-size: 20px 20px;
 }
-
-.footer-content {
-  position: relative;
-  z-index: 1;
-}
-
-.footer-title {
-  font-family: 'Noto Serif SC', serif;
-  font-size: clamp(1.5rem, 4vw, 2.5rem);
-  font-weight: 700;
-  margin-bottom: 1rem;
-}
-
-.footer-title .italic {
-  font-family: 'Instrument Serif', serif;
-  font-style: italic;
-  color: var(--accent);
-}
-
-.footer-links {
-  display: flex;
-  justify-content: center;
-  gap: 1.5rem;
-  margin-top: 1.5rem;
-  flex-wrap: wrap;
-}
-
-.footer-links a {
-  font-size: 0.8rem;
-  color: var(--text-dim);
-  text-decoration: none;
-  padding: 0.5rem 1rem;
-  border: 1px solid var(--border);
-  border-radius: 9999px;
-  transition: all 0.3s;
-}
-
-.footer-links a:hover {
-  color: var(--text);
-  border-color: var(--accent);
-}
-
-.footer-copy {
-  margin-top: 2rem;
-  font-size: 0.7rem;
-  color: var(--text-muted);
-}
+.footer-content { position: relative; z-index: 1; }
+.footer-title { font-family: 'Noto Serif SC', serif; font-size: clamp(1.5rem, 4vw, 2.5rem); font-weight: 700; margin-bottom: 1rem; }
+.footer-title .italic { font-family: 'Instrument Serif', serif; font-style: italic; color: var(--accent); }
+.footer-links { display: flex; justify-content: center; gap: 1.5rem; margin-top: 1.5rem; flex-wrap: wrap; }
+.footer-links a { font-size: 0.8rem; color: var(--text-dim); text-decoration: none; padding: 0.5rem 1rem; border: 1px solid var(--border); border-radius: 9999px; transition: all 0.3s; }
+.footer-links a:hover { color: var(--text); border-color: var(--accent); }
+.footer-copy { margin-top: 2rem; font-size: 0.7rem; color: var(--text-muted); }
 
 /* ── Scroll-linked character reveal ── */
-.char-reveal {
-  display: inline-block;
-  opacity: 0.15;
-  transition: opacity 0.1s;
-}
+.char-reveal { display: inline-block; opacity: 0.15; transition: opacity 0.1s; }
 
-/* ── Responsive ── */
 @media (max-width: 640px) {
   .nav { display: none; }
   .hero-inner { height: calc(100vh - 2rem); }
@@ -1100,15 +435,19 @@ body {
   <div class="hero-inner">
     <div class="hero-bg">
       <video autoplay loop muted playsinline>
-        <source src="https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260416_101255_3099d3e4-d0cf-4e59-9666-97fbf521ac71.mp4" type="video/mp4">
+        <source src="https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260324_151826_c7218672-6e92-402c-9e45-f1e0f454bdc4.mp4" type="video/mp4">
       </video>
     </div>
     <div class="noise-overlay"></div>
     <div class="hero-gradient"></div>
 
+    <!-- 装饰角色立绘 -->
+    <img class="hero-char" src="../apps/web/public/assets/characters/yuki_normal.png" alt="">
+
     <nav class="nav">
       <a href="#about">产品定位</a>
       <a href="#features">核心功能</a>
+      <a href="#characters">角色</a>
       <a href="#editor">编辑器</a>
       <a href="#tech">技术栈</a>
       <a href="#start">快速开始</a>
@@ -1117,7 +456,8 @@ body {
 
     <div class="hero-content">
       <h1 class="hero-title" id="heroTitle">
-        <span class="cn-name">梦弦</span><span class="en-name">DreamChord</span><span class="asterisk">*</span>
+        <span class="line-cn word-reveal">梦弦</span>
+        <span class="line-en word-reveal">DreamChord<span class="asterisk">*</span></span>
       </h1>
       <div class="hero-right">
         <p class="hero-desc">
@@ -1138,27 +478,16 @@ body {
 <!-- ═══════════════ STATS ═══════════════ -->
 <section class="stats">
   <div class="stats-grid">
-    <div class="stat-item reveal">
-      <div class="stat-num">6</div>
-      <div class="stat-label">镜头卡类型</div>
-    </div>
-    <div class="stat-item reveal">
-      <div class="stat-num">5</div>
-      <div class="stat-label">AI 写作模式</div>
-    </div>
-    <div class="stat-item reveal">
-      <div class="stat-num">4</div>
-      <div class="stat-label">LLM 供应商</div>
-    </div>
-    <div class="stat-item reveal">
-      <div class="stat-num">12</div>
-      <div class="stat-label">体检检查项</div>
-    </div>
+    <div class="stat-item reveal"><div class="stat-num">6</div><div class="stat-label">镜头卡类型</div></div>
+    <div class="stat-item reveal"><div class="stat-num">5</div><div class="stat-label">AI 写作模式</div></div>
+    <div class="stat-item reveal"><div class="stat-num">4</div><div class="stat-label">LLM 供应商</div></div>
+    <div class="stat-item reveal"><div class="stat-num">12</div><div class="stat-label">体检检查项</div></div>
   </div>
 </section>
 
 <!-- ═══════════════ ABOUT ═══════════════ -->
 <section class="about" id="about">
+  <div class="about-bg-img"></div>
   <div class="bg-noise"></div>
   <div class="about-inner">
     <div class="section-label reveal">About</div>
@@ -1169,32 +498,13 @@ body {
       <p class="about-text" id="aboutText">
         DreamChord 是一个面向非技术用户的视觉小说创作平台。用户只需像写小说一样填写背景、选择角色、编写台词，系统自动将其转换为可播放的节点图和运行时场景。无需学习 Ren'Py 脚本语言，无需理解节点连线，用"章节 → 场景 → 镜头卡"的方式组织剧情，一键发布即可在浏览器中播放。
       </p>
-
       <div class="pain-table">
-        <div class="pain-row reveal">
-          <div class="pain-point">痛点：节点图太难</div>
-          <div class="pain-solution">镜头卡写作界面，用户只需填写"谁说了什么"，系统自动生成节点和连线</div>
-        </div>
-        <div class="pain-row reveal">
-          <div class="pain-point">痛点：没有可视化预览</div>
-          <div class="pain-solution">编辑器右栏实时预览，每改一个字、换一个背景立刻看到播放效果</div>
-        </div>
-        <div class="pain-row reveal">
-          <div class="pain-point">痛点：分支管理混乱</div>
-          <div class="pain-solution">自动检测分支去向，流程图可视化所有场景和分支连线，汇合点紫色高亮</div>
-        </div>
-        <div class="pain-row reveal">
-          <div class="pain-point">痛点：AI 辅助缺失</div>
-          <div class="pain-solution">编辑器内置 AI 助手，支持润色、续写、生成选项、分支回应、生成剧情图</div>
-        </div>
-        <div class="pain-row reveal">
-          <div class="pain-point">痛点：无法即时分享</div>
-          <div class="pain-solution">一键发布到作品广场，分享链接即可在浏览器中播放</div>
-        </div>
-        <div class="pain-row reveal">
-          <div class="pain-point">痛点：长篇组织困难</div>
-          <div class="pain-solution">章节 → 场景 → 镜头卡三级结构，每章独立画布，顶部标签切换</div>
-        </div>
+        <div class="pain-row reveal"><div class="pain-point">痛点：节点图太难</div><div class="pain-solution">镜头卡写作界面，用户只需填写"谁说了什么"，系统自动生成节点和连线</div></div>
+        <div class="pain-row reveal"><div class="pain-point">痛点：没有可视化预览</div><div class="pain-solution">编辑器右栏实时预览，每改一个字、换一个背景立刻看到播放效果</div></div>
+        <div class="pain-row reveal"><div class="pain-point">痛点：分支管理混乱</div><div class="pain-solution">自动检测分支去向，流程图可视化所有场景和分支连线，汇合点紫色高亮</div></div>
+        <div class="pain-row reveal"><div class="pain-point">痛点：AI 辅助缺失</div><div class="pain-solution">编辑器内置 AI 助手，支持润色、续写、生成选项、分支回应、生成剧情图</div></div>
+        <div class="pain-row reveal"><div class="pain-point">痛点：无法即时分享</div><div class="pain-solution">一键发布到作品广场，分享链接即可在浏览器中播放</div></div>
+        <div class="pain-row reveal"><div class="pain-point">痛点：长篇组织困难</div><div class="pain-solution">章节 → 场景 → 镜头卡三级结构，每章独立画布，顶部标签切换</div></div>
       </div>
     </div>
   </div>
@@ -1205,47 +515,31 @@ body {
   <div class="bg-noise"></div>
   <div class="section">
     <div class="section-label reveal">Features</div>
-    <h2 class="section-title reveal">
-      为创作者打造的<span class="italic">全套工具链</span>
-    </h2>
-    <p class="section-desc reveal">
-      从镜头卡编辑到实时预览，从 AI 辅助到流程图可视化，每一个功能都围绕"让创作更简单"设计。
-    </p>
+    <h2 class="section-title reveal">为创作者打造的<span class="italic">全套工具链</span></h2>
+    <p class="section-desc reveal">从镜头卡编辑到实时预览，从 AI 辅助到流程图可视化，每一个功能都围绕"让创作更简单"设计。</p>
   </div>
-
   <div class="features-grid">
-    <!-- Card 1: 编辑器模拟 -->
+    <!-- Card 1: 编辑器模拟（使用真实背景图和角色立绘） -->
     <div class="feature-card feature-card-mockup reveal">
       <div class="mockup-screen">
         <div class="mockup-editor">
-          <!-- 左栏：场景树 -->
           <div class="sidebar">
             <div class="sidebar-item active">场景 1-1 开场</div>
             <div class="sidebar-item">场景 1-2 分支A</div>
             <div class="sidebar-item">场景 1-3 分支B</div>
             <div class="sidebar-item">场景 1-4 汇合</div>
           </div>
-          <!-- 中栏：镜头卡 -->
           <div class="main-area">
             <div class="mockup-card">
-              <div class="mockup-card-header">
-                <div class="mockup-card-badge narration"></div>
-                <span style="color:var(--text-dim)">旁白</span>
-              </div>
+              <div class="mockup-card-header"><div class="mockup-card-badge narration"></div><span style="color:var(--text-dim)">旁白</span></div>
               <div class="mockup-card-text">新场景开始，午后的教室洒满阳光...</div>
             </div>
             <div class="mockup-card active">
-              <div class="mockup-card-header">
-                <div class="mockup-card-badge"></div>
-                <span style="color:var(--accent)">雪 · 对话</span>
-              </div>
+              <div class="mockup-card-header"><div class="mockup-card-badge"></div><span style="color:var(--accent)">雪 · 对话</span></div>
               <div class="mockup-card-text">你好，今天也来做研究吗？</div>
             </div>
             <div class="mockup-card">
-              <div class="mockup-card-header">
-                <div class="mockup-card-badge choice"></div>
-                <span style="color:var(--accent-2)">选项</span>
-              </div>
+              <div class="mockup-card-header"><div class="mockup-card-badge choice"></div><span style="color:var(--accent-2)">选项</span></div>
               <div class="mockup-card-text">选择回应：</div>
               <div class="mockup-card-choices">
                 <span class="mockup-choice-tag">A. 雪的方向</span>
@@ -1253,28 +547,23 @@ body {
               </div>
             </div>
           </div>
-          <!-- 右栏：预览 -->
           <div class="preview-area">
             <div class="mockup-preview-bg">
-              <div class="mockup-preview-char"></div>
+              <div class="mockup-preview-char"><img src="../apps/web/public/assets/characters/yuki_normal.png" alt=""></div>
             </div>
             <div class="mockup-preview-text">雪：你好，今天也来...</div>
           </div>
         </div>
       </div>
-      <div class="mockup-label">
-        <div class="feature-num">Editor</div>
-        <div class="feature-title">镜头卡编辑器</div>
-      </div>
+      <div class="mockup-label"><div class="feature-num">Editor</div><div class="feature-title">镜头卡编辑器</div></div>
     </div>
 
-    <!-- Card 2: 播放器模拟 -->
+    <!-- Card 2: 播放器模拟（使用真实背景图和角色立绘） -->
     <div class="feature-card feature-card-mockup reveal">
       <div class="mockup-screen">
         <div class="mockup-player">
-          <div class="mockup-player-bg-orb"></div>
-          <div class="mockup-player-bg-orb-2"></div>
-          <div class="mockup-player-char"></div>
+          <div class="mockup-player-overlay"></div>
+          <div class="mockup-player-char"><img src="../apps/web/public/assets/characters/yuki_smile.png" alt=""></div>
           <div class="mockup-player-textbox">
             <div class="mockup-player-name">雪</div>
             <div class="mockup-player-text">你好，今天也来做研究吗？</div>
@@ -1285,10 +574,7 @@ body {
           </div>
         </div>
       </div>
-      <div class="mockup-label">
-        <div class="feature-num">Player</div>
-        <div class="feature-title">实时预览播放器</div>
-      </div>
+      <div class="mockup-label"><div class="feature-num">Player</div><div class="feature-title">实时预览播放器</div></div>
     </div>
 
     <!-- Card 3: AI -->
@@ -1323,207 +609,110 @@ body {
   </div>
 </section>
 
+<!-- ═══════════════ CHARACTERS ═══════════════ -->
+<section class="characters" id="characters">
+  <div class="section-label reveal">Characters</div>
+  <h2 class="section-title reveal">五位角色<span class="italic">组成官方演示世界观</span></h2>
+  <p class="section-desc reveal">内置雪、影、宫、空和系统幽灵的 Meta 引导短剧，展示背景切换、角色登场、表情变化和分支选择。</p>
+  <div class="char-grid">
+    <div class="char-card reveal">
+      <div class="char-sprite"><img src="../apps/web/public/assets/characters/yuki_normal.png" alt="雪"></div>
+      <div class="char-info">
+        <div class="char-name"><span class="char-color" style="background:#a78bfa"></span>雪</div>
+        <div class="char-en">Yuki</div>
+        <div class="char-desc">文学少女，温柔知性，紫色系，手持书册</div>
+      </div>
+    </div>
+    <div class="char-card reveal">
+      <div class="char-sprite"><img src="../apps/web/public/assets/characters/ren_normal.png" alt="影"></div>
+      <div class="char-info">
+        <div class="char-name"><span class="char-color" style="background:#6b7280"></span>影</div>
+        <div class="char-en">Ren</div>
+        <div class="char-desc">沉默寡言，神秘冷静，灰色系</div>
+      </div>
+    </div>
+    <div class="char-card reveal">
+      <div class="char-sprite"><img src="../apps/web/public/assets/characters/miya_normal.png" alt="宫"></div>
+      <div class="char-info">
+        <div class="char-name"><span class="char-color" style="background:#f0abfc"></span>宫</div>
+        <div class="char-en">Miya</div>
+        <div class="char-desc">活泼开朗，粉色系，温暖治愈</div>
+      </div>
+    </div>
+    <div class="char-card reveal">
+      <div class="char-sprite"><img src="../apps/web/public/assets/characters/sora_normal.png" alt="空"></div>
+      <div class="char-info">
+        <div class="char-name"><span class="char-color" style="background:#67e8f9"></span>空</div>
+        <div class="char-en">Sora</div>
+        <div class="char-desc">好奇心旺盛，青色系，天真烂漫</div>
+      </div>
+    </div>
+    <div class="char-card reveal">
+      <div class="char-sprite"><img src="../apps/web/public/assets/characters/system-ghost.png" alt="系统幽灵"></div>
+      <div class="char-info">
+        <div class="char-name"><span class="char-color" style="background:#34d399"></span>系统幽灵</div>
+        <div class="char-en">Ghost</div>
+        <div class="char-desc">Meta 叙事元素，引导用户操作</div>
+      </div>
+    </div>
+  </div>
+</section>
+
 <!-- ═══════════════ EDITOR DETAIL ═══════════════ -->
 <section class="editor-detail" id="editor">
   <div class="section-label reveal">Editor</div>
-  <h2 class="section-title reveal">
-    六种镜头卡<span class="italic">覆盖全部叙事场景</span>
-  </h2>
-  <p class="section-desc reveal">
-    每张镜头卡编译为背景节点、角色节点和文本节点，系统自动生成连线。选项卡额外生成 choice-N 出边连接到分支场景。
-  </p>
-
+  <h2 class="section-title reveal">六种镜头卡<span class="italic">覆盖全部叙事场景</span></h2>
+  <p class="section-desc reveal">每张镜头卡编译为背景节点、角色节点和文本节点，系统自动生成连线。选项卡额外生成 choice-N 出边连接到分支场景。</p>
   <div class="lens-grid">
-    <div class="lens-card reveal">
-      <div class="lens-icon dialogue">💬</div>
-      <div class="lens-name">角色对话</div>
-      <div class="lens-desc">角色之间的台词交流，支持表情和站位设置</div>
-      <div class="lens-node">→ dialogue 节点</div>
-    </div>
-    <div class="lens-card reveal">
-      <div class="lens-icon narration">📖</div>
-      <div class="lens-name">旁白</div>
-      <div class="lens-desc">场景描述、时间流逝、环境变化等叙述文字</div>
-      <div class="lens-node">→ subtitle 节点</div>
-    </div>
-    <div class="lens-card reveal">
-      <div class="lens-icon thought">💭</div>
-      <div class="lens-name">心理描写</div>
-      <div class="lens-desc">角色内心独白，保持角色身份但不显示立绘</div>
-      <div class="lens-node">→ dialogue 节点 (role 保持)</div>
-    </div>
-    <div class="lens-card reveal">
-      <div class="lens-icon memory">🌟</div>
-      <div class="lens-name">回忆镜头</div>
-      <div class="lens-desc">闪回片段，过去事件的视觉化呈现</div>
-      <div class="lens-node">→ subtitle 节点</div>
-    </div>
-    <div class="lens-card reveal">
-      <div class="lens-icon system">⚙</div>
-      <div class="lens-name">系统提示</div>
-      <div class="lens-desc">系统幽灵发出的提示信息，Meta 叙事元素</div>
-      <div class="lens-node">→ subtitle 节点 (role=ghost)</div>
-    </div>
-    <div class="lens-card reveal">
-      <div class="lens-icon choice">🔀</div>
-      <div class="lens-name">选项分支</div>
-      <div class="lens-desc">多选项分支点，每个选项可连接到独立场景</div>
-      <div class="lens-node">→ choice 节点 (choice-N 出边)</div>
-    </div>
+    <div class="lens-card reveal"><div class="lens-icon dialogue">💬</div><div class="lens-name">角色对话</div><div class="lens-desc">角色之间的台词交流，支持表情和站位设置</div><div class="lens-node">→ dialogue 节点</div></div>
+    <div class="lens-card reveal"><div class="lens-icon narration">📖</div><div class="lens-name">旁白</div><div class="lens-desc">场景描述、时间流逝、环境变化等叙述文字</div><div class="lens-node">→ subtitle 节点</div></div>
+    <div class="lens-card reveal"><div class="lens-icon thought">💭</div><div class="lens-name">心理描写</div><div class="lens-desc">角色内心独白，保持角色身份但不显示立绘</div><div class="lens-node">→ dialogue 节点 (role 保持)</div></div>
+    <div class="lens-card reveal"><div class="lens-icon memory">🌟</div><div class="lens-name">回忆镜头</div><div class="lens-desc">闪回片段，过去事件的视觉化呈现</div><div class="lens-node">→ subtitle 节点</div></div>
+    <div class="lens-card reveal"><div class="lens-icon system">⚙</div><div class="lens-name">系统提示</div><div class="lens-desc">系统幽灵发出的提示信息，Meta 叙事元素</div><div class="lens-node">→ subtitle 节点 (role=ghost)</div></div>
+    <div class="lens-card reveal"><div class="lens-icon choice">🔀</div><div class="lens-name">选项分支</div><div class="lens-desc">多选项分支点，每个选项可连接到独立场景</div><div class="lens-node">→ choice 节点 (choice-N 出边)</div></div>
   </div>
 </section>
 
 <!-- ═══════════════ WORKFLOW ═══════════════ -->
 <section class="workflow" id="workflow">
   <div class="section-label reveal">Workflow</div>
-  <h2 class="section-title reveal">
-    从写作到播放<span class="italic">的完整链路</span>
-  </h2>
-  <p class="section-desc reveal">
-    用户的写作方式直接映射为运行时节点图，系统自动完成转换。
-  </p>
-
+  <h2 class="section-title reveal">从写作到播放<span class="italic">的完整链路</span></h2>
+  <p class="section-desc reveal">用户的写作方式直接映射为运行时节点图，系统自动完成转换。</p>
   <div class="workflow-chain">
-    <div class="workflow-step reveal">
-      <div class="workflow-num">01</div>
-      <div class="workflow-content">
-        <h4>用户创建镜头卡</h4>
-        <p>填写背景、选择角色、编写台词——像写小说一样</p>
-        <div class="workflow-arrow">background → character → dialogue</div>
-      </div>
-    </div>
-    <div class="workflow-step reveal">
-      <div class="workflow-num">02</div>
-      <div class="workflow-content">
-        <h4>系统自动生成节点和边</h4>
-        <p>createSceneNodes 创建节点，chainEdges 连接节点，normalEdge 连接场景</p>
-        <div class="workflow-arrow">nodes[] + edges[] → 节点图</div>
-      </div>
-    </div>
-    <div class="workflow-step reveal">
-      <div class="workflow-num">03</div>
-      <div class="workflow-content">
-        <h4>转换器 DFS 遍历生成 RuntimeStory</h4>
-        <p>convertFlowToRuntime 从起始节点深度优先遍历，追踪角色状态和背景</p>
-        <div class="workflow-arrow">nodes + edges → RuntimeStory.scenes[]</div>
-      </div>
-    </div>
-    <div class="workflow-step reveal">
-      <div class="workflow-num">04</div>
-      <div class="workflow-content">
-        <h4>运行时引擎驱动播放器</h4>
-        <p>createRuntimeEngine 管理场景推进、分支选择和事件触发</p>
-        <div class="workflow-arrow">next() → choose() → emit()</div>
-      </div>
-    </div>
-    <div class="workflow-step reveal">
-      <div class="workflow-num">05</div>
-      <div class="workflow-content">
-        <h4>播放器渲染视觉效果</h4>
-        <p>打字机效果、角色立绘、选项渲染、Web Audio 音效</p>
-        <div class="workflow-arrow">VisualNovelPlayer → 浏览器</div>
-      </div>
-    </div>
+    <div class="workflow-step reveal"><div class="workflow-num">01</div><div class="workflow-content"><h4>用户创建镜头卡</h4><p>填写背景、选择角色、编写台词——像写小说一样</p><div class="workflow-arrow">background → character → dialogue</div></div></div>
+    <div class="workflow-step reveal"><div class="workflow-num">02</div><div class="workflow-content"><h4>系统自动生成节点和边</h4><p>createSceneNodes 创建节点，chainEdges 连接节点，normalEdge 连接场景</p><div class="workflow-arrow">nodes[] + edges[] → 节点图</div></div></div>
+    <div class="workflow-step reveal"><div class="workflow-num">03</div><div class="workflow-content"><h4>转换器 DFS 遍历生成 RuntimeStory</h4><p>convertFlowToRuntime 从起始节点深度优先遍历，追踪角色状态和背景</p><div class="workflow-arrow">nodes + edges → RuntimeStory.scenes[]</div></div></div>
+    <div class="workflow-step reveal"><div class="workflow-num">04</div><div class="workflow-content"><h4>运行时引擎驱动播放器</h4><p>createRuntimeEngine 管理场景推进、分支选择和事件触发</p><div class="workflow-arrow">next() → choose() → emit()</div></div></div>
+    <div class="workflow-step reveal"><div class="workflow-num">05</div><div class="workflow-content"><h4>播放器渲染视觉效果</h4><p>打字机效果、角色立绘、选项渲染、Web Audio 音效</p><div class="workflow-arrow">VisualNovelPlayer → 浏览器</div></div></div>
   </div>
 </section>
 
 <!-- ═══════════════ TECH STACK ═══════════════ -->
 <section class="tech" id="tech">
   <div class="section-label reveal">Tech Stack</div>
-  <h2 class="section-title reveal">
-    现代 Web 全栈<span class="italic">技术架构</span>
-  </h2>
-  <p class="section-desc reveal">
-    React 18 + TypeScript + Vite 前端，Express + Prisma + SQLite 后端，集成多家 LLM 供应商。
-  </p>
-
+  <h2 class="section-title reveal">现代 Web 全栈<span class="italic">技术架构</span></h2>
+  <p class="section-desc reveal">React 18 + TypeScript + Vite 前端，Express + Prisma + SQLite 后端，集成多家 LLM 供应商。</p>
   <div class="tech-grid">
-    <div class="tech-card reveal">
-      <h4>前端</h4>
-      <div class="tech-list">
-        <span class="tech-tag">React 18</span>
-        <span class="tech-tag">TypeScript 5</span>
-        <span class="tech-tag">Vite 5</span>
-        <span class="tech-tag">Tailwind CSS 3</span>
-        <span class="tech-tag">@xyflow/react 12</span>
-        <span class="tech-tag">Zustand 4</span>
-        <span class="tech-tag">framer-motion 11</span>
-        <span class="tech-tag">lucide-react</span>
-      </div>
-    </div>
-    <div class="tech-card reveal">
-      <h4>后端</h4>
-      <div class="tech-list">
-        <span class="tech-tag">Express 4</span>
-        <span class="tech-tag">Prisma 5</span>
-        <span class="tech-tag">SQLite</span>
-        <span class="tech-tag">JWT + bcryptjs</span>
-        <span class="tech-tag">multer</span>
-        <span class="tech-tag">tsx</span>
-      </div>
-    </div>
-    <div class="tech-card reveal">
-      <h4>AI 集成</h4>
-      <div class="tech-list">
-        <span class="tech-tag">智谱 GLM</span>
-        <span class="tech-tag">DeepSeek</span>
-        <span class="tech-tag">Kimi</span>
-        <span class="tech-tag">OpenAI 兼容</span>
-        <span class="tech-tag">BaseProvider 基类</span>
-      </div>
-    </div>
-    <div class="tech-card reveal">
-      <h4>工程化</h4>
-      <div class="tech-list">
-        <span class="tech-tag">pnpm workspace</span>
-        <span class="tech-tag">Vite manualChunks</span>
-        <span class="tech-tag">strict TypeScript</span>
-        <span class="tech-tag">FeedbackProvider</span>
-        <span class="tech-tag">类型安全访问器</span>
-      </div>
-    </div>
+    <div class="tech-card reveal"><h4>前端</h4><div class="tech-list"><span class="tech-tag">React 18</span><span class="tech-tag">TypeScript 5</span><span class="tech-tag">Vite 5</span><span class="tech-tag">Tailwind CSS 3</span><span class="tech-tag">@xyflow/react 12</span><span class="tech-tag">Zustand 4</span><span class="tech-tag">framer-motion 11</span><span class="tech-tag">lucide-react</span></div></div>
+    <div class="tech-card reveal"><h4>后端</h4><div class="tech-list"><span class="tech-tag">Express 4</span><span class="tech-tag">Prisma 5</span><span class="tech-tag">SQLite</span><span class="tech-tag">JWT + bcryptjs</span><span class="tech-tag">multer</span><span class="tech-tag">tsx</span></div></div>
+    <div class="tech-card reveal"><h4>AI 集成</h4><div class="tech-list"><span class="tech-tag">智谱 GLM</span><span class="tech-tag">DeepSeek</span><span class="tech-tag">Kimi</span><span class="tech-tag">OpenAI 兼容</span><span class="tech-tag">BaseProvider 基类</span></div></div>
+    <div class="tech-card reveal"><h4>工程化</h4><div class="tech-list"><span class="tech-tag">pnpm workspace</span><span class="tech-tag">Vite manualChunks</span><span class="tech-tag">strict TypeScript</span><span class="tech-tag">FeedbackProvider</span><span class="tech-tag">类型安全访问器</span></div></div>
   </div>
 </section>
 
 <!-- ═══════════════ QUICK START ═══════════════ -->
 <section class="start" id="start">
   <div class="section-label reveal">Quick Start</div>
-  <h2 class="section-title reveal">
-    三步<span class="italic">启动项目</span>
-  </h2>
-  <p class="section-desc reveal">
-    Node.js 20+ 环境，pnpm 或 npm 均可。默认测试账号 demo / demo123。
-  </p>
-
+  <h2 class="section-title reveal">三步<span class="italic">启动项目</span></h2>
+  <p class="section-desc reveal">Node.js 20+ 环境，pnpm 或 npm 均可。默认测试账号 demo / demo123。</p>
   <div class="start-steps">
-    <div class="start-step reveal">
-      <div class="step-num">01</div>
-      <div class="step-content">
-        <h4>安装依赖</h4>
-        <p>克隆仓库后安装前后端依赖</p>
-        <code>git clone https://github.com/tl66666/DreamChord.git
-cd DreamChord && pnpm install</code>
-      </div>
-    </div>
-    <div class="start-step reveal">
-      <div class="step-num">02</div>
-      <div class="step-content">
-        <h4>初始化数据库</h4>
-        <p>配置 .env，运行 Prisma 迁移和种子</p>
-        <code>cd apps/server
+    <div class="start-step reveal"><div class="step-num">01</div><div class="step-content"><h4>安装依赖</h4><p>克隆仓库后安装前后端依赖</p><code>git clone https://github.com/tl66666/DreamChord.git
+cd DreamChord && pnpm install</code></div></div>
+    <div class="start-step reveal"><div class="step-num">02</div><div class="step-content"><h4>初始化数据库</h4><p>配置 .env，运行 Prisma 迁移和种子</p><code>cd apps/server
 cp .env.example .env
-npx prisma migrate dev && npx prisma db seed</code>
-      </div>
-    </div>
-    <div class="start-step reveal">
-      <div class="step-num">03</div>
-      <div class="step-content">
-        <h4>启动开发服务器</h4>
-        <p>双击 start-dreamchord.bat 或手动启动前后端</p>
-        <code>cd apps/web && npm run dev
-cd apps/server && npm run dev</code>
-      </div>
-    </div>
+npx prisma migrate dev && npx prisma db seed</code></div></div>
+    <div class="start-step reveal"><div class="step-num">03</div><div class="step-content"><h4>启动开发服务器</h4><p>双击 start-dreamchord.bat 或手动启动前后端</p><code>cd apps/web && npm run dev
+cd apps/server && npm run dev</code></div></div>
   </div>
 </section>
 
@@ -1531,26 +720,20 @@ cd apps/server && npm run dev</code>
 <footer class="footer">
   <div class="footer-bg"></div>
   <div class="footer-content">
-    <h2 class="footer-title">
-      一起把下一个故事<span class="italic">变成作品</span>
-    </h2>
-    <p class="section-desc" style="margin: 0 auto;">
-      DreamChord — 像写小说一样创作，像玩游戏一样阅读。
-    </p>
+    <h2 class="footer-title">一起把下一个故事<span class="italic">变成作品</span></h2>
+    <p class="section-desc" style="margin: 0 auto;">DreamChord — 像写小说一样创作，像玩游戏一样阅读。</p>
     <div class="footer-links">
       <a href="https://github.com/tl66666/DreamChord" target="_blank">GitHub 仓库</a>
       <a href="https://github.com/tl66666/DreamChord/blob/main/README.md" target="_blank">项目文档</a>
       <a href="https://github.com/tl66666/DreamChord/blob/main/CLAUDE.md" target="_blank">开发指南</a>
       <a href="https://github.com/tl66666/DreamChord/blob/main/docs/AI_HANDOFF.md" target="_blank">AI 交接</a>
     </div>
-    <p class="footer-copy">
-      MIT License · 2026 唐乐 (tl66666) · Built with React + TypeScript + Vite
-    </p>
+    <p class="footer-copy">MIT License · 2026 唐乐 (tl66666) · Built with React + TypeScript + Vite</p>
   </div>
 </footer>
 
 <script>
-// ═══ Scroll Reveal Animations ═══
+// ═══ Scroll Reveal ═══
 const observer = new IntersectionObserver((entries) => {
   entries.forEach((entry, i) => {
     if (entry.isIntersecting) {
@@ -1560,22 +743,19 @@ const observer = new IntersectionObserver((entries) => {
     }
   });
 }, { threshold: 0.1, rootMargin: '0px 0px -50px 0px' });
-
 document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
 
-// ═══ Hero Title Pull-Up Animation ═══
+// ═══ Hero Title Animation ═══
 function animateHeroTitle() {
   const title = document.getElementById('heroTitle');
   if (!title) return;
-  const children = title.children;
-  for (let i = 0; i < children.length; i++) {
-    const child = children[i];
-    child.classList.add('word-reveal');
-    setTimeout(() => child.classList.add('visible'), 200 + i * 200);
-  }
+  const lines = title.querySelectorAll('.word-reveal');
+  lines.forEach((line, i) => {
+    setTimeout(() => line.classList.add('visible'), 300 + i * 250);
+  });
 }
 
-// ═══ Scroll-Linked Character Reveal for About Text ═══
+// ═══ Scroll-Linked Character Reveal ═══
 function setupScrollReveal() {
   const aboutText = document.getElementById('aboutText');
   if (!aboutText) return;
@@ -1583,35 +763,27 @@ function setupScrollReveal() {
   aboutText.innerHTML = text.split('').map(ch =>
     ch === ' ' ? ' ' : `<span class="char-reveal">${ch}</span>`
   ).join('');
-
   const chars = aboutText.querySelectorAll('.char-reveal');
   const total = chars.length;
-
   window.addEventListener('scroll', () => {
     const rect = aboutText.getBoundingClientRect();
     const windowHeight = window.innerHeight;
     const start = windowHeight * 0.8;
     const end = windowHeight * 0.2;
-
     const progress = Math.max(0, Math.min(1, (start - rect.top) / (start - end)));
-
     chars.forEach((char, i) => {
       const charProgress = i / total;
       const range = [charProgress - 0.1, charProgress + 0.05];
-      const charOpacity = Math.max(0.15, Math.min(1,
-        (progress - range[0]) / (range[1] - range[0])
-      ));
+      const charOpacity = Math.max(0.15, Math.min(1, (progress - range[0]) / (range[1] - range[0])));
       char.style.opacity = charOpacity;
     });
   }, { passive: true });
 }
 
-// Initialize on load
 window.addEventListener('DOMContentLoaded', () => {
   animateHeroTitle();
   setupScrollReveal();
 });
 </script>
-
 </body>
 </html>
