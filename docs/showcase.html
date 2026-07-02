@@ -4,33 +4,36 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>梦弦 DreamChord — 视觉小说创作平台</title>
-<meta name="description" content="像写小说一样创作，像玩游戏一样阅读。DreamChord 是一个运行在浏览器里的视觉小说创作平台。">
+<meta name="description" content="像写小说一样创作，像玩游戏一样阅读。DreamChord 是一个运行在浏览器里的视觉小说创作平台——用镜头卡组织剧情，自动生成分支节点，内置 AI 辅助写作。">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&family=Noto+Serif+SC:wght@400;700;900&family=Instrument+Serif:ital@1&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 /* ═══════════════════════════════════════════════
-   梦弦 DreamChord — Showcase Page (rev 4)
-   Aesthetic: "Lucid Dream" — deep indigo, cinematic, dreamy
+   梦弦 DreamChord — Showcase Page (rev 5)
+   Theme: "Dream Light" — bright, airy, lavender
    ═══════════════════════════════════════════════ */
 
 :root {
-  --bg: #0d0b16;
-  --bg-2: #141121;
-  --bg-card: #16131f;
-  --bg-card-2: #1c1828;
-  --bg-editor: #1e1e2e;
-  --accent: #a78bfa;
-  --accent-2: #f0abfc;
-  --accent-3: #67e8f9;
-  --accent-warm: #fbbf24;
-  --accent-green: #34d399;
-  --accent-pink: #f472b6;
-  --text: #e1e0cc;
-  --text-dim: #9ca3af;
-  --text-muted: #6b7280;
-  --border: rgba(167, 139, 250, 0.15);
-  --border-2: rgba(167, 139, 250, 0.25);
+  --bg: #f8f6fd;
+  --bg-2: #f0ebfa;
+  --bg-card: #ffffff;
+  --bg-card-2: #faf8fd;
+  --bg-dark: #1e1b2e;
+  --accent: #7c3aed;
+  --accent-light: #a78bfa;
+  --accent-2: #c026d3;
+  --accent-3: #0891b2;
+  --accent-warm: #d97706;
+  --accent-green: #059669;
+  --accent-pink: #db2777;
+  --text: #1e1b2e;
+  --text-dim: #4b5563;
+  --text-muted: #9ca3af;
+  --border: rgba(124, 58, 237, 0.12);
+  --border-2: rgba(124, 58, 237, 0.20);
+  --shadow: 0 4px 24px rgba(124, 58, 237, 0.06);
+  --shadow-lg: 0 12px 48px rgba(124, 58, 237, 0.10);
   --ease: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
@@ -39,31 +42,20 @@ html { scroll-behavior: smooth; }
 body {
   font-family: 'Noto Sans SC', -apple-system, BlinkMacSystemFont, sans-serif;
   background:
-    radial-gradient(ellipse 80% 50% at 50% 0%, rgba(80, 60, 140, 0.18) 0%, transparent 55%),
-    radial-gradient(ellipse 50% 35% at 85% 65%, rgba(120, 50, 160, 0.10) 0%, transparent 50%),
-    radial-gradient(ellipse 50% 35% at 15% 40%, rgba(60, 80, 140, 0.08) 0%, transparent 50%),
-    #0d0b16;
+    radial-gradient(ellipse 60% 40% at 50% 0%, rgba(167, 139, 250, 0.15) 0%, transparent 50%),
+    radial-gradient(ellipse 40% 30% at 90% 60%, rgba(192, 38, 211, 0.06) 0%, transparent 50%),
+    radial-gradient(ellipse 40% 30% at 10% 30%, rgba(8, 145, 178, 0.04) 0%, transparent 50%),
+    #f8f6fd;
   background-attachment: fixed;
   color: var(--text);
   overflow-x: hidden;
   line-height: 1.6;
 }
 
-/* ── Noise Texture ── */
-.noise-overlay {
-  position: absolute; inset: 0; pointer-events: none;
-  opacity: 0.4; mix-blend-mode: overlay;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.6'/%3E%3C/svg%3E");
-}
-.bg-noise {
-  position: absolute; inset: 0; pointer-events: none; opacity: 0.10;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n2'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n2)' opacity='0.6'/%3E%3C/svg%3E");
-}
-
 /* ── Scroll Animations ── */
 .reveal { opacity: 0; transform: translateY(30px); transition: opacity 0.8s var(--ease), transform 0.8s var(--ease); }
 .reveal.visible { opacity: 1; transform: translateY(0); }
-.word-reveal { display: inline-block; opacity: 0; transform: translateY(20px); transition: opacity 0.6s var(--ease), transform 0.6s var(--ease); }
+.word-reveal { display: inline-block; opacity: 0; transform: translateY(30px); transition: opacity 0.8s var(--ease), transform 0.8s var(--ease); }
 .word-reveal.visible { opacity: 1; transform: translateY(0); }
 
 /* ═══ HERO ═══ */
@@ -74,147 +66,160 @@ body {
 .hero-inner {
   position: relative; width: 100%; height: calc(100vh - 2rem);
   border-radius: 1.5rem; overflow: hidden;
-  display: flex; align-items: flex-end;
+  display: flex; align-items: center; justify-content: center;
 }
 .hero-bg { position: absolute; inset: 0; }
 .hero-bg video { width: 100%; height: 100%; object-fit: cover; }
 .hero-gradient {
   position: absolute; inset: 0;
   background:
-    radial-gradient(ellipse 60% 40% at 50% 30%, rgba(80, 60, 140, 0.12) 0%, transparent 60%),
-    linear-gradient(180deg, rgba(13,11,22,0.4) 0%, transparent 20%, transparent 45%, rgba(13,11,22,0.92) 100%);
+    radial-gradient(ellipse 70% 50% at 50% 50%, rgba(248, 246, 253, 0.3) 0%, transparent 60%),
+    linear-gradient(180deg, rgba(248, 246, 253, 0.55) 0%, rgba(248, 246, 253, 0.2) 30%, rgba(248, 246, 253, 0.15) 55%, rgba(248, 246, 253, 0.85) 100%);
 }
 
 .hero-content {
   position: relative; z-index: 10; width: 100%;
-  padding: 2rem 2rem 3rem;
-  display: grid; grid-template-columns: 1fr; gap: 1.5rem;
-}
-@media (min-width: 768px) {
-  .hero-content { grid-template-columns: 1.5fr 1fr; padding: 2rem 3rem 3.5rem; }
+  text-align: center; padding: 2rem;
 }
 
+/* ── 超大标题 ── */
 .hero-title {
   font-family: 'Noto Serif SC', serif;
-  line-height: 0.9; letter-spacing: -0.03em;
-  color: var(--text);
-  text-shadow: 0 4px 50px rgba(167, 139, 250, 0.35);
+  line-height: 0.85; letter-spacing: -0.04em;
 }
 .hero-title .line-cn {
   display: block;
-  font-size: clamp(3rem, 14vw, 9rem);
+  font-size: clamp(5rem, 22vw, 16rem);
   font-weight: 900;
-  margin-bottom: 0.1em;
+  color: var(--text);
+  text-shadow: 0 8px 60px rgba(124, 58, 237, 0.15);
+  margin-bottom: 0.05em;
 }
 .hero-title .line-en {
   display: block;
   font-family: 'Instrument Serif', serif;
   font-style: italic; font-weight: 400;
-  font-size: clamp(1.5rem, 6vw, 4rem);
+  font-size: clamp(2rem, 9vw, 7rem);
   color: var(--accent);
-  letter-spacing: 0.02em;
+  letter-spacing: -0.01em;
+  text-shadow: 0 4px 30px rgba(124, 58, 237, 0.12);
 }
 .hero-title .asterisk {
-  font-size: 0.3em; vertical-align: super;
+  font-size: 0.25em; vertical-align: super;
   color: var(--accent-2); margin-left: 0.05em;
 }
 
-.hero-right { display: flex; flex-direction: column; gap: 1.25rem; align-self: end; }
 .hero-desc {
-  font-size: 0.875rem; color: rgba(225, 224, 204, 0.8);
-  line-height: 1.6; max-width: 380px;
+  font-size: clamp(0.85rem, 2vw, 1.15rem);
+  color: var(--text-dim);
+  line-height: 1.7; max-width: 560px; margin: 2rem auto 0;
 }
-@media (min-width: 768px) { .hero-desc { font-size: 1rem; } }
-
+.hero-cta-row { display: flex; justify-content: center; gap: 1rem; margin-top: 2rem; flex-wrap: wrap; }
 .hero-cta {
   display: inline-flex; align-items: center; gap: 0.75rem;
-  padding: 0.625rem 0.625rem 0.625rem 1.5rem;
-  background: var(--text); color: #000;
-  border-radius: 9999px; font-size: 0.875rem; font-weight: 500;
-  text-decoration: none; transition: gap 0.3s var(--ease); width: fit-content;
+  padding: 0.75rem 0.75rem 0.75rem 1.75rem;
+  background: var(--text); color: #fff;
+  border-radius: 9999px; font-size: 0.9rem; font-weight: 500;
+  text-decoration: none; transition: gap 0.3s var(--ease), transform 0.3s var(--ease); width: fit-content;
 }
-.hero-cta:hover { gap: 1rem; }
+.hero-cta:hover { gap: 1rem; transform: translateY(-2px); }
 .hero-cta-circle {
   display: flex; align-items: center; justify-content: center;
-  width: 2.25rem; height: 2.25rem; background: #000; border-radius: 9999px;
+  width: 2.25rem; height: 2.25rem; background: var(--accent); border-radius: 9999px;
   transition: transform 0.3s var(--ease);
 }
 .hero-cta:hover .hero-cta-circle { transform: scale(1.1); }
-.hero-cta-circle svg { width: 1rem; height: 1rem; color: var(--text); }
+.hero-cta-circle svg { width: 1rem; height: 1rem; color: #fff; }
+.hero-cta-secondary {
+  display: inline-flex; align-items: center; gap: 0.5rem;
+  padding: 0.75rem 1.75rem;
+  background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(8px);
+  color: var(--text); border: 1px solid var(--border-2);
+  border-radius: 9999px; font-size: 0.9rem; font-weight: 500;
+  text-decoration: none; transition: all 0.3s var(--ease); width: fit-content;
+}
+.hero-cta-secondary:hover { border-color: var(--accent); transform: translateY(-2px); box-shadow: var(--shadow); }
 
 /* Nav */
 .nav {
-  position: absolute; top: 1rem; left: 50%; transform: translateX(-50%);
-  z-index: 20; background: rgba(13, 11, 22, 0.65); backdrop-filter: blur(12px);
-  border-radius: 0 0 1rem 1rem; padding: 0.5rem 1.5rem;
+  position: absolute; top: 1.5rem; left: 50%; transform: translateX(-50%);
+  z-index: 20; background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(12px);
+  border-radius: 9999px; padding: 0.5rem 1.5rem;
   display: flex; gap: 1.5rem;
   border: 1px solid var(--border);
+  box-shadow: var(--shadow);
 }
-@media (min-width: 768px) { .nav { gap: 2.5rem; padding: 0.5rem 2rem; } }
-.nav a { font-size: 0.7rem; color: rgba(225, 224, 204, 0.8); text-decoration: none; transition: color 0.3s; }
-@media (min-width: 768px) { .nav a { font-size: 0.8rem; } }
-.nav a:hover { color: var(--text); }
+@media (min-width: 768px) { .nav { gap: 2.5rem; padding: 0.625rem 2rem; } }
+.nav a { font-size: 0.75rem; color: var(--text-dim); text-decoration: none; transition: color 0.3s; font-weight: 500; }
+@media (min-width: 768px) { .nav a { font-size: 0.85rem; } }
+.nav a:hover { color: var(--accent); }
 
 /* ═══ STATS ═══ */
 .stats { padding: 5rem 1.5rem 3rem; max-width: 1200px; margin: 0 auto; }
 .stats-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.5rem; }
 @media (min-width: 768px) { .stats-grid { grid-template-columns: repeat(4, 1fr); } }
 .stat-item {
-  text-align: center; padding: 1.5rem 1rem;
+  text-align: center; padding: 2rem 1rem;
   background: var(--bg-card); border-radius: 1rem; border: 1px solid var(--border);
-  transition: transform 0.4s var(--ease), border-color 0.4s;
+  box-shadow: var(--shadow);
+  transition: transform 0.4s var(--ease), box-shadow 0.4s;
 }
-.stat-item:hover { transform: translateY(-4px); border-color: rgba(167, 139, 250, 0.3); }
-.stat-num { font-family: 'Noto Serif SC', serif; font-size: 2.5rem; font-weight: 900; color: var(--accent); line-height: 1; }
-.stat-label { font-size: 0.75rem; color: var(--text-dim); margin-top: 0.5rem; }
+.stat-item:hover { transform: translateY(-6px); box-shadow: var(--shadow-lg); }
+.stat-num { font-family: 'Noto Serif SC', serif; font-size: 3rem; font-weight: 900; color: var(--accent); line-height: 1; }
+.stat-label { font-size: 0.8rem; color: var(--text-dim); margin-top: 0.5rem; font-weight: 500; }
 
 /* ═══ SECTION COMMON ═══ */
 .section { padding: 6rem 1.5rem; max-width: 1200px; margin: 0 auto; position: relative; }
-.section-label { font-size: 0.7rem; color: var(--accent); text-transform: uppercase; letter-spacing: 0.2em; margin-bottom: 1rem; }
+.section-label { font-size: 0.75rem; color: var(--accent); text-transform: uppercase; letter-spacing: 0.2em; margin-bottom: 1rem; font-weight: 600; }
 .section-title {
-  font-family: 'Noto Serif SC', serif; font-size: clamp(1.75rem, 5vw, 3.5rem);
+  font-family: 'Noto Serif SC', serif; font-size: clamp(2rem, 5vw, 3.5rem);
   font-weight: 700; line-height: 1.1; margin-bottom: 1.5rem; letter-spacing: -0.02em;
 }
 .section-title .italic { font-family: 'Instrument Serif', serif; font-style: italic; font-weight: 400; color: var(--accent); }
-.section-desc { font-size: 0.9rem; color: var(--text-dim); max-width: 600px; line-height: 1.7; }
+.section-desc { font-size: 1rem; color: var(--text-dim); max-width: 680px; line-height: 1.7; }
 
 /* ═══ ABOUT ═══ */
 .about { padding: 6rem 1.5rem; position: relative; overflow: hidden;
-  background: linear-gradient(180deg, #0d0b16 0%, #110e1c 50%, #0d0b16 100%);
+  background: linear-gradient(180deg, #f8f6fd 0%, #f0ebfa 50%, #f8f6fd 100%);
 }
 .about-bg-img {
-  position: absolute; inset: 0; opacity: 0.18;
+  position: absolute; inset: 0; opacity: 0.08;
   background: url('../apps/web/public/assets/backgrounds/bg-starry.png') center/cover no-repeat;
 }
 .about-glow {
   position: absolute; top: 20%; left: 50%; transform: translateX(-50%);
   width: 600px; height: 400px; pointer-events: none;
-  background: radial-gradient(ellipse at center, rgba(167, 139, 250, 0.08) 0%, transparent 70%);
+  background: radial-gradient(ellipse at center, rgba(124, 58, 237, 0.06) 0%, transparent 70%);
 }
 .about-inner { max-width: 900px; margin: 0 auto; text-align: center; position: relative; z-index: 1; }
 .about-card {
-  background: rgba(22, 19, 31, 0.92); backdrop-filter: blur(10px);
+  background: rgba(255, 255, 255, 0.92); backdrop-filter: blur(10px);
   border-radius: 1.5rem; padding: 3rem 2rem; border: 1px solid var(--border);
+  box-shadow: var(--shadow-lg);
 }
 @media (min-width: 768px) { .about-card { padding: 4rem 3rem; } }
-.about-heading { font-family: 'Noto Serif SC', serif; font-size: clamp(1.5rem, 4vw, 2.5rem); line-height: 1.3; margin-bottom: 2rem; font-weight: 400; }
+.about-heading { font-family: 'Noto Serif SC', serif; font-size: clamp(1.5rem, 4vw, 2.5rem); line-height: 1.3; margin-bottom: 2rem; font-weight: 400; color: var(--text); }
 .about-heading .italic { font-family: 'Instrument Serif', serif; font-style: italic; color: var(--accent); }
-.about-text { font-size: 0.875rem; color: var(--text); line-height: 1.8; text-align: left; }
-@media (min-width: 768px) { .about-text { font-size: 1rem; } }
+.about-text { font-size: 0.95rem; color: var(--text-dim); line-height: 1.8; text-align: left; }
+@media (min-width: 768px) { .about-text { font-size: 1.05rem; } }
 
 .pain-table { margin-top: 3rem; display: grid; gap: 1rem; text-align: left; }
 .pain-row {
-  display: grid; grid-template-columns: 1fr; gap: 0.5rem;
-  padding: 1.25rem; background: var(--bg-card); border-radius: 0.75rem; border-left: 3px solid var(--accent);
+  display: grid; grid-template-columns: 1fr; gap: 0.75rem;
+  padding: 1.5rem; background: var(--bg-card-2); border-radius: 0.75rem; border-left: 4px solid var(--accent);
+  border: 1px solid var(--border); border-left: 4px solid var(--accent);
+  transition: transform 0.3s var(--ease), box-shadow 0.3s;
 }
-@media (min-width: 768px) { .pain-row { grid-template-columns: 1fr 2fr; align-items: center; gap: 1.5rem; } }
-.pain-point { font-size: 0.8rem; color: var(--accent-2); font-weight: 500; }
-.pain-solution { font-size: 0.8rem; color: var(--text-dim); line-height: 1.5; }
+.pain-row:hover { transform: translateX(4px); box-shadow: var(--shadow); }
+@media (min-width: 768px) { .pain-row { grid-template-columns: 200px 1fr; align-items: start; gap: 1.5rem; } }
+.pain-point { font-size: 0.85rem; color: var(--accent); font-weight: 700; display: flex; align-items: center; gap: 0.5rem; }
+.pain-point::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: var(--accent); flex-shrink: 0; }
+.pain-solution { font-size: 0.85rem; color: var(--text-dim); line-height: 1.6; }
+.pain-solution strong { color: var(--text); font-weight: 600; }
 
-/* ═══ SHOWCASE (产品界面 — 真实截图) ═══ */
+/* ═══ SHOWCASE ═══ */
 .showcase { padding: 6rem 1.5rem; max-width: 1200px; margin: 0 auto; position: relative; }
 .showcase-blocks { margin-top: 3rem; display: flex; flex-direction: column; gap: 5rem; }
-
 .showcase-block {
   display: grid; grid-template-columns: 1fr; gap: 2rem; align-items: center;
 }
@@ -222,38 +227,29 @@ body {
   .showcase-block { grid-template-columns: 1.1fr 0.9fr; gap: 3.5rem; }
   .showcase-block.reverse .showcase-img-wrap { order: 2; }
 }
-
-/* Browser frame for screenshots */
 .showcase-img-wrap {
   position: relative; border-radius: 0.75rem; overflow: hidden;
   border: 1px solid var(--border-2);
-  box-shadow: 0 24px 80px rgba(0,0,0,0.5), 0 0 0 1px rgba(167,139,250,0.06);
+  box-shadow: var(--shadow-lg);
   transition: transform 0.5s var(--ease), box-shadow 0.5s;
 }
-.showcase-img-wrap:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 30px 90px rgba(0,0,0,0.55), 0 0 0 1px rgba(167,139,250,0.12);
-}
+.showcase-img-wrap:hover { transform: translateY(-6px); box-shadow: 0 20px 60px rgba(124, 58, 237, 0.15); }
 .showcase-img-bar {
   display: flex; align-items: center; gap: 0.4rem;
-  padding: 0.5rem 0.75rem; background: #1a1726; border-bottom: 1px solid var(--border);
+  padding: 0.5rem 0.75rem; background: #f0ebfa; border-bottom: 1px solid var(--border);
 }
 .showcase-img-dot { width: 8px; height: 8px; border-radius: 50%; }
 .showcase-img-dot.r { background: #ff5f57; }
 .showcase-img-dot.y { background: #febc2e; }
 .showcase-img-dot.g { background: #28c840; }
-.showcase-img-url {
-  flex: 1; text-align: center; font-size: 0.6rem; color: var(--text-muted);
-  font-family: 'JetBrains Mono', monospace;
-}
+.showcase-img-url { flex: 1; text-align: center; font-size: 0.6rem; color: var(--text-muted); font-family: 'JetBrains Mono', monospace; }
 .showcase-img-wrap img { width: 100%; display: block; }
-
 .showcase-text { padding: 0 0.5rem; }
-.showcase-num { font-family: 'Instrument Serif', serif; font-style: italic; font-size: 0.8rem; color: var(--accent); }
-.showcase-title { font-family: 'Noto Serif SC', serif; font-size: clamp(1.25rem, 3vw, 1.75rem); font-weight: 700; margin: 0.5rem 0 1rem; color: var(--text); }
-.showcase-desc { font-size: 0.85rem; color: var(--text-dim); line-height: 1.7; margin-bottom: 1.5rem; }
-.showcase-features { list-style: none; display: flex; flex-direction: column; gap: 0.5rem; }
-.showcase-features li { font-size: 0.75rem; color: var(--text-dim); display: flex; align-items: flex-start; gap: 0.5rem; }
+.showcase-num { font-family: 'Instrument Serif', serif; font-style: italic; font-size: 0.85rem; color: var(--accent); }
+.showcase-title { font-family: 'Noto Serif SC', serif; font-size: clamp(1.3rem, 3vw, 1.85rem); font-weight: 700; margin: 0.5rem 0 1rem; color: var(--text); }
+.showcase-desc { font-size: 0.9rem; color: var(--text-dim); line-height: 1.7; margin-bottom: 1.5rem; }
+.showcase-features { list-style: none; display: flex; flex-direction: column; gap: 0.6rem; }
+.showcase-features li { font-size: 0.8rem; color: var(--text-dim); display: flex; align-items: flex-start; gap: 0.5rem; line-height: 1.5; }
 .showcase-features li::before { content: '✓'; color: var(--accent); font-weight: 700; flex-shrink: 0; }
 
 /* ═══ CHARACTERS ═══ */
@@ -262,18 +258,19 @@ body {
 @media (min-width: 768px) { .char-grid { grid-template-columns: repeat(5, 1fr); } }
 .char-card {
   background: var(--bg-card); border: 1px solid var(--border); border-radius: 1rem;
-  overflow: hidden; transition: transform 0.5s var(--ease), border-color 0.4s; text-align: center;
+  overflow: hidden; transition: transform 0.5s var(--ease), box-shadow 0.4s; text-align: center;
+  box-shadow: var(--shadow);
 }
-.char-card:hover { transform: translateY(-6px); border-color: rgba(167, 139, 250, 0.35); }
+.char-card:hover { transform: translateY(-8px); box-shadow: var(--shadow-lg); }
 .char-sprite {
   height: 200px; display: flex; align-items: flex-end; justify-content: center;
-  background: linear-gradient(180deg, #1a1726 0%, #1e1a30 100%); position: relative; overflow: hidden;
+  background: linear-gradient(180deg, #f0ebfa 0%, #e8e0f8 100%); position: relative; overflow: hidden;
 }
 .char-sprite::before {
   content: ''; position: absolute; bottom: 0; left: 50%; transform: translateX(-50%);
-  width: 60%; height: 30%; background: radial-gradient(ellipse at center, rgba(167, 139, 250, 0.15) 0%, transparent 70%);
+  width: 60%; height: 30%; background: radial-gradient(ellipse at center, rgba(124, 58, 237, 0.1) 0%, transparent 70%);
 }
-.char-sprite img { height: 90%; object-fit: contain; position: relative; z-index: 1; filter: drop-shadow(0 4px 12px rgba(0,0,0,0.4)); }
+.char-sprite img { height: 90%; object-fit: contain; position: relative; z-index: 1; filter: drop-shadow(0 4px 12px rgba(124, 58, 237, 0.1)); }
 .char-info { padding: 1rem; }
 .char-name { font-family: 'Noto Serif SC', serif; font-size: 1rem; font-weight: 700; color: var(--text); }
 .char-en { font-size: 0.65rem; color: var(--text-muted); font-family: 'Instrument Serif', serif; font-style: italic; margin-top: 0.15rem; }
@@ -287,32 +284,33 @@ body {
 .scene-card {
   position: relative; border-radius: 1rem; overflow: hidden;
   border: 1px solid var(--border); aspect-ratio: 16/10;
-  transition: transform 0.5s var(--ease), border-color 0.4s;
+  transition: transform 0.5s var(--ease), box-shadow 0.4s;
+  box-shadow: var(--shadow);
 }
-.scene-card:hover { transform: translateY(-6px); border-color: rgba(167, 139, 250, 0.35); }
+.scene-card:hover { transform: translateY(-8px); box-shadow: var(--shadow-lg); }
 .scene-bg { position: absolute; inset: 0; background-size: cover; background-position: center; }
 .scene-overlay {
   position: absolute; inset: 0;
-  background: linear-gradient(180deg, rgba(13,11,22,0.15) 0%, transparent 25%, transparent 45%, rgba(13,11,22,0.92) 100%);
+  background: linear-gradient(180deg, rgba(30, 27, 46, 0.1) 0%, transparent 25%, transparent 45%, rgba(30, 27, 46, 0.88) 100%);
 }
 .scene-char { position: absolute; bottom: 22%; left: 50%; transform: translateX(-50%); height: 58%; z-index: 1; }
-.scene-char img { height: 100%; object-fit: contain; filter: drop-shadow(0 4px 20px rgba(0,0,0,0.5)); }
+.scene-char img { height: 100%; object-fit: contain; filter: drop-shadow(0 4px 20px rgba(0,0,0,0.4)); }
 .scene-textbox {
   position: absolute; bottom: 0; left: 0; right: 0; z-index: 2;
   padding: 0.75rem 1rem;
-  background: linear-gradient(180deg, rgba(0,0,0,0.72) 0%, rgba(0,0,0,0.94) 100%);
-  border-top: 1px solid rgba(167, 139, 250, 0.2);
+  background: linear-gradient(180deg, rgba(30, 27, 46, 0.75) 0%, rgba(30, 27, 46, 0.95) 100%);
+  border-top: 1px solid rgba(167, 139, 250, 0.25);
 }
-.scene-tag { font-size: 0.6rem; color: var(--accent); font-weight: 500; margin-bottom: 0.25rem; text-transform: uppercase; letter-spacing: 0.12em; }
-.scene-name { font-size: 0.75rem; color: var(--accent); font-weight: 500; margin-bottom: 0.2rem; }
-.scene-text { font-size: 0.7rem; color: var(--text); line-height: 1.5; }
+.scene-tag { font-size: 0.6rem; color: var(--accent-light); font-weight: 500; margin-bottom: 0.25rem; text-transform: uppercase; letter-spacing: 0.12em; }
+.scene-name { font-size: 0.75rem; color: var(--accent-light); font-weight: 500; margin-bottom: 0.2rem; }
+.scene-text { font-size: 0.7rem; color: #e1e0cc; line-height: 1.5; }
 .scene-choices { display: flex; flex-direction: column; gap: 0.3rem; margin-top: 0.4rem; }
 .scene-choice {
   font-size: 0.65rem; padding: 0.35rem 0.6rem;
-  border: 1px solid rgba(167, 139, 250, 0.2); border-radius: 0.3rem;
-  color: var(--text); background: rgba(167, 139, 250, 0.05);
+  border: 1px solid rgba(167, 139, 250, 0.25); border-radius: 0.3rem;
+  color: #e1e0cc; background: rgba(167, 139, 250, 0.08);
 }
-.scene-choice:first-child { border-color: var(--accent); background: rgba(167, 139, 250, 0.12); }
+.scene-choice:first-child { border-color: var(--accent-light); background: rgba(167, 139, 250, 0.15); }
 
 /* ═══ EDITOR DETAIL ═══ */
 .editor-detail { padding: 6rem 1.5rem; max-width: 1200px; margin: 0 auto; }
@@ -320,78 +318,86 @@ body {
 @media (min-width: 768px) { .lens-grid { grid-template-columns: repeat(3, 1fr); } }
 .lens-card {
   background: var(--bg-card); border: 1px solid var(--border); border-radius: 0.75rem;
-  padding: 1.25rem; transition: border-color 0.3s, transform 0.3s var(--ease);
+  padding: 1.5rem; transition: transform 0.3s var(--ease), box-shadow 0.3s;
+  box-shadow: var(--shadow);
 }
-.lens-card:hover { border-color: rgba(167, 139, 250, 0.3); transform: translateY(-3px); }
-.lens-icon { width: 32px; height: 32px; border-radius: 0.5rem; display: flex; align-items: center; justify-content: center; font-size: 0.9rem; margin-bottom: 0.75rem; }
-.lens-icon.dialogue { background: rgba(167, 139, 250, 0.15); color: var(--accent); }
-.lens-icon.narration { background: rgba(103, 232, 249, 0.15); color: var(--accent-3); }
-.lens-icon.thought { background: rgba(240, 171, 252, 0.15); color: var(--accent-2); }
-.lens-icon.memory { background: rgba(251, 191, 36, 0.15); color: var(--accent-warm); }
-.lens-icon.system { background: rgba(52, 211, 153, 0.15); color: var(--accent-green); }
-.lens-icon.choice { background: rgba(244, 114, 182, 0.15); color: var(--accent-pink); }
-.lens-name { font-size: 0.9rem; font-weight: 700; color: var(--text); margin-bottom: 0.25rem; }
-.lens-desc { font-size: 0.7rem; color: var(--text-dim); line-height: 1.5; }
-.lens-node { font-size: 0.6rem; color: var(--text-muted); margin-top: 0.5rem; font-family: 'JetBrains Mono', monospace; }
+.lens-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-lg); border-color: var(--border-2); }
+.lens-icon { width: 36px; height: 36px; border-radius: 0.5rem; display: flex; align-items: center; justify-content: center; font-size: 1rem; margin-bottom: 0.75rem; }
+.lens-icon.dialogue { background: rgba(124, 58, 237, 0.1); color: var(--accent); }
+.lens-icon.narration { background: rgba(8, 145, 178, 0.1); color: var(--accent-3); }
+.lens-icon.thought { background: rgba(192, 38, 211, 0.1); color: var(--accent-2); }
+.lens-icon.memory { background: rgba(217, 119, 6, 0.1); color: var(--accent-warm); }
+.lens-icon.system { background: rgba(5, 150, 105, 0.1); color: var(--accent-green); }
+.lens-icon.choice { background: rgba(219, 39, 119, 0.1); color: var(--accent-pink); }
+.lens-name { font-size: 0.95rem; font-weight: 700; color: var(--text); margin-bottom: 0.3rem; }
+.lens-desc { font-size: 0.78rem; color: var(--text-dim); line-height: 1.6; }
+.lens-node { font-size: 0.65rem; color: var(--text-muted); margin-top: 0.6rem; font-family: 'JetBrains Mono', monospace; background: var(--bg-card-2); padding: 0.2rem 0.5rem; border-radius: 0.25rem; display: inline-block; }
 
 /* ═══ WORKFLOW ═══ */
 .workflow { padding: 6rem 1.5rem; max-width: 1000px; margin: 0 auto; }
 .workflow-chain { display: flex; flex-direction: column; gap: 0; margin-top: 2.5rem; }
 .workflow-step {
   display: flex; gap: 1.5rem; align-items: flex-start;
-  padding: 1.25rem; background: var(--bg-card); border-radius: 0.75rem;
+  padding: 1.5rem; background: var(--bg-card); border-radius: 0.75rem;
   border: 1px solid var(--border); position: relative;
+  box-shadow: var(--shadow);
+  transition: transform 0.3s var(--ease);
 }
+.workflow-step:hover { transform: translateX(4px); }
 .workflow-step:not(:last-child)::after {
   content: ''; position: absolute; bottom: -0.5rem; left: 2.5rem;
   width: 2px; height: 0.5rem; background: var(--border-2);
 }
 .workflow-step:not(:last-child) { margin-bottom: 0.5rem; }
-.workflow-num { font-family: 'Noto Serif SC', serif; font-size: 1.25rem; font-weight: 900; color: var(--accent); flex-shrink: 0; width: 2rem; }
-.workflow-content h4 { font-size: 0.85rem; color: var(--text); margin-bottom: 0.25rem; }
-.workflow-content p { font-size: 0.75rem; color: var(--text-dim); }
-.workflow-arrow { display: inline-block; font-family: 'JetBrains Mono', monospace; font-size: 0.65rem; color: var(--accent); margin-top: 0.3rem; }
+.workflow-num { font-family: 'Noto Serif SC', serif; font-size: 1.5rem; font-weight: 900; color: var(--accent); flex-shrink: 0; width: 2.5rem; }
+.workflow-content h4 { font-size: 0.9rem; color: var(--text); margin-bottom: 0.3rem; font-weight: 600; }
+.workflow-content p { font-size: 0.8rem; color: var(--text-dim); }
+.workflow-arrow { display: inline-block; font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; color: var(--accent); margin-top: 0.4rem; background: var(--bg-card-2); padding: 0.2rem 0.5rem; border-radius: 0.25rem; }
 
 /* ═══ TECH STACK ═══ */
-.tech { padding: 6rem 1.5rem; max-width: 1000px; margin: 0 auto; }
+.tech { padding: 6rem 1.5rem; max-width: 1200px; margin: 0 auto; }
 .tech-grid { display: grid; grid-template-columns: 1fr; gap: 1rem; margin-top: 2.5rem; }
 @media (min-width: 768px) { .tech-grid { grid-template-columns: 1fr 1fr; } }
-.tech-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 1rem; padding: 1.5rem; }
-.tech-card h4 { font-size: 0.8rem; color: var(--accent); margin-bottom: 1rem; font-weight: 500; }
+.tech-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 1rem; padding: 1.5rem; box-shadow: var(--shadow); }
+.tech-card h4 { font-size: 0.85rem; color: var(--accent); margin-bottom: 0.5rem; font-weight: 600; display: flex; align-items: center; gap: 0.5rem; }
+.tech-card h4::before { content: ''; width: 4px; height: 16px; border-radius: 2px; background: var(--accent); }
+.tech-card .tech-sub { font-size: 0.7rem; color: var(--text-muted); margin-bottom: 1rem; }
 .tech-list { display: flex; flex-wrap: wrap; gap: 0.5rem; }
-.tech-tag { font-size: 0.7rem; padding: 0.25rem 0.75rem; background: rgba(167, 139, 250, 0.1); border: 1px solid rgba(167, 139, 250, 0.2); border-radius: 9999px; color: var(--text); }
+.tech-tag { font-size: 0.72rem; padding: 0.3rem 0.8rem; background: var(--bg-card-2); border: 1px solid var(--border); border-radius: 9999px; color: var(--text); transition: all 0.3s; }
+.tech-tag:hover { border-color: var(--accent); color: var(--accent); transform: translateY(-2px); }
+.tech-tag .ver { color: var(--text-muted); font-size: 0.65rem; margin-left: 0.2rem; }
 
 /* ═══ QUICK START ═══ */
 .start { padding: 6rem 1.5rem; max-width: 900px; margin: 0 auto; }
 .start-steps { display: grid; gap: 1rem; margin-top: 2.5rem; }
-.start-step { display: flex; gap: 1.5rem; align-items: flex-start; padding: 1.5rem; background: var(--bg-card); border-radius: 1rem; border: 1px solid var(--border); transition: border-color 0.3s; }
-.start-step:hover { border-color: rgba(167, 139, 250, 0.3); }
-.step-num { font-family: 'Noto Serif SC', serif; font-size: 1.5rem; font-weight: 900; color: var(--accent); flex-shrink: 0; width: 2.5rem; }
-.step-content h4 { font-size: 0.9rem; color: var(--text); margin-bottom: 0.375rem; }
-.step-content p { font-size: 0.75rem; color: var(--text-dim); }
-.step-content code { display: block; margin-top: 0.5rem; padding: 0.5rem 0.75rem; background: #0a0810; border-radius: 0.5rem; font-size: 0.7rem; color: var(--accent-3); font-family: 'JetBrains Mono', monospace; overflow-x: auto; }
+.start-step { display: flex; gap: 1.5rem; align-items: flex-start; padding: 1.5rem; background: var(--bg-card); border-radius: 1rem; border: 1px solid var(--border); transition: all 0.3s; box-shadow: var(--shadow); }
+.start-step:hover { border-color: var(--border-2); box-shadow: var(--shadow-lg); transform: translateY(-3px); }
+.step-num { font-family: 'Noto Serif SC', serif; font-size: 1.75rem; font-weight: 900; color: var(--accent); flex-shrink: 0; width: 2.5rem; }
+.step-content h4 { font-size: 0.95rem; color: var(--text); margin-bottom: 0.375rem; font-weight: 600; }
+.step-content p { font-size: 0.8rem; color: var(--text-dim); }
+.step-content code { display: block; margin-top: 0.6rem; padding: 0.6rem 0.8rem; background: var(--bg-dark); border-radius: 0.5rem; font-size: 0.72rem; color: #a78bfa; font-family: 'JetBrains Mono', monospace; overflow-x: auto; }
 
-/* ═══ FOOTER ═══ */
-.footer { padding: 4rem 1.5rem 2rem; text-align: center; border-top: 1px solid var(--border); position: relative; overflow: hidden;
-  background: linear-gradient(180deg, transparent 0%, rgba(20, 17, 33, 0.6) 50%, #0d0b16 100%);
+/* ═══ FOOTER (video bg) ═══ */
+.footer { position: relative; overflow: hidden; padding: 5rem 1.5rem 3rem; text-align: center; }
+.footer-video-bg { position: absolute; inset: 0; z-index: 0; }
+.footer-video-bg video { width: 100%; height: 100%; object-fit: cover; }
+.footer-video-overlay {
+  position: absolute; inset: 0; z-index: 1;
+  background: linear-gradient(180deg, rgba(248, 246, 253, 0.4) 0%, rgba(30, 27, 46, 0.75) 50%, rgba(30, 27, 46, 0.92) 100%);
 }
-.footer-bg::before {
-  content: ''; position: absolute; inset: 0;
-  background-image: linear-gradient(90deg, rgba(167, 139, 250, 0.04) 1px, transparent 1px), linear-gradient(0deg, rgba(167, 139, 250, 0.04) 1px, transparent 1px);
+.footer-grid {
+  position: absolute; inset: 0; z-index: 1; pointer-events: none;
+  background-image: linear-gradient(90deg, rgba(167, 139, 250, 0.03) 1px, transparent 1px), linear-gradient(0deg, rgba(167, 139, 250, 0.03) 1px, transparent 1px);
   background-size: 24px 24px;
 }
-.footer-glow {
-  position: absolute; top: 0; left: 50%; transform: translateX(-50%);
-  width: 500px; height: 200px; pointer-events: none;
-  background: radial-gradient(ellipse at center, rgba(167, 139, 250, 0.06) 0%, transparent 70%);
-}
-.footer-content { position: relative; z-index: 1; }
-.footer-title { font-family: 'Noto Serif SC', serif; font-size: clamp(1.5rem, 4vw, 2.5rem); font-weight: 700; margin-bottom: 1rem; }
-.footer-title .italic { font-family: 'Instrument Serif', serif; font-style: italic; color: var(--accent); }
-.footer-links { display: flex; justify-content: center; gap: 1.5rem; margin-top: 1.5rem; flex-wrap: wrap; }
-.footer-links a { font-size: 0.8rem; color: var(--text-dim); text-decoration: none; padding: 0.5rem 1rem; border: 1px solid var(--border); border-radius: 9999px; transition: all 0.3s; }
-.footer-links a:hover { color: var(--text); border-color: var(--accent); }
-.footer-copy { margin-top: 2rem; font-size: 0.7rem; color: var(--text-muted); }
+.footer-content { position: relative; z-index: 2; max-width: 800px; margin: 0 auto; }
+.footer-title { font-family: 'Noto Serif SC', serif; font-size: clamp(1.75rem, 5vw, 3rem); font-weight: 700; margin-bottom: 1rem; color: #fff; }
+.footer-title .italic { font-family: 'Instrument Serif', serif; font-style: italic; color: var(--accent-light); }
+.footer-desc { color: rgba(225, 224, 204, 0.7); font-size: 0.9rem; margin: 0 auto; }
+.footer-links { display: flex; justify-content: center; gap: 1rem; margin-top: 2rem; flex-wrap: wrap; }
+.footer-links a { font-size: 0.8rem; color: rgba(225, 224, 204, 0.8); text-decoration: none; padding: 0.5rem 1.25rem; border: 1px solid rgba(167, 139, 250, 0.3); border-radius: 9999px; transition: all 0.3s; backdrop-filter: blur(4px); }
+.footer-links a:hover { color: #fff; border-color: var(--accent-light); background: rgba(124, 58, 237, 0.15); }
+.footer-copy { margin-top: 2.5rem; font-size: 0.7rem; color: rgba(156, 163, 175, 0.6); }
 
 /* ── Scroll-linked character reveal ── */
 .char-reveal { display: inline-block; opacity: 0.15; transition: opacity 0.1s; }
@@ -399,6 +405,7 @@ body {
 @media (max-width: 640px) {
   .nav { display: none; }
   .hero-inner { height: calc(100vh - 2rem); }
+  .hero-content { padding: 1.5rem; }
 }
 </style>
 </head>
@@ -412,7 +419,6 @@ body {
         <source src="https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260324_151826_c7218672-6e92-402c-9e45-f1e0f454bdc4.mp4" type="video/mp4">
       </video>
     </div>
-    <div class="noise-overlay"></div>
     <div class="hero-gradient"></div>
 
     <nav class="nav">
@@ -431,17 +437,18 @@ body {
         <span class="line-cn word-reveal">梦弦</span>
         <span class="line-en word-reveal">DreamChord<span class="asterisk">*</span></span>
       </h1>
-      <div class="hero-right">
-        <p class="hero-desc">
-          像写小说一样创作，像玩游戏一样阅读。<br>
-          浏览器里的视觉小说创作平台——用镜头卡组织剧情，自动生成分支节点，内置 AI 辅助写作。
-        </p>
+      <p class="hero-desc word-reveal">
+        像写小说一样创作，像玩游戏一样阅读。<br>
+        浏览器里的视觉小说创作平台——用镜头卡组织剧情，自动生成分支节点，内置 AI 辅助写作。
+      </p>
+      <div class="hero-cta-row word-reveal">
         <a href="https://github.com/tl66666/DreamChord" target="_blank" class="hero-cta">
           查看源码
           <span class="hero-cta-circle">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
           </span>
         </a>
+        <a href="#start" class="hero-cta-secondary">快速开始</a>
       </div>
     </div>
   </div>
@@ -461,7 +468,6 @@ body {
 <section class="about" id="about">
   <div class="about-bg-img"></div>
   <div class="about-glow"></div>
-  <div class="bg-noise"></div>
   <div class="about-inner">
     <div class="section-label reveal">About</div>
     <div class="about-card reveal">
@@ -469,15 +475,37 @@ body {
         把节点图的复杂性<span class="italic">隐藏在</span>镜头卡背后
       </h2>
       <p class="about-text" id="aboutText">
-        DreamChord 是一个面向非技术用户的视觉小说创作平台。用户只需像写小说一样填写背景、选择角色、编写台词，系统自动将其转换为可播放的节点图和运行时场景。无需学习 Ren'Py 脚本语言，无需理解节点连线，用"章节 → 场景 → 镜头卡"的方式组织剧情，一键发布即可在浏览器中播放。
+        DreamChord 是一个面向非技术用户的视觉小说创作平台。传统视觉小说引擎（如 Ren'Py）要求创作者学习脚本语法、手动管理跳转标签、理解节点连线逻辑，门槛极高。DreamChord 的核心理念是：用户只需像写小说一样填写背景、选择角色、编写台词，系统自动将其转换为可播放的节点图和运行时场景。通过"章节 → 场景 → 镜头卡"三级结构组织剧情，一键发布即可在浏览器中直接播放——无需安装任何运行时，无需部署服务器，分享链接即可阅读。
       </p>
       <div class="pain-table">
-        <div class="pain-row reveal"><div class="pain-point">痛点：节点图太难</div><div class="pain-solution">镜头卡写作界面，用户只需填写"谁说了什么"，系统自动生成节点和连线</div></div>
-        <div class="pain-row reveal"><div class="pain-point">痛点：没有可视化预览</div><div class="pain-solution">编辑器右栏实时预览，每改一个字、换一个背景立刻看到播放效果</div></div>
-        <div class="pain-row reveal"><div class="pain-point">痛点：分支管理混乱</div><div class="pain-solution">自动检测分支去向，流程图可视化所有场景和分支连线，汇合点紫色高亮</div></div>
-        <div class="pain-row reveal"><div class="pain-point">痛点：AI 辅助缺失</div><div class="pain-solution">编辑器内置 AI 助手，支持润色、续写、生成选项、分支回应、生成剧情图</div></div>
-        <div class="pain-row reveal"><div class="pain-point">痛点：无法即时分享</div><div class="pain-solution">一键发布到作品广场，分享链接即可在浏览器中播放</div></div>
-        <div class="pain-row reveal"><div class="pain-point">痛点：长篇组织困难</div><div class="pain-solution">章节 → 场景 → 镜头卡三级结构，每章独立画布，顶部标签切换</div></div>
+        <div class="pain-row reveal">
+          <div class="pain-point">节点图太难</div>
+          <div class="pain-solution"><strong>传统引擎痛点：</strong>Ren'Py 需要手写 label 和 jump 语句，TyranoBuilder 的节点连线复杂且容易出错，新手往往在"如何连接两个场景"上卡住数小时。<strong>DreamChord 方案：</strong>镜头卡写作界面，用户只需填写"谁说了什么"，系统自动创建 background → character → dialogue 节点链并生成连线，用户完全不需要看到节点图。</div>
+        </div>
+        <div class="pain-row reveal">
+          <div class="pain-point">没有可视化预览</div>
+          <div class="pain-solution"><strong>传统引擎痛点：</strong>修改一句台词需要重新编译运行整个项目，无法实时看到立绘位置、表情变化和文本框效果。<strong>DreamChord 方案：</strong>编辑器右栏 MiniPreview 实时渲染，每改一个字、换一个背景、调整一个站位，立刻在右侧看到与最终播放器完全一致的效果。支持"完整预览"全屏沉浸式查看。</div>
+        </div>
+        <div class="pain-row reveal">
+          <div class="pain-point">分支管理混乱</div>
+          <div class="pain-solution"><strong>传统引擎痛点：</strong>多分支剧情容易产生"死路"（选择了某选项但忘记写后续）、"断线"（jump 目标不存在）和"无限循环"，调试极其困难。<strong>DreamChord 方案：</strong>选项无去向时自动显示琥珀色警告徽章和汇总提示条；剧情流程图以 galgame 风格可视化所有场景和分支连线，汇合场景紫色高亮；项目体检面板自动检测 12 项健康指标。</div>
+        </div>
+        <div class="pain-row reveal">
+          <div class="pain-point">AI 辅助缺失</div>
+          <div class="pain-solution"><strong>传统引擎痛点：</strong>没有内置 AI 辅助，创作者需要自己在 ChatGPT 和编辑器之间反复切换复制粘贴，上下文容易丢失。<strong>DreamChord 方案：</strong>编辑器内置 AI 助手面板，五种模式——润色当前台词、续写后续剧情、生成选项分支、批量生成角色回应、AI 直接生成完整节点图。支持 GLM / DeepSeek / Kimi / OpenAI 四家供应商，通过 BaseOpenAICompatibleProvider 统一接口。</div>
+        </div>
+        <div class="pain-row reveal">
+          <div class="pain-point">无法即时分享</div>
+          <div class="pain-solution"><strong>传统引擎痛点：</strong>Ren'Py 需要打包为 exe/apk 分发给读者，每次修改都要重新打包；Web 引擎需要自己部署服务器。<strong>DreamChord 方案：</strong>一键发布到作品广场，生成分享链接，读者打开浏览器即可游玩。支持移动端适配，无需安装任何客户端。</div>
+        </div>
+        <div class="pain-row reveal">
+          <div class="pain-point">长篇组织困难</div>
+          <div class="pain-solution"><strong>传统引擎痛点：</strong>超过 50 个场景后，线性列表无法体现剧情结构，找不到"第三章的分支B在哪里"。<strong>DreamChord 方案：</strong>章节 → 场景 → 镜头卡三级结构，每章独立画布，顶部中文数字标签切换（第一章、第二章…）。章节可折叠，场景树支持搜索。长文导入功能可自动将粘贴的小说正文按"角色：台词"格式拆分为镜头卡。</div>
+        </div>
+        <div class="pain-row reveal">
+          <div class="pain-point">素材管理割裂</div>
+          <div class="pain-solution"><strong>传统引擎痛点：</strong>角色立绘、背景图、音乐文件散落在各处，需要手动写路径引用，更换素材需修改代码。<strong>DreamChord 方案：</strong>内置素材库面板，角色卡片包含立绘、表情差分（normal/smile/serious）、人物小传和戏剧冲突。编辑器中直接选择素材，无需手写路径。支持自定义上传。</div>
+        </div>
       </div>
     </div>
   </div>
@@ -487,7 +515,7 @@ body {
 <section class="showcase" id="showcase">
   <div class="section-label reveal">Interface</div>
   <h2 class="section-title reveal">五大功能模块<span class="italic">真实界面展示</span></h2>
-  <p class="section-desc reveal">以下均为项目实际运行截图，非设计稿。从编辑器到流程图，从 AI 写作到素材管理，每一处界面都围绕"让创作更简单"设计。</p>
+  <p class="section-desc reveal">以下均为项目实际运行截图，非设计稿。从编辑器到流程图，从 AI 写作到素材管理，每一处界面都围绕"让创作更简单"设计——隐藏节点图复杂性，暴露小说式写作体验。</p>
 
   <div class="showcase-blocks">
     <!-- 1. 镜头卡编辑器 -->
@@ -504,12 +532,14 @@ body {
       <div class="showcase-text">
         <div class="showcase-num">01 / Editor</div>
         <h3 class="showcase-title">镜头卡编辑器</h3>
-        <p class="showcase-desc">三栏布局：左侧章节场景树管理剧情结构，中间镜头卡列表像写小说一样编写台词和旁白，右侧实时预览每一步修改的播放效果。无需理解节点图，系统自动生成所有节点和连线。</p>
+        <p class="showcase-desc">三栏布局是整个产品的核心。左侧 SceneTree 管理章节和场景的树形结构——新建章节、新建场景、重命名、删除，全部在树中完成。中间 ShotCardEditor 是用户真正写作的区域，每张镜头卡像一张便签卡片，包含背景选择、角色登场、台词编辑、选项设置。右侧默认显示 MiniPreview 实时预览，也可切换为素材库或 AI 助手面板。所有编辑操作通过 Zustand store 统一管理，自动防抖保存。</p>
         <ul class="showcase-features">
-          <li>章节 → 场景 → 镜头卡三级结构</li>
-          <li>6 种镜头卡类型（对话/旁白/心理/回忆/系统/选项）</li>
-          <li>右栏实时预览，所见即所得</li>
-          <li>长文导入：粘贴小说正文自动拆分为镜头卡</li>
+          <li>章节 → 场景 → 镜头卡三级结构，顶部中文数字标签切换</li>
+          <li>6 种镜头卡类型：对话、旁白、心理、回忆、系统、选项</li>
+          <li>右栏实时预览，所见即所得——每改一个字立刻更新</li>
+          <li>长文导入：粘贴小说正文，自动按"角色：台词"格式拆分</li>
+          <li>选项无去向时显示琥珀色警告徽章 + 汇总提示条</li>
+          <li>支持紧凑视图，适合长篇剧情的快速浏览</li>
         </ul>
       </div>
     </div>
@@ -528,12 +558,13 @@ body {
       <div class="showcase-text">
         <div class="showcase-num">02 / Flowchart</div>
         <h3 class="showcase-title">剧情流程图</h3>
-        <p class="showcase-desc">galgame 风格的全局视图，将所有场景和分支连线可视化。普通连接用实线箭头，选项分支用虚线标注，汇合场景紫色高亮。支持拖拽调整场景位置和创建场景间连接。</p>
+        <p class="showcase-desc">当剧情复杂到需要全局视角时，切换到剧情流程图视图。这是 galgame 风格的全局可视化——所有场景以卡片形式排列，按章节分行。普通场景间用实线箭头连接，选项分支用虚线箭头并标注选项文本。汇合场景（接收多条不同场景入边）自动检测并以紫色高亮 + GitMerge 图标标识。支持滚轮缩放、拖拽平移、拖拽场景卡片调整位置、拖拽创建场景间连接。</p>
         <ul class="showcase-features">
-          <li>实线=普通连接，虚线=选项分支</li>
-          <li>汇合场景紫色高亮 + GitMerge 徽章</li>
+          <li>实线=普通连接，虚线=选项分支，标注选项原文</li>
+          <li>汇合场景紫色高亮 + GitMerge 徽章，一眼识别收束点</li>
           <li>选项节点粉色边框 + 分支数量标识</li>
-          <li>拖拽场景卡片调整位置，拖拽创建连接</li>
+          <li>拖拽场景卡片调整位置，拖拽创建场景间连接</li>
+          <li>底部小地图缩略图导航，支持搜索场景代码或标题</li>
         </ul>
       </div>
     </div>
@@ -552,12 +583,14 @@ body {
       <div class="showcase-text">
         <div class="showcase-num">03 / AI Writing</div>
         <h3 class="showcase-title">AI 写作辅助台</h3>
-        <p class="showcase-desc">五种写作模式覆盖从大纲到台词的全流程。选择任务类型、输入上下文，AI 生成结果可直接复制或保存到草稿箱。未配置 AI 时使用本地规则生成基础内容，配置后支持 GLM / DeepSeek / Kimi / OpenAI。</p>
+        <p class="showcase-desc">独立的 AI 写作工作台，五种模式覆盖从构思到落笔的全流程。选择任务类型（整理大纲 / 场景续写 / 角色台词 / 选项分支 / 节点草稿），输入当前剧情上下文和辅助需求，AI 生成结果可直接复制或保存到草稿箱。草稿箱持久化保存，随时可复制到编辑器节点。未配置 AI 时使用本地规则引擎生成基础内容，配置后通过 BaseOpenAICompatibleProvider 统一接口调用 GLM / DeepSeek / Kimi / OpenAI。</p>
         <ul class="showcase-features">
-          <li>整理大纲 · 场景续写 · 角色台词 · 选项分支 · 节点草稿</li>
-          <li>本地辅助模式 + 云端 AI 模式双轨</li>
-          <li>草稿箱持久化保存，随时复制到编辑器</li>
-          <li>BaseOpenAICompatibleProvider 统一接口</li>
+          <li>整理大纲：从零生成故事框架和章节规划</li>
+          <li>场景续写：根据上下文延续当前剧情走向</li>
+          <li>角色台词：批量生成特定角色的对话风格</li>
+          <li>选项分支：自动产出多选项及各自后续方向</li>
+          <li>节点草稿：AI 直接生成完整 nodes + edges JSON</li>
+          <li>本地辅助模式 + 云端 AI 模式双轨运行</li>
         </ul>
       </div>
     </div>
@@ -576,12 +609,13 @@ body {
       <div class="showcase-text">
         <div class="showcase-num">04 / Assets</div>
         <h3 class="showcase-title">素材库</h3>
-        <p class="showcase-desc">角色立绘、背景图、表情差分统一管理。每个角色卡片包含立绘、一句话简介、人物小传、故事大纲和戏剧冲突（粉色高亮），底部表情差分选择器支持 normal / smile / serious 等状态切换。</p>
+        <p class="showcase-desc">角色立绘、背景图、表情差分统一管理。每个角色卡片采用漏斗式信息层级：立绘全身像 → 一句话定位 → 人物小传 → 故事大纲 → 戏剧冲突（粉色高亮）→ 底部表情差分选择器。戏剧冲突字段用色彩背景突出，降低创作者在大量角色间扫描核心矛盾的成本。支持恢复默认素材和自定义上传，上传的素材通过 customUrl 字段处理非标准路径。</p>
         <ul class="showcase-features">
           <li>角色立绘 + 表情差分（normal / smile / serious）</li>
-          <li>背景图库：樱花、教室、咖啡馆、星空</li>
-          <li>戏剧冲突高亮策略，降低信息扫描成本</li>
-          <li>支持自定义上传素材</li>
+          <li>背景图库：樱花坡道、教室、咖啡馆、星空</li>
+          <li>戏剧冲突粉色高亮，快速定位角色核心矛盾</li>
+          <li>立绘差分底部选择器，一键切换调用</li>
+          <li>支持自定义上传 PNG/JPG/GIF/WebP 素材</li>
         </ul>
       </div>
     </div>
@@ -600,12 +634,13 @@ body {
       <div class="showcase-text">
         <div class="showcase-num">05 / Gallery</div>
         <h3 class="showcase-title">作品广场</h3>
-        <p class="showcase-desc">项目首页即创作者入口。Hero 区展示产品定位，下方"我的作品"卡片网格管理所有项目。新建故事、打开素材库、试玩演示三个入口覆盖从零开始到分享发布的完整路径。</p>
+        <p class="showcase-desc">项目首页即创作者入口。Hero 区展示产品定位和核心价值主张，下方"我的作品"卡片网格管理所有项目——显示发布状态、场景数量、节点数量。三个入口按钮覆盖完整路径：新建故事进入编辑器、打开素材库管理角色和背景、试玩演示体验官方示例剧情。一键发布后生成分享链接，读者打开浏览器即可游玩，无需安装任何客户端。</p>
         <ul class="showcase-features">
-          <li>一键发布到作品广场</li>
-          <li>分享链接即可在浏览器中播放</li>
-          <li>项目卡片管理（编辑/删除/发布状态）</li>
-          <li>无需安装，浏览器直接运行</li>
+          <li>一键发布到作品广场，生成可分享链接</li>
+          <li>项目卡片显示发布状态、场景数、节点数</li>
+          <li>新建故事 / 打开素材库 / 试玩演示三入口</li>
+          <li>浏览器直接运行，无需安装客户端</li>
+          <li>移动端自适应，手机也能阅读</li>
         </ul>
       </div>
     </div>
@@ -616,12 +651,12 @@ body {
 <section class="characters" id="characters">
   <div class="section-label reveal">Characters</div>
   <h2 class="section-title reveal">五位角色<span class="italic">组成官方演示世界观</span></h2>
-  <p class="section-desc reveal">内置雪、影、宫、空和系统幽灵的 Meta 引导短剧，展示背景切换、角色登场、表情变化和分支选择。</p>
+  <p class="section-desc reveal">内置雪、影、宫、空和系统幽灵的 Meta 引导短剧，展示背景切换、角色登场退场、表情差分变化和分支选择。每个角色拥有独立的性格设定、故事弧线和戏剧冲突，可直接在编辑器中调用。</p>
   <div class="char-grid">
     <div class="char-card reveal">
       <div class="char-sprite"><img src="../apps/web/public/assets/characters/yuki_normal.png" alt="雪"></div>
       <div class="char-info">
-        <div class="char-name"><span class="char-color" style="background:#a78bfa"></span>雪</div>
+        <div class="char-name"><span class="char-color" style="background:#7c3aed"></span>雪</div>
         <div class="char-en">Yuki</div>
         <div class="char-desc">文学少女，温柔知性，紫色系，手持书册</div>
       </div>
@@ -637,7 +672,7 @@ body {
     <div class="char-card reveal">
       <div class="char-sprite"><img src="../apps/web/public/assets/characters/miya_normal.png" alt="宫"></div>
       <div class="char-info">
-        <div class="char-name"><span class="char-color" style="background:#f0abfc"></span>宫</div>
+        <div class="char-name"><span class="char-color" style="background:#c026d3"></span>宫</div>
         <div class="char-en">Miya</div>
         <div class="char-desc">活泼开朗，粉色系，温暖治愈</div>
       </div>
@@ -645,7 +680,7 @@ body {
     <div class="char-card reveal">
       <div class="char-sprite"><img src="../apps/web/public/assets/characters/sora_normal.png" alt="空"></div>
       <div class="char-info">
-        <div class="char-name"><span class="char-color" style="background:#67e8f9"></span>空</div>
+        <div class="char-name"><span class="char-color" style="background:#0891b2"></span>空</div>
         <div class="char-en">Sora</div>
         <div class="char-desc">好奇心旺盛，青色系，天真烂漫</div>
       </div>
@@ -653,7 +688,7 @@ body {
     <div class="char-card reveal">
       <div class="char-sprite"><img src="../apps/web/public/assets/characters/system-ghost.png" alt="系统幽灵"></div>
       <div class="char-info">
-        <div class="char-name"><span class="char-color" style="background:#34d399"></span>系统幽灵</div>
+        <div class="char-name"><span class="char-color" style="background:#059669"></span>系统幽灵</div>
         <div class="char-en">Ghost</div>
         <div class="char-desc">Meta 叙事元素，引导用户操作</div>
       </div>
@@ -665,9 +700,8 @@ body {
 <section class="scenes" id="scenes">
   <div class="section-label reveal">Scenes</div>
   <h2 class="section-title reveal">四种镜头类型<span class="italic">呈现真实故事场景</span></h2>
-  <p class="section-desc reveal">使用项目内置的 4 张背景图和 4 位角色立绘，展示对话、选项分支、旁白和系统提示在播放器中的实际渲染效果。</p>
+  <p class="section-desc reveal">使用项目内置的 4 张背景图和 4 位角色立绘，展示对话、选项分支、旁白和系统提示在播放器中的实际渲染效果。每张场景卡包含背景图、角色立绘、文本框和（如有）选项按钮。</p>
   <div class="scenes-grid">
-    <!-- Scene 1: 对话镜头 -->
     <div class="scene-card reveal">
       <div class="scene-bg" style="background: url('../apps/web/public/assets/backgrounds/bg-sakura.png') center/cover no-repeat;"></div>
       <div class="scene-overlay"></div>
@@ -678,7 +712,6 @@ body {
         <div class="scene-text">樱花又开了呢……和那年一样，你也在。</div>
       </div>
     </div>
-    <!-- Scene 2: 选项分支 -->
     <div class="scene-card reveal">
       <div class="scene-bg" style="background: url('../apps/web/public/assets/backgrounds/bg-cafe.png') center/cover no-repeat;"></div>
       <div class="scene-overlay"></div>
@@ -693,7 +726,6 @@ body {
         </div>
       </div>
     </div>
-    <!-- Scene 3: 旁白镜头 -->
     <div class="scene-card reveal">
       <div class="scene-bg" style="background: url('../apps/web/public/assets/backgrounds/bg-starry.png') center/cover no-repeat;"></div>
       <div class="scene-overlay"></div>
@@ -703,7 +735,6 @@ body {
         <div class="scene-text">星空之下，空仰望着银河。那些闪烁的光点，仿佛是无数未曾写下的故事。</div>
       </div>
     </div>
-    <!-- Scene 4: 系统提示 -->
     <div class="scene-card reveal">
       <div class="scene-bg" style="background: url('../apps/web/public/assets/backgrounds/bg-classroom.png') center/cover no-repeat;"></div>
       <div class="scene-overlay"></div>
@@ -721,14 +752,14 @@ body {
 <section class="editor-detail" id="editor">
   <div class="section-label reveal">Editor</div>
   <h2 class="section-title reveal">六种镜头卡<span class="italic">覆盖全部叙事场景</span></h2>
-  <p class="section-desc reveal">每张镜头卡编译为背景节点、角色节点和文本节点，系统自动生成连线。选项卡额外生成 choice-N 出边连接到分支场景。</p>
+  <p class="section-desc reveal">每张镜头卡编译为背景节点、角色节点和文本节点，系统自动生成连线。选项卡额外生成 choice-N 出边连接到分支场景。用户只需选择镜头类型、填写内容，无需关心底层节点结构。</p>
   <div class="lens-grid">
-    <div class="lens-card reveal"><div class="lens-icon dialogue">💬</div><div class="lens-name">角色对话</div><div class="lens-desc">角色之间的台词交流，支持表情和站位设置</div><div class="lens-node">→ dialogue 节点</div></div>
-    <div class="lens-card reveal"><div class="lens-icon narration">📖</div><div class="lens-name">旁白</div><div class="lens-desc">场景描述、时间流逝、环境变化等叙述文字</div><div class="lens-node">→ subtitle 节点</div></div>
-    <div class="lens-card reveal"><div class="lens-icon thought">💭</div><div class="lens-name">心理描写</div><div class="lens-desc">角色内心独白，保持角色身份但不显示立绘</div><div class="lens-node">→ dialogue 节点 (role 保持)</div></div>
-    <div class="lens-card reveal"><div class="lens-icon memory">🌟</div><div class="lens-name">回忆镜头</div><div class="lens-desc">闪回片段，过去事件的视觉化呈现</div><div class="lens-node">→ subtitle 节点</div></div>
-    <div class="lens-card reveal"><div class="lens-icon system">⚙</div><div class="lens-name">系统提示</div><div class="lens-desc">系统幽灵发出的提示信息，Meta 叙事元素</div><div class="lens-node">→ subtitle 节点 (role=ghost)</div></div>
-    <div class="lens-card reveal"><div class="lens-icon choice">🔀</div><div class="lens-name">选项分支</div><div class="lens-desc">多选项分支点，每个选项可连接到独立场景</div><div class="lens-node">→ choice 节点 (choice-N 出边)</div></div>
+    <div class="lens-card reveal"><div class="lens-icon dialogue">💬</div><div class="lens-name">角色对话</div><div class="lens-desc">角色之间的台词交流，支持表情差分（normal/smile/serious）和站位设置（左/中/右）</div><div class="lens-node">→ dialogue 节点</div></div>
+    <div class="lens-card reveal"><div class="lens-icon narration">📖</div><div class="lens-name">旁白</div><div class="lens-desc">场景描述、时间流逝、环境变化等叙述文字，不绑定角色</div><div class="lens-node">→ subtitle 节点</div></div>
+    <div class="lens-card reveal"><div class="lens-icon thought">💭</div><div class="lens-name">心理描写</div><div class="lens-desc">角色内心独白，保持角色身份（role 不变）但不显示立绘</div><div class="lens-node">→ dialogue 节点 (role 保持)</div></div>
+    <div class="lens-card reveal"><div class="lens-icon memory">🌟</div><div class="lens-name">回忆镜头</div><div class="lens-desc">闪回片段，过去事件的视觉化呈现，独立于当前场景</div><div class="lens-node">→ subtitle 节点</div></div>
+    <div class="lens-card reveal"><div class="lens-icon system">⚙</div><div class="lens-name">系统提示</div><div class="lens-desc">系统幽灵发出的提示信息，Meta 叙事元素，引导用户操作</div><div class="lens-node">→ subtitle 节点 (role=ghost)</div></div>
+    <div class="lens-card reveal"><div class="lens-icon choice">🔀</div><div class="lens-name">选项分支</div><div class="lens-desc">多选项分支点，每个选项通过 choice-N 出边连接到独立场景</div><div class="lens-node">→ choice 节点 (choice-N 出边)</div></div>
   </div>
 </section>
 
@@ -736,13 +767,13 @@ body {
 <section class="workflow" id="workflow">
   <div class="section-label reveal">Workflow</div>
   <h2 class="section-title reveal">从写作到播放<span class="italic">的完整链路</span></h2>
-  <p class="section-desc reveal">用户的写作方式直接映射为运行时节点图，系统自动完成转换。</p>
+  <p class="section-desc reveal">用户的写作方式直接映射为运行时节点图，系统自动完成全部转换——从镜头卡到节点到运行时场景到播放器渲染，五个环节全自动。</p>
   <div class="workflow-chain">
-    <div class="workflow-step reveal"><div class="workflow-num">01</div><div class="workflow-content"><h4>用户创建镜头卡</h4><p>填写背景、选择角色、编写台词——像写小说一样</p><div class="workflow-arrow">background → character → dialogue</div></div></div>
-    <div class="workflow-step reveal"><div class="workflow-num">02</div><div class="workflow-content"><h4>系统自动生成节点和边</h4><p>createSceneNodes 创建节点，chainEdges 连接节点，normalEdge 连接场景</p><div class="workflow-arrow">nodes[] + edges[] → 节点图</div></div></div>
-    <div class="workflow-step reveal"><div class="workflow-num">03</div><div class="workflow-content"><h4>转换器 DFS 遍历生成 RuntimeStory</h4><p>convertFlowToRuntime 从起始节点深度优先遍历，追踪角色状态和背景</p><div class="workflow-arrow">nodes + edges → RuntimeStory.scenes[]</div></div></div>
-    <div class="workflow-step reveal"><div class="workflow-num">04</div><div class="workflow-content"><h4>运行时引擎驱动播放器</h4><p>createRuntimeEngine 管理场景推进、分支选择和事件触发</p><div class="workflow-arrow">next() → choose() → emit()</div></div></div>
-    <div class="workflow-step reveal"><div class="workflow-num">05</div><div class="workflow-content"><h4>播放器渲染视觉效果</h4><p>打字机效果、角色立绘、选项渲染、Web Audio 音效</p><div class="workflow-arrow">VisualNovelPlayer → 浏览器</div></div></div>
+    <div class="workflow-step reveal"><div class="workflow-num">01</div><div class="workflow-content"><h4>用户创建镜头卡</h4><p>填写背景、选择角色、编写台词——像写小说一样，无需理解节点图</p><div class="workflow-arrow">background → character → dialogue</div></div></div>
+    <div class="workflow-step reveal"><div class="workflow-num">02</div><div class="workflow-content"><h4>系统自动生成节点和边</h4><p>createSceneNodes 创建背景/角色/文本节点，chainEdges 连接节点链，normalEdge 连接场景间</p><div class="workflow-arrow">nodes[] + edges[] → 节点图</div></div></div>
+    <div class="workflow-step reveal"><div class="workflow-num">03</div><div class="workflow-content"><h4>转换器 DFS 遍历生成 RuntimeStory</h4><p>convertFlowToRuntime 从起始节点深度优先遍历，追踪角色状态和背景变化，生成线性场景数组</p><div class="workflow-arrow">nodes + edges → RuntimeStory.scenes[]</div></div></div>
+    <div class="workflow-step reveal"><div class="workflow-num">04</div><div class="workflow-content"><h4>运行时引擎驱动播放器</h4><p>createRuntimeEngine 管理场景推进 next()、分支选择 choose() 和事件触发 emit()</p><div class="workflow-arrow">next() → choose() → emit()</div></div></div>
+    <div class="workflow-step reveal"><div class="workflow-num">05</div><div class="workflow-content"><h4>播放器渲染视觉效果</h4><p>打字机逐字效果、角色立绘淡入淡出、选项按钮渲染、Web Audio 音效播放</p><div class="workflow-arrow">VisualNovelPlayer → 浏览器</div></div></div>
   </div>
 </section>
 
@@ -750,12 +781,76 @@ body {
 <section class="tech" id="tech">
   <div class="section-label reveal">Tech Stack</div>
   <h2 class="section-title reveal">现代 Web 全栈<span class="italic">技术架构</span></h2>
-  <p class="section-desc reveal">React 18 + TypeScript + Vite 前端，Express + Prisma + SQLite 后端，集成多家 LLM 供应商。</p>
+  <p class="section-desc reveal">React 18 + TypeScript + Vite 前端，Express + Prisma + SQLite 后端，集成四家 LLM 供应商。Monorepo 架构，pnpm workspace 管理前后端共享依赖。</p>
   <div class="tech-grid">
-    <div class="tech-card reveal"><h4>前端</h4><div class="tech-list"><span class="tech-tag">React 18</span><span class="tech-tag">TypeScript 5</span><span class="tech-tag">Vite 5</span><span class="tech-tag">Tailwind CSS 3</span><span class="tech-tag">@xyflow/react 12</span><span class="tech-tag">Zustand 4</span><span class="tech-tag">framer-motion 11</span><span class="tech-tag">lucide-react</span></div></div>
-    <div class="tech-card reveal"><h4>后端</h4><div class="tech-list"><span class="tech-tag">Express 4</span><span class="tech-tag">Prisma 5</span><span class="tech-tag">SQLite</span><span class="tech-tag">JWT + bcryptjs</span><span class="tech-tag">multer</span><span class="tech-tag">tsx</span></div></div>
-    <div class="tech-card reveal"><h4>AI 集成</h4><div class="tech-list"><span class="tech-tag">智谱 GLM</span><span class="tech-tag">DeepSeek</span><span class="tech-tag">Kimi</span><span class="tech-tag">OpenAI 兼容</span><span class="tech-tag">BaseProvider 基类</span></div></div>
-    <div class="tech-card reveal"><h4>工程化</h4><div class="tech-list"><span class="tech-tag">pnpm workspace</span><span class="tech-tag">Vite manualChunks</span><span class="tech-tag">strict TypeScript</span><span class="tech-tag">FeedbackProvider</span><span class="tech-tag">类型安全访问器</span></div></div>
+    <div class="tech-card reveal">
+      <h4>前端框架与 UI</h4>
+      <div class="tech-sub">现代化 SPA 架构，组件化开发，严格类型安全</div>
+      <div class="tech-list">
+        <span class="tech-tag">React<span class="ver">18</span></span>
+        <span class="tech-tag">TypeScript<span class="ver">5</span></span>
+        <span class="tech-tag">Vite<span class="ver">5</span></span>
+        <span class="tech-tag">Tailwind CSS<span class="ver">3</span></span>
+        <span class="tech-tag">framer-motion<span class="ver">11</span></span>
+        <span class="tech-tag">lucide-react</span>
+      </div>
+    </div>
+    <div class="tech-card reveal">
+      <h4>节点图与状态管理</h4>
+      <div class="tech-sub">可视化节点编辑与单一数据源</div>
+      <div class="tech-list">
+        <span class="tech-tag">@xyflow/react<span class="ver">12</span></span>
+        <span class="tech-tag">Zustand<span class="ver">4</span></span>
+        <span class="tech-tag">React Flow</span>
+        <span class="tech-tag">custom nodes</span>
+        <span class="tech-tag">DFS converter</span>
+      </div>
+    </div>
+    <div class="tech-card reveal">
+      <h4>后端服务</h4>
+      <div class="tech-sub">轻量级 RESTful API，文件数据库零配置启动</div>
+      <div class="tech-list">
+        <span class="tech-tag">Express<span class="ver">4</span></span>
+        <span class="tech-tag">Prisma<span class="ver">5</span></span>
+        <span class="tech-tag">SQLite</span>
+        <span class="tech-tag">JWT + bcryptjs</span>
+        <span class="tech-tag">multer</span>
+        <span class="tech-tag">tsx</span>
+      </div>
+    </div>
+    <div class="tech-card reveal">
+      <h4>AI 集成</h4>
+      <div class="tech-sub">统一接口适配多家大模型供应商</div>
+      <div class="tech-list">
+        <span class="tech-tag">智谱 GLM</span>
+        <span class="tech-tag">DeepSeek</span>
+        <span class="tech-tag">Kimi</span>
+        <span class="tech-tag">OpenAI 兼容</span>
+        <span class="tech-tag">BaseOpenAICompatibleProvider</span>
+      </div>
+    </div>
+    <div class="tech-card reveal">
+      <h4>工程化与构建</h4>
+      <div class="tech-sub">Monorepo 管理，代码分割优化，严格类型约束</div>
+      <div class="tech-list">
+        <span class="tech-tag">pnpm workspace</span>
+        <span class="tech-tag">Vite manualChunks</span>
+        <span class="tech-tag">strict TypeScript</span>
+        <span class="tech-tag">FeedbackProvider</span>
+        <span class="tech-tag">类型安全访问器</span>
+      </div>
+    </div>
+    <div class="tech-card reveal">
+      <h4>运行时引擎</h4>
+      <div class="tech-sub">节点图到播放场景的自动转换管线</div>
+      <div class="tech-list">
+        <span class="tech-tag">converter.ts</span>
+        <span class="tech-tag">runtime.ts</span>
+        <span class="tech-tag">sceneGraph.ts</span>
+        <span class="tech-tag">DFS 遍历</span>
+        <span class="tech-tag">事件图执行器</span>
+      </div>
+    </div>
   </div>
 </section>
 
@@ -763,25 +858,30 @@ body {
 <section class="start" id="start">
   <div class="section-label reveal">Quick Start</div>
   <h2 class="section-title reveal">三步<span class="italic">启动项目</span></h2>
-  <p class="section-desc reveal">Node.js 20+ 环境，pnpm 或 npm 均可。默认测试账号 demo / demo123。</p>
+  <p class="section-desc reveal">Node.js 20+ 环境，pnpm 或 npm 均可。默认测试账号 demo / demo123，开箱即用。</p>
   <div class="start-steps">
-    <div class="start-step reveal"><div class="step-num">01</div><div class="step-content"><h4>安装依赖</h4><p>克隆仓库后安装前后端依赖</p><code>git clone https://github.com/tl66666/DreamChord.git
+    <div class="start-step reveal"><div class="step-num">01</div><div class="step-content"><h4>安装依赖</h4><p>克隆仓库后安装前后端依赖（pnpm workspace 会自动处理共享依赖）</p><code>git clone https://github.com/tl66666/DreamChord.git
 cd DreamChord && pnpm install</code></div></div>
-    <div class="start-step reveal"><div class="step-num">02</div><div class="step-content"><h4>初始化数据库</h4><p>配置 .env，运行 Prisma 迁移和种子</p><code>cd apps/server
+    <div class="start-step reveal"><div class="step-num">02</div><div class="step-content"><h4>初始化数据库</h4><p>配置 .env 环境变量，运行 Prisma 迁移创建表结构，执行种子数据初始化</p><code>cd apps/server
 cp .env.example .env
 npx prisma migrate dev && npx prisma db seed</code></div></div>
-    <div class="start-step reveal"><div class="step-num">03</div><div class="step-content"><h4>启动开发服务器</h4><p>双击 start-dreamchord.bat 或手动启动前后端</p><code>cd apps/web && npm run dev
+    <div class="start-step reveal"><div class="step-num">03</div><div class="step-content"><h4>启动开发服务器</h4><p>双击 start-dreamchord.bat 一键启动，或手动分别启动前后端开发服务器</p><code>cd apps/web && npm run dev
 cd apps/server && npm run dev</code></div></div>
   </div>
 </section>
 
-<!-- ═══════════════ FOOTER ═══════════════ -->
+<!-- ═══════════════ FOOTER (video bg) ═══════════════ -->
 <footer class="footer">
-  <div class="footer-bg"></div>
-  <div class="footer-glow"></div>
+  <div class="footer-video-bg">
+    <video autoplay loop muted playsinline>
+      <source src="https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260416_101255_3099d3e4-d0cf-4e59-9666-97fbf521ac71.mp4" type="video/mp4">
+    </video>
+  </div>
+  <div class="footer-video-overlay"></div>
+  <div class="footer-grid"></div>
   <div class="footer-content">
     <h2 class="footer-title">一起把下一个故事<span class="italic">变成作品</span></h2>
-    <p class="section-desc" style="margin: 0 auto;">DreamChord — 像写小说一样创作，像玩游戏一样阅读。</p>
+    <p class="footer-desc">DreamChord — 像写小说一样创作，像玩游戏一样阅读。</p>
     <div class="footer-links">
       <a href="https://github.com/tl66666/DreamChord" target="_blank">GitHub 仓库</a>
       <a href="https://github.com/tl66666/DreamChord/blob/main/README.md" target="_blank">项目文档</a>
@@ -807,11 +907,9 @@ document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
 
 // ═══ Hero Title Animation ═══
 function animateHeroTitle() {
-  const title = document.getElementById('heroTitle');
-  if (!title) return;
-  const lines = title.querySelectorAll('.word-reveal');
-  lines.forEach((line, i) => {
-    setTimeout(() => line.classList.add('visible'), 300 + i * 250);
+  const els = document.querySelectorAll('.hero .word-reveal');
+  els.forEach((el, i) => {
+    setTimeout(() => el.classList.add('visible'), 200 + i * 200);
   });
 }
 
