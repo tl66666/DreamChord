@@ -10,14 +10,15 @@
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&family=Noto+Serif+SC:wght@400;700;900&family=Instrument+Serif:ital@1&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 /* ═══════════════════════════════════════════════
-   梦弦 DreamChord — Showcase Page (rev 3)
-   Aesthetic: "Lucid Dream" — dark, cinematic, dreamy
+   梦弦 DreamChord — Showcase Page (rev 4)
+   Aesthetic: "Lucid Dream" — deep indigo, cinematic, dreamy
    ═══════════════════════════════════════════════ */
 
 :root {
-  --bg: #0a0a0f;
-  --bg-card: #13131a;
-  --bg-card-2: #1a1a24;
+  --bg: #0d0b16;
+  --bg-2: #141121;
+  --bg-card: #16131f;
+  --bg-card-2: #1c1828;
   --bg-editor: #1e1e2e;
   --accent: #a78bfa;
   --accent-2: #f0abfc;
@@ -37,21 +38,26 @@
 html { scroll-behavior: smooth; }
 body {
   font-family: 'Noto Sans SC', -apple-system, BlinkMacSystemFont, sans-serif;
-  background: var(--bg);
+  background:
+    radial-gradient(ellipse 80% 50% at 50% 0%, rgba(80, 60, 140, 0.18) 0%, transparent 55%),
+    radial-gradient(ellipse 50% 35% at 85% 65%, rgba(120, 50, 160, 0.10) 0%, transparent 50%),
+    radial-gradient(ellipse 50% 35% at 15% 40%, rgba(60, 80, 140, 0.08) 0%, transparent 50%),
+    #0d0b16;
+  background-attachment: fixed;
   color: var(--text);
   overflow-x: hidden;
   line-height: 1.6;
 }
 
-/* ── Noise Texture Overlays ── */
+/* ── Noise Texture ── */
 .noise-overlay {
   position: absolute; inset: 0; pointer-events: none;
-  opacity: 0.5; mix-blend-mode: overlay;
+  opacity: 0.4; mix-blend-mode: overlay;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.6'/%3E%3C/svg%3E");
 }
 .bg-noise {
-  position: absolute; inset: 0; pointer-events: none; opacity: 0.12;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n2'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n2)'/%3E%3C/svg%3E");
+  position: absolute; inset: 0; pointer-events: none; opacity: 0.10;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n2'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n2)' opacity='0.6'/%3E%3C/svg%3E");
 }
 
 /* ── Scroll Animations ── */
@@ -74,10 +80,11 @@ body {
 .hero-bg video { width: 100%; height: 100%; object-fit: cover; }
 .hero-gradient {
   position: absolute; inset: 0;
-  background: linear-gradient(180deg, rgba(10,10,15,0.35) 0%, transparent 25%, transparent 45%, rgba(10,10,15,0.88) 100%);
+  background:
+    radial-gradient(ellipse 60% 40% at 50% 30%, rgba(80, 60, 140, 0.12) 0%, transparent 60%),
+    linear-gradient(180deg, rgba(13,11,22,0.4) 0%, transparent 20%, transparent 45%, rgba(13,11,22,0.92) 100%);
 }
 
-/* ── 标题：梦弦一行，DreamChord 一行 ── */
 .hero-content {
   position: relative; z-index: 10; width: 100%;
   padding: 2rem 2rem 3rem;
@@ -138,9 +145,10 @@ body {
 /* Nav */
 .nav {
   position: absolute; top: 1rem; left: 50%; transform: translateX(-50%);
-  z-index: 20; background: rgba(0, 0, 0, 0.55); backdrop-filter: blur(12px);
+  z-index: 20; background: rgba(13, 11, 22, 0.65); backdrop-filter: blur(12px);
   border-radius: 0 0 1rem 1rem; padding: 0.5rem 1.5rem;
   display: flex; gap: 1.5rem;
+  border: 1px solid var(--border);
 }
 @media (min-width: 768px) { .nav { gap: 2.5rem; padding: 0.5rem 2rem; } }
 .nav a { font-size: 0.7rem; color: rgba(225, 224, 204, 0.8); text-decoration: none; transition: color 0.3s; }
@@ -171,14 +179,21 @@ body {
 .section-desc { font-size: 0.9rem; color: var(--text-dim); max-width: 600px; line-height: 1.7; }
 
 /* ═══ ABOUT ═══ */
-.about { background: #000; padding: 6rem 1.5rem; position: relative; overflow: hidden; }
+.about { padding: 6rem 1.5rem; position: relative; overflow: hidden;
+  background: linear-gradient(180deg, #0d0b16 0%, #110e1c 50%, #0d0b16 100%);
+}
 .about-bg-img {
-  position: absolute; inset: 0; opacity: 0.12;
+  position: absolute; inset: 0; opacity: 0.18;
   background: url('../apps/web/public/assets/backgrounds/bg-starry.png') center/cover no-repeat;
+}
+.about-glow {
+  position: absolute; top: 20%; left: 50%; transform: translateX(-50%);
+  width: 600px; height: 400px; pointer-events: none;
+  background: radial-gradient(ellipse at center, rgba(167, 139, 250, 0.08) 0%, transparent 70%);
 }
 .about-inner { max-width: 900px; margin: 0 auto; text-align: center; position: relative; z-index: 1; }
 .about-card {
-  background: rgba(16, 16, 16, 0.9); backdrop-filter: blur(10px);
+  background: rgba(22, 19, 31, 0.92); backdrop-filter: blur(10px);
   border-radius: 1.5rem; padding: 3rem 2rem; border: 1px solid var(--border);
 }
 @media (min-width: 768px) { .about-card { padding: 4rem 3rem; } }
@@ -196,135 +211,69 @@ body {
 .pain-point { font-size: 0.8rem; color: var(--accent-2); font-weight: 500; }
 .pain-solution { font-size: 0.8rem; color: var(--text-dim); line-height: 1.5; }
 
-/* ═══ FEATURES ═══ */
-.features { min-height: 100vh; padding: 6rem 1.5rem; position: relative; }
-.features-grid { display: grid; grid-template-columns: 1fr; gap: 1rem; max-width: 1200px; margin: 3rem auto 0; }
-@media (min-width: 768px) { .features-grid { grid-template-columns: 1fr 1fr; } }
-@media (min-width: 1024px) { .features-grid { grid-template-columns: repeat(4, 1fr); } }
+/* ═══ SHOWCASE (产品界面 — 真实截图) ═══ */
+.showcase { padding: 6rem 1.5rem; max-width: 1200px; margin: 0 auto; position: relative; }
+.showcase-blocks { margin-top: 3rem; display: flex; flex-direction: column; gap: 5rem; }
 
-.feature-card {
-  background: var(--bg-card-2); border-radius: 1rem; overflow: hidden;
-  border: 1px solid var(--border); transition: transform 0.5s var(--ease), border-color 0.4s;
-  min-height: 340px; display: flex; flex-direction: column;
+.showcase-block {
+  display: grid; grid-template-columns: 1fr; gap: 2rem; align-items: center;
 }
-.feature-card:hover { transform: translateY(-6px); border-color: rgba(167, 139, 250, 0.35); }
+@media (min-width: 768px) {
+  .showcase-block { grid-template-columns: 1.1fr 0.9fr; gap: 3.5rem; }
+  .showcase-block.reverse .showcase-img-wrap { order: 2; }
+}
 
-/* ── 真实界面模拟卡片 ── */
-.feature-card-mockup { padding: 0; min-height: 420px; }
-.mockup-screen { flex: 1; position: relative; overflow: hidden; min-height: 280px; }
-.mockup-label { padding: 1rem 1.25rem; border-top: 1px solid var(--border); background: var(--bg-card-2); }
-.mockup-label .feature-num { font-size: 0.65rem; color: var(--text-muted); font-family: 'Instrument Serif', serif; font-style: italic; }
-.mockup-label .feature-title { font-family: 'Noto Serif SC', serif; font-size: 1rem; font-weight: 700; color: var(--text); margin-top: 0.25rem; }
+/* Browser frame for screenshots */
+.showcase-img-wrap {
+  position: relative; border-radius: 0.75rem; overflow: hidden;
+  border: 1px solid var(--border-2);
+  box-shadow: 0 24px 80px rgba(0,0,0,0.5), 0 0 0 1px rgba(167,139,250,0.06);
+  transition: transform 0.5s var(--ease), box-shadow 0.5s;
+}
+.showcase-img-wrap:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 30px 90px rgba(0,0,0,0.55), 0 0 0 1px rgba(167,139,250,0.12);
+}
+.showcase-img-bar {
+  display: flex; align-items: center; gap: 0.4rem;
+  padding: 0.5rem 0.75rem; background: #1a1726; border-bottom: 1px solid var(--border);
+}
+.showcase-img-dot { width: 8px; height: 8px; border-radius: 50%; }
+.showcase-img-dot.r { background: #ff5f57; }
+.showcase-img-dot.y { background: #febc2e; }
+.showcase-img-dot.g { background: #28c840; }
+.showcase-img-url {
+  flex: 1; text-align: center; font-size: 0.6rem; color: var(--text-muted);
+  font-family: 'JetBrains Mono', monospace;
+}
+.showcase-img-wrap img { width: 100%; display: block; }
 
-/* ── 编辑器模拟（使用真实背景图）── */
-.mockup-editor { background: var(--bg-editor); display: flex; height: 100%; position: absolute; inset: 0; }
-.mockup-editor .sidebar {
-  width: 25%; background: #181825; border-right: 1px solid rgba(167, 139, 250, 0.1);
-  padding: 0.5rem; font-size: 0.5rem;
-}
-.mockup-editor .sidebar-item {
-  padding: 0.3rem 0.4rem; border-radius: 0.25rem; color: var(--text-dim);
-  margin-bottom: 0.2rem; display: flex; align-items: center; gap: 0.25rem;
-}
-.mockup-editor .sidebar-item.active { background: rgba(167, 139, 250, 0.15); color: var(--accent); }
-.mockup-editor .sidebar-item::before { content: ''; width: 4px; height: 4px; border-radius: 50%; background: currentColor; opacity: 0.6; }
-.mockup-editor .main-area { flex: 1; padding: 0.5rem; display: flex; flex-direction: column; gap: 0.4rem; }
-.mockup-card {
-  background: #1e1e2e; border: 1px solid rgba(167, 139, 250, 0.1);
-  border-radius: 0.4rem; padding: 0.5rem; font-size: 0.5rem;
-}
-.mockup-card.active { border-color: var(--accent); background: rgba(167, 139, 250, 0.08); }
-.mockup-card-header { display: flex; align-items: center; gap: 0.3rem; margin-bottom: 0.3rem; }
-.mockup-card-badge { width: 10px; height: 10px; border-radius: 0.2rem; background: var(--accent); opacity: 0.7; }
-.mockup-card-badge.choice { background: var(--accent-2); }
-.mockup-card-badge.narration { background: var(--accent-3); }
-.mockup-card-text { color: var(--text-dim); font-size: 0.45rem; line-height: 1.4; }
-.mockup-card-choices { display: flex; gap: 0.3rem; margin-top: 0.3rem; }
-.mockup-choice-tag { font-size: 0.4rem; padding: 0.1rem 0.3rem; border-radius: 0.2rem; background: rgba(240, 171, 252, 0.15); color: var(--accent-2); }
-.mockup-choice-tag.warning { background: rgba(251, 191, 36, 0.15); color: var(--accent-warm); }
-.mockup-editor .preview-area {
-  width: 30%; background: #11111b; border-left: 1px solid rgba(167, 139, 250, 0.1);
-  display: flex; flex-direction: column;
-}
-.mockup-preview-bg {
-  flex: 1; position: relative; overflow: hidden;
-  background: url('../apps/web/public/assets/backgrounds/bg-sakura.png') center/cover no-repeat;
-}
-.mockup-preview-char {
-  position: absolute; bottom: 5%; left: 50%; transform: translateX(-50%);
-  height: 70%; opacity: 0.85;
-}
-.mockup-preview-char img { height: 100%; object-fit: contain; filter: drop-shadow(0 2px 8px rgba(0,0,0,0.4)); }
-.mockup-preview-text { padding: 0.4rem; font-size: 0.45rem; color: var(--text); background: rgba(0, 0, 0, 0.7); }
-
-/* ── 播放器模拟（使用真实背景图）── */
-.mockup-player {
-  position: absolute; inset: 0; overflow: hidden; display: flex; flex-direction: column; justify-content: flex-end;
-  background: url('../apps/web/public/assets/backgrounds/bg-classroom.png') center/cover no-repeat;
-}
-.mockup-player-overlay {
-  position: absolute; inset: 0;
-  background: linear-gradient(180deg, rgba(10,10,15,0.2) 0%, transparent 30%, transparent 50%, rgba(10,10,15,0.92) 100%);
-}
-.mockup-player-char {
-  position: absolute; bottom: 28%; left: 50%; transform: translateX(-50%);
-  height: 55%; z-index: 1;
-}
-.mockup-player-char img { height: 100%; object-fit: contain; filter: drop-shadow(0 4px 20px rgba(0,0,0,0.5)); }
-.mockup-player-textbox {
-  position: relative; z-index: 2; padding: 0.6rem 0.8rem;
-  background: linear-gradient(180deg, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.9) 100%);
-  border-top: 1px solid rgba(167, 139, 250, 0.2);
-}
-.mockup-player-name { font-size: 0.55rem; color: var(--accent); font-weight: 500; margin-bottom: 0.2rem; }
-.mockup-player-text { font-size: 0.5rem; color: var(--text); line-height: 1.5; }
-.mockup-player-choices {
-  display: flex; flex-direction: column; gap: 0.25rem;
-  padding: 0.4rem 0.8rem 0.6rem; background: rgba(0,0,0,0.85); position: relative; z-index: 2;
-}
-.mockup-player-choice {
-  font-size: 0.48rem; padding: 0.3rem 0.5rem;
-  border: 1px solid rgba(167, 139, 250, 0.2); border-radius: 0.3rem;
-  color: var(--text); background: rgba(167, 139, 250, 0.05);
-}
-.mockup-player-choice:first-child { border-color: var(--accent); background: rgba(167, 139, 250, 0.12); }
-
-/* ── 功能列表卡片 ── */
-.feature-card-body { padding: 1.5rem; display: flex; flex-direction: column; gap: 1rem; flex: 1; }
-.feature-num { font-size: 0.7rem; color: var(--text-muted); font-family: 'Instrument Serif', serif; font-style: italic; }
-.feature-title { font-family: 'Noto Serif SC', serif; font-size: 1.1rem; font-weight: 700; color: var(--text); }
-.feature-list { list-style: none; display: flex; flex-direction: column; gap: 0.5rem; margin-top: auto; }
-.feature-list li { font-size: 0.75rem; color: var(--text-dim); display: flex; align-items: flex-start; gap: 0.5rem; }
-.feature-list li::before { content: '✓'; color: var(--accent); font-weight: 700; flex-shrink: 0; }
+.showcase-text { padding: 0 0.5rem; }
+.showcase-num { font-family: 'Instrument Serif', serif; font-style: italic; font-size: 0.8rem; color: var(--accent); }
+.showcase-title { font-family: 'Noto Serif SC', serif; font-size: clamp(1.25rem, 3vw, 1.75rem); font-weight: 700; margin: 0.5rem 0 1rem; color: var(--text); }
+.showcase-desc { font-size: 0.85rem; color: var(--text-dim); line-height: 1.7; margin-bottom: 1.5rem; }
+.showcase-features { list-style: none; display: flex; flex-direction: column; gap: 0.5rem; }
+.showcase-features li { font-size: 0.75rem; color: var(--text-dim); display: flex; align-items: flex-start; gap: 0.5rem; }
+.showcase-features li::before { content: '✓'; color: var(--accent); font-weight: 700; flex-shrink: 0; }
 
 /* ═══ CHARACTERS ═══ */
-.characters {
-  padding: 6rem 1.5rem; max-width: 1200px; margin: 0 auto;
-  position: relative;
-}
-.char-grid {
-  display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; margin-top: 2.5rem;
-}
+.characters { padding: 6rem 1.5rem; max-width: 1200px; margin: 0 auto; position: relative; }
+.char-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; margin-top: 2.5rem; }
 @media (min-width: 768px) { .char-grid { grid-template-columns: repeat(5, 1fr); } }
-
 .char-card {
   background: var(--bg-card); border: 1px solid var(--border); border-radius: 1rem;
-  overflow: hidden; transition: transform 0.5s var(--ease), border-color 0.4s;
-  text-align: center;
+  overflow: hidden; transition: transform 0.5s var(--ease), border-color 0.4s; text-align: center;
 }
 .char-card:hover { transform: translateY(-6px); border-color: rgba(167, 139, 250, 0.35); }
-
 .char-sprite {
   height: 200px; display: flex; align-items: flex-end; justify-content: center;
-  background: linear-gradient(180deg, #1a1a2e 0%, #16213e 100%);
-  position: relative; overflow: hidden;
+  background: linear-gradient(180deg, #1a1726 0%, #1e1a30 100%); position: relative; overflow: hidden;
 }
 .char-sprite::before {
   content: ''; position: absolute; bottom: 0; left: 50%; transform: translateX(-50%);
   width: 60%; height: 30%; background: radial-gradient(ellipse at center, rgba(167, 139, 250, 0.15) 0%, transparent 70%);
 }
 .char-sprite img { height: 90%; object-fit: contain; position: relative; z-index: 1; filter: drop-shadow(0 4px 12px rgba(0,0,0,0.4)); }
-
 .char-info { padding: 1rem; }
 .char-name { font-family: 'Noto Serif SC', serif; font-size: 1rem; font-weight: 700; color: var(--text); }
 .char-en { font-size: 0.65rem; color: var(--text-muted); font-family: 'Instrument Serif', serif; font-style: italic; margin-top: 0.15rem; }
@@ -332,10 +281,9 @@ body {
 .char-color { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 0.25rem; vertical-align: middle; }
 
 /* ═══ SCENE GALLERY ═══ */
-.scenes { padding: 6rem 1.5rem; max-width: 1200px; margin: 0 auto; }
+.scenes { padding: 6rem 1.5rem; max-width: 1200px; margin: 0 auto; position: relative; }
 .scenes-grid { display: grid; grid-template-columns: 1fr; gap: 1.5rem; margin-top: 2.5rem; }
 @media (min-width: 768px) { .scenes-grid { grid-template-columns: 1fr 1fr; } }
-
 .scene-card {
   position: relative; border-radius: 1rem; overflow: hidden;
   border: 1px solid var(--border); aspect-ratio: 16/10;
@@ -345,12 +293,9 @@ body {
 .scene-bg { position: absolute; inset: 0; background-size: cover; background-position: center; }
 .scene-overlay {
   position: absolute; inset: 0;
-  background: linear-gradient(180deg, rgba(10,10,15,0.15) 0%, transparent 25%, transparent 45%, rgba(10,10,15,0.92) 100%);
+  background: linear-gradient(180deg, rgba(13,11,22,0.15) 0%, transparent 25%, transparent 45%, rgba(13,11,22,0.92) 100%);
 }
-.scene-char {
-  position: absolute; bottom: 22%; left: 50%; transform: translateX(-50%);
-  height: 58%; z-index: 1;
-}
+.scene-char { position: absolute; bottom: 22%; left: 50%; transform: translateX(-50%); height: 58%; z-index: 1; }
 .scene-char img { height: 100%; object-fit: contain; filter: drop-shadow(0 4px 20px rgba(0,0,0,0.5)); }
 .scene-textbox {
   position: absolute; bottom: 0; left: 0; right: 0; z-index: 2;
@@ -373,7 +318,6 @@ body {
 .editor-detail { padding: 6rem 1.5rem; max-width: 1200px; margin: 0 auto; }
 .lens-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; margin-top: 2.5rem; }
 @media (min-width: 768px) { .lens-grid { grid-template-columns: repeat(3, 1fr); } }
-
 .lens-card {
   background: var(--bg-card); border: 1px solid var(--border); border-radius: 0.75rem;
   padding: 1.25rem; transition: border-color 0.3s, transform 0.3s var(--ease);
@@ -425,19 +369,21 @@ body {
 .step-num { font-family: 'Noto Serif SC', serif; font-size: 1.5rem; font-weight: 900; color: var(--accent); flex-shrink: 0; width: 2.5rem; }
 .step-content h4 { font-size: 0.9rem; color: var(--text); margin-bottom: 0.375rem; }
 .step-content p { font-size: 0.75rem; color: var(--text-dim); }
-.step-content code { display: block; margin-top: 0.5rem; padding: 0.5rem 0.75rem; background: #000; border-radius: 0.5rem; font-size: 0.7rem; color: var(--accent-3); font-family: 'JetBrains Mono', monospace; overflow-x: auto; }
+.step-content code { display: block; margin-top: 0.5rem; padding: 0.5rem 0.75rem; background: #0a0810; border-radius: 0.5rem; font-size: 0.7rem; color: var(--accent-3); font-family: 'JetBrains Mono', monospace; overflow-x: auto; }
 
 /* ═══ FOOTER ═══ */
-.footer { padding: 4rem 1.5rem 2rem; text-align: center; border-top: 1px solid var(--border); position: relative; overflow: hidden; }
-.footer-bg {
-  position: absolute; inset: 0;
-  background: linear-gradient(180deg, transparent 0%, rgba(30, 30, 46, 0.5) 50%, rgba(10, 10, 15, 1) 100%);
-  z-index: 0;
+.footer { padding: 4rem 1.5rem 2rem; text-align: center; border-top: 1px solid var(--border); position: relative; overflow: hidden;
+  background: linear-gradient(180deg, transparent 0%, rgba(20, 17, 33, 0.6) 50%, #0d0b16 100%);
 }
 .footer-bg::before {
   content: ''; position: absolute; inset: 0;
-  background-image: linear-gradient(90deg, rgba(167, 139, 250, 0.03) 1px, transparent 1px), linear-gradient(0deg, rgba(167, 139, 250, 0.03) 1px, transparent 1px);
-  background-size: 20px 20px;
+  background-image: linear-gradient(90deg, rgba(167, 139, 250, 0.04) 1px, transparent 1px), linear-gradient(0deg, rgba(167, 139, 250, 0.04) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+.footer-glow {
+  position: absolute; top: 0; left: 50%; transform: translateX(-50%);
+  width: 500px; height: 200px; pointer-events: none;
+  background: radial-gradient(ellipse at center, rgba(167, 139, 250, 0.06) 0%, transparent 70%);
 }
 .footer-content { position: relative; z-index: 1; }
 .footer-title { font-family: 'Noto Serif SC', serif; font-size: clamp(1.5rem, 4vw, 2.5rem); font-weight: 700; margin-bottom: 1rem; }
@@ -453,7 +399,6 @@ body {
 @media (max-width: 640px) {
   .nav { display: none; }
   .hero-inner { height: calc(100vh - 2rem); }
-  .mockup-editor .preview-area { display: none; }
 }
 </style>
 </head>
@@ -472,7 +417,7 @@ body {
 
     <nav class="nav">
       <a href="#about">产品定位</a>
-      <a href="#features">核心功能</a>
+      <a href="#showcase">界面</a>
       <a href="#characters">角色</a>
       <a href="#scenes">场景</a>
       <a href="#editor">编辑器</a>
@@ -515,6 +460,7 @@ body {
 <!-- ═══════════════ ABOUT ═══════════════ -->
 <section class="about" id="about">
   <div class="about-bg-img"></div>
+  <div class="about-glow"></div>
   <div class="bg-noise"></div>
   <div class="about-inner">
     <div class="section-label reveal">About</div>
@@ -537,99 +483,129 @@ body {
   </div>
 </section>
 
-<!-- ═══════════════ FEATURES ═══════════════ -->
-<section class="features" id="features">
-  <div class="bg-noise"></div>
-  <div class="section">
-    <div class="section-label reveal">Features</div>
-    <h2 class="section-title reveal">为创作者打造的<span class="italic">全套工具链</span></h2>
-    <p class="section-desc reveal">从镜头卡编辑到实时预览，从 AI 辅助到流程图可视化，每一个功能都围绕"让创作更简单"设计。</p>
-  </div>
-  <div class="features-grid">
-    <!-- Card 1: 编辑器模拟（使用真实背景图和角色立绘） -->
-    <div class="feature-card feature-card-mockup reveal">
-      <div class="mockup-screen">
-        <div class="mockup-editor">
-          <div class="sidebar">
-            <div class="sidebar-item active">场景 1-1 开场</div>
-            <div class="sidebar-item">场景 1-2 分支A</div>
-            <div class="sidebar-item">场景 1-3 分支B</div>
-            <div class="sidebar-item">场景 1-4 汇合</div>
-          </div>
-          <div class="main-area">
-            <div class="mockup-card">
-              <div class="mockup-card-header"><div class="mockup-card-badge narration"></div><span style="color:var(--text-dim)">旁白</span></div>
-              <div class="mockup-card-text">新场景开始，午后的教室洒满阳光...</div>
-            </div>
-            <div class="mockup-card active">
-              <div class="mockup-card-header"><div class="mockup-card-badge"></div><span style="color:var(--accent)">雪 · 对话</span></div>
-              <div class="mockup-card-text">你好，今天也来做研究吗？</div>
-            </div>
-            <div class="mockup-card">
-              <div class="mockup-card-header"><div class="mockup-card-badge choice"></div><span style="color:var(--accent-2)">选项</span></div>
-              <div class="mockup-card-text">选择回应：</div>
-              <div class="mockup-card-choices">
-                <span class="mockup-choice-tag">A. 雪的方向</span>
-                <span class="mockup-choice-tag warning">B. 未设置</span>
-              </div>
-            </div>
-          </div>
-          <div class="preview-area">
-            <div class="mockup-preview-bg">
-              <div class="mockup-preview-char"><img src="../apps/web/public/assets/characters/yuki_normal.png" alt=""></div>
-            </div>
-            <div class="mockup-preview-text">雪：你好，今天也来...</div>
-          </div>
-        </div>
-      </div>
-      <div class="mockup-label"><div class="feature-num">Editor</div><div class="feature-title">镜头卡编辑器</div></div>
-    </div>
+<!-- ═══════════════ SHOWCASE — 真实界面截图 ═══════════════ -->
+<section class="showcase" id="showcase">
+  <div class="section-label reveal">Interface</div>
+  <h2 class="section-title reveal">五大功能模块<span class="italic">真实界面展示</span></h2>
+  <p class="section-desc reveal">以下均为项目实际运行截图，非设计稿。从编辑器到流程图，从 AI 写作到素材管理，每一处界面都围绕"让创作更简单"设计。</p>
 
-    <!-- Card 2: 播放器模拟（使用真实背景图和角色立绘） -->
-    <div class="feature-card feature-card-mockup reveal">
-      <div class="mockup-screen">
-        <div class="mockup-player">
-          <div class="mockup-player-overlay"></div>
-          <div class="mockup-player-char"><img src="../apps/web/public/assets/characters/yuki_smile.png" alt=""></div>
-          <div class="mockup-player-textbox">
-            <div class="mockup-player-name">雪</div>
-            <div class="mockup-player-text">你好，今天也来做研究吗？</div>
-          </div>
-          <div class="mockup-player-choices">
-            <div class="mockup-player-choice">A. 想了解雪的研究方向</div>
-            <div class="mockup-player-choice">B. 只是路过而已</div>
-          </div>
+  <div class="showcase-blocks">
+    <!-- 1. 镜头卡编辑器 -->
+    <div class="showcase-block reveal">
+      <div class="showcase-img-wrap">
+        <div class="showcase-img-bar">
+          <span class="showcase-img-dot r"></span>
+          <span class="showcase-img-dot y"></span>
+          <span class="showcase-img-dot g"></span>
+          <span class="showcase-img-url">localhost:5173/editor</span>
         </div>
+        <img src="screenshots/editor.png" alt="镜头卡编辑器界面" loading="lazy">
       </div>
-      <div class="mockup-label"><div class="feature-num">Player</div><div class="feature-title">实时预览播放器</div></div>
-    </div>
-
-    <!-- Card 3: AI -->
-    <div class="feature-card reveal">
-      <div class="feature-card-body">
-        <div class="feature-num">01</div>
-        <div class="feature-title">AI 辅助写作</div>
-        <ul class="feature-list">
-          <li>润色：优化台词表达</li>
-          <li>续写：延续剧情走向</li>
-          <li>生成选项：自动产出分支</li>
-          <li>分支回应：批量生成角色台词</li>
-          <li>剧情图：AI 生成完整节点结构</li>
+      <div class="showcase-text">
+        <div class="showcase-num">01 / Editor</div>
+        <h3 class="showcase-title">镜头卡编辑器</h3>
+        <p class="showcase-desc">三栏布局：左侧章节场景树管理剧情结构，中间镜头卡列表像写小说一样编写台词和旁白，右侧实时预览每一步修改的播放效果。无需理解节点图，系统自动生成所有节点和连线。</p>
+        <ul class="showcase-features">
+          <li>章节 → 场景 → 镜头卡三级结构</li>
+          <li>6 种镜头卡类型（对话/旁白/心理/回忆/系统/选项）</li>
+          <li>右栏实时预览，所见即所得</li>
+          <li>长文导入：粘贴小说正文自动拆分为镜头卡</li>
         </ul>
       </div>
     </div>
 
-    <!-- Card 4: Flowchart -->
-    <div class="feature-card reveal">
-      <div class="feature-card-body">
-        <div class="feature-num">02</div>
-        <div class="feature-title">剧情流程图</div>
-        <ul class="feature-list">
-          <li>galgame 风格全局视图</li>
-          <li>分支连线与选项标注</li>
-          <li>汇合点紫色高亮</li>
-          <li>拖拽调整场景位置</li>
-          <li>拖拽创建场景间连接</li>
+    <!-- 2. 剧情流程图 -->
+    <div class="showcase-block reverse reveal">
+      <div class="showcase-img-wrap">
+        <div class="showcase-img-bar">
+          <span class="showcase-img-dot r"></span>
+          <span class="showcase-img-dot y"></span>
+          <span class="showcase-img-dot g"></span>
+          <span class="showcase-img-url">localhost:5173/editor → 剧情流程图</span>
+        </div>
+        <img src="screenshots/flowchart.png" alt="剧情流程图界面" loading="lazy">
+      </div>
+      <div class="showcase-text">
+        <div class="showcase-num">02 / Flowchart</div>
+        <h3 class="showcase-title">剧情流程图</h3>
+        <p class="showcase-desc">galgame 风格的全局视图，将所有场景和分支连线可视化。普通连接用实线箭头，选项分支用虚线标注，汇合场景紫色高亮。支持拖拽调整场景位置和创建场景间连接。</p>
+        <ul class="showcase-features">
+          <li>实线=普通连接，虚线=选项分支</li>
+          <li>汇合场景紫色高亮 + GitMerge 徽章</li>
+          <li>选项节点粉色边框 + 分支数量标识</li>
+          <li>拖拽场景卡片调整位置，拖拽创建连接</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- 3. AI 写作辅助台 -->
+    <div class="showcase-block reveal">
+      <div class="showcase-img-wrap">
+        <div class="showcase-img-bar">
+          <span class="showcase-img-dot r"></span>
+          <span class="showcase-img-dot y"></span>
+          <span class="showcase-img-dot g"></span>
+          <span class="showcase-img-url">localhost:5173/ai-writing</span>
+        </div>
+        <img src="screenshots/ai-writing.png" alt="AI写作辅助台界面" loading="lazy">
+      </div>
+      <div class="showcase-text">
+        <div class="showcase-num">03 / AI Writing</div>
+        <h3 class="showcase-title">AI 写作辅助台</h3>
+        <p class="showcase-desc">五种写作模式覆盖从大纲到台词的全流程。选择任务类型、输入上下文，AI 生成结果可直接复制或保存到草稿箱。未配置 AI 时使用本地规则生成基础内容，配置后支持 GLM / DeepSeek / Kimi / OpenAI。</p>
+        <ul class="showcase-features">
+          <li>整理大纲 · 场景续写 · 角色台词 · 选项分支 · 节点草稿</li>
+          <li>本地辅助模式 + 云端 AI 模式双轨</li>
+          <li>草稿箱持久化保存，随时复制到编辑器</li>
+          <li>BaseOpenAICompatibleProvider 统一接口</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- 4. 素材库 -->
+    <div class="showcase-block reverse reveal">
+      <div class="showcase-img-wrap">
+        <div class="showcase-img-bar">
+          <span class="showcase-img-dot r"></span>
+          <span class="showcase-img-dot y"></span>
+          <span class="showcase-img-dot g"></span>
+          <span class="showcase-img-url">localhost:5173/assets</span>
+        </div>
+        <img src="screenshots/assets.png" alt="素材库界面" loading="lazy">
+      </div>
+      <div class="showcase-text">
+        <div class="showcase-num">04 / Assets</div>
+        <h3 class="showcase-title">素材库</h3>
+        <p class="showcase-desc">角色立绘、背景图、表情差分统一管理。每个角色卡片包含立绘、一句话简介、人物小传、故事大纲和戏剧冲突（粉色高亮），底部表情差分选择器支持 normal / smile / serious 等状态切换。</p>
+        <ul class="showcase-features">
+          <li>角色立绘 + 表情差分（normal / smile / serious）</li>
+          <li>背景图库：樱花、教室、咖啡馆、星空</li>
+          <li>戏剧冲突高亮策略，降低信息扫描成本</li>
+          <li>支持自定义上传素材</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- 5. 作品广场 -->
+    <div class="showcase-block reveal">
+      <div class="showcase-img-wrap">
+        <div class="showcase-img-bar">
+          <span class="showcase-img-dot r"></span>
+          <span class="showcase-img-dot y"></span>
+          <span class="showcase-img-dot g"></span>
+          <span class="showcase-img-url">localhost:5173</span>
+        </div>
+        <img src="screenshots/home.png" alt="首页作品广场界面" loading="lazy">
+      </div>
+      <div class="showcase-text">
+        <div class="showcase-num">05 / Gallery</div>
+        <h3 class="showcase-title">作品广场</h3>
+        <p class="showcase-desc">项目首页即创作者入口。Hero 区展示产品定位，下方"我的作品"卡片网格管理所有项目。新建故事、打开素材库、试玩演示三个入口覆盖从零开始到分享发布的完整路径。</p>
+        <ul class="showcase-features">
+          <li>一键发布到作品广场</li>
+          <li>分享链接即可在浏览器中播放</li>
+          <li>项目卡片管理（编辑/删除/发布状态）</li>
+          <li>无需安装，浏览器直接运行</li>
         </ul>
       </div>
     </div>
@@ -702,8 +678,7 @@ body {
         <div class="scene-text">樱花又开了呢……和那年一样，你也在。</div>
       </div>
     </div>
-
-    <!-- Scene 2: 选项分支（使用未被使用的 bg-cafe.png）-->
+    <!-- Scene 2: 选项分支 -->
     <div class="scene-card reveal">
       <div class="scene-bg" style="background: url('../apps/web/public/assets/backgrounds/bg-cafe.png') center/cover no-repeat;"></div>
       <div class="scene-overlay"></div>
@@ -718,7 +693,6 @@ body {
         </div>
       </div>
     </div>
-
     <!-- Scene 3: 旁白镜头 -->
     <div class="scene-card reveal">
       <div class="scene-bg" style="background: url('../apps/web/public/assets/backgrounds/bg-starry.png') center/cover no-repeat;"></div>
@@ -729,7 +703,6 @@ body {
         <div class="scene-text">星空之下，空仰望着银河。那些闪烁的光点，仿佛是无数未曾写下的故事。</div>
       </div>
     </div>
-
     <!-- Scene 4: 系统提示 -->
     <div class="scene-card reveal">
       <div class="scene-bg" style="background: url('../apps/web/public/assets/backgrounds/bg-classroom.png') center/cover no-repeat;"></div>
@@ -805,6 +778,7 @@ cd apps/server && npm run dev</code></div></div>
 <!-- ═══════════════ FOOTER ═══════════════ -->
 <footer class="footer">
   <div class="footer-bg"></div>
+  <div class="footer-glow"></div>
   <div class="footer-content">
     <h2 class="footer-title">一起把下一个故事<span class="italic">变成作品</span></h2>
     <p class="section-desc" style="margin: 0 auto;">DreamChord — 像写小说一样创作，像玩游戏一样阅读。</p>
