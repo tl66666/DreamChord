@@ -486,10 +486,51 @@ body {
 /* ── Scroll-linked character reveal ── */
 .char-reveal { display: inline-block; opacity: 0.15; transition: opacity 0.1s; }
 
+/* ═══ COMPARISON TABLE ═══ */
+.compare { padding: 6rem 1.5rem; max-width: 1100px; margin: 0 auto; }
+.compare-wrap { margin-top: 2.5rem; overflow-x: auto; border-radius: 1rem; border: 1px solid var(--border); box-shadow: var(--shadow-lg); background: var(--bg-card); }
+.compare-table { width: 100%; border-collapse: collapse; min-width: 700px; }
+.compare-table th, .compare-table td { padding: 1rem 1.25rem; text-align: left; border-bottom: 1px solid var(--border); font-size: 0.82rem; }
+.compare-table thead th { background: var(--bg-card-2); font-weight: 700; color: var(--text); font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.08em; position: sticky; top: 0; }
+.compare-table thead th.highlight { background: linear-gradient(135deg, rgba(124, 58, 237, 0.08), rgba(192, 38, 211, 0.06)); color: var(--accent); }
+.compare-table tbody tr { transition: background 0.2s; }
+.compare-table tbody tr:hover { background: rgba(124, 58, 237, 0.03); }
+.compare-table td.highlight-col { background: rgba(124, 58, 237, 0.03); }
+.compare-table .yes { color: var(--accent-green); font-weight: 700; }
+.compare-table .no { color: var(--text-muted); }
+.compare-table .partial { color: var(--accent-warm); font-weight: 600; }
+.compare-table .feat { font-weight: 600; color: var(--text); }
+.compare-table .feat-desc { font-size: 0.7rem; color: var(--text-muted); margin-top: 0.15rem; font-weight: 400; }
+
+/* ═══ FAQ ═══ */
+.faq { padding: 6rem 1.5rem; max-width: 900px; margin: 0 auto; }
+.faq-list { margin-top: 2.5rem; display: flex; flex-direction: column; gap: 0.75rem; }
+.faq-item { background: var(--bg-card); border: 1px solid var(--border); border-radius: 0.75rem; overflow: hidden; transition: border-color 0.3s, box-shadow 0.3s; box-shadow: var(--shadow); }
+.faq-item:hover { border-color: var(--border-2); }
+.faq-item.open { border-color: var(--accent); box-shadow: var(--shadow-lg); }
+.faq-q { padding: 1.25rem 1.5rem; display: flex; align-items: center; justify-content: space-between; cursor: pointer; font-size: 0.9rem; font-weight: 600; color: var(--text); user-select: none; transition: color 0.2s; }
+.faq-q:hover { color: var(--accent); }
+.faq-q .faq-icon { width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; transition: transform 0.3s var(--ease); flex-shrink: 0; color: var(--accent); font-size: 1.2rem; }
+.faq-item.open .faq-q .faq-icon { transform: rotate(45deg); }
+.faq-a { max-height: 0; overflow: hidden; transition: max-height 0.4s var(--ease); }
+.faq-item.open .faq-a { max-height: 400px; }
+.faq-a-inner { padding: 0 1.5rem 1.25rem; font-size: 0.82rem; color: var(--text-dim); line-height: 1.7; }
+
+/* ═══ BACK TO TOP ═══ */
+.back-top { position: fixed; bottom: 2rem; right: 2rem; width: 44px; height: 44px; border-radius: 50%; background: var(--text); color: #fff; display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 50; opacity: 0; transform: translateY(20px) scale(0.8); transition: all 0.4s var(--ease); border: none; box-shadow: 0 4px 20px rgba(30, 27, 46, 0.3); }
+.back-top.visible { opacity: 1; transform: translateY(0) scale(1); }
+.back-top:hover { background: var(--accent); transform: translateY(-4px) scale(1.1); box-shadow: 0 8px 30px rgba(124, 58, 237, 0.4); }
+.back-top svg { width: 18px; height: 18px; }
+
+/* ── Nav active highlight ── */
+.nav a.active { color: var(--accent); font-weight: 700; }
+.nav a.active::after { content: ''; display: block; height: 2px; background: var(--accent); border-radius: 1px; margin-top: 2px; }
+
 @media (max-width: 640px) {
   .nav { display: none; }
   .hero-inner { height: calc(100vh - 2rem); }
   .hero-content { padding: 1.5rem; }
+  .back-top { bottom: 1rem; right: 1rem; }
 }
 </style>
 </head>
@@ -520,11 +561,13 @@ body {
 
     <nav class="nav">
       <a href="#about">产品定位</a>
+      <a href="#compare">对比</a>
       <a href="#showcase">界面</a>
       <a href="#characters">角色</a>
       <a href="#scenes">场景</a>
       <a href="#editor">编辑器</a>
       <a href="#tech">技术栈</a>
+      <a href="#faq">FAQ</a>
       <a href="#start">快速开始</a>
       <a href="https://github.com/tl66666/DreamChord" target="_blank">GitHub</a>
     </nav>
@@ -615,6 +658,75 @@ body {
         </div>
       </div>
     </div>
+  </div>
+</section>
+
+<!-- ═══════════════ COMPARISON ═══════════════ -->
+<section class="compare" id="compare">
+  <div class="section-label reveal">Comparison</div>
+  <h2 class="section-title reveal">与传统引擎<span class="italic">横向对比</span></h2>
+  <p class="section-desc reveal">DreamChord 不是替代 Ren'Py 的下一代引擎，而是面向另一群人——想写视觉小说但不想学代码的创作者。下表从 8 个维度对比三类工具的核心差异。</p>
+  <div class="compare-wrap reveal">
+    <table class="compare-table">
+      <thead>
+        <tr>
+          <th>能力维度</th>
+          <th>Ren'Py</th>
+          <th>TyranoBuilder</th>
+          <th class="highlight">DreamChord</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><div class="feat">写作方式<div class="feat-desc">用户如何编辑剧情</div></div></td>
+          <td><span class="no">手写 .rpy 脚本</span></td>
+          <td><span class="partial">可视化节点连线</span></td>
+          <td class="highlight-col"><span class="yes">镜头卡填表式写作</span></td>
+        </tr>
+        <tr>
+          <td><div class="feat">编程门槛<div class="feat-desc">是否需要写代码</div></div></td>
+          <td><span class="no">需学 Python + Ren'Py 语法</span></td>
+          <td><span class="partial">低，但节点图仍需理解</span></td>
+          <td class="highlight-col"><span class="yes">零代码，纯填写</span></td>
+        </tr>
+        <tr>
+          <td><div class="feat">实时预览<div class="feat-desc">编辑时是否即时看到效果</div></div></td>
+          <td><span class="no">需重新编译运行</span></td>
+          <td><span class="partial">部分预览</span></td>
+          <td class="highlight-col"><span class="yes">右栏实时所见即所得</span></td>
+        </tr>
+        <tr>
+          <td><div class="feat">分支可视化<div class="feat-desc">全局查看分支结构</div></div></td>
+          <td><span class="no">无，全靠记忆</span></td>
+          <td><span class="yes">节点图视图</span></td>
+          <td class="highlight-col"><span class="yes">流程图 + 汇合点高亮</span></td>
+        </tr>
+        <tr>
+          <td><div class="feat">AI 辅助<div class="feat-desc">内置 AI 写作功能</div></div></td>
+          <td><span class="no">无</span></td>
+          <td><span class="no">无</span></td>
+          <td class="highlight-col"><span class="yes">5 种模式 + 4 家供应商</span></td>
+        </tr>
+        <tr>
+          <td><div class="feat">运行环境<div class="feat-desc">读者如何游玩</div></div></td>
+          <td><span class="partial">打包 exe / apk 分发</span></td>
+          <td><span class="partial">打包为 Web 或 exe</span></td>
+          <td class="highlight-col"><span class="yes">浏览器直接打开链接</span></td>
+        </tr>
+        <tr>
+          <td><div class="feat">长文导入<div class="feat-desc">从小说文本快速拆分</div></div></td>
+          <td><span class="no">无，手动逐句转写</span></td>
+          <td><span class="no">无</span></td>
+          <td class="highlight-col"><span class="yes">粘贴正文自动拆分镜头卡</span></td>
+        </tr>
+        <tr>
+          <td><div class="feat">项目体检<div class="feat-desc">自动检测剧情结构问题</div></div></td>
+          <td><span class="no">无</span></td>
+          <td><span class="no">无</span></td>
+          <td class="highlight-col"><span class="yes">12 项健康检查</span></td>
+        </tr>
+      </tbody>
+    </table>
   </div>
 </section>
 
@@ -977,6 +1089,47 @@ cd apps/server && npm run dev</code></div></div>
   </div>
 </section>
 
+<!-- ═══════════════ FAQ ═══════════════ -->
+<section class="faq" id="faq">
+  <div class="section-label reveal">FAQ</div>
+  <h2 class="section-title reveal">常见<span class="italic">问题</span></h2>
+  <p class="section-desc reveal">关于使用方式、技术选型、素材规范和后续迭代的常见疑问。点击问题展开解答。</p>
+  <div class="faq-list">
+    <div class="faq-item reveal">
+      <div class="faq-q">DreamChord 和 Ren'Py 有什么区别？我该选哪个？<span class="faq-icon">+</span></div>
+      <div class="faq-a"><div class="faq-a-inner">Ren'Py 是成熟的视觉小说引擎，适合愿意学习脚本语法的创作者，生态完善、社区活跃、可打包为桌面/移动应用。DreamChord 面向不想写代码的创作者——如果你有故事想法但不擅长编程，想快速在浏览器里搭一个可交互的视觉小说，选 DreamChord。两者不是替代关系，而是面向不同人群的工具。</div></div>
+    </div>
+    <div class="faq-item reveal">
+      <div class="faq-q">项目需要安装数据库吗？<span class="faq-icon">+</span></div>
+      <div class="faq-a"><div class="faq-a-inner">不需要额外安装。后端使用 SQLite 文件数据库（dev.db），Prisma ORM 自动管理。运行 npx prisma migrate dev 会自动创建表结构，npx prisma db seed 会插入演示账号和官方剧情数据。整个数据库就是一个文件，不需要 MySQL / PostgreSQL 等独立数据库服务。</div></div>
+    </div>
+    <div class="faq-item reveal">
+      <div class="faq-q">AI 功能是必须的吗？不配置 AI 能用吗？<span class="faq-icon">+</span></div>
+      <div class="faq-a"><div class="faq-a-inner">AI 功能完全可选。不配置 API Key 时，AI 助手使用本地规则引擎生成基础内容（基于模板和关键词匹配）。配置后才会调用 GLM / DeepSeek / Kimi / OpenAI 的在线接口。基础编辑、预览、发布功能不依赖任何 AI 服务。</div></div>
+    </div>
+    <div class="faq-item reveal">
+      <div class="faq-q">角色立绘为什么有白底？怎么处理？<span class="faq-icon">+</span></div>
+      <div class="faq-a"><div class="faq-a-inner">AI 生成角色立绘时使用白底（flat white studio background），白底只为方便后续抠图。项目使用阶段必须放入透明 PNG。白底母版存放在 source-assets/white-bg-originals/，运行用透明立绘存放在 apps/web/public/assets/characters/。抠图可使用 remove.bg、Photoshop 或 rembg 等工具。灰白格子不是背景，只是图片软件表示"透明"的预览方式。</div></div>
+    </div>
+    <div class="faq-item reveal">
+      <div class="faq-q">新建场景后无法编辑背景、角色、台词怎么办？<span class="faq-icon">+</span></div>
+      <div class="faq-a"><div class="faq-a-inner">这通常是场景起始节点定位错误。系统通过"没有来自同场景入边的节点"来定位起始节点（findSceneStartNode 函数），而非按数组顺序查找。如果遇到此问题，检查场景中是否有多个无入边节点，或是否有跨场景的边误连。FlowEditor 和 ShotCardEditor 中的相关调用均已使用 findSceneStartNode() 替代旧的顺序查找逻辑。</div></div>
+    </div>
+    <div class="faq-item reveal">
+      <div class="faq-q">选项分支不出现或跳转不正确？<span class="faq-icon">+</span></div>
+      <div class="faq-a"><div class="faq-a-inner">检查选项卡是否有未设置去向的琥珀色警告标识。每个选项需要通过"写这条分支"（自动创建新场景）或"跳转到已有场景"设置目标场景。另外，addCard 和 quickAppendDialogue 在场景尾节点已有出边时采用插入模式（断开旧出边 → 插入新节点 → 重新连接原目标），确保新节点不会孤立。</div></div>
+    </div>
+    <div class="faq-item reveal">
+      <div class="faq-q">支持移动端播放吗？<span class="faq-icon">+</span></div>
+      <div class="faq-a"><div class="faq-a-inner">播放器支持移动端自适应。文本框铺满屏幕宽度，选项按钮底部弹出，触摸点击即可推进剧情和选择分支。编辑器由于三栏布局较为复杂，建议在桌面端使用。播放器支持快捷键（Enter/Space 推进、1/2/3 选择选项、H 查看历史、S 跳过、A 自动播放），在移动端通过触摸操作替代。</div></div>
+    </div>
+    <div class="faq-item reveal">
+      <div class="faq-q">后续迭代计划是什么？<span class="faq-icon">+</span></div>
+      <div class="faq-a"><div class="faq-a-inner">已规划的方向包括：BGM 音乐管理系统（支持循环、淡入淡出、场景切换过渡）、语音合成集成（TTS 自动朗读台词）、多语言支持（i18n 国际化）、更丰富的动画效果（角色全身入场动画、屏幕震动、转场特效）、以及协作编辑功能。详细迭代建议参见 docs/AI_HANDOFF.md。</div></div>
+    </div>
+  </div>
+</section>
+
 <!-- ═══════════════ FOOTER (video bg, light blend) ═══════════════ -->
 <footer class="footer">
   <div class="footer-video-bg">
@@ -1131,6 +1284,59 @@ function setupPainRows() {
     row.style.transitionDelay = (i * 80) + 'ms';
   });
 }
+</script>
+<!-- Back to top button -->
+<button class="back-top" id="backTop" aria-label="回到顶部">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
+</button>
+
+<script>
+// ═══ FAQ ACCORDION ═══
+function setupFAQ() {
+  document.querySelectorAll('.faq-item').forEach(item => {
+    const q = item.querySelector('.faq-q');
+    q.addEventListener('click', () => {
+      const isOpen = item.classList.contains('open');
+      document.querySelectorAll('.faq-item').forEach(i => i.classList.remove('open'));
+      if (!isOpen) item.classList.add('open');
+    });
+  });
+}
+
+// ═══ BACK TO TOP ═══
+function setupBackTop() {
+  const btn = document.getElementById('backTop');
+  if (!btn) return;
+  window.addEventListener('scroll', () => {
+    if (window.scrollY > 600) btn.classList.add('visible');
+    else btn.classList.remove('visible');
+  }, { passive: true });
+  btn.addEventListener('click', () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
+}
+
+// ═══ NAV ACTIVE HIGHLIGHT ═══
+function setupNavHighlight() {
+  const navLinks = document.querySelectorAll('.nav a[href^="#"]');
+  if (!navLinks.length) return;
+  const sections = [];
+  navLinks.forEach(link => {
+    const id = link.getAttribute('href').slice(1);
+    const sec = document.getElementById(id);
+    if (sec) sections.push({ link, sec });
+  });
+  window.addEventListener('scroll', () => {
+    let current = '';
+    const scrollPos = window.scrollY + 120;
+    sections.forEach(({ sec }) => {
+      if (sec.offsetTop <= scrollPos) current = sec.id;
+    });
+    navLinks.forEach(link => {
+      link.classList.toggle('active', link.getAttribute('href') === '#' + current);
+    });
+  }, { passive: true });
+}
 
 window.addEventListener('DOMContentLoaded', () => {
   animateHeroTitle();
@@ -1140,6 +1346,9 @@ window.addEventListener('DOMContentLoaded', () => {
   setupCardTilt();
   setupScrollReveal();
   setupPainRows();
+  setupFAQ();
+  setupBackTop();
+  setupNavHighlight();
   // 数字动画在统计区域进入视口时触发
   const statObserver = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
