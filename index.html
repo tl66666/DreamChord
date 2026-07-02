@@ -180,19 +180,74 @@ body {
 }
 .hero-cta-secondary:hover { border-color: var(--accent); transform: translateY(-2px); box-shadow: var(--shadow); }
 
-/* Nav */
+/* ═══ FIXED NAVBAR ═══ */
 .nav {
-  position: absolute; top: 1.5rem; left: 50%; transform: translateX(-50%);
-  z-index: 20; background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(12px);
-  border-radius: 9999px; padding: 0.5rem 1.5rem;
-  display: flex; gap: 1.5rem;
-  border: 1px solid var(--border);
-  box-shadow: var(--shadow);
+  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0.875rem 1.5rem;
+  background: rgba(248, 246, 253, 0.55);
+  backdrop-filter: blur(16px) saturate(180%);
+  -webkit-backdrop-filter: blur(16px) saturate(180%);
+  border-bottom: 1px solid transparent;
+  transition: padding 0.4s var(--ease), background 0.4s var(--ease), border-color 0.4s var(--ease), box-shadow 0.4s var(--ease);
 }
-@media (min-width: 768px) { .nav { gap: 2.5rem; padding: 0.625rem 2rem; } }
-.nav a { font-size: 0.75rem; color: var(--text-dim); text-decoration: none; transition: color 0.3s; font-weight: 500; }
-@media (min-width: 768px) { .nav a { font-size: 0.85rem; } }
-.nav a:hover { color: var(--accent); }
+.nav.scrolled {
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border-bottom-color: var(--border);
+  box-shadow: 0 2px 24px rgba(124, 58, 237, 0.06);
+  padding: 0.5rem 1.5rem;
+}
+.nav-brand {
+  font-family: 'Noto Serif SC', serif;
+  font-size: 1.05rem; font-weight: 700; color: var(--text);
+  text-decoration: none; white-space: nowrap;
+  display: flex; align-items: center; gap: 0.35rem;
+  flex-shrink: 0;
+}
+.nav-brand .brand-accent {
+  font-family: 'Instrument Serif', serif; font-style: italic;
+  font-weight: 400; color: var(--accent); font-size: 0.9rem;
+}
+.nav-links {
+  display: flex; gap: 1.4rem; align-items: center;
+  margin: 0 auto;
+  overflow-x: auto; scrollbar-width: none; -ms-overflow-style: none;
+}
+.nav-links::-webkit-scrollbar { display: none; }
+.nav-link {
+  font-size: 0.78rem; color: var(--text-dim); text-decoration: none;
+  font-weight: 500; white-space: nowrap; position: relative;
+  transition: color 0.3s; padding: 0.25rem 0;
+}
+.nav-link:hover { color: var(--accent); }
+.nav-link.active { color: var(--accent); font-weight: 600; }
+.nav-link.active::after {
+  content: ''; position: absolute; bottom: -2px; left: 50%; transform: translateX(-50%);
+  width: 18px; height: 2px; background: var(--accent); border-radius: 1px;
+}
+.nav-cta {
+  font-size: 0.78rem; color: #fff; text-decoration: none;
+  padding: 0.45rem 1.1rem; border-radius: 9999px;
+  background: linear-gradient(135deg, var(--accent), var(--accent-2));
+  font-weight: 600; white-space: nowrap; flex-shrink: 0;
+  box-shadow: 0 2px 12px rgba(124, 58, 237, 0.25);
+  transition: transform 0.3s var(--ease), box-shadow 0.3s;
+  display: flex; align-items: center; gap: 0.35rem;
+}
+.nav-cta:hover { transform: translateY(-2px); box-shadow: 0 4px 20px rgba(124, 58, 237, 0.4); }
+.nav-cta svg { width: 14px; height: 14px; fill: currentColor; }
+@media (max-width: 768px) {
+  .nav { padding: 0.5rem 0.75rem; }
+  .nav.scrolled { padding: 0.4rem 0.75rem; }
+  .nav-brand { font-size: 0.9rem; }
+  .nav-brand .brand-accent { display: none; }
+  .nav-links { gap: 0.9rem; }
+  .nav-link { font-size: 0.72rem; }
+  .nav-cta { padding: 0.35rem 0.8rem; font-size: 0.72rem; }
+  .nav-cta svg { display: none; }
+}
 
 /* ── 项目展示页标识 ── */
 .showcase-badge {
@@ -523,8 +578,7 @@ body {
 .back-top svg { width: 18px; height: 18px; }
 
 /* ── Nav active highlight ── */
-.nav a.active { color: var(--accent); font-weight: 700; }
-.nav a.active::after { content: ''; display: block; height: 2px; background: var(--accent); border-radius: 1px; margin-top: 2px; }
+/* (已整合到 .nav-link.active 中) */
 
 /* ═══ ROADMAP ═══ */
 .roadmap { padding: 6rem 1.5rem; max-width: 1000px; margin: 0 auto; }
@@ -589,7 +643,6 @@ body {
 .footer-divider { width: 60px; height: 2px; background: linear-gradient(90deg, var(--accent), var(--accent-2)); margin: 2rem auto; border-radius: 2px; }
 
 @media (max-width: 640px) {
-  .nav { display: none; }
   .hero-inner { height: calc(100vh - 2rem); }
   .hero-content { padding: 1.5rem; }
   .back-top { bottom: 1rem; right: 1rem; }
@@ -611,6 +664,28 @@ body {
 <!-- 自定义光标光晕 -->
 <div class="cursor-glow" id="cursorGlow"></div>
 
+<!-- ═══ 固定导航栏 ═══ -->
+<nav class="nav" id="topNav">
+  <a href="#" class="nav-brand">梦弦 <span class="brand-accent">DreamChord</span></a>
+  <div class="nav-links">
+    <a href="#philosophy" class="nav-link">理念</a>
+    <a href="#about" class="nav-link">定位</a>
+    <a href="#compare" class="nav-link">对比</a>
+    <a href="#showcase" class="nav-link">界面</a>
+    <a href="#characters" class="nav-link">角色</a>
+    <a href="#scenes" class="nav-link">场景</a>
+    <a href="#editor" class="nav-link">编辑器</a>
+    <a href="#tech" class="nav-link">技术栈</a>
+    <a href="#faq" class="nav-link">FAQ</a>
+    <a href="#roadmap" class="nav-link">路线图</a>
+    <a href="#start" class="nav-link">开始</a>
+  </div>
+  <a href="https://github.com/tl66666/DreamChord" target="_blank" class="nav-cta">
+    <svg viewBox="0 0 16 16"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.012 8.012 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg>
+    GitHub
+  </a>
+</nav>
+
 <!-- ═══════════════ HERO ═══════════════ -->
 <section class="hero">
   <div class="hero-inner">
@@ -620,21 +695,6 @@ body {
       </video>
     </div>
     <div class="hero-gradient"></div>
-
-    <nav class="nav">
-      <a href="#philosophy">理念</a>
-      <a href="#about">产品定位</a>
-      <a href="#compare">对比</a>
-      <a href="#showcase">界面</a>
-      <a href="#characters">角色</a>
-      <a href="#scenes">场景</a>
-      <a href="#editor">编辑器</a>
-      <a href="#tech">技术栈</a>
-      <a href="#faq">FAQ</a>
-      <a href="#roadmap">路线图</a>
-      <a href="#start">快速开始</a>
-      <a href="https://github.com/tl66666/DreamChord" target="_blank">GitHub</a>
-    </nav>
 
     <div class="hero-content">
       <div class="showcase-badge word-reveal">
@@ -1508,9 +1568,10 @@ function setupBackTop() {
   });
 }
 
-// ═══ NAV ACTIVE HIGHLIGHT ═══
+// ═══ NAV ACTIVE HIGHLIGHT + SCROLL STYLE ═══
 function setupNavHighlight() {
-  const navLinks = document.querySelectorAll('.nav a[href^="#"]');
+  const nav = document.getElementById('topNav');
+  const navLinks = document.querySelectorAll('.nav-link');
   if (!navLinks.length) return;
   const sections = [];
   navLinks.forEach(link => {
@@ -1518,7 +1579,16 @@ function setupNavHighlight() {
     const sec = document.getElementById(id);
     if (sec) sections.push({ link, sec });
   });
-  window.addEventListener('scroll', () => {
+
+  // 为所有锚点目标添加 scroll-margin-top，避免被固定导航遮挡
+  sections.forEach(({ sec }) => { sec.style.scrollMarginTop = '70px'; });
+
+  function onScroll() {
+    // 切换 scrolled 样式
+    if (window.scrollY > 40) nav.classList.add('scrolled');
+    else nav.classList.remove('scrolled');
+
+    // 高亮当前区域
     let current = '';
     const scrollPos = window.scrollY + 120;
     sections.forEach(({ sec }) => {
@@ -1527,7 +1597,23 @@ function setupNavHighlight() {
     navLinks.forEach(link => {
       link.classList.toggle('active', link.getAttribute('href') === '#' + current);
     });
-  }, { passive: true });
+
+    // 移动端：自动滚动导航条到当前激活项
+    const activeLink = document.querySelector('.nav-link.active');
+    if (activeLink && window.innerWidth <= 768) {
+      const linksEl = document.querySelector('.nav-links');
+      const linkRect = activeLink.getBoundingClientRect();
+      const linksRect = linksEl.getBoundingClientRect();
+      if (linkRect.left < linksRect.left + 20 || linkRect.right > linksRect.right - 20) {
+        linksEl.scrollTo({
+          left: activeLink.offsetLeft - linksEl.offsetWidth / 2 + activeLink.offsetWidth / 2,
+          behavior: 'smooth'
+        });
+      }
+    }
+  }
+  window.addEventListener('scroll', onScroll, { passive: true });
+  onScroll();
 }
 
 window.addEventListener('DOMContentLoaded', () => {
@@ -1553,4 +1639,5 @@ window.addEventListener('DOMContentLoaded', () => {
 </script>
 </body>
 </html>
+
 
