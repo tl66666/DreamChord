@@ -3,6 +3,12 @@
 
 $ErrorActionPreference = "Stop"
 
+# 修复中文输出编码：强制控制台使用 UTF-8
+[Console]::OutputEncoding = [System.Text.Encoding]::UTF8
+[Console]::InputEncoding = [System.Text.Encoding]::UTF8
+$OutputEncoding = [System.Text.Encoding]::UTF8
+chcp 65001 > $null 2>&1
+
 $ProjectRoot = Split-Path -Parent $MyInvocation.MyCommand.Path
 $ServerDir = Join-Path $ProjectRoot "apps\server"
 $WebDir = Join-Path $ProjectRoot "apps\web"
@@ -281,16 +287,25 @@ function Ensure-Database {
   }
   Write-Ok "Prisma 客户端已生成"
 
-  # 2. 运行数据库迁移
+  # 2. 应用数据库迁移（deploy 模式，非交互式，直接执行已有迁移文件）
   Write-Host "  [2/3] 创建数据库表结构..." -ForegroundColor Gray
   if ($UsePnpm) {
-    pnpm prisma migrate dev 2>&1 | Out-Host
+    pnpm prisma migrate deploy 2>&1 | Out-Host
   } else {
-    npx prisma migrate dev 2>&1 | Out-Host
+    npx prisma migrate deploy 2>&1 | Out-Host
   }
   if ($LASTEXITCODE -ne 0) {
-    Pop-Location
-    throw "prisma migrate dev 失败"
+    # migrate deploy 可能失败（数据库状态不一致），回退到 db push
+    Write-Warn "migrate deploy 失败，尝试 db push..."
+    if ($UsePnpm) {
+      pnpm prisma db push 2>&1 | Out-Host
+    } else {
+      npx prisma db push 2>&1 | Out-Host
+    }
+    if ($LASTEXITCODE -ne 0) {
+      Pop-Location
+      throw "数据库迁移失败"
+    }
   }
   Write-Ok "数据库表结构已创建"
 
