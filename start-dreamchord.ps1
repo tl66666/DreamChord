@@ -1,4 +1,4 @@
-# DreamChord one-click launcher.
+﻿# DreamChord one-click launcher.
 # Double-click start-dreamchord.bat from the project folder.
 
 $ErrorActionPreference = "Stop"
