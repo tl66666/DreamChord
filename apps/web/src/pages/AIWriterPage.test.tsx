@@ -25,8 +25,10 @@ describe('full-screen creative agent', () => {
     await waitFor(() => expect(screen.getByLabelText('选择项目')).toBeTruthy())
     expect(screen.getByLabelText('选择章节')).toBeTruthy()
     expect(screen.getByText('Agent 工作区 project/chapter')).toBeTruthy()
-    expect(screen.getByLabelText('当前地址').textContent).toContain('project=project')
-    expect(screen.getByLabelText('当前地址').textContent).toContain('chapter=chapter')
+    await waitFor(() => {
+      expect(screen.getByLabelText('当前地址').textContent).toContain('project=project')
+      expect(screen.getByLabelText('当前地址').textContent).toContain('chapter=chapter')
+    })
     expect(screen.queryByText('本地 AI 草稿')).toBeNull()
   })
 })
