@@ -218,48 +218,4 @@ router.delete('/:id', async (req: AuthRequest, res: Response) => {
   res.json({ success: true })
 })
 
-// 保存章节节点与边
-router.put('/:id/chapters/:chapterId', async (req: AuthRequest, res: Response) => {
-  const { id, chapterId } = req.params
-  const { nodes, edges } = req.body
-
-  const project = await prisma.project.findUnique({ where: { id } })
-  if (!project) return res.status(404).json({ error: '项目不存在' })
-  if (project.authorId !== req.userId) return res.status(403).json({ error: '无权修改此项目' })
-
-  await prisma.$transaction(async (tx: any) => {
-    await tx.flowNode.deleteMany({ where: { chapterId } })
-    await tx.flowEdge.deleteMany({ where: { chapterId } })
-
-    if (nodes && nodes.length > 0) {
-      await tx.flowNode.createMany({
-        data: nodes.map((n: any) => ({
-          chapterId,
-          nodeId: n.nodeId,
-          type: n.type,
-          positionX: n.positionX,
-          positionY: n.positionY,
-          data: typeof n.data === 'string' ? n.data : JSON.stringify(n.data),
-        })),
-      })
-    }
-
-    if (edges && edges.length > 0) {
-      await tx.flowEdge.createMany({
-        data: edges.map((e: any) => ({
-          chapterId,
-          edgeId: e.edgeId || `${e.source}-${e.target}`,
-          source: e.source,
-          target: e.target,
-          label: e.label || null,
-          sourceHandle: e.sourceHandle || null,
-          animated: e.animated ?? true,
-        })),
-      })
-    }
-  })
-
-  res.json({ success: true })
-})
-
 export default router

@@ -445,12 +445,14 @@ export default function FlowEditor() {
         nodes: editorState.nodes.map((n) => ({ nodeId: n.id, type: n.type || 'dialogue', positionX: n.position.x, positionY: n.position.y, data: JSON.stringify(n.data) })),
         edges: editorState.edges.map((e) => ({ edgeId: e.id, source: e.source, target: e.target, label: typeof e.label === 'string' ? e.label : undefined, sourceHandle: typeof e.sourceHandle === 'string' ? e.sourceHandle : undefined, animated: e.animated ?? true })),
       }
-      await saveChapter(projectId, payload)
+      const saved = await saveChapter(projectId, payload)
+      store.setChapterVersion(saved.version)
       store.setLastSavedAt(new Date())
       return true
     } catch (err: unknown) {
       console.error('保存失败', err)
-      toast.error(getApiError(err, '保存失败'))
+      const message = getApiError(err, '保存失败')
+      toast.error(message === '章节已被其他操作修改' ? '章节已发生变化，请重新打开项目后再继续编辑。' : message)
       return false
     } finally {
       store.setSaving(false)
