@@ -1,5 +1,6 @@
 import axios from 'axios'
 import { useAuthStore } from '../stores/authStore'
+import type { AgentConversationDto, AgentProviderConfig, AgentRunDto, AppliedPatchDto, StartAgentRunInput } from '../agent/agentTypes'
 
 export const api = axios.create({
   baseURL: '/api',
@@ -351,5 +352,51 @@ export async function generateStory(payload: {
   temperature?: number
 }): Promise<{ nodes: GeneratedNode[]; edges: GeneratedEdge[] }> {
   const { data } = await api.post('/ai/generate-story', payload)
+  return data
+}
+
+export async function getAgentConversations(projectId: string): Promise<AgentConversationDto[]> {
+  const { data } = await api.get(`/projects/${projectId}/agent/conversations`)
+  return data
+}
+
+export async function createAgentConversation(projectId: string, payload: { title: string; scope: string }): Promise<AgentConversationDto> {
+  const { data } = await api.post(`/projects/${projectId}/agent/conversations`, payload)
+  return data
+}
+
+export async function createAgentRun(input: StartAgentRunInput): Promise<AgentRunDto> {
+  const { projectId, ...payload } = input
+  const { data } = await api.post(`/projects/${projectId}/agent/runs`, payload)
+  return data
+}
+
+export async function getAgentRun(runId: string): Promise<AgentRunDto> {
+  const { data } = await api.get(`/agent/runs/${runId}`)
+  return data
+}
+
+export async function cancelAgentRun(runId: string): Promise<AgentRunDto> {
+  const { data } = await api.post(`/agent/runs/${runId}/cancel`)
+  return data
+}
+
+export async function rejectAgentRun(runId: string): Promise<AgentRunDto> {
+  const { data } = await api.post(`/agent/runs/${runId}/reject`)
+  return data
+}
+
+export async function retryAgentRun(runId: string, providerConfig: AgentProviderConfig): Promise<AgentRunDto> {
+  const { data } = await api.post(`/agent/runs/${runId}/retry`, { providerConfig })
+  return data
+}
+
+export async function applyAgentRun(runId: string): Promise<AppliedPatchDto> {
+  const { data } = await api.post(`/agent/runs/${runId}/apply`)
+  return data
+}
+
+export async function undoAgentRun(runId: string): Promise<AppliedPatchDto> {
+  const { data } = await api.post(`/agent/runs/${runId}/undo`)
   return data
 }
