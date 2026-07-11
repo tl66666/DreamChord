@@ -753,6 +753,7 @@ export default function FlowEditor() {
       {showSettings && (
         <ProjectSettingsModal
           project={store.project}
+          characters={project?.characters.map((character) => ({ id: character.id, name: character.name }))}
           onClose={() => setShowSettings(false)}
           onUpdate={(data) => {
             if (!projectId || projectId === 'new') return

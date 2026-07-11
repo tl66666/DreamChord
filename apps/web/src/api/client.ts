@@ -246,6 +246,38 @@ export async function saveChapter(projectId: string, payload: SaveChapterPayload
   return data
 }
 
+export interface StoryBibleCharacterNote {
+  goal: string
+  secret: string
+  voice: string
+  relations: string
+}
+
+export interface StoryBibleContent {
+  worldSummary: string
+  themes: string[]
+  styleGuide: string
+  timelineRules: string
+  forbiddenElements: string[]
+  characterNotes: Record<string, StoryBibleCharacterNote>
+}
+
+export interface StoryBibleResponse {
+  content: StoryBibleContent
+  version: number
+  updatedAt: string | null
+}
+
+export async function getStoryBible(projectId: string): Promise<StoryBibleResponse> {
+  const { data } = await api.get(`/projects/${projectId}/story-bible`)
+  return data
+}
+
+export async function updateStoryBible(projectId: string, content: StoryBibleContent): Promise<StoryBibleResponse> {
+  const { data } = await api.put(`/projects/${projectId}/story-bible`, content)
+  return data
+}
+
 export async function polishText(payload: {
   provider: string
   model: string
