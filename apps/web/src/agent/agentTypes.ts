@@ -20,3 +20,14 @@ export interface StartAgentRunInput {
   projectId: string; conversationId: string; chapterId?: string; prompt: string; scope: AgentScope; targetId?: string; providerConfig: AgentProviderConfig
 }
 export interface AppliedPatchDto { chapterId: string; version: number; graph: StoryGraph }
+export type AgentMemoryKind = 'canon' | 'character' | 'preference' | 'plot' | 'decision' | 'artifact'
+export type AgentMemoryStatus = 'suggested' | 'active' | 'forgotten'
+export interface AgentMemoryDto {
+  id: string; projectId: string; conversationId: string | null; kind: AgentMemoryKind; title: string; content: string
+  tags: string[]; importance: number; status: AgentMemoryStatus; isPinned: boolean; sourceType: string; sourceId: string | null
+  supersededById: string | null; createdAt: string; updatedAt: string
+}
+export interface AgentMemoryInput {
+  kind: AgentMemoryKind; title: string; content: string; tags?: string[]; importance?: number; status?: AgentMemoryStatus
+  isPinned?: boolean; sourceType?: string; sourceId?: string; conversationId?: string
+}

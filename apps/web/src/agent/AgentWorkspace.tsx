@@ -121,7 +121,7 @@ export default function AgentWorkspace({
           </ConversationTranscript>
         </div>
         <div className={panelClass('context', 'xl:flex')}>
-          <AgentContextPanel projectTitle={projectTitle} chapterTitle={chapterTitle} chapterVersion={chapterVersion} nodeCount={graph.nodes.length} edgeCount={graph.edges.length} />
+          <AgentContextPanel projectId={projectId} conversationId={activeId || undefined} projectTitle={projectTitle} chapterTitle={chapterTitle} chapterVersion={chapterVersion} nodeCount={graph.nodes.length} edgeCount={graph.edges.length} />
         </div>
       </div>
     </div>

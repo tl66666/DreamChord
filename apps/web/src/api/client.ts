@@ -1,6 +1,6 @@
 import axios from 'axios'
 import { useAuthStore } from '../stores/authStore'
-import type { AgentConversationDto, AgentMessagePageDto, AgentProviderConfig, AgentRunDto, AppliedPatchDto, StartAgentRunInput } from '../agent/agentTypes'
+import type { AgentConversationDto, AgentMemoryDto, AgentMemoryInput, AgentMessagePageDto, AgentProviderConfig, AgentRunDto, AppliedPatchDto, StartAgentRunInput } from '../agent/agentTypes'
 
 export const api = axios.create({
   baseURL: '/api',
@@ -382,6 +382,25 @@ export async function deleteAgentConversation(conversationId: string): Promise<v
 export async function getAgentMessages(conversationId: string, cursor?: string, limit = 30): Promise<AgentMessagePageDto> {
   const { data } = await api.get(`/agent/conversations/${conversationId}/messages`, { params: { cursor, limit } })
   return data
+}
+
+export async function getAgentMemories(projectId: string, conversationId?: string): Promise<AgentMemoryDto[]> {
+  const { data } = await api.get(`/projects/${projectId}/agent/memories`, { params: { conversationId } })
+  return data
+}
+
+export async function createAgentMemory(projectId: string, payload: AgentMemoryInput): Promise<AgentMemoryDto> {
+  const { data } = await api.post(`/projects/${projectId}/agent/memories`, payload)
+  return data
+}
+
+export async function updateAgentMemory(memoryId: string, payload: Partial<Omit<AgentMemoryInput, 'conversationId'>>): Promise<AgentMemoryDto> {
+  const { data } = await api.patch(`/agent/memories/${memoryId}`, payload)
+  return data
+}
+
+export async function forgetAgentMemory(memoryId: string): Promise<void> {
+  await api.delete(`/agent/memories/${memoryId}`)
 }
 
 export async function createAgentRun(input: StartAgentRunInput): Promise<AgentRunDto> {
