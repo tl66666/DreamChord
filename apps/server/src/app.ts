@@ -7,10 +7,12 @@ import aiRoutes from './routes/ai.js'
 import authRoutes from './routes/auth.js'
 import { createStoryBibleRouter, prismaStoryBibleRepository, type StoryBibleRepository } from './routes/storyBible.js'
 import { createChapterSaveRouter, prismaChapterSaveRepository, type ChapterSaveRepository } from './routes/chapterSave.js'
+import { createHealthRouter, prismaHealthRepository, type HealthRepository } from './routes/health.js'
 
 export interface AppDependencies {
   storyBibleRepository?: StoryBibleRepository
   chapterSaveRepository?: ChapterSaveRepository
+  healthRepository?: HealthRepository
 }
 
 export function createApp(dependencies: AppDependencies = {}): Express {
@@ -26,6 +28,7 @@ export function createApp(dependencies: AppDependencies = {}): Express {
   app.use('/api/auth', authRoutes)
   app.use('/api/projects', createStoryBibleRouter(dependencies.storyBibleRepository ?? prismaStoryBibleRepository))
   app.use('/api/projects', createChapterSaveRouter(dependencies.chapterSaveRepository ?? prismaChapterSaveRepository))
+  app.use('/api/projects', createHealthRouter(dependencies.healthRepository ?? prismaHealthRepository))
   app.use('/api/projects', projectRoutes)
   app.use('/api/assets', assetRoutes)
   app.use('/api/ai', aiRoutes)
