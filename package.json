@@ -1,6 +1,6 @@
 {
   "name": "dreamchord",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "description": "梦弦 DreamChord - 节点式视觉小说创作平台",
   "scripts": {

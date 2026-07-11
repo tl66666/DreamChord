@@ -1,304 +1,120 @@
-# 梦弦 DreamChord
-
-> 像写小说一样创作，像玩游戏一样阅读。
-
-DreamChord 是一个运行在浏览器里的**视觉小说创作平台**。它用"章节 → 场景 → 镜头卡"的方式组织剧情：你可以像写分镜脚本一样编辑背景、角色、台词和选项，把一个故事搭成可以播放、保存和分享的视觉小说。
-
-项目内置了一套官方演示世界观：雪、影、宫、空和系统幽灵会组成一段 Meta 引导短剧，用来展示背景切换、角色登场、表情变化、分支选择和节点叙事。
-
-![DreamChord Hero](./apps/web/public/assets/hero.png)
-
-> **项目展示页**：[在线查看 DreamChord 介绍网站](https://tl66666.github.io/DreamChord/) —— 包含产品定位、功能界面截图、角色介绍、技术架构和快速开始指南。
-
----
-
-## 为什么做这个项目
-
-### 用户的痛点
-
-视觉小说（Visual Novel）是一种以文字叙事为主、配合立绘、背景和音乐的互动故事形式。但现有的创作工具存在明显门槛：
-
-| 痛点 | 具体表现 | DreamChord 的解决方式 |
-|---|---|---|
-| **节点图太难** | Ren'Py、TyranoBuilder 等工具需要学习脚本语言或复杂的节点连线，非技术用户望而却步 | 提供"镜头卡"写作界面，用户只需像写小说一样填背景、选角色、写台词，系统自动转换为节点图 |
-| **没有可视化预览** | 传统脚本工具写完代码后要编译运行才能看到效果 | 编辑器右栏实时预览，每改一个字、换一个背景立刻看到播放效果 |
-| **分支管理混乱** | 多线叙事的故事越写越长，分支去哪了、在哪汇合了全靠记忆 | 自动检测分支去向，流程图可视化所有场景和分支连线，汇合点用紫色高亮 |
-| **素材管理割裂** | 写故事时要切换到文件管理器整理立绘和背景，打断创作流 | 内置素材库面板，直接在编辑器里选用背景和角色，支持上传自定义素材 |
-| **AI 不理解项目** | 普通聊天只能续写片段，无法判断分支结构或安全修改章节 | 创作 Agent 读取故事圣经和章节图，先规划、调用工具、校验补丁，再由作者预览、应用或撤销 |
-| **无法即时分享** | 写完的作品要打包、上传、配置服务器才能让别人玩 | 一键发布到作品广场，分享链接即可在浏览器中播放 |
-| **长篇组织困难** | 几十个场景挤在一个画布里，找不到内容、改不动结构 | 章节 → 场景 → 镜头卡三级结构，每章独立画布，顶部标签切换 |
-
-### 这个项目为谁而做
-
-- **视觉小说爱好者**：想创作自己的 galgame / 视觉小说，但不会编程
-- **轻小说 / 同人作者**：想把文字作品转化为可交互的视觉体验
-- **二次元创作者**：有角色立绘和场景素材，需要一个平台把它们串联成故事
-- **叙事设计学习者**：想研究分支叙事结构、非线性剧情组织方式
-
-### 它解决了什么问题
-
-DreamChord 的核心价值是**把节点图的复杂性隐藏在镜头卡背后**：
-
-```
-用户的写作方式：          系统自动转换的底层结构：
-
-[场景 1-1 开场]           background → character → dialogue
-  ├ 旁白：新场景开始       → background → subtitle
-  ├ 雪：你好               → character → dialogue
-  └ 选项：A雪 / B宫        → background → choice
-                                        ├ choice-0 → [场景 1-2A]
-                                        └ choice-1 → [场景 1-2B]
-```
-
-用户只需要写"谁说了什么"，系统负责把它变成播放器能执行的节点和连线。
-
----
-
-## 技术栈
-
-### 整体架构
-
-```
-┌─────────────────────────────────────────────┐
-│                   浏览器                      │
-│  ┌──────────┐  ┌──────────┐  ┌──────────┐  │
-│  │  首页     │  │  编辑器   │  │  播放器   │  │
-│  │  广场     │  │ FlowEditor│  │ Player   │  │
-│  │  设置     │  │           │  │          │  │
-│  └─────┬────┘  └─────┬────┘  └─────┬────┘  │
-│        │             │             │        │
-│        └─────────┬───┴─────────────┘        │
-│                  │ axios (REST API)          │
-└──────────────────┼──────────────────────────┘
-                   │
-┌──────────────────┼──────────────────────────┐
-│            Express 后端                      │
-│  ┌───────┬───────┬───────┬───────┬───────┐ │
-│  │ auth  │project│chapter│ asset │  ai   │ │
-│  └───┬───┴───┬───┴───┬───┴───┬───┴───┬───┘ │
-│      │       │       │       │       │      │
-│  ┌───┴───┐ ┌─┴───────┴───────┴───┐ ┌─┴───┐ │
-│  │ JWT   │ │   Prisma + SQLite    │ │LLM  │ │
-│  │认证   │ │   (项目/章节/用户)    │ │代理  │ │
-│  └───────┘ └──────────────────────┘ └─────┘ │
-└─────────────────────────────────────────────┘
-```
-
-### 前端技术栈
-
-| 技术 | 版本 | 用途 |
-|---|---|---|
-| **React** | 18.3 | UI 框架，函数组件 + Hooks |
-| **TypeScript** | 5.4 | 类型安全，strict 模式全开 |
-| **Vite** | 5.2 | 构建工具 + 开发服务器，manualChunks 拆分 vendor |
-| **Tailwind CSS** | 3.4 | 原子化 CSS，dream 色系自定义主题 |
-| **@xyflow/react** | 12.0 | 节点图引擎，用于节点存储和转换（非主编辑界面） |
-| **Zustand** | 4.5 | 全局状态管理，编辑器单一数据源 |
-| **framer-motion** | 11.2 | 动画引擎，播放器场景切换、角色登场动画 |
-| **react-router-dom** | 6.23 | 路由管理 |
-| **axios** | 1.7 | HTTP 客户端，30s 超时 |
-| **lucide-react** | 0.383 | 图标库 |
-
-### 后端技术栈
-
-| 技术 | 版本 | 用途 |
-|---|---|---|
-| **Express** | 4.19 | Web 框架，ESM 模式 |
-| **Prisma** | 5.14 | ORM，SQLite 数据库 |
-| **JWT** | 9.0 | 认证令牌，bcryptjs 加密 |
-| **multer** | 1.4 | 文件上传，PNG/JPG/GIF/WebP |
-| **zod** | 3.23 | API、Agent 协议、故事圣经与结构化补丁的严格校验 |
-| **express-validator** | 7.1 | 请求校验（已安装，待启用） |
-| **tsx** | 4.11 | TypeScript 执行器，开发热重载 |
-
-### AI 集成
-
-DreamChord 支持 OpenAI 兼容接口的多种 LLM 供应商：
-
-| 供应商 | 状态 | 说明 |
-|---|---|---|
-| 智谱 GLM | 已适配 | 国内推荐，延迟低 |
-| DeepSeek | 已适配 | 性价比高 |
-| Kimi (月之暗面) | 已适配 | 长上下文优势 |
-| OpenAI | 兼容 | 需代理访问 |
-
-AI 功能通过 `BaseOpenAICompatibleProvider` 基类统一接口，新增供应商只需继承并实现 `apiKey` 和 `baseUrl`。
-
-### 创作 Agent 架构
-
-创作 Agent 是有界的单 Agent，不直接写数据库。它按“读取项目上下文 → 生成可见计划 → 调用固定工具 → 产出结构化补丁 → 图规则校验 → 差异预览 → 作者确认 → 事务应用”的顺序工作。应用前保存章节快照；若章节之后没有被其他编辑修改，可一键撤销。
-
-- 上下文范围支持卡片、场景、章节和项目，章节上下文按需裁剪。
-- 固定工具只允许读取项目/章节/场景、搜索故事、剧情体检、创建和校验补丁。
-- 每次运行最多 8 个模型步骤，模型请求 60 秒超时，补丁最多 200 个操作、60 个新增节点。
-- API Key 只从浏览器传入队列内存，不写数据库、日志、运行记录或响应。
-- `/api/ai/*` 仅为旧客户端兼容接口；新创作流程统一使用 `/api/projects/:id/agent/*`。
-- 没有配置模型时仍可运行确定性剧情体检，但不会显示固定文本冒充模型输出。
-
-### 工程化
-
-- **Monorepo**：pnpm workspace 管理前后端
-- **构建优化**：Vite manualChunks 拆分 4 个 vendor 包（react / flow / icon / util），独立缓存
-- **类型安全**：全项目 strict TypeScript，禁止 `any`，使用 `unknown` + 类型收窄
-- **用户反馈**：全局 `FeedbackProvider` 提供 Toast 通知和 Confirm 对话框，禁止原生 `alert`/`confirm`
-- **节点数据访问**：`sceneGraph.ts` 提供 12+ 类型安全访问器函数，禁止 `as Record<string, unknown>` 断言
-
----
-
-## 项目组成
-
-| 目录 | 说明 |
-|---|---|
-| `apps/web` | React + Vite 前端，包含首页、作品广场、编辑器、播放器、设置页 |
-| `apps/server` | Express + Prisma 后端，包含登录、项目保存、章节管理、发布、素材、AI 接口 |
-| `apps/web/public/assets` | 前端静态素材：背景、角色、插画、封面、Logo |
-| `source-assets/white-bg-originals` | 角色立绘白底原图母版，用于重新抠图或备份 |
-| `source-assets/generated-transparent-sprites` | 已抠图的透明 PNG 立绘导出 |
-| `CLAUDE.md` | AI 辅助开发指南，包含架构、规范、技术债务清单 |
-| `README.md` | 本文件，项目总览 |
-| `DEMO_STORY.md` | 官方演示剧情脚本和分镜说明 |
-| `ASSETS.md` | 素材生成、命名、尺寸和提示词规范 |
-| `CHARACTERS.md` | 角色设定、状态、台词风格和资源映射 |
-| `SPRITE_ASSET_STANDARD.md` | 立绘交付规范，说明白底、透明 PNG、格子预览的区别 |
-| `docs/AI_HANDOFF.md` | 给后续 AI / 开发者的接手说明，包含当前架构、验证清单和下一步迭代建议 |
-| `docs/LONG_STORY_WORKFLOW.md` | 长篇创作与小说导入工作流 |
-| `docs/scene-editor-design.md` | 场景编辑器设计说明 |
-| `docs/dreamchord-architecture/dreamchord-architecture.html` | 项目架构交接文档（HTML 可视化） |
+# DreamChord 0.2
 
----
+DreamChord is a browser-based visual novel studio for writing, structuring, testing, and publishing branching stories. It combines a scene-card editor, playable runtime, project asset pipeline, and a tool-using creative Agent with layered memory.
 
-## 编辑器架构
+[Project showcase](https://tl66666.github.io/DreamChord/) | [Architecture handoff](docs/AI_HANDOFF.md) | [Long-form workflow](docs/LONG_STORY_WORKFLOW.md)
 
-### 三栏布局
+![DreamChord editor](docs/screenshots/editor-1440.png)
 
-编辑器采用三栏布局，所有面板在同一行内，不浮动叠加：
+## What Is Included
 
-| 栏位 | 宽度 | 组件 | 功能 |
-|---|---|---|---|
-| 左栏 | w-56 | `SceneTree` | 章节/场景树，支持新增/删除/重命名章节和场景 |
-| 中栏 | flex-1 | `ShotCardEditor` | 镜头卡列表，每张卡片可编辑背景、角色、台词、选项，内置 AI 按钮 |
-| 右栏 | w-80 | `MiniPreview` / `AssetPanel` / `AgentPanel` | 默认显示实时预览，点击工具栏按钮切换为素材库或创作 Agent |
+- Chapter -> scene -> shot-card story editing without requiring script syntax.
+- Dialogue, narration, character staging, background changes, choices, branches, and convergence.
+- Story flowchart, health checks, live preview, full player, publish/share flow.
+- 50-step undo/redo, serialized autosave, version-conflict detection, and dirty-navigation protection.
+- Structured manuscript parsing with review-before-import.
+- Project backup export/import with strict validation and ID remapping.
+- Built-in and uploaded asset library with rename, replacement, deletion, and target-aware selection.
+- Safe image preparation using Sharp: decoded image validation, white-matte removal, feathering, trimming, sprite/CG/background presets, and reviewable derived variants.
+- Responsive editor and Agent workspace for desktop, tablet, and mobile widths.
 
-### 视图模式
+## Creative Agent
 
-- **场景编辑**（默认）：三栏布局，镜头卡写作
-- **剧情流程图**：galgame 风格的全局流程图，按章节分行展示场景卡片和分支连线，支持缩放和拖拽
+The Agent is not a one-shot text box. It is a bounded workflow that reads project context, plans work, calls approved tools, produces a structured patch, validates the result, and waits for the author to apply or reject it.
 
-### 核心文件
+![Agent workspace](docs/screenshots/agent-workspace-1440.png)
 
-| 文件 | 行数 | 职责 |
-|---|---|---|
-| `FlowEditor.tsx` | ~790 | 编辑器主壳：章节切换、保存/预览、三栏布局、状态管理 |
-| `SceneTree.tsx` | - | 左栏：章节/场景树 |
-| `ShotCardEditor.tsx` | ~965 | 中栏：镜头卡编辑，含卡片增删改、长文导入、快速续接 |
-| `ShotCardItem.tsx` | - | 镜头卡展示组件，折叠/展开视图 |
-| `CardEditor.tsx` | - | 镜头卡编辑表单，背景/角色/台词/选项 |
-| `MiniPreview.tsx` | - | 右栏默认：实时预览 |
-| `AssetPanel.tsx` | - | 右栏切换：素材库（内置 + 上传） |
-| `agent/AgentPanel.tsx` | - | 编辑器与全屏入口共享的创作 Agent：计划、工具时间线、补丁差异、应用和撤销 |
-| `editor/WorkbenchPanel.tsx` | 38 | 工作台标签壳；具体故事、角色和场景模块位于 `editor/workbench/` |
-| `StoryFlowchart.tsx` | - | 流程图视图，含汇合点可视化 |
-| `sceneGraph.ts` | - | 场景/卡片/节点转换算法、类型安全访问器、章节编号 |
+### Conversations
 
-### 运行时引擎
+- Create, rename, pin, search, and delete independent conversations.
+- Each conversation keeps its own transcript, rolling summary, scope, and memory context.
+- Use separate conversations for continuation, character work, branch repair, plot review, or asset preparation.
 
-播放器通过三步将编辑器数据转换为可播放的视觉小说：
+### Layered Memory
 
-```
-编辑器节点图 (nodes + edges)
-        ↓ converter.ts (DFS 遍历)
-RuntimeStory (scenes 数组)
-        ↓ runtime.ts (状态机)
-播放器 (sceneIndex 推进 + choose 分支)
-```
+Memory kinds:
 
-| 文件 | 职责 |
-|---|---|
-| `engine/types.ts` | RuntimeStory / RuntimeScene / WorldState 类型定义 |
-| `engine/converter.ts` | 节点图 → RuntimeStory 转换器，DFS 遍历、角色追踪、分支解析 |
-| `engine/runtime.ts` | 运行时状态机，支持 next() 推进、choose() 分支、事件触发 |
-| `engine/characters.ts` | 角色注册表，立绘路径解析 |
-| `engine/demo.ts` | 官方演示剧情的 RuntimeStory 数据 |
-| `player/VisualNovelPlayer.tsx` | 视觉小说播放器，打字机效果、角色立绘、选项渲染 |
+- `canon`: world rules and immutable facts
+- `character`: goals, voice, secrets, relationships
+- `plot`: unresolved threads and causal state
+- `decision`: accepted creative decisions
+- `preference`: author style and workflow preferences
+- `artifact`: applied patches and generated project artifacts
 
-### 状态管理
+Memory states are `suggested`, `active`, and `forgotten`. Memories carry provenance, importance, pin state, project/conversation ownership, and ranking metadata. Suggested memories do not silently become canon.
 
-编辑器使用 Zustand 作为**单一数据源**：
+![Agent memory center](docs/screenshots/agent-memory-1440.png)
 
-```
-useEditorStore (Zustand)
-  ├── nodes: Node[]      ← 所有编辑器节点
-  ├── edges: Edge[]      ← 所有编辑器边
-  ├── project: ProjectData
-  ├── chapterId: string
-  └── selectedNodeId: string | null
+### Agent Tools And Safety
 
-FlowEditor 直接读取 store.nodes / store.edges
-所有更新通过 store.setNodes() / store.setEdges() 统一操作
-```
+The runtime can read conversation history, project context, Story Bible data, ranked memories, assets, character profiles, chapter graphs, and health reports. It can propose bounded story changes and image-preparation jobs.
 
-> 设计决策：移除了早期 `useNodesState` / `useEdgesState` 的本地副本，消除双状态源竞态问题。
+Important rules:
 
----
+- Model output never writes directly to the story database.
+- Story changes are validated as structured patches.
+- The author previews the diff before applying it.
+- Applying a patch creates a snapshot and can be undone while the chapter version is still compatible.
+- Image work remains proposed until accepted; originals are preserved.
+- API keys are used for the active request and are not persisted in project records or Agent transcripts.
 
-## 立绘规则
+## Story Editor
 
-生成阶段使用白底：AI 生成角色时使用 `flat white studio background`，白底只为方便后续抠图。
+![Manuscript preview](docs/screenshots/manuscript-preview-1440.png)
 
-项目使用阶段使用透明 PNG：放进 `apps/web/public/assets/characters/` 的角色立绘应当是已经抠掉白底的透明 PNG。
+The default editor is organized around writing rather than raw graph manipulation:
 
-灰白格子不是背景，只是图片软件表示"透明"的预览方式。
+1. Pick a chapter and scene.
+2. Add or edit shot cards.
+3. Assign characters, expressions, backgrounds, text, and choice destinations.
+4. Inspect the generated flow or run project health checks.
+5. Preview the scene or play the published story.
 
-> 详细规范参见 `SPRITE_ASSET_STANDARD.md` 和 `ASSETS.md`。
+Autosave is version-safe. The client sends only the strict save body (`baseVersion`, `nodes`, `edges`), the server atomically claims the expected chapter version, and stale saves return a conflict instead of overwriting newer work.
 
----
+## Asset Processing
 
-## 环境要求
+![Asset processing studio](docs/screenshots/asset-processing-1440.png)
 
-- Node.js 20+
-- Corepack（随 Node.js 20 提供）
-- pnpm 9.1.0（启动器会通过 Corepack 自动启用）
+Uploaded images are decoded and inspected rather than trusted by file extension. The processing studio supports:
 
-## 安装依赖
+- Sprite output: transparent PNG, normalized to 1024x1536.
+- CG/background output: WebP, normalized to 1920x1080.
+- White-background removal with adjustable threshold and feathering.
+- Transparent-edge trimming.
+- Proposed, accepted, and rejected variant lifecycle.
+- Character and expression binding for accepted sprites.
 
-```bash
-cd C:\Users\唐乐\Desktop\实训2\项目
-pnpm install
-```
+## One-Click Start On Windows
 
-这是 pnpm workspace，必须在仓库根目录安装。不要分别进入前后端运行 `npm install`，否则 `workspace:*` 依赖无法可靠解析。
+Requirements: Windows 10/11, Node.js 20 or newer, and network access on the first run.
 
-## 一键启动（推荐）
+1. Download or clone the complete repository.
+2. Double-click `start-dreamchord.bat`.
+3. Wait for the browser to open.
+4. Sign in with `demo` / `demo123`.
 
-Windows 用户双击 `start-dreamchord.bat`。启动器会：
+The launcher:
 
-- 检查 Node.js 20 和项目文件完整性
-- 通过 Corepack 启用固定的 pnpm 9.1.0
-- 从根目录按锁文件安装依赖
-- 创建本地 `.env` 和随机 JWT 密钥（已有密钥不会覆盖）
-- 生成 Prisma Client、应用全部迁移并幂等初始化演示数据
-- 为前后端选择空闲端口，不会关闭占用端口的其他程序
-- 等待健康检查通过后打开浏览器
-
-环境诊断不会修改文件：
+- runs from its own directory, so the repository may be placed anywhere;
+- checks Node.js and enables the pinned pnpm version through Corepack;
+- installs the frozen workspace lockfile;
+- creates a local `.env` only when missing and preserves existing secrets;
+- chooses free backend and frontend ports;
+- applies Prisma migrations and idempotent demo seeding;
+- waits for both services before opening the browser.
+
+Setup-only verification:
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File scripts\doctor.ps1
+powershell -ExecutionPolicy Bypass -File .\start-dreamchord.ps1 -SetupOnly
 ```
 
-只执行首次安装、配置和迁移，不启动服务：
-
-```powershell
-powershell -ExecutionPolicy Bypass -File start-dreamchord.ps1 -SetupOnly
-```
-
-默认测试账号：`demo / demo123`
-
-AI Key 是可选项，不影响编辑、播放、规则体检和测试。在设置页配置供应商 API Key 后启用模型功能。
-
-### 手动启动
+## Manual Development
 
 ```bash
+corepack enable
+corepack prepare pnpm@9.1.0 --activate
 pnpm install --frozen-lockfile
 pnpm --filter dreamchord-server prisma generate
 pnpm --filter dreamchord-server prisma migrate deploy
@@ -306,237 +122,71 @@ pnpm --filter dreamchord-server prisma db seed
 pnpm dev
 ```
 
----
+Default addresses:
 
-## 编辑器功能
+- Web: `http://localhost:5173`
+- API: `http://localhost:3001`
+- Demo account: `demo` / `demo123`
 
-### 章节管理
+If a default port is occupied, use the one-click launcher or set `PORT` and `VITE_API_TARGET` explicitly.
 
-- 顶部章节标签切换（第一章、第二章...，中文数字编号）
-- 点击"新章节"创建新章节
-- 每个章节标签旁有删除按钮（至少保留一章）
-- 左栏场景树的章节标题旁也有重命名、新建场景、删除按钮
+## Model Configuration
 
-### 场景管理
+The web settings page supports OpenAI-compatible providers such as GLM, DeepSeek, Kimi, and OpenAI-compatible endpoints. Basic editing, deterministic health checks, backup/restore, and asset processing work without an LLM key. Agent generation requires a configured provider.
 
-- 左栏场景树按章节折叠显示
-- 新建场景时自动携带前一场景的角色退场（hide 动作）
-- 新场景背景默认为空，显示"请选择背景"占位符
-- 支持场景重命名、删除
+Server-side defaults may be placed in `apps/server/.env`; use `apps/server/.env.example` as the template. Never commit `.env`, databases, upload directories, or API keys.
 
-### 镜头卡编辑
-
-每张镜头卡包含：
-- 背景选择（下拉框，"请选择背景..."为默认空选项）
-- 角色列表（可添加/删除角色，设置表情和站位）
-- 镜头类型：角色对话、旁白、心理描写、回忆镜头、系统提示
-- 发言人和台词
-- 选项卡：选项列表与分支去向
-
-**镜头类型说明**：
-
-| 类型 | 用途 | 编译为节点 |
-|---|---|---|
-| dialogue | 角色对话 | dialogue 节点 |
-| narration | 旁白文字 | subtitle 节点 |
-| thought | 心理描写 | dialogue 节点（role 保持角色） |
-| memory | 回忆镜头 | subtitle 节点 |
-| system | 系统提示 | subtitle 节点（role=ghost） |
-| choice | 选项分支 | choice 节点（带 choice-N 出边） |
-
-**分支去向管理**：
-
-- 选项无去向时，编辑器和折叠视图均显示琥珀色警告标识
-- 可选择"跳转到已有场景"或"写这条分支"（自动创建新场景）
-- 已设置去向的选项显示绿色目标场景标签，可断开或前往编辑
-- 选项列表顶部显示汇总提示，告知用户有几个选项尚未设置去向
-
-镜头卡内置 AI 按钮：
-- 对话卡：AI 润色、AI 续写
-- 选项卡：AI 生成选项、AI 分支回应
-
-### 长文导入
-
-点击"导入长文"按钮，粘贴小说正文：
-- `角色：台词` 识别为角色对话
-- 普通段落识别为旁白
-- 包含"回忆、想起、曾经"等词标记为回忆镜头
-- 包含"心想、心里、暗想"等词标记为心理描写
-- 包含"系统、提示、警告"等词标记为系统提示
-- 超长段落按中文标点拆成多张镜头卡
-
-### 素材库
-
-点击右上角"素材库"按钮，右栏切换为素材面板：
-- 内置背景素材区（可直接点击选用）
-- 内置角色素材区（显示角色立绘和表情数量）
-- 项目上传素材区
-- 点击关闭按钮回到实时预览
-
-### 创作 Agent
-
-点击编辑器右上角“创作 Agent”，或访问 `/agent` 使用全屏工作区：
-- 选择项目、章节以及卡片/场景/章节/项目范围。
-- Agent 展示计划和工具进度，不展示隐藏推理过程。
-- 结构变更先显示节点与连线差异，只有点击“应用变更”才事务写入章节。
-- 应用后章节版本递增，并可在没有后续冲突时撤销。
-- 故事圣经保存世界摘要、主题、文风、时间线规则、禁用元素和角色秘密。
-- 未配置模型时只提供确定性剧情体检，不生成伪 AI 草稿。
-
-### 剧情流程图
-
-切换到"剧情流程图"视图：
-- 按章节分行排列场景卡片
-- 普通连接用实线箭头
-- 选项分支用虚线箭头并标注选项文本
-- 汇合场景用紫色高亮标记
-- 支持缩放（滚轮）和拖拽平移
-- 点击场景卡片可跳转编辑
-- 支持拖拽场景卡片调整位置
-- 支持拖拽创建场景间连接
-
-### 项目体检
-
-`FlowEditor.tsx` 内置 `ProjectHealthPanel`，检查：
-- 是否有节点
-- 是否使用场景 / 镜头卡结构
-- 无效连线
-- 多起点
-- 断开的选项出口
-- 空文本
-- 缺少背景
-- 缺少角色
-- 孤立节点
-- 不可达场景
-- 缺少结尾
-- 是否发布
-
----
-
-## 播放器功能
-
-### 视觉效果
-
-- 全屏背景图，framer-motion 场景切换动画（淡入缩放）
-- 角色立绘分层渲染（左/中/右站位），带轻微投影和底部渐变遮罩
-- 底部全宽文本框，打字机逐字效果
-- 选项按钮底部弹出，点击触发分支跳转
-- 系统事件 UI 标签浮动显示（SAVE REALITY / BRANCH CREATED 等）
-
-### 播放器快捷键
-
-| 按键 | 作用 |
-|---|---|
-| `Enter` / `Space` | 推进下一句 |
-| `1` / `2` / `3` | 选择当前选项 |
-| `H` | 打开或关闭历史 |
-| `S` | 跳过 |
-| `A` | 自动播放 |
-
-### 音效系统
-
-播放器内置 Web Audio API 音效（无需音频文件）：
-- tap：推进下一句时的轻触音
-- choice：选择选项时的清脆音
-- scene：场景切换时的低沉音
-
-音量可在设置中调节，支持静音。
-
----
-
-## 构建检查
-
-```bash
-# 前端
-cd C:\Users\唐乐\Desktop\实训2\项目\apps\web
-npx tsc --noEmit
-npm run build
-
-# 后端
-cd C:\Users\唐乐\Desktop\实训2\项目\apps\server
-npx tsc --noEmit
-```
-
-## 测试清单
-
-1. 打开 `http://localhost:5173`，检查首页
-2. 打开 `http://localhost:5173/play/dreamchord-first-thread`，检查演示播放
-3. 登录 `demo / demo123`
-4. 打开编辑器，创建场景，编辑背景/角色/台词
-5. 添加选项卡，为选项创建分支场景，验证跳转
-6. 切换素材库和创作 Agent，确认计划、差异和审批区域无遮挡
-7. 切换到剧情流程图视图
-8. 创建/删除章节，确认中文数字编号
-9. 保存并预览
-10. 点击项目体检，检查报告
-
----
-
-## 常见问题
-
-### 前端打不开
-
-先运行 `scripts\doctor.ps1`。启动器会在 5173-5183 中选择空闲端口，最终地址以启动窗口输出为准。
-
-### 登录失败
-
-在仓库根目录执行 `pnpm --filter dreamchord-server prisma db seed`，再用 `demo / demo123` 登录。
-
-### 角色出现白底
-
-运行目录里放进了白底图。白底母版只在 `source-assets/white-bg-originals`，运行图必须是透明 PNG。
-
-### AI 功能不能用
-
-基础项目不依赖 AI。需要在设置页配置供应商 API Key。
-
-### 选项不出现 / 分支不跳转
-
-检查选项卡是否有未设置去向的警告标识。每个选项需要通过"写这条分支"或"跳转到已有场景"设置目标场景。
-
-### 新建场景后无法编辑背景/角色/台词
-
-这通常是场景起始节点定位错误。系统通过"没有来自同场景入边的节点"来定位起始节点，确保使用 `findSceneStartNode()` 而非数组顺序查找。
-
----
-
-## 开发建议
-
-### 接手前先读
+## Architecture
 
 ```text
-CLAUDE.md          — AI 辅助开发指南（架构、规范、技术债务）
-docs/AI_HANDOFF.md — 实践交接说明（当前状态、验证清单、迭代建议）
+apps/web                 React 18 + TypeScript + Vite
+  src/editor             scene-card editor, history, autosave, import preview
+  src/agent              conversations, transcript, Agent UI, memory center
+  src/assets             image processing review UI
+  src/player             visual novel runtime and player
+
+apps/server              Express + Prisma + SQLite
+  src/agent              context, tools, planning, patch validation, apply/undo
+  src/routes             authenticated HTTP boundaries
+  src/assets             safe Sharp-based inspection and transformations
+  prisma                 schema, migrations, idempotent demo seed
+
+packages/story-domain    shared graph schemas, patch rules, health analysis
 ```
 
-### 常见修改入口
+The shared story-domain package is the contract between browser, server, Agent tools, and tests. Extend it before adding ad hoc graph shapes in a feature module.
 
-| 需求 | 修改文件 |
-|---|---|
-| 修改演示剧情 | `apps/web/src/engine/demo.ts` |
-| 修改角色资源映射 | `apps/web/src/engine/characters.ts` |
-| 修改页面和编辑器功能 | `apps/web/src/pages/`、`apps/web/src/editor/` |
-| 修改播放器 | `apps/web/src/player/VisualNovelPlayer.tsx` |
-| 修改节点转换逻辑 | `apps/web/src/engine/converter.ts` |
-| 修改运行时状态机 | `apps/web/src/engine/runtime.ts` |
-| 修改场景/卡片算法 | `apps/web/src/editor/sceneGraph.ts` |
-| 修改数据库结构 | `apps/server/prisma/schema.prisma` |
-| 修改后端 API | `apps/server/src/routes/` |
-| 修改 AI 供应商 | `apps/server/src/llm/providers.ts` |
+## Quality Checks
 
-### 代码规范要点
+```bash
+pnpm lint
+pnpm test
+pnpm build
+pnpm test:readiness
+git diff --check
+```
 
-- TypeScript strict 模式，禁止 `any`（使用 `unknown` + 类型收窄）
-- 节点数据访问必须使用 `sceneGraph.ts` 的类型安全访问器
-- 用户反馈使用 `useToast()` / `useConfirm()`，禁止原生 `alert()` / `confirm()`
-- JSON.parse 必须使用 `safeJsonParse<T>(str, fallback)` 包装
-- 列表渲染 key 使用唯一 ID，禁止 `key={index}`
-- 后端路由必须有 try-catch 或依赖全局错误中间件
-- 文件上传仅允许 PNG/JPG/GIF/WebP
-- JWT_SECRET 环境变量缺失时服务拒绝启动
+The repository includes unit and integration coverage for story rules, save conflicts, Agent conversations, memory isolation/ranking, context assembly, tool execution, patch apply/undo, image processing, backup/restore, editor history, autosave coordination, responsive navigation, and core UI workflows.
 
----
+## Repository Rules
 
-## 许可证
+- Use `pnpm` from the repository root; do not create nested lockfiles.
+- Keep story mutations versioned and validated.
+- Keep Agent actions proposed until explicit acceptance.
+- Preserve original uploaded assets.
+- Use structured parsers and Zod schemas at HTTP boundaries.
+- Do not commit `.env`, `dev.db`, `uploads/`, logs, build output, or downloaded model data.
 
-MIT License
+## Main Docs
+
+- [AI and architecture handoff](docs/AI_HANDOFF.md)
+- [Long story workflow](docs/LONG_STORY_WORKFLOW.md)
+- [Scene editor design](docs/scene-editor-design.md)
+- [Character reference](CHARACTERS.md)
+- [Asset reference](ASSETS.md)
+- [Sprite standard](SPRITE_ASSET_STANDARD.md)
+- [Demo story](DEMO_STORY.md)
+
+## License
+
+MIT
