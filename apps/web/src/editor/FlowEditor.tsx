@@ -46,6 +46,7 @@ import { getApiError, convertServerNodes, convertServerEdges, ensureLegacySceneG
 import { ProjectHealthPanel } from './ProjectHealthPanel'
 import { editorPaneClasses } from './responsiveLayout'
 import { SaveCoordinator, type SaveState } from './saveCoordinator'
+import type { ProjectAssetTarget } from './ProjectAssetPicker'
 
 export default function FlowEditor() {
   const { projectId } = useParams<{ projectId: string }>()
@@ -60,7 +61,8 @@ export default function FlowEditor() {
   const [showHealth, setShowHealth] = useState(false)
   const [shareCopied, setShareCopied] = useState(false)
   const [viewMode, setViewMode] = useState<'scene' | 'flow'>('scene')
-  const [assetTarget, setAssetTarget] = useState<{ nodeId: string; field: 'backgroundId' | 'characterId'; type: 'BACKGROUND' | 'CG' } | null>(null)
+  const [assetTarget, setAssetTarget] = useState<ProjectAssetTarget | null>(null)
+  const [assetSelection, setAssetSelection] = useState<{ target: ProjectAssetTarget; asset: Asset } | null>(null)
   const [agentTask, setAgentTask] = useState<{ id: number; prompt: string; scope: AgentScope }>()
 
   // 场景/卡片选择
@@ -580,10 +582,9 @@ export default function FlowEditor() {
 
   const handleSelectAsset = (asset: Asset) => {
     if (!assetTarget) return
-    if (assetTarget.field === 'backgroundId') store.updateNodeData(assetTarget.nodeId, { backgroundId: asset.url })
-    else store.updateNodeData(assetTarget.nodeId, { characterId: asset.url })
+    setAssetSelection({ target: assetTarget, asset })
     setAssetTarget(null)
-    triggerAutoSave()
+    setShowAssets(false)
   }
 
   useEffect(() => {
@@ -773,6 +774,9 @@ export default function FlowEditor() {
               onRequestAI={handleRequestAI}
               onSetSceneExit={handleSetSceneExit}
               convergenceMap={convergenceMap}
+              onOpenAssetPicker={(target) => { setAssetTarget(target); setShowAssets(true); setShowAI(false) }}
+              assetSelection={assetSelection}
+              onAssetApplied={() => setAssetSelection(null)}
             />
           </div>
 
@@ -780,7 +784,7 @@ export default function FlowEditor() {
           <div className={paneClasses.side}>
             {showAssets ? (
               <AssetPanel
-                selectedType={assetTarget?.type}
+                selectedType={assetTarget?.field === 'background' ? 'BACKGROUND' : 'CG'}
                 onSelect={handleSelectAsset}
                 onClose={() => setShowAssets(false)}
               />

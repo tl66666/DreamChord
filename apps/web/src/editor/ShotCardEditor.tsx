@@ -26,6 +26,8 @@ import {
 import { loadLibraryCharacters, loadLibraryScenes, loadStoryTemplates } from '../lib/libraryData'
 import { ShotCardItem } from './ShotCardItem'
 import { ManuscriptImporter, parseManuscriptToShotCards } from './manuscriptUtils'
+import type { Asset } from '../api/client'
+import type { ProjectAssetTarget } from './ProjectAssetPicker'
 
 interface ShotCardEditorProps {
   nodes: Node[]
@@ -42,13 +44,16 @@ interface ShotCardEditorProps {
   onRequestAI: (mode: 'polish' | 'continue' | 'choices' | 'branchReplies' | 'storyGraph') => void
   onSetSceneExit: (sceneId: string, targetSceneId: string | null) => void
   convergenceMap: Map<string, string[]>
+  onOpenAssetPicker: (target: ProjectAssetTarget) => void
+  assetSelection?: { target: ProjectAssetTarget; asset: Asset } | null
+  onAssetApplied: () => void
 }
 
 export default function ShotCardEditor({
   nodes, edges, selectedSceneId, selectedCardId,
   autoEditCardId, onConsumeAutoEdit,
   onSelectCard, onUpdateGraph, scenes, onCreateBranch, onNavigateToScene,
-  onRequestAI, onSetSceneExit, convergenceMap,
+  onRequestAI, onSetSceneExit, convergenceMap, onOpenAssetPicker, assetSelection, onAssetApplied,
 }: ShotCardEditorProps) {
   const toast = useToast()
   const characters = useMemo(() => loadLibraryCharacters(), [])
@@ -355,6 +360,12 @@ export default function ShotCardEditor({
     const laidOut = layoutNodes(allNodes, allEdges)
     onUpdateGraph(laidOut, allEdges)
   }, [cards, nodes, edges, onUpdateGraph])
+
+  useEffect(() => {
+    if (!assetSelection) return
+    if (assetSelection.target.field === 'background') updateCard(assetSelection.target.cardId, { background: assetSelection.asset.url })
+    onAssetApplied()
+  }, [assetSelection, onAssetApplied, updateCard])
 
   const addCard = useCallback((type: 'dialogue' | 'choice' | 'narration') => {
     if (!selectedSceneId) return
@@ -877,6 +888,7 @@ export default function ShotCardEditor({
               onCreateBranch={(choiceIndex, choiceText) => onCreateBranch(card.id, choiceIndex, choiceText)}
               onNavigateToScene={onNavigateToScene}
               onRequestAI={onRequestAI}
+              onOpenAssetPicker={(cardId, field) => onOpenAssetPicker({ cardId, field })}
             />
           ))}
         </div>

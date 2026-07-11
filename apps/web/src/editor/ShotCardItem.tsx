@@ -45,6 +45,7 @@ export interface ShotCardItemProps {
   onCreateBranch: (choiceIndex: number, choiceText: string) => void
   onNavigateToScene: (sceneId: string) => void
   onRequestAI: (mode: 'polish' | 'continue' | 'choices' | 'branchReplies' | 'storyGraph') => void
+  onOpenAssetPicker: (cardId: string, field: 'background') => void
 }
 
 export function ShotCardItem({
@@ -52,7 +53,7 @@ export function ShotCardItem({
   compactMode,
   characters, libraryScenes, storyTemplates, allScenes, allEdges, convergenceMap,
   onSelect, onEdit, onUpdate, onDelete, onDuplicate, onMove,
-  onSetChoiceTarget, onCreateBranch, onNavigateToScene, onRequestAI,
+  onSetChoiceTarget, onCreateBranch, onNavigateToScene, onRequestAI, onOpenAssetPicker,
 }: ShotCardItemProps) {
   const typeIcon = card.type === 'choice' ? <GitBranch className="h-4 w-4" /> : <MessageSquare className="h-4 w-4" />
   const typeLabel = card.type === 'choice' ? '选项' : card.lensType === 'narration' ? '旁白' : card.lensType === 'thought' ? '心理' : card.lensType === 'memory' ? '回忆' : card.lensType === 'system' ? '系统' : '对话'
@@ -201,6 +202,7 @@ export function ShotCardItem({
             onCreateBranch={onCreateBranch}
             onNavigateToScene={onNavigateToScene}
             onRequestAI={onRequestAI}
+            onOpenAssetPicker={onOpenAssetPicker}
           />
         </div>
       )}

@@ -7,7 +7,7 @@
 import { useState, useEffect } from 'react'
 import type { Edge } from '@xyflow/react'
 import {
-  ImageIcon, Users, X, Wand2, ArrowRight, GitMerge, Plus, Sparkles, GitBranch, AlertTriangle,
+  ImageIcon, Users, X, Wand2, ArrowRight, GitMerge, Plus, Sparkles, GitBranch, AlertTriangle, FolderOpen,
 } from 'lucide-react'
 import {
   type ShotCard, type CharacterSlot, type Scene,
@@ -19,7 +19,7 @@ import { TemplateSelect, extractChoicesFromTemplate } from './manuscriptUtils'
 
 export function CardEditor({
   card, characters, libraryScenes, storyTemplates, allScenes, allEdges, convergenceMap,
-  onUpdate, onSetChoiceTarget, onCreateBranch, onNavigateToScene, onRequestAI,
+  onUpdate, onSetChoiceTarget, onCreateBranch, onNavigateToScene, onRequestAI, onOpenAssetPicker,
 }: {
   card: ShotCard
   characters: ReturnType<typeof loadLibraryCharacters>
@@ -33,6 +33,7 @@ export function CardEditor({
   onCreateBranch: (choiceIndex: number, choiceText: string) => void
   onNavigateToScene: (sceneId: string) => void
   onRequestAI: (mode: 'polish' | 'continue' | 'choices' | 'branchReplies' | 'storyGraph') => void
+  onOpenAssetPicker: (cardId: string, field: 'background') => void
 }) {
   const [newCharId, setNewCharId] = useState('')
   const [localText, setLocalText] = useState(card.text)
@@ -166,6 +167,7 @@ export function CardEditor({
               <option key={scene.id} value={scene.id}>{scene.name}</option>
             ))}
           </select>
+          <button type="button" aria-label="从项目素材选择背景" title="从项目素材选择背景" onClick={() => onOpenAssetPicker(card.id, 'background')} className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-dream-200 text-dream-600 hover:bg-dream-50"><FolderOpen className="h-4 w-4" /></button>
         </div>
       </div>
 
