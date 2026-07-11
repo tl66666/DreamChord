@@ -7,6 +7,8 @@ import { buildInitialContext, loadAgentProjectSnapshot, type AgentScope } from '
 import { executeCreativeAgent } from './executor.js'
 import { InProcessAgentQueue } from './queue.js'
 import { createAgentToolRegistry, toUniformAgentToolRegistry } from './tools.js'
+import { buildRollingSummary, createConversationSources, type ConversationMessage } from './conversationMemory.js'
+import type { RankableMemory } from './memoryService.js'
 
 export type AgentRunStatus = 'queued' | 'planning' | 'gathering_context' | 'drafting' | 'validating' | 'awaiting_approval' | 'applying' | 'completed' | 'failed' | 'cancelled'
 export interface ProviderSecretConfig { provider: string; model: string; apiKey: string; baseUrl?: string }
@@ -156,7 +158,10 @@ export class PrismaAgentRunService implements AgentRunService {
     const snapshot = await this.dependencies.loadSnapshot(run.projectId)
     if (!snapshot || !run.chapterId) throw new Error('项目或章节上下文不存在')
     await this.client.agentRun.update({ where: { id: run.id }, data: { status: 'gathering_context' } })
-    const initialContext = buildInitialContext(snapshot, { scope: run.scope as AgentScope, chapterId: run.chapterId, targetId: run.targetId ?? undefined })
+    const initialContext = [
+      ...buildInitialContext(snapshot, { scope: run.scope as AgentScope, chapterId: run.chapterId, targetId: run.targetId ?? undefined }),
+      ...await this.loadConversationSources(run.conversationId, run.projectId, run.prompt),
+    ]
     await this.client.agentRun.update({ where: { id: run.id }, data: { sources: JSON.stringify(initialContext), status: 'drafting' } })
     const rawTools = createAgentToolRegistry({ snapshot, chapterId: run.chapterId })
     const provider = this.dependencies.createProvider(job.secretConfig.provider, job.secretConfig)
@@ -169,6 +174,7 @@ export class PrismaAgentRunService implements AgentRunService {
     if (!result.patch) {
       await this.client.agentRun.update({ where: { id: run.id }, data: { status: 'completed', completedAt: new Date() } })
       await this.client.agentMessage.create({ data: { conversationId: run.conversationId, role: 'assistant', content: result.summary } })
+      await this.refreshConversationSummary(run.conversationId)
       return
     }
     const chapter = snapshot.chapters.find((item) => item.id === run.chapterId)!
@@ -178,6 +184,29 @@ export class PrismaAgentRunService implements AgentRunService {
     await this.client.storyPatch.create({ data: { runId: run.id, projectId: run.projectId, chapterId: run.chapterId, baseVersion: chapter.version, payload: JSON.stringify(result.patch), validation: JSON.stringify(preview.validation), diff: JSON.stringify(createStoryPatchDiff(chapter.graph, preview.graph)) } })
     await this.client.agentRun.update({ where: { id: run.id }, data: { status: 'awaiting_approval', validation: JSON.stringify(preview.validation) } })
     await this.client.agentMessage.create({ data: { conversationId: run.conversationId, role: 'assistant', content: result.summary, metadata: JSON.stringify({ runId: run.id }) } })
+    await this.refreshConversationSummary(run.conversationId)
+  }
+  private async loadConversationSources(conversationId: string, projectId: string, query: string) {
+    const [conversation, messageRows, memoryRows] = await Promise.all([
+      this.client.agentConversation.findUniqueOrThrow({ where: { id: conversationId }, select: { summary: true } }),
+      this.client.agentMessage.findMany({ where: { conversationId }, orderBy: [{ createdAt: 'desc' }, { id: 'desc' }], take: 31 }),
+      this.client.agentMemory.findMany({ where: { projectId, status: { not: 'forgotten' }, OR: [{ conversationId: null }, { conversationId }] } }),
+    ])
+    const messages: ConversationMessage[] = messageRows.reverse()
+    if (messages.at(-1)?.role === 'user' && messages.at(-1)?.content === query) messages.pop()
+    const memories: RankableMemory[] = memoryRows.map((memory) => ({
+      id: memory.id, kind: memory.kind as RankableMemory['kind'], title: memory.title, content: memory.content,
+      tags: parseJson(memory.tags, []) as string[], importance: memory.importance, status: memory.status as RankableMemory['status'],
+      isPinned: memory.isPinned, sourceType: memory.sourceType, conversationId: memory.conversationId,
+      supersededById: memory.supersededById, updatedAt: memory.updatedAt,
+    }))
+    return createConversationSources({ summary: conversation.summary, messages, memories, query, conversationId })
+  }
+  private async refreshConversationSummary(conversationId: string): Promise<void> {
+    const messages = await this.client.agentMessage.findMany({ where: { conversationId }, orderBy: [{ createdAt: 'asc' }, { id: 'asc' }] })
+    const rolling = buildRollingSummary(messages)
+    if (!rolling) return
+    await this.client.agentConversation.update({ where: { id: conversationId }, data: { summary: rolling.summary, summaryThroughMessageId: rolling.throughMessageId } })
   }
   private async failRun(runId: string, error: unknown): Promise<void> {
     const current = await this.client.agentRun.findUnique({ where: { id: runId }, select: { status: true } }).catch(() => null)

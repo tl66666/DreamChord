@@ -7,7 +7,7 @@ export type AgentScope = 'card' | 'scene' | 'chapter' | 'project'
 
 export interface AgentContextSource {
   id: string
-  kind: 'project' | 'story-bible' | 'character' | 'chapter-outline' | 'scene' | 'search-result' | 'health-report'
+  kind: 'project' | 'story-bible' | 'character' | 'chapter-outline' | 'scene' | 'search-result' | 'health-report' | 'conversation-history' | 'conversation-summary' | 'memory'
   title: string
   content: string
   nodeIds: string[]
