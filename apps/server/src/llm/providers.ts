@@ -7,6 +7,7 @@ export interface LLMOptions {
   temperature?: number
   maxTokens?: number
   stream?: boolean
+  signal?: AbortSignal
 }
 
 export interface LLMProviderConfig {
@@ -27,22 +28,32 @@ export abstract class LLMProvider {
 
   abstract chat(messages: LLMMessage[], options?: LLMOptions): Promise<string>
 
-  protected async post(path: string, body: unknown) {
-    const response = await fetch(`${this.baseUrl}${path}`, {
+  protected async post(path: string, body: unknown, externalSignal?: AbortSignal) {
+    const controller = new AbortController()
+    const timeout = setTimeout(() => controller.abort(), 60_000)
+    const abort = () => controller.abort()
+    externalSignal?.addEventListener('abort', abort, { once: true })
+    try {
+      const response = await fetch(`${this.baseUrl}${path}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${this.config.apiKey}`,
       },
       body: JSON.stringify(body),
-    })
+      signal: controller.signal,
+      })
 
-    if (!response.ok) {
-      const error = await response.text()
-      throw new Error(`${this.name} API error: ${response.status} ${error}`)
+      if (!response.ok) {
+        const error = await response.text()
+        throw new Error(`${this.name} API error: ${response.status} ${error}`)
+      }
+
+      return response.json()
+    } finally {
+      clearTimeout(timeout)
+      externalSignal?.removeEventListener('abort', abort)
     }
-
-    return response.json()
   }
 }
 
@@ -66,7 +77,7 @@ export abstract class BaseOpenAICompatibleProvider extends LLMProvider {
       messages,
       temperature: options.temperature ?? 0.7,
       max_tokens: options.maxTokens ?? 2048,
-    })
+    }, options.signal)
     return data.choices?.[0]?.message?.content || ''
   }
 }
