@@ -256,8 +256,8 @@ FlowEditor 直接读取 store.nodes / store.edges
 ## 环境要求
 
 - Node.js 20+
-- npm 10+
-- pnpm 9（可选，推荐）
+- Corepack（随 Node.js 20 提供）
+- pnpm 9.1.0（启动器会通过 Corepack 自动启用）
 
 ## 安装依赖
 
@@ -266,69 +266,44 @@ cd C:\Users\唐乐\Desktop\实训2\项目
 pnpm install
 ```
 
-如果 pnpm 安装失败，可以分别进入前后端目录使用 npm：
+这是 pnpm workspace，必须在仓库根目录安装。不要分别进入前后端运行 `npm install`，否则 `workspace:*` 依赖无法可靠解析。
 
-```bash
-cd C:\Users\唐乐\Desktop\实训2\项目\apps\web
-npm install
+## 一键启动（推荐）
 
-cd C:\Users\唐乐\Desktop\实训2\项目\apps\server
-npm install
+Windows 用户双击 `start-dreamchord.bat`。启动器会：
+
+- 检查 Node.js 20 和项目文件完整性
+- 通过 Corepack 启用固定的 pnpm 9.1.0
+- 从根目录按锁文件安装依赖
+- 创建本地 `.env` 和随机 JWT 密钥（已有密钥不会覆盖）
+- 生成 Prisma Client、应用全部迁移并幂等初始化演示数据
+- 为前后端选择空闲端口，不会关闭占用端口的其他程序
+- 等待健康检查通过后打开浏览器
+
+环境诊断不会修改文件：
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts\doctor.ps1
 ```
 
-## 配置后端环境
+只执行首次安装、配置和迁移，不启动服务：
 
-```bash
-cd C:\Users\唐乐\Desktop\实训2\项目\apps\server
-copy .env.example .env
-```
-
-`.env` 内容：
-
-```env
-DATABASE_URL="file:./dev.db"
-JWT_SECRET="dreamchord-local-dev-secret"
-PORT=3001
-CORS_ORIGIN="http://localhost:5173"
-UPLOAD_DIR="./uploads"
-```
-
-AI Key 是可选项，不影响基础测试。在设置页配置供应商 API Key 后启用 AI 功能。
-
-## 初始化数据库
-
-```bash
-cd C:\Users\唐乐\Desktop\实训2\项目\apps\server
-npx prisma generate
-npx prisma migrate dev
-npx prisma db seed
+```powershell
+powershell -ExecutionPolicy Bypass -File start-dreamchord.ps1 -SetupOnly
 ```
 
 默认测试账号：`demo / demo123`
 
-## 启动项目
-
-### 一键启动（推荐）
-
-双击 `start-dreamchord.bat`，自动完成：
-- 检测端口冲突
-- 同时启动前后端
-- 自动打开浏览器
+AI Key 是可选项，不影响编辑、播放、规则体检和测试。在设置页配置供应商 API Key 后启用模型功能。
 
 ### 手动启动
 
-前端：
-
 ```bash
-cd C:\Users\唐乐\Desktop\实训2\项目\apps\web
-npm run dev -- --host 127.0.0.1 --port 5173
-```
-
-后端：
-
-```bash
-cd C:\Users\唐乐\Desktop\实训2\项目\apps\server
-npm run dev
+pnpm install --frozen-lockfile
+pnpm --filter dreamchord-server prisma generate
+pnpm --filter dreamchord-server prisma migrate deploy
+pnpm --filter dreamchord-server prisma db seed
+pnpm dev
 ```
 
 ---
@@ -501,11 +476,11 @@ npx tsc --noEmit
 
 ### 前端打不开
 
-确认 Vite 实际启动的端口，5173 被占用时会变成 5174 等。
+先运行 `scripts\doctor.ps1`。启动器会在 5173-5183 中选择空闲端口，最终地址以启动窗口输出为准。
 
 ### 登录失败
 
-重新执行 `npx prisma db seed`，再用 `demo / demo123` 登录。
+在仓库根目录执行 `pnpm --filter dreamchord-server prisma db seed`，再用 `demo / demo123` 登录。
 
 ### 角色出现白底
 

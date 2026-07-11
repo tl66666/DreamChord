@@ -16,4 +16,15 @@ for (const command of ['pnpm install --frozen-lockfile', 'pnpm lint', 'pnpm test
   assert.ok(workflow.includes(command), `CI must run ${command}`)
 }
 
+const launcher = readFileSync(new URL('../start-dreamchord.ps1', import.meta.url), 'utf8')
+assert.doesNotMatch(launcher, /Stop-Process/, 'launcher must not terminate unrelated port owners')
+assert.match(launcher, /versionNum\s+-lt\s+20/, 'launcher must require Node.js 20')
+assert.match(launcher, /corepack/, 'launcher must bootstrap the pinned package manager')
+assert.match(launcher, /pnpm install --frozen-lockfile/, 'launcher must install from the workspace lockfile')
+assert.match(launcher, /prisma migrate deploy/, 'launcher must deploy committed migrations')
+
+const doctor = readFileSync(new URL('./doctor.ps1', import.meta.url), 'utf8')
+assert.match(doctor, /\[PASS\]/, 'doctor must emit machine-readable pass results')
+assert.match(doctor, /\[FAIL\]/, 'doctor must emit machine-readable failure results')
+
 console.log('workspace readiness scripts are configured')
