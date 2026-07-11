@@ -8,6 +8,7 @@ import { useState, useMemo } from 'react'
 import { X } from 'lucide-react'
 import { type ShotCard, type LensType } from './sceneGraph'
 import { loadLibraryCharacters, type StoryTemplate } from '../lib/libraryData'
+import { parseManuscript } from './manuscriptParser'
 
 export function ManuscriptImporter({
   characters,
@@ -82,13 +83,13 @@ export function parseManuscriptToShotCards(text: string, options: {
   background: string
   characters: ReturnType<typeof loadLibraryCharacters>
 }): ShotCard[] {
-  const units = parseManuscriptTextUnits(text).slice(0, 160)
+  const units = parseManuscript(text, options.characters.flatMap((character) => [character.id, character.name]))
+    .chapters.flatMap((chapter) => chapter.scenes).flatMap((scene) => scene.cards).slice(0, 160)
   const timestamp = Date.now()
 
   return units.map((unit, index) => {
-    const speakerLine = unit.match(/^([^：:\n]{1,16})[：:]\s*([\s\S]+)$/)
-    const rawSpeaker = speakerLine?.[1]?.trim()
-    const spokenText = speakerLine?.[2]?.trim()
+    const rawSpeaker = unit.speaker
+    const spokenText = unit.text
     const matchedCharacter = rawSpeaker
       ? options.characters.find((character) => character.name === rawSpeaker || character.id === rawSpeaker)
       : undefined
@@ -116,14 +117,14 @@ export function parseManuscriptToShotCards(text: string, options: {
       id: `card-import-${timestamp}-${index}`,
       sceneId: options.sceneGroupId,
       type: 'narration',
-      lensType: inferNarrationLens(unit),
+      lensType: unit.lensType,
       background: options.background,
       characters: [],
       speaker: '旁白',
       speakerExpression: 'normal',
       speakerPosition: 'center',
       autoStageSpeaker: false,
-      text: unit,
+      text: unit.kind === 'dialogue' && rawSpeaker ? `${rawSpeaker}：${unit.text}` : unit.text,
       sceneCode: options.sceneCode,
       sceneGroupId: options.sceneGroupId,
       nodeIds: [],

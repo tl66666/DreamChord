@@ -25,7 +25,8 @@ import {
 } from './sceneGraph'
 import { loadLibraryCharacters, loadLibraryScenes, loadStoryTemplates } from '../lib/libraryData'
 import { ShotCardItem } from './ShotCardItem'
-import { ManuscriptImporter, parseManuscriptToShotCards } from './manuscriptUtils'
+import { parseManuscriptToShotCards } from './manuscriptUtils'
+import ManuscriptImporter from './ManuscriptImportPreview'
 import type { Asset } from '../api/client'
 import type { ProjectAssetTarget } from './ProjectAssetPicker'
 
