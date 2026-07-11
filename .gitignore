@@ -52,3 +52,6 @@ apps/server/src/generated/
 *.bak
 *.swp
 *~
+
+# Isolated feature worktrees
+.worktrees/
