@@ -25,7 +25,9 @@
 │   ├── server/              # Express 后端
 │   │   ├── src/
 │   │   │   ├── index.ts     # 入口（环境校验 + CORS + 错误中间件 + graceful shutdown）
-│   │   │   ├── routes/      # auth, projects, assets, ai
+│   │   │   ├── routes/      # auth, projects, assets, storyBible, health, agent, ai(兼容)
+│   │   │   ├── agent/       # 有界上下文、固定工具、执行器、队列、运行服务
+│   │   │   ├── story/       # 补丁事务应用与撤销
 │   │   │   ├── middleware/  # authenticateToken
 │   │   │   ├── lib/         # prisma 单例
 │   │   │   └── llm/         # LLM Provider 抽象
@@ -33,7 +35,9 @@
 │   └── web/                 # React 前端
 │       └── src/
 │           ├── editor/      # 编辑器核心（最大模块）
-│           │   ├── FlowEditor.tsx       # 主容器（788行）
+│           │   ├── FlowEditor.tsx       # 主容器
+│           │   ├── WorkbenchPanel.tsx   # 38行标签壳
+│           │   ├── workbench/           # 故事/角色/场景与纯图动作模块
 │           │   ├── flowEditorUtils.ts   # 服务端节点转换 + 旧版兼容
 │           │   ├── ProjectHealthPanel.tsx # 项目体检面板
 │           │   ├── ShotCardEditor.tsx   # 镜头卡编辑主组件（965行）
@@ -53,7 +57,9 @@
 │           ├── api/         # axios 客户端
 │           ├── lib/         # 工具函数 (safeJsonParse, aiConfig, libraryData)
 │           ├── components/  # 通用组件 (ErrorBoundary, FeedbackProvider)
+│           ├── agent/       # 共享 Agent 面板、轮询 Hook、时间线、差异与审批
 │           └── pages/       # 路由页面
+├── packages/story-domain/   # 共享故事图、体检、补丁 schema/应用/差异/校验
 ├── docs/                    # 文档
 └── docker-compose.yml       # 生产部署编排
 ```
@@ -93,7 +99,8 @@ cd apps/server && npx prisma db seed
 - 立绘生成必须采用"白底生成+后处理抠图"流程，禁止 transparent background 提示词
 - 剧情文本框必须位于底部并铺满屏幕宽度
 - 节点系统区分"演出控制"（background/character/dialogue/subtitle/transition/delay）和"流程控制"（choice/jump/condition/setVariable）
-- AI 剧情生成接口必须输出严格 JSON：`{ nodes, edges }`
+- Agent 模型响应必须通过严格结构化协议；任何图变更必须先成为 `StoryPatch` 并通过共享校验
+- API Key 只能存在于浏览器配置和服务端队列内存，不得持久化或写日志
 - 删除操作必须同时删除本地和云端数据
 - 导航栏 logo 使用实心渐变 SVG
 
@@ -119,6 +126,13 @@ cd apps/server && npx prisma db seed
 - 汇合场景（convergence）通过 `findConvergenceScenes` 检测，紫色可视化
 - 镜头卡编辑器拆分为 ShotCardEditor（主组件）→ ShotCardItem（展示）→ CardEditor（编辑表单），manuscriptUtils 提供长文导入
 - 构建优化：Vite manualChunks 拆分 react-vendor / flow-vendor / icon-vendor / util-vendor 独立缓存
+
+### 创作 Agent
+- 单 Agent 最多 8 步，只能调用固定工具，不允许模型直接访问数据库
+- 结构补丁必须经过 `@dreamchord/story-domain` 校验、差异预览和用户批准
+- 应用/撤销必须走 `patchService.ts` 的 Prisma 事务和章节版本检查
+- 故事圣经是项目级最高优先级上下文；角色秘密只在选中范围引用该角色时加入上下文
+- `/api/ai/*` 是弃用兼容面，新的项目感知能力只加到 Agent 路由
 
 ### 状态管理
 - Zustand store（`useEditorStore`）是编辑器的**单一数据源**，直接读取 `store.nodes` / `store.edges`
@@ -149,9 +163,9 @@ cd apps/server && npx prisma db seed
 - ~~Prisma schema 缺少外键索引~~ → 已添加所有外键 @@index
 - ~~LLM Provider 代码重复~~ → 已提取 BaseOpenAICompatibleProvider 基类
 - ~~双状态源竞态：useNodesState + useEditorStore 并行（尚未修复）~~ → 已修复，Zustand store 作为单一数据源，移除冗余的 useNodesState/useEdgesState
-- 前端无测试框架（建议引入 Vitest）
+- ~~前端无测试框架~~ → 已引入 Vitest + Testing Library，覆盖 Agent、故事圣经、工作台和轮询状态
 - Tailwind darkMode 配置但未实现切换
-- 后端安装了 zod 和 express-validator 但尚未启用（计划用于请求校验）
+- Zod 已用于 Agent、故事圣经、章节保存和旧 AI 兼容接口；`express-validator` 仅保留旧路由兼容
 
 ## 环境变量
 
@@ -172,6 +186,6 @@ VITE_API_BASE_URL=/api
 ## 依赖说明
 
 - 已移除未使用依赖：gsap, clsx, tailwind-merge
-- 后端安装了 zod 和 express-validator 但尚未启用（计划用于请求校验）
+- Zod 是新接口和结构化域数据的默认校验器
 - Vite 构建使用 manualChunks 拆分 vendor 包（react-vendor, flow-vendor, icon-vendor, util-vendor）
 - LLM Provider 通过 BaseOpenAICompatibleProvider 基类共享 chat 方法，消除重复代码

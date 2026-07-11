@@ -4,31 +4,35 @@ import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import type { StoryGraph, StoryNodeType } from '@dreamchord/story-domain'
 import AgentPanel from '../agent/AgentPanel'
 import type { AppliedPatchDto } from '../agent/agentTypes'
-import { getMyProjects, type Chapter, type ProjectDetail } from '../api/client'
+import { getMyProjects, getProject, type Chapter, type ProjectDetail } from '../api/client'
 
 export default function AIWriterPage() {
   const navigate = useNavigate()
   const [searchParams, setSearchParams] = useSearchParams()
   const [projects, setProjects] = useState<ProjectDetail[]>([])
+  const [selectedProject, setSelectedProject] = useState<ProjectDetail | null>(null)
   const [selectedProjectId, setSelectedProjectId] = useState(searchParams.get('project') || '')
   const [selectedChapterId, setSelectedChapterId] = useState(searchParams.get('chapter') || '')
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
 
-  const selectedProject = projects.find((project) => project.id === selectedProjectId) ?? null
   const selectedChapter = selectedProject?.chapters.find((chapter) => chapter.id === selectedChapterId) ?? null
   const graph = useMemo(() => chapterToGraph(selectedChapter), [selectedChapter])
 
   useEffect(() => {
     let active = true
     getMyProjects()
-      .then((items) => {
+      .then(async (items) => {
         if (!active) return
         setProjects(items)
-        const project = items.find((item) => item.id === selectedProjectId) ?? items[0]
-        const chapter = project?.chapters.find((item) => item.id === selectedChapterId) ?? project?.chapters[0]
-        setSelectedProjectId(project?.id ?? '')
+        const summary = items.find((item) => item.id === selectedProjectId) ?? items[0]
+        if (!summary) return
+        const project = await getProject(summary.id)
+        if (!active) return
+        const chapter = project.chapters.find((item) => item.id === selectedChapterId) ?? project.chapters[0]
+        setSelectedProject(project)
+        setSelectedProjectId(project.id)
         setSelectedChapterId(chapter?.id ?? '')
       })
       .catch(() => active && setError('项目加载失败，请稍后重试。'))
@@ -47,19 +51,31 @@ export default function AIWriterPage() {
     }, { replace: true })
   }, [selectedProjectId, selectedChapterId, setSearchParams])
 
-  const selectProject = (projectId: string) => {
-    const project = projects.find((item) => item.id === projectId)
+  const selectProject = async (projectId: string) => {
     setSelectedProjectId(projectId)
-    setSelectedChapterId(project?.chapters[0]?.id ?? '')
+    setSelectedProject(null)
+    setSelectedChapterId('')
     setSelectedNodeId(null)
-    setSearchParams({ project: projectId, ...(project?.chapters[0] ? { chapter: project.chapters[0].id } : {}) })
+    setLoading(true)
+    setError('')
+    try {
+      const project = await getProject(projectId)
+      const chapterId = project.chapters[0]?.id ?? ''
+      setSelectedProject(project)
+      setSelectedChapterId(chapterId)
+      setSearchParams({ project: projectId, ...(chapterId ? { chapter: chapterId } : {}) })
+    } catch {
+      setError('项目加载失败，请稍后重试。')
+    } finally {
+      setLoading(false)
+    }
   }
 
   const handleAppliedGraph = (result: AppliedPatchDto) => {
-    setProjects((current) => current.map((project) => project.id !== selectedProjectId ? project : {
+    setSelectedProject((project) => project ? {
       ...project,
       chapters: project.chapters.map((chapter) => chapter.id !== result.chapterId ? chapter : graphToChapter(chapter, result)),
-    }))
+    } : project)
   }
 
   const updateConversation = (conversationId: string) => {
@@ -93,7 +109,7 @@ export default function AIWriterPage() {
           <div className="flex min-w-0 flex-1 flex-col gap-2 sm:flex-row sm:items-center">
             <label className="flex min-w-0 items-center gap-2 text-xs font-medium text-slate-500">
               <span className="w-12 shrink-0">项目</span>
-              <select aria-label="选择项目" value={selectedProjectId} onChange={(event) => selectProject(event.target.value)} className="h-10 min-w-0 flex-1 rounded-md border border-slate-300 bg-white px-3 text-sm text-slate-800 sm:w-64 sm:flex-none">
+              <select aria-label="选择项目" value={selectedProjectId} onChange={(event) => void selectProject(event.target.value)} className="h-10 min-w-0 flex-1 rounded-md border border-slate-300 bg-white px-3 text-sm text-slate-800 sm:w-64 sm:flex-none">
                 {projects.length === 0 && <option value="">暂无项目</option>}
                 {projects.map((project) => <option key={project.id} value={project.id}>{project.title}</option>)}
               </select>

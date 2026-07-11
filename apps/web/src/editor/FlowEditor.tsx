@@ -44,6 +44,7 @@ import {
 } from '../api/client'
 import { getApiError, convertServerNodes, convertServerEdges, ensureLegacySceneGroups } from './flowEditorUtils'
 import { ProjectHealthPanel } from './ProjectHealthPanel'
+import { editorPaneClasses } from './responsiveLayout'
 
 export default function FlowEditor() {
   const { projectId } = useParams<{ projectId: string }>()
@@ -589,6 +590,8 @@ export default function FlowEditor() {
     return () => window.removeEventListener('beforeunload', onBeforeUnload)
   }, [store.isSaving])
 
+  const paneClasses = editorPaneClasses(showAssets || showAI)
+
   return (
     <div className="flex h-full flex-col">
       {/* === 顶部工具栏 === */}
@@ -700,7 +703,7 @@ export default function FlowEditor() {
         /* 场景编辑三栏布局 */
         <div className="flex flex-1 overflow-hidden">
           {/* 左栏：场景树 */}
-          <div className="w-64 shrink-0 border-r border-dream-100">
+          <div className={paneClasses.tree}>
             <SceneTree
               nodes={nodes}
               edges={edges}
@@ -718,7 +721,7 @@ export default function FlowEditor() {
           </div>
 
           {/* 中栏：镜头卡编辑器 */}
-          <div className="flex-1 overflow-hidden">
+          <div className={paneClasses.center}>
             <ShotCardEditor
               nodes={nodes}
               edges={edges}
@@ -738,7 +741,7 @@ export default function FlowEditor() {
           </div>
 
           {/* 右栏：根据面板状态切换 MiniPreview / 素材库 / AI助手 */}
-          <div className="w-80 shrink-0 border-l border-dream-100">
+          <div className={paneClasses.side}>
             {showAssets ? (
               <AssetPanel
                 selectedType={assetTarget?.type}

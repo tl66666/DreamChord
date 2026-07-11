@@ -1,7 +1,7 @@
 import { applyStoryPatch, createStoryPatchDiff, type StoryGraph } from '@dreamchord/story-domain'
 import type { PrismaClient } from '@prisma/client'
 import { prisma } from '../lib/prisma.js'
-import { createProvider } from '../llm/providers.js'
+import { createProvider, type LLMMessage, type LLMOptions } from '../llm/providers.js'
 import { applyPersistedStoryPatch, undoPersistedStoryPatch } from '../story/patchService.js'
 import { buildInitialContext, loadAgentProjectSnapshot, type AgentScope } from './context.js'
 import { executeCreativeAgent } from './executor.js'
@@ -33,6 +33,10 @@ export interface AgentRunService {
 }
 
 interface AgentQueueJob { id: string; secretConfig?: ProviderSecretConfig }
+interface AgentRunDependencies {
+  loadSnapshot: (projectId: string) => Promise<Awaited<ReturnType<typeof loadAgentProjectSnapshot>>>
+  createProvider: (provider: string, config: ProviderSecretConfig) => { chat: (messages: LLMMessage[], options?: LLMOptions) => Promise<string> }
+}
 const ACTIVE_STATUSES: AgentRunStatus[] = ['queued', 'planning', 'gathering_context', 'drafting', 'validating']
 
 export class RunAbortRegistry {
@@ -48,7 +52,12 @@ function iso(value: Date): string { return value.toISOString() }
 export class PrismaAgentRunService implements AgentRunService {
   private readonly queue: InProcessAgentQueue<AgentQueueJob>
   private readonly aborts = new RunAbortRegistry()
-  constructor(private readonly client: PrismaClient = prisma) {
+  private readonly dependencies: AgentRunDependencies
+  constructor(private readonly client: PrismaClient = prisma, dependencies: Partial<AgentRunDependencies> = {}) {
+    this.dependencies = {
+      loadSnapshot: dependencies.loadSnapshot ?? ((projectId) => loadAgentProjectSnapshot(projectId, this.client)),
+      createProvider: dependencies.createProvider ?? createProvider,
+    }
     this.queue = new InProcessAgentQueue((job) => this.executeRun(job), (job, error) => { void this.failRun(job.id, error) })
   }
 
@@ -144,13 +153,13 @@ export class PrismaAgentRunService implements AgentRunService {
     const run = await this.client.agentRun.findUniqueOrThrow({ where: { id: job.id } })
     if (run.status === 'cancelled') return
     await this.client.agentRun.update({ where: { id: run.id }, data: { status: 'planning' } })
-    const snapshot = await loadAgentProjectSnapshot(run.projectId)
+    const snapshot = await this.dependencies.loadSnapshot(run.projectId)
     if (!snapshot || !run.chapterId) throw new Error('项目或章节上下文不存在')
     await this.client.agentRun.update({ where: { id: run.id }, data: { status: 'gathering_context' } })
     const initialContext = buildInitialContext(snapshot, { scope: run.scope as AgentScope, chapterId: run.chapterId, targetId: run.targetId ?? undefined })
     await this.client.agentRun.update({ where: { id: run.id }, data: { sources: JSON.stringify(initialContext), status: 'drafting' } })
     const rawTools = createAgentToolRegistry({ snapshot, chapterId: run.chapterId })
-    const provider = createProvider(job.secretConfig.provider, job.secretConfig)
+    const provider = this.dependencies.createProvider(job.secretConfig.provider, job.secretConfig)
     const result = await executeCreativeAgent({
       prompt: run.prompt, initialContext, tools: toUniformAgentToolRegistry(rawTools),
       chat: (messages) => provider.chat(messages, { temperature: 0.7, maxTokens: 4096, signal }),

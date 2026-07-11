@@ -1,6 +1,6 @@
 # DreamChord AI Handoff
 
-Last updated: 2026-07-02 (rev 5)
+Last updated: 2026-07-11 (rev 6)
 
 This file is the practical handoff for future agents and developers. Read it before changing the editor.
 
@@ -20,6 +20,25 @@ The node graph is still the storage/runtime source of truth, but it is not the p
 
 **Core value proposition**: Hide node-graph complexity behind a card-writing UI. The user writes "who says what"; the system builds the nodes and edges.
 
+## Creative Agent (Rev 6)
+
+The previous fixed-response AI writer and `AIAssistantPanel` were removed. Both `/agent` and the editor rail now use `apps/web/src/agent/AgentPanel.tsx`.
+
+The server uses one bounded Agent: persisted run state, at most eight model steps, a fixed tool registry, strict structured responses, shared story-graph validation, diff preview, explicit approval, transactional apply, and guarded undo. API keys are passed from the browser into in-process queue memory and are never persisted or returned.
+
+Important paths:
+
+| Path | Role |
+|---|---|
+| `packages/story-domain` | Provider-neutral graph types, deterministic health checks, strict patch schema, apply/diff/validation |
+| `apps/server/src/agent` | Context builder, tools, protocol, executor, queue, run lifecycle |
+| `apps/server/src/story/patchService.ts` | SQLite transaction, chapter snapshot, version conflict protection, undo |
+| `apps/server/src/routes/storyBible.ts` | Project-level world, theme, style, timeline, forbidden elements, character notes |
+| `apps/web/src/agent` | Shared composer, progress timeline, patch preview, approval controls and polling |
+| `apps/web/src/pages/AIWriterPage.tsx` | Full-screen Agent with project/chapter/conversation URL context |
+
+Compatibility routes under `/api/ai/*` remain for old clients and now use strict bounded input schemas. Do not add new features there.
+
 ---
 
 ## Current Architecture
@@ -35,7 +54,7 @@ The node graph is still the storage/runtime source of truth, but it is not the p
 | `apps/web/src/editor/CardEditor.tsx` | Shot card edit form: background/character/dialogue/choice editing, branch target management |
 | `apps/web/src/editor/MiniPreview.tsx` | Right column default: live card preview |
 | `apps/web/src/editor/AssetPanel.tsx` | Right column (when open): asset library with built-in + uploaded materials |
-| `apps/web/src/editor/AIAssistantPanel.tsx` | Right column (when open): AI assistant linked to selected card |
+| `apps/web/src/agent/AgentPanel.tsx` | Shared editor/full-screen Agent rail |
 | `apps/web/src/editor/StoryFlowchart.tsx` | Flow view: galgame-style story flowchart with convergence visualization |
 | `apps/web/src/editor/SceneCard.tsx` | Flowchart scene card component with branch/convergence badges |
 | `apps/web/src/editor/ProjectHealthPanel.tsx` | Project health checker: 12-item diagnostic report |
@@ -52,9 +71,9 @@ The node graph is still the storage/runtime source of truth, but it is not the p
 | `apps/web/src/lib/safeJsonParse.ts` | Type-safe JSON.parse wrapper |
 | `apps/server/src/routes/projects.ts` | Backend: project/chapter CRUD, asset upload, chapter delete |
 
-### Deprecated files (do not use for new work)
+### Compatibility files (do not add new architecture here)
 
-- `apps/web/src/editor/WorkbenchPanel.tsx`
+- `apps/web/src/editor/WorkbenchPanel.tsx` is now a 38-line tab shell; implementations live in `editor/workbench/`.
 - `apps/web/src/editor/NodePalette.tsx`
 - `apps/web/src/editor/PropertyPanel.tsx`
 
@@ -92,7 +111,7 @@ The editor uses a three-column layout:
 
 - **Left (w-56)**: SceneTree — chapter/scene tree with add/delete/rename
 - **Center (flex-1)**: ShotCardEditor — shot card list with inline editing and AI buttons
-- **Right (w-80)**: Context-switching panel — defaults to MiniPreview, swaps to AssetPanel or AIAssistantPanel when their toolbar buttons are toggled. Each panel has a close button to return to preview.
+- **Right (w-80)**: Context-switching panel — defaults to MiniPreview, swaps to AssetPanel or AgentPanel when their toolbar buttons are toggled. Each panel has a close button to return to preview.
 
 The right panel is NOT a floating overlay. It replaces MiniPreview in the same column, preventing overlap issues.
 
@@ -217,17 +236,11 @@ scene.choiceTargets = targets.map((target) =>
 
 ---
 
-## AI Assistant
+## Legacy AI Assistant (Removed)
 
-`AIAssistantPanel` receives `selectedCard` and `initialMode` props, linking AI operations to the currently selected shot card.
+Do not restore `AIAssistantPanel` or local fixed responses. Card-level commands now open `AgentPanel` with a scoped task request.
 
-Modes: `polish`, `continue`, `choices`, `branchReplies`, `storyGraph`.
-
-- **Empty text guard**: Polish mode shows "当前卡片没有文本，请先输入台词或旁白内容" if the card has no text.
-- **No card selected**: Shows amber warning "未选中任何镜头卡" prompting user to select one.
-- **Card-level AI buttons**: CardEditor has "AI 润色" and "AI 续写" buttons for dialogue cards; "AI 生成选项" and "AI 分支回应" for choice cards. Clicking sets `aiMode` and opens the AI panel.
-
-AI providers are configured in Settings. Supports OpenAI-compatible APIs (GLM, DeepSeek, Kimi, OpenAI). The `BaseOpenAICompatibleProvider` base class unifies the interface; new providers only need `apiKey` and `baseUrl`.
+AI providers are configured in Settings. Agent shortcuts map card actions to explicit prompts and scopes; they do not bypass the plan, patch validation, approval, or version checks.
 
 ---
 
@@ -323,7 +336,7 @@ Files in `apps/web/public/assets/characters/` must be transparent PNGs with back
 - Chapter delete: Full stack implementation (backend API + frontend + UI).
 - Chapter numbering: Unified to Chinese numerals.
 - Chapter switch fix: `handleSwitchChapter` rewritten for formal + draft mode.
-- Panel layout: AssetPanel and AIAssistantPanel moved into right column.
+- Panel layout: AssetPanel and the shared AgentPanel use the right column.
 - Background defaults: New scenes start with empty background.
 - Scene transition: New scenes auto-add character exit.
 - AI assistant: Linked to selected card, empty text guard, card-level AI buttons.
@@ -360,7 +373,7 @@ Manual smoke test:
 6. Save and preview — choices appear, selecting option A jumps to the branch scene.
 7. Create second scene — auto includes character exit from scene 1.
 8. Click "素材库" — right panel shows assets, no overlap. Close returns to preview.
-9. Click "AI助手" — right panel shows AI assistant with current card info.
+9. Click "创作 Agent" — right panel shows scope, deterministic health check, plan timeline and approval controls.
 10. Switch to "剧情流程图" — flowchart shows scene cards, connections, convergence points.
 11. Chapter tabs show Chinese numerals. Delete button visible on each tab (if >1 chapter).
 12. No alert popups during editing (Toast notifications only).

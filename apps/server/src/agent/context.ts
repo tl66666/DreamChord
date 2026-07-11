@@ -1,4 +1,5 @@
 import type { StoryGraph, StoryNode } from '@dreamchord/story-domain'
+import type { PrismaClient } from '@prisma/client'
 import { prisma } from '../lib/prisma.js'
 import { storyBibleContentSchema, type StoryBibleContent } from '../routes/storyBible.js'
 
@@ -116,8 +117,8 @@ function parseData(raw: string): Record<string, unknown> {
   } catch { return {} }
 }
 
-export async function loadAgentProjectSnapshot(projectId: string): Promise<AgentProjectSnapshot | null> {
-  const project = await prisma.project.findUnique({
+export async function loadAgentProjectSnapshot(projectId: string, client: PrismaClient = prisma): Promise<AgentProjectSnapshot | null> {
+  const project = await client.project.findUnique({
     where: { id: projectId },
     include: { storyBible: true, characters: true, chapters: { orderBy: { order: 'asc' }, include: { nodes: true, edges: true } } },
   })

@@ -5,7 +5,8 @@ import { MemoryRouter, useLocation } from 'react-router-dom'
 import AIWriterPage from './AIWriterPage'
 
 vi.mock('../api/client', () => ({
-  getMyProjects: vi.fn(async () => [{ id: 'project', title: '测试故事', description: '', cover: '', isPublic: false, isPublished: false, author: { username: 'owner', nickname: null }, characters: [], chapters: [{ id: 'chapter', title: '第一章', order: 0, version: 1, nodes: [], edges: [] }] }]),
+  getMyProjects: vi.fn(async () => [{ id: 'project', title: '测试故事', description: '', cover: '', isPublic: false, isPublished: false, chapters: [{ id: 'chapter' }] }]),
+  getProject: vi.fn(async () => ({ id: 'project', title: '测试故事', description: '', cover: '', isPublic: false, isPublished: false, author: { username: 'owner', nickname: null }, characters: [], chapters: [{ id: 'chapter', title: '第一章', order: 0, version: 1, nodes: [], edges: [] }] })),
 }))
 vi.mock('../agent/AgentPanel', () => ({
   default: ({ projectId, chapterId }: { projectId: string; chapterId: string }) => (
