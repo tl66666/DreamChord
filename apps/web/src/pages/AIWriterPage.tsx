@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { Bot, ChevronRight, Library, Loader2, Settings } from 'lucide-react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import type { StoryGraph, StoryNodeType } from '@dreamchord/story-domain'
-import AgentPanel from '../agent/AgentPanel'
+import AgentWorkspace from '../agent/AgentWorkspace'
 import type { AppliedPatchDto } from '../agent/agentTypes'
 import { getMyProjects, getProject, type Chapter, type ProjectDetail } from '../api/client'
 
@@ -134,13 +134,14 @@ export default function AIWriterPage() {
           ) : error ? (
             <div className="grid h-full min-h-[680px] place-items-center px-6 text-sm text-red-700">{error}</div>
           ) : selectedProject && selectedChapter ? (
-            <AgentPanel
+            <AgentWorkspace
               key={`${selectedProject.id}:${selectedChapter.id}`}
               projectId={selectedProject.id}
+              projectTitle={selectedProject.title}
               chapterId={selectedChapter.id}
+              chapterTitle={selectedChapter.title}
               chapterVersion={selectedChapter.version}
               selectedNodeId={selectedNodeId}
-              selectedSceneId={null}
               graph={graph}
               initialConversationId={searchParams.get('conversation') || ''}
               onConversationChange={updateConversation}
