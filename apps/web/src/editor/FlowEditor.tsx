@@ -16,7 +16,9 @@ import {
   Play, Save, Sparkles, Image, Settings, Eye, EyeOff, ArrowLeft,
   LayoutGrid, GitBranch, Copy, Check, ListChecks, Plus, Trash2,
 } from 'lucide-react'
-import AIAssistantPanel from './AIAssistantPanel'
+import AgentPanel from '../agent/AgentPanel'
+import type { AgentScope, AppliedPatchDto } from '../agent/agentTypes'
+import type { StoryNodeType } from '@dreamchord/story-domain'
 import AssetPanel from './AssetPanel'
 import ProjectSettingsModal from './ProjectSettingsModal'
 import SceneTree from './SceneTree'
@@ -57,7 +59,7 @@ export default function FlowEditor() {
   const [shareCopied, setShareCopied] = useState(false)
   const [viewMode, setViewMode] = useState<'scene' | 'flow'>('scene')
   const [assetTarget, setAssetTarget] = useState<{ nodeId: string; field: 'backgroundId' | 'characterId'; type: 'BACKGROUND' | 'CG' } | null>(null)
-  const [aiMode, setAiMode] = useState<'polish' | 'continue' | 'choices' | 'branchReplies' | 'storyGraph'>('polish')
+  const [agentTask, setAgentTask] = useState<{ id: number; prompt: string; scope: AgentScope }>()
 
   // 场景/卡片选择
   const [selectedSceneId, setSelectedSceneId] = useState<string | null>(null)
@@ -127,7 +129,14 @@ export default function FlowEditor() {
 
   /** 从卡片编辑器请求 AI 助手 */
   const handleRequestAI = (mode: 'polish' | 'continue' | 'choices' | 'branchReplies' | 'storyGraph') => {
-    setAiMode(mode)
+    const tasks: Record<typeof mode, { prompt: string; scope: AgentScope }> = {
+      polish: { prompt: '润色当前镜头，保持角色语言习惯和原意。', scope: 'card' },
+      continue: { prompt: '承接当前场景续写一组有推进作用的镜头。', scope: 'scene' },
+      choices: { prompt: '为当前冲突生成三个会导向不同后果的选择，并连接合理后续。', scope: 'scene' },
+      branchReplies: { prompt: '为当前选项的每条分支补充符合人物动机的回应。', scope: 'scene' },
+      storyGraph: { prompt: '根据当前章节与故事圣经，生成一段结构完整且可播放的节点草案。', scope: 'chapter' },
+    }
+    setAgentTask({ id: Date.now(), ...tasks[mode] })
     setShowAI(true)
     setShowAssets(false)
   }
@@ -655,7 +664,7 @@ export default function FlowEditor() {
             <Image className="h-4 w-4" /> 素材库
           </button>
           <button onClick={() => { const next = !showAI; setShowAI(next); if (next) setShowAssets(false) }} className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium transition ${showAI ? 'bg-dream-600 text-white' : 'border border-dream-200 bg-white text-dream-700 hover:bg-dream-50'}`}>
-            <Sparkles className="h-4 w-4" /> AI助手
+            <Sparkles className="h-4 w-4" /> 创作 Agent
           </button>
           <button onClick={handlePreview} className="inline-flex items-center gap-1.5 rounded-lg bg-dream-600 px-3 py-1.5 text-sm font-medium text-white transition hover:bg-dream-700">
             <Play className="h-4 w-4" /> 预览
@@ -737,11 +746,30 @@ export default function FlowEditor() {
                 onClose={() => setShowAssets(false)}
               />
             ) : showAI ? (
-              <AIAssistantPanel
-                project={project}
-                selectedCard={selectedCard}
-                initialMode={aiMode}
-                onModeChange={setAiMode}
+              <AgentPanel
+                projectId={projectId || ''}
+                chapterId={store.chapterId || ''}
+                chapterVersion={store.chapterVersion}
+                selectedNodeId={store.selectedNodeId}
+                selectedSceneId={selectedSceneId}
+                taskRequest={agentTask}
+                graph={{
+                  nodes: nodes.map((node) => ({ id: node.id, type: (node.type || 'dialogue') as StoryNodeType, position: node.position, data: { ...node.data } })),
+                  edges: edges.map((edge) => ({ id: edge.id, source: edge.source, target: edge.target, label: typeof edge.label === 'string' ? edge.label : undefined, sourceHandle: edge.sourceHandle || undefined, animated: edge.animated ?? true })),
+                }}
+                onApplyGraph={(result: AppliedPatchDto) => {
+                  store.setNodes(result.graph.nodes)
+                  store.setEdges(result.graph.edges)
+                  store.setChapterVersion(result.version)
+                  store.setLastSavedAt(new Date())
+                  toast.success('章节图已更新，可以继续编辑。')
+                }}
+                onSelectNode={(nodeId) => {
+                  store.setSelectedNodeId(nodeId)
+                  const node = nodes.find((item) => item.id === nodeId)
+                  const sceneId = node && typeof node.data.sceneGroupId === 'string' ? node.data.sceneGroupId : null
+                  if (sceneId) handleSelectScene(sceneId)
+                }}
                 onClose={() => setShowAI(false)}
               />
             ) : (
