@@ -549,7 +549,7 @@ export default function ShotCardEditor({
     if (bgNode && !bgIsShared) idsToDelete.add(bgNode.id)
 
     const remainingNodes = nodes.filter((n) => !idsToDelete.has(n.id))
-    let remainingEdges = edges.filter((e) => !idsToDelete.has(e.source) && !idsToDelete.has(e.target))
+    const remainingEdges = edges.filter((e) => !idsToDelete.has(e.source) && !idsToDelete.has(e.target))
 
     // 重连边
     const outgoingEdge = textNode
@@ -655,7 +655,7 @@ export default function ShotCardEditor({
     )
 
     // 移除涉及移动节点的所有普通边（保留 choice 边）
-    let newEdges = edges.filter((e) => {
+    const newEdges = edges.filter((e) => {
       if (e.sourceHandle?.startsWith('choice-')) return true
       if (!allMovedIds.has(e.source) && !allMovedIds.has(e.target)) return true
       return false

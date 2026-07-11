@@ -27,7 +27,7 @@ router.post('/register', async (req, res) => {
       token,
       user: { id: user.id, username: user.username, email: user.email, nickname: user.nickname },
     })
-  } catch (e) {
+  } catch {
     res.status(400).json({ error: '用户名或邮箱已存在' })
   }
 })

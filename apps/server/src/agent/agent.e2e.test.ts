@@ -1,4 +1,5 @@
 import { execFileSync } from 'node:child_process'
+import { randomUUID } from 'node:crypto'
 import { rmSync } from 'node:fs'
 import path from 'node:path'
 import { PrismaClient } from '@prisma/client'
@@ -7,7 +8,7 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import { loadAgentProjectSnapshot } from './context.js'
 import { PrismaAgentRunService } from './runService.js'
 
-const databasePath = path.resolve('prisma/agent-e2e-test.db')
+const databasePath = path.resolve('prisma', `agent-e2e-test-${process.pid}-${randomUUID()}.db`)
 const databaseUrl = `file:${databasePath.replaceAll('\\', '/')}`
 const prismaCli = path.resolve('node_modules/prisma/build/index.js')
 const schemaPath = path.resolve('prisma/schema.prisma')

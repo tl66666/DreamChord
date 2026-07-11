@@ -1,4 +1,4 @@
-import { Router, type Request, type Response, type Router as ExpressRouter } from 'express'
+import { Router, type Response, type Router as ExpressRouter } from 'express'
 import multer from 'multer'
 import path from 'path'
 import fs from 'fs'
