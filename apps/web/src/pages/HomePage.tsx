@@ -1,4 +1,4 @@
-import { useEffect, useState, type ReactNode } from 'react'
+import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import {
   Archive,
@@ -10,9 +10,11 @@ import {
   PlayCircle,
   Sparkles,
   Trash2,
+  Download,
+  Upload,
   X,
 } from 'lucide-react'
-import { createProject, deleteProject, getMyProjects, updateProject, type ProjectDetail } from '../api/client'
+import { createProject, deleteProject, exportProjectBackup, getMyProjects, importProjectBackup, updateProject, type ProjectDetail } from '../api/client'
 import { useAuthStore } from '../stores/authStore'
 import { useToast, useConfirm } from '../components/FeedbackProvider'
 
@@ -35,6 +37,7 @@ export default function HomePage() {
   const [editingId, setEditingId] = useState<string | null>(null)
   const [editingTitle, setEditingTitle] = useState('')
   const [deletingId, setDeletingId] = useState<string | null>(null)
+  const importInputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
     if (!user) return
@@ -84,6 +87,24 @@ export default function HomePage() {
     } catch (err: unknown) {
       toast.error(getApiError(err, '重命名失败'))
     }
+  }
+
+  const handleExport = async (project: ProjectDetail) => {
+    try {
+      const manifest = await exportProjectBackup(project.id)
+      const url = URL.createObjectURL(new Blob([JSON.stringify(manifest, null, 2)], { type: 'application/json' }))
+      const link = document.createElement('a'); link.href = url; link.download = `${project.title}.dreamchord.json`; link.click(); URL.revokeObjectURL(url)
+    } catch (error) { toast.error(getApiError(error, '导出失败')) }
+  }
+
+  const handleImport = async (file: File | undefined) => {
+    if (!file) return
+    try {
+      if (file.size > 10 * 1024 * 1024) throw new Error('备份文件不能超过 10MB')
+      const imported = await importProjectBackup(JSON.parse(await file.text()))
+      setMyProjects(await getMyProjects()); toast.success(`已导入「${imported.title}」`); navigate(`/editor/${imported.id}`)
+    } catch (error) { toast.error(getApiError(error, error instanceof SyntaxError ? '备份文件不是有效 JSON' : '导入失败')) }
+    finally { if (importInputRef.current) importInputRef.current.value = '' }
   }
 
   return (
@@ -149,9 +170,7 @@ export default function HomePage() {
               <p className="text-sm font-semibold text-dream-600">故事项目</p>
               <h2 className="text-2xl font-bold text-slate-950">我的作品</h2>
             </div>
-            <button onClick={handleCreate} disabled={creating} className="rounded-lg bg-dream-600 px-5 py-2 text-sm font-medium text-white hover:bg-dream-700 disabled:opacity-50">
-              新建故事
-            </button>
+            <div className="flex gap-2"><input ref={importInputRef} type="file" accept=".json,.dreamchord.json,application/json" className="hidden" onChange={(event) => void handleImport(event.target.files?.[0])} /><button type="button" onClick={() => importInputRef.current?.click()} className="inline-flex items-center gap-1.5 border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700"><Upload className="h-4 w-4" />导入备份</button><button onClick={handleCreate} disabled={creating} className="rounded-lg bg-dream-600 px-5 py-2 text-sm font-medium text-white hover:bg-dream-700 disabled:opacity-50">新建故事</button></div>
           </div>
           {projectsLoading ? (
             <div className="flex h-32 items-center justify-center text-slate-500"><Loader2 className="mr-2 h-5 w-5 animate-spin" /> 加载中...</div>
@@ -184,6 +203,7 @@ export default function HomePage() {
                       )}
                       {editingId !== project.id && (
                         <div className="flex items-center gap-1">
+                          <button onClick={() => void handleExport(project)} className="rounded p-1 text-cyan-700 hover:bg-cyan-50" title="导出备份"><Download className="h-3.5 w-3.5" /></button>
                           <button onClick={() => { setEditingId(project.id); setEditingTitle(project.title) }} className="rounded p-1 text-slate-500 hover:bg-slate-100"><Pencil className="h-3.5 w-3.5" /></button>
                           <button onClick={() => handleDelete(project.id)} disabled={deletingId === project.id} className="rounded p-1 text-red-500 hover:bg-red-50 disabled:opacity-50">
                             {deletingId === project.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Trash2 className="h-3.5 w-3.5" />}

@@ -182,6 +182,16 @@ export interface Asset {
   variants?: AssetVariant[]
 }
 
+export async function exportProjectBackup(projectId: string): Promise<unknown> {
+  const { data } = await api.get(`/projects/${projectId}/export`)
+  return data
+}
+
+export async function importProjectBackup(manifest: unknown): Promise<{ id: string; title: string }> {
+  const { data } = await api.post('/projects/import', manifest)
+  return data
+}
+
 export interface AssetVariant { id: string; assetId: string; kind: 'sprite' | 'cg' | 'background'; status: string; url: string; mimeType: string; width: number; height: number; metadata: string; createdAt: string }
 
 export async function getProjectAssets(projectId: string): Promise<Asset[]> {

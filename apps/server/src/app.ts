@@ -13,6 +13,7 @@ import { prismaAgentRunService, type AgentRunService } from './agent/runService.
 import { prismaConversationService, type ConversationService } from './agent/conversationService.js'
 import { prismaMemoryService, type MemoryService } from './agent/memoryService.js'
 import { createMemoryProjectRouter, createMemoryRouter } from './routes/memory.js'
+import { createProjectTransferRouter } from './routes/projectTransfer.js'
 
 export interface AppDependencies {
   storyBibleRepository?: StoryBibleRepository
@@ -39,6 +40,7 @@ export function createApp(dependencies: AppDependencies = {}): Express {
   app.use('/api/projects', createHealthRouter(dependencies.healthRepository ?? prismaHealthRepository))
   app.use('/api/projects', createAgentProjectRouter(dependencies.agentRunService ?? prismaAgentRunService, dependencies.conversationService ?? prismaConversationService))
   app.use('/api/projects', createMemoryProjectRouter(dependencies.memoryService ?? prismaMemoryService))
+  app.use('/api/projects', createProjectTransferRouter())
   app.use('/api/projects', projectRoutes)
   app.use('/api/agent', createAgentRunRouter(dependencies.agentRunService ?? prismaAgentRunService, dependencies.conversationService ?? prismaConversationService))
   app.use('/api/agent', createMemoryRouter(dependencies.memoryService ?? prismaMemoryService))
