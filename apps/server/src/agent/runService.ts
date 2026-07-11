@@ -9,6 +9,7 @@ import { InProcessAgentQueue } from './queue.js'
 import { createAgentToolRegistry, toUniformAgentToolRegistry } from './tools.js'
 import { buildRollingSummary, createConversationSources, type ConversationMessage } from './conversationMemory.js'
 import type { RankableMemory } from './memoryService.js'
+import { PrismaAssetService } from '../assets/assetService.js'
 
 export type AgentRunStatus = 'queued' | 'planning' | 'gathering_context' | 'drafting' | 'validating' | 'awaiting_approval' | 'applying' | 'completed' | 'failed' | 'cancelled'
 export interface ProviderSecretConfig { provider: string; model: string; apiKey: string; baseUrl?: string }
@@ -115,7 +116,13 @@ export class PrismaAgentRunService implements AgentRunService {
     const run = await this.client.agentRun.findFirst({ where: { id: runId, userId }, include: { patch: true } })
     if (!run?.patch || run.status !== 'awaiting_approval') throw new Error('任务当前不可应用')
     await this.client.agentRun.update({ where: { id: runId }, data: { status: 'applying' } })
-    return applyPersistedStoryPatch({ patchId: run.patch.id, userId }, this.client)
+    const applied = await applyPersistedStoryPatch({ patchId: run.patch.id, userId }, this.client)
+    await this.client.agentMemory.create({ data: {
+      projectId: run.projectId, userId, conversationId: run.conversationId, kind: 'artifact', status: 'active',
+      title: `已应用剧情变更：章节 ${applied.chapterId}`, content: `剧情补丁 ${run.patch.id} 已应用，章节版本更新为 ${applied.version}。`,
+      tags: JSON.stringify(['story-patch', applied.chapterId]), importance: 70, sourceType: 'editor', sourceId: run.patch.id,
+    } })
+    return applied
   }
   async undoRun(runId: string, userId: string) {
     const run = await this.client.agentRun.findFirst({ where: { id: runId, userId }, include: { patch: true } })
@@ -163,13 +170,24 @@ export class PrismaAgentRunService implements AgentRunService {
       ...await this.loadConversationSources(run.conversationId, run.projectId, run.prompt),
     ]
     await this.client.agentRun.update({ where: { id: run.id }, data: { sources: JSON.stringify(initialContext), status: 'drafting' } })
-    const rawTools = createAgentToolRegistry({ snapshot, chapterId: run.chapterId })
+    const rawTools = createAgentToolRegistry({
+      snapshot, chapterId: run.chapterId, conversationContext: initialContext.filter((source) => source.kind === 'conversation-history' || source.kind === 'conversation-summary'),
+      memories: initialContext.filter((source) => source.kind === 'memory').map((source) => ({ id: source.id, title: source.title, content: source.content })),
+      prepareAsset: (assetId, purpose, recipe) => new PrismaAssetService(this.client).process(assetId, run.userId, { purpose, ...recipe }),
+    })
     const provider = this.dependencies.createProvider(job.secretConfig.provider, job.secretConfig)
     const result = await executeCreativeAgent({
       prompt: run.prompt, initialContext, tools: toUniformAgentToolRegistry(rawTools),
       chat: (messages) => provider.chat(messages, { temperature: 0.7, maxTokens: 4096, signal }),
       onEvent: (event) => this.appendTimeline(run.id, event),
     })
+    if (result.memorySuggestions.length > 0) {
+      await this.client.agentMemory.createMany({ data: result.memorySuggestions.map((memory) => ({
+        projectId: run.projectId, userId: run.userId, conversationId: run.conversationId, kind: memory.kind,
+        status: 'suggested', title: memory.title, content: memory.content, tags: JSON.stringify(memory.tags ?? []),
+        importance: memory.importance ?? 50, sourceType: 'assistant', sourceId: run.id,
+      })) })
+    }
     await this.client.agentRun.update({ where: { id: run.id }, data: { status: 'validating', plan: JSON.stringify(result.plan) } })
     if (!result.patch) {
       await this.client.agentRun.update({ where: { id: run.id }, data: { status: 'completed', completedAt: new Date() } })

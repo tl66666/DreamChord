@@ -14,6 +14,11 @@ const finalSchema = z.object({
   plan: z.array(z.string().min(1).max(500)).max(20),
   patch: storyPatchSchema.optional(),
   suggestions: z.array(z.string().min(1).max(1_000)).max(20).optional(),
+  memorySuggestions: z.array(z.object({
+    kind: z.enum(['canon', 'character', 'preference', 'plot', 'decision', 'artifact']),
+    title: z.string().min(1).max(200), content: z.string().min(1).max(5_000), tags: z.array(z.string().min(1).max(50)).max(20).optional(), importance: z.number().int().min(0).max(100).optional(),
+  }).strict()).max(12).optional(),
+  artifactRefs: z.array(z.object({ type: z.enum(['story-patch', 'asset-variant']), id: z.string().min(1).max(200) }).strict()).max(20).optional(),
 }).strict()
 
 const responseSchema = z.discriminatedUnion('type', [toolCallSchema, finalSchema])

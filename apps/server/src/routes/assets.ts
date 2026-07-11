@@ -8,10 +8,13 @@ import { authenticateToken, type AuthRequest } from '../middleware/auth.js'
 import type { PrismaClient } from '@prisma/client'
 import { z } from 'zod'
 import { inspectImage, type ImageInspection } from '../assets/imageInspector.js'
+import { PrismaAssetService } from '../assets/assetService.js'
 
 const uploadDir = process.env.UPLOAD_DIR || './uploads'
 const ASSET_TYPES = ['BACKGROUND', 'CG', 'BGM', 'OTHER', 'SETTING'] as const
 const renameSchema = z.object({ name: z.string().trim().min(1).max(200) }).strict()
+const processSchema = z.object({ purpose: z.enum(['sprite', 'cg', 'background']), removeWhite: z.boolean().optional(), whiteThreshold: z.number().int().min(180).max(255).optional(), feather: z.number().int().min(0).max(40).optional(), trim: z.boolean().optional() }).strict()
+const acceptSchema = z.object({ purpose: z.enum(['sprite', 'cg', 'background']), characterId: z.string().min(1).optional(), characterName: z.string().trim().min(1).max(100).optional(), expressionName: z.string().trim().min(1).max(100).optional() }).strict()
 
 if (!fs.existsSync(uploadDir)) {
   fs.mkdirSync(uploadDir, { recursive: true })
@@ -32,6 +35,11 @@ export function createAssetRouter(client: PrismaClient = prisma, storageRoot = u
       else cb(new Error('仅支持 PNG/JPG/GIF/WebP 图片或 MP3/WAV/OGG 音频'))
     },
   })
+  const processing = new PrismaAssetService(client, storageRoot)
+  const processingError = (res: Response, error: unknown) => {
+    const message = error instanceof Error ? error.message : '素材处理失败'
+    res.status(message.includes('无权') ? 403 : message.includes('不存在') ? 404 : message.includes('不可') ? 409 : 400).json({ error: message })
+  }
 
   router.use(authenticateToken)
 
@@ -40,6 +48,7 @@ router.get('/:projectId', async (req: AuthRequest, res: Response) => {
   const assets = await client.asset.findMany({
     where: { projectId: req.params.projectId },
     orderBy: { createdAt: 'desc' },
+    include: { variants: { orderBy: { createdAt: 'desc' } } },
   })
   res.json(assets)
 })
@@ -142,6 +151,22 @@ router.patch('/:assetId', async (req: AuthRequest, res: Response) => {
     data: { name },
   })
   res.json(updated)
+})
+
+router.post('/:assetId/process', async (req: AuthRequest, res: Response) => {
+  const body = processSchema.safeParse(req.body)
+  if (!body.success) return res.status(400).json({ error: body.error.issues[0]?.message || '处理参数无效' })
+  try { res.status(201).json(await processing.process(req.params.assetId, req.userId!, body.data)) } catch (error) { processingError(res, error) }
+})
+
+router.post('/variants/:variantId/accept', async (req: AuthRequest, res: Response) => {
+  const body = acceptSchema.safeParse(req.body)
+  if (!body.success) return res.status(400).json({ error: body.error.issues[0]?.message || '接受参数无效' })
+  try { res.json(await processing.accept(req.params.variantId, req.userId!, body.data)) } catch (error) { processingError(res, error) }
+})
+
+router.post('/variants/:variantId/reject', async (req: AuthRequest, res: Response) => {
+  try { await processing.reject(req.params.variantId, req.userId!); res.status(204).end() } catch (error) { processingError(res, error) }
 })
 
 router.delete('/:assetId', async (req: AuthRequest, res: Response) => {

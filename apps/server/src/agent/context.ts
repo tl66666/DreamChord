@@ -19,6 +19,7 @@ export interface AgentProjectSnapshot {
   description: string
   bible: StoryBibleContent | null
   characters: Array<{ id: string; name: string; description: string }>
+  assets: Array<{ id: string; name: string; type: string; url: string; width: number | null; height: number | null }>
   chapters: Array<{ id: string; title: string; version: number; graph: StoryGraph }>
 }
 
@@ -120,7 +121,7 @@ function parseData(raw: string): Record<string, unknown> {
 export async function loadAgentProjectSnapshot(projectId: string, client: PrismaClient = prisma): Promise<AgentProjectSnapshot | null> {
   const project = await client.project.findUnique({
     where: { id: projectId },
-    include: { storyBible: true, characters: true, chapters: { orderBy: { order: 'asc' }, include: { nodes: true, edges: true } } },
+    include: { storyBible: true, characters: true, assets: true, chapters: { orderBy: { order: 'asc' }, include: { nodes: true, edges: true } } },
   })
   if (!project) return null
   const parsedBible = project.storyBible ? storyBibleContentSchema.safeParse(JSON.parse(project.storyBible.content)) : null
@@ -130,6 +131,7 @@ export async function loadAgentProjectSnapshot(projectId: string, client: Prisma
     description: project.description ?? '',
     bible: parsedBible?.success ? parsedBible.data : null,
     characters: project.characters.map((character) => ({ id: character.id, name: character.name, description: character.description ?? '' })),
+    assets: project.assets.map((asset) => ({ id: asset.id, name: asset.name, type: asset.type, url: asset.url, width: asset.width, height: asset.height })),
     chapters: project.chapters.map((chapter) => ({
       id: chapter.id,
       title: chapter.title,
