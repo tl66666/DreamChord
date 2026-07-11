@@ -1,6 +1,7 @@
 import { analyzeStoryGraph, applyStoryPatch, storyPatchSchema, type StoryPatch } from '@dreamchord/story-domain'
 import { z } from 'zod'
 import { buildInitialContext, type AgentProjectSnapshot } from './context.js'
+import type { UniformAgentToolRegistry } from './executor.js'
 
 export const AGENT_TOOL_NAMES = [
   'read_project_brief', 'read_chapter_outline', 'read_scene', 'search_story',
@@ -53,4 +54,16 @@ export function createAgentToolRegistry(context: { snapshot: AgentProjectSnapsho
       },
     },
   }
+}
+
+export function toUniformAgentToolRegistry(registry: ReturnType<typeof createAgentToolRegistry>): UniformAgentToolRegistry {
+  const uniform: UniformAgentToolRegistry = {}
+  for (const name of AGENT_TOOL_NAMES) {
+    const tool = registry[name]
+    uniform[name] = {
+      parseInput: (value) => tool.inputSchema.parse(value),
+      execute: async (value) => Promise.resolve(Reflect.apply(tool.execute, tool, [value])),
+    }
+  }
+  return uniform
 }
