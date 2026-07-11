@@ -7,6 +7,7 @@ import { prisma } from '../lib/prisma.js'
 import { authenticateToken, type AuthRequest } from '../middleware/auth.js'
 import type { PrismaClient } from '@prisma/client'
 import { z } from 'zod'
+import { inspectImage, type ImageInspection } from '../assets/imageInspector.js'
 
 const uploadDir = process.env.UPLOAD_DIR || './uploads'
 const ASSET_TYPES = ['BACKGROUND', 'CG', 'BGM', 'OTHER', 'SETTING'] as const
@@ -26,9 +27,9 @@ export function createAssetRouter(client: PrismaClient = prisma, storageRoot = u
     storage,
     limits: { fileSize: 20 * 1024 * 1024 },
     fileFilter: (_req, file, cb) => {
-      const allowedMimes = ['image/png', 'image/jpeg', 'image/jpg', 'image/gif', 'image/webp']
+      const allowedMimes = ['image/png', 'image/jpeg', 'image/jpg', 'image/gif', 'image/webp', 'audio/mpeg', 'audio/wav', 'audio/ogg', 'audio/x-wav']
       if (allowedMimes.includes(file.mimetype)) cb(null, true)
-      else cb(new Error('仅支持 PNG/JPG/GIF/WebP 图片格式'))
+      else cb(new Error('仅支持 PNG/JPG/GIF/WebP 图片或 MP3/WAV/OGG 音频'))
     },
   })
 
@@ -65,12 +66,21 @@ router.post('/upload', upload.single('file'), async (req: AuthRequest, res: Resp
     return res.status(403).json({ error: '无权上传到此项目' })
   }
 
+  let inspection: ImageInspection | null = null
+  try {
+    if (type === 'BGM') { if (!req.file.mimetype.startsWith('audio/')) throw new Error('BGM 必须是音频文件') }
+    else inspection = await inspectImage(fs.readFileSync(req.file.path))
+  }
+  catch (error) { removeUploadFile(`/uploads/${req.file.filename}`, storageRoot); return res.status(400).json({ error: error instanceof Error ? error.message : '图片无效' }) }
+
   const asset = await client.asset.create({
     data: {
       projectId,
       name: name || req.file.originalname,
       type,
       url: `/uploads/${req.file.filename}`,
+      mimeType: inspection?.mimeType ?? req.file.mimetype,
+      ...(inspection ? { width: inspection.width, height: inspection.height, hasAlpha: inspection.hasAlpha, metadata: JSON.stringify({ format: inspection.format, animated: inspection.animated, pages: inspection.pages }) } : {}),
     },
   })
 
@@ -83,8 +93,18 @@ router.put('/:assetId/file', upload.single('file'), async (req: AuthRequest, res
   const asset = await client.asset.findUnique({ where: { id: req.params.assetId } })
   if (!asset) return res.status(404).json({ error: '素材不存在' })
   if (!(await assertProjectOwner(client, asset.projectId, req.userId))) {
+    removeUploadFile(`/uploads/${req.file.filename}`, storageRoot)
     return res.status(403).json({ error: '无权修改此素材' })
   }
+
+  const nextType = req.body.type || asset.type
+  if (!ASSET_TYPES.includes(nextType)) { removeUploadFile(`/uploads/${req.file.filename}`, storageRoot); return res.status(400).json({ error: '素材类型无效' }) }
+  let inspection: ImageInspection | null = null
+  try {
+    if (nextType === 'BGM') { if (!req.file.mimetype.startsWith('audio/')) throw new Error('BGM 必须是音频文件') }
+    else inspection = await inspectImage(fs.readFileSync(req.file.path))
+  }
+  catch (error) { removeUploadFile(`/uploads/${req.file.filename}`, storageRoot); return res.status(400).json({ error: error instanceof Error ? error.message : '图片无效' }) }
 
   try {
     removeUploadFile(asset.url, storageRoot)
@@ -92,14 +112,14 @@ router.put('/:assetId/file', upload.single('file'), async (req: AuthRequest, res
     console.error('替换素材时删除旧文件失败', err)
   }
 
-  const nextType = req.body.type || asset.type
-  if (!ASSET_TYPES.includes(nextType)) return res.status(400).json({ error: '素材类型无效' })
   const updated = await client.asset.update({
     where: { id: asset.id },
     data: {
       name: req.body.name || asset.name,
       type: req.body.type || asset.type,
       url: `/uploads/${req.file.filename}`,
+      mimeType: inspection?.mimeType ?? req.file.mimetype,
+      ...(inspection ? { width: inspection.width, height: inspection.height, hasAlpha: inspection.hasAlpha, metadata: JSON.stringify({ format: inspection.format, animated: inspection.animated, pages: inspection.pages }) } : { width: null, height: null, hasAlpha: null, metadata: '{}' }),
     },
   })
 
