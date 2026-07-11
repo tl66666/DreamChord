@@ -1,12 +1,13 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import type { Node } from '@xyflow/react'
-import { BookOpen, Check, FileType, Image, Music, Pencil, RefreshCw, Search, Trash2, Upload, User, X } from 'lucide-react'
+import { BookOpen, Check, FileType, Image, Music, Pencil, RefreshCw, Search, SlidersHorizontal, Trash2, Upload, User, X } from 'lucide-react'
 import { useEditorStore } from '../stores/editorStore'
 import { useToast, useConfirm } from '../components/FeedbackProvider'
 import { deleteAsset, getProjectAssets, renameAsset, replaceAssetFile, uploadAsset, type Asset } from '../api/client'
 import { loadLibraryCharacters, loadLibraryScenes } from '../lib/libraryData'
 import { getNodeData } from './sceneGraph'
+import AssetProcessingSheet from '../assets/AssetProcessingSheet'
 
 function getApiError(err: unknown, fallback = '操作失败'): string {
   if (typeof err === 'object' && err !== null && 'response' in err) {
@@ -44,6 +45,7 @@ export default function AssetPanel({
   const [editingId, setEditingId] = useState<string | null>(null)
   const [editingName, setEditingName] = useState('')
   const [replaceTarget, setReplaceTarget] = useState<Asset | null>(null)
+  const [processingAsset, setProcessingAsset] = useState<Asset | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const replaceInputRef = useRef<HTMLInputElement>(null)
 
@@ -148,7 +150,7 @@ export default function AssetPanel({
     }
   }
 
-  return (
+  return (<>
     <aside className="flex w-80 flex-col border-l border-dream-200 bg-white/95 backdrop-blur-sm">
       <div className="border-b border-dream-100 p-4">
         <div className="mb-3 flex items-center justify-between">
@@ -314,6 +316,7 @@ export default function AssetPanel({
                       setReplaceTarget(asset)
                       replaceInputRef.current?.click()
                     }}
+                    onProcess={() => setProcessingAsset(asset)}
                     onDelete={() => handleDelete(asset)}
                   />
                 ))}
@@ -323,7 +326,8 @@ export default function AssetPanel({
         )}
       </div>
     </aside>
-  )
+    {processingAsset && <AssetProcessingSheet asset={processingAsset} onClose={() => setProcessingAsset(null)} onAccepted={() => void loadAssets()} />}
+  </>)
 }
 
 function SettingLibrary({ nodes }: { nodes: Node[] }) {
@@ -423,6 +427,7 @@ function AssetCard({
   onRenameCancel,
   onRenameConfirm,
   onReplace,
+  onProcess,
   onDelete,
 }: {
   asset: Asset
@@ -434,6 +439,7 @@ function AssetCard({
   onRenameCancel: () => void
   onRenameConfirm: () => void
   onReplace: () => void
+  onProcess: () => void
   onDelete: () => void
 }) {
   const isAudio = asset.type === 'BGM'
@@ -479,6 +485,7 @@ function AssetCard({
               <button onClick={onReplace} title="替换文件" className="rounded p-1 text-dream-500 hover:bg-white">
                 <RefreshCw className="h-3.5 w-3.5" />
               </button>
+              {!isAudio && <button onClick={onProcess} title="处理图片" className="rounded p-1 text-cyan-700 hover:bg-cyan-50"><SlidersHorizontal className="h-3.5 w-3.5" /></button>}
               <button onClick={onDelete} title="删除" className="rounded p-1 text-red-500 hover:bg-red-50">
                 <Trash2 className="h-3.5 w-3.5" />
               </button>

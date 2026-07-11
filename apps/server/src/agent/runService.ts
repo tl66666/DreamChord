@@ -191,7 +191,7 @@ export class PrismaAgentRunService implements AgentRunService {
     await this.client.agentRun.update({ where: { id: run.id }, data: { status: 'validating', plan: JSON.stringify(result.plan) } })
     if (!result.patch) {
       await this.client.agentRun.update({ where: { id: run.id }, data: { status: 'completed', completedAt: new Date() } })
-      await this.client.agentMessage.create({ data: { conversationId: run.conversationId, role: 'assistant', content: result.summary } })
+      await this.client.agentMessage.create({ data: { conversationId: run.conversationId, role: 'assistant', content: result.summary, metadata: JSON.stringify({ runId: run.id, artifactRefs: result.artifactRefs }) } })
       await this.refreshConversationSummary(run.conversationId)
       return
     }
@@ -201,7 +201,7 @@ export class PrismaAgentRunService implements AgentRunService {
     if (!preview.validation.valid) throw new Error('Agent 补丁未通过图结构校验')
     await this.client.storyPatch.create({ data: { runId: run.id, projectId: run.projectId, chapterId: run.chapterId, baseVersion: chapter.version, payload: JSON.stringify(result.patch), validation: JSON.stringify(preview.validation), diff: JSON.stringify(createStoryPatchDiff(chapter.graph, preview.graph)) } })
     await this.client.agentRun.update({ where: { id: run.id }, data: { status: 'awaiting_approval', validation: JSON.stringify(preview.validation) } })
-    await this.client.agentMessage.create({ data: { conversationId: run.conversationId, role: 'assistant', content: result.summary, metadata: JSON.stringify({ runId: run.id }) } })
+    await this.client.agentMessage.create({ data: { conversationId: run.conversationId, role: 'assistant', content: result.summary, metadata: JSON.stringify({ runId: run.id, artifactRefs: result.artifactRefs }) } })
     await this.refreshConversationSummary(run.conversationId)
   }
   private async loadConversationSources(conversationId: string, projectId: string, query: string) {

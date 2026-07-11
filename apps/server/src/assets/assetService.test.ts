@@ -2,12 +2,13 @@ import { execFileSync } from 'node:child_process'
 import { randomUUID } from 'node:crypto'
 import { mkdirSync, rmSync, writeFileSync } from 'node:fs'
 import path from 'node:path'
+import { tmpdir } from 'node:os'
 import { PrismaClient } from '@prisma/client'
 import sharp from 'sharp'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import { PrismaAssetService } from './assetService.js'
 
-const root = path.resolve('prisma', `asset-service-${process.pid}-${randomUUID()}`)
+const root = path.join(tmpdir(), `dreamchord-asset-service-${process.pid}-${randomUUID()}`)
 const databasePath = `${root}.db`
 const databaseUrl = `file:${databasePath.replaceAll('\\', '/')}`
 const prismaCli = path.resolve('node_modules/prisma/build/index.js')

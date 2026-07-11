@@ -1,4 +1,4 @@
-import { Bot, ChevronUp, MessageSquareText, UserRound } from 'lucide-react'
+import { Bot, ChevronUp, FileImage, GitBranch, MessageSquareText, UserRound } from 'lucide-react'
 import type { AgentConversationDto, AgentMessageDto } from './agentTypes'
 
 export default function ConversationTranscript({ conversation, messages, loading, hasMore, onLoadMore, children }: {
@@ -31,6 +31,7 @@ export default function ConversationTranscript({ conversation, messages, loading
                 {!user && <span className="grid h-8 w-8 shrink-0 place-items-center rounded-md bg-slate-950 text-white"><Icon className="h-4 w-4" /></span>}
                 <div className={`max-w-[82%] border px-4 py-3 text-sm leading-6 ${user ? 'border-cyan-200 bg-cyan-50 text-slate-900' : 'border-slate-200 bg-white text-slate-800 shadow-sm'}`}>
                   <p className="whitespace-pre-wrap break-words">{message.content}</p>
+                  <ArtifactRefs metadata={message.metadata} />
                   <time className="mt-2 block text-[10px] text-slate-400">{formatMessageTime(message.createdAt)}</time>
                 </div>
               </article>
@@ -41,6 +42,13 @@ export default function ConversationTranscript({ conversation, messages, loading
       <div className="max-h-[52vh] shrink-0 overflow-y-auto border-t border-slate-200 bg-white">{children}</div>
     </section>
   )
+}
+
+function ArtifactRefs({ metadata }: { metadata: unknown }) {
+  if (!metadata || typeof metadata !== 'object' || !('artifactRefs' in metadata) || !Array.isArray(metadata.artifactRefs)) return null
+  const refs = metadata.artifactRefs.filter((item): item is { type: 'story-patch' | 'asset-variant'; id: string } => Boolean(item && typeof item === 'object' && 'type' in item && 'id' in item))
+  if (refs.length === 0) return null
+  return <div className="mt-3 flex flex-wrap gap-1.5 border-t border-slate-100 pt-2">{refs.map((item) => { const Icon = item.type === 'asset-variant' ? FileImage : GitBranch; return <span key={`${item.type}:${item.id}`} className="inline-flex items-center gap-1 bg-slate-100 px-2 py-1 text-[10px] text-slate-600"><Icon className="h-3 w-3" />{item.type === 'asset-variant' ? '待审素材' : '剧情补丁'} · {item.id.slice(0, 8)}</span> })}</div>
 }
 
 function formatMessageTime(value: string): string {

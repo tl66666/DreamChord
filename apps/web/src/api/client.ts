@@ -173,7 +173,16 @@ export interface Asset {
   type: string
   url: string
   createdAt: string
+  mimeType?: string | null
+  width?: number | null
+  height?: number | null
+  hasAlpha?: boolean | null
+  status?: string
+  metadata?: string
+  variants?: AssetVariant[]
 }
+
+export interface AssetVariant { id: string; assetId: string; kind: 'sprite' | 'cg' | 'background'; status: string; url: string; mimeType: string; width: number; height: number; metadata: string; createdAt: string }
 
 export async function getProjectAssets(projectId: string): Promise<Asset[]> {
   const { data } = await api.get(`/assets/${projectId}`)
@@ -363,6 +372,20 @@ export async function getAgentConversations(projectId: string): Promise<AgentCon
 export async function createAgentConversation(projectId: string, payload: { title: string; scope: string; chapterId?: string }): Promise<AgentConversationDto> {
   const { data } = await api.post(`/projects/${projectId}/agent/conversations`, payload)
   return data
+}
+
+export async function processAsset(assetId: string, recipe: { purpose: 'sprite' | 'cg' | 'background'; removeWhite?: boolean; whiteThreshold?: number; feather?: number; trim?: boolean }): Promise<AssetVariant> {
+  const { data } = await api.post(`/assets/${assetId}/process`, recipe)
+  return data
+}
+
+export async function acceptAssetVariant(variantId: string, payload: { purpose: 'sprite' | 'cg' | 'background'; characterId?: string; characterName?: string; expressionName?: string }) {
+  const { data } = await api.post(`/assets/variants/${variantId}/accept`, payload)
+  return data
+}
+
+export async function rejectAssetVariant(variantId: string): Promise<void> {
+  await api.post(`/assets/variants/${variantId}/reject`)
 }
 
 export async function getAgentConversation(conversationId: string): Promise<AgentConversationDto> {
