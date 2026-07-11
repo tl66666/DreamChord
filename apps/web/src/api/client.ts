@@ -262,7 +262,8 @@ export interface SaveChapterPayload {
 }
 
 export async function saveChapter(projectId: string, payload: SaveChapterPayload): Promise<{ version: number }> {
-  const { data } = await api.put(`/projects/${projectId}/chapters/${payload.chapterId}`, payload)
+  const { chapterId, ...body } = payload
+  const { data } = await api.put(`/projects/${projectId}/chapters/${chapterId}`, body)
   return data
 }
 
