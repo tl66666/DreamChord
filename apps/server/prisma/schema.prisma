@@ -183,6 +183,11 @@ model AgentConversation {
   id        String   @id @default(uuid())
   title     String
   scope     String
+  chapterId String?  @map("chapter_id")
+  isPinned  Boolean  @default(false) @map("is_pinned")
+  summary   String   @default("")
+  summaryThroughMessageId String? @map("summary_through_message_id")
+  deletedAt DateTime? @map("deleted_at")
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 

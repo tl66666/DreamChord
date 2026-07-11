@@ -10,7 +10,12 @@ export interface AgentRunDto {
   errorCode: string | null; errorMessage: string | null; patch: AgentPatchDto | null
   createdAt: string; updatedAt: string; completedAt: string | null
 }
-export interface AgentConversationDto { id: string; title: string; scope: string; createdAt: string; updatedAt: string }
+export interface AgentConversationDto {
+  id: string; title: string; scope: string; chapterId: string | null; isPinned: boolean; summary: string
+  createdAt: string; updatedAt: string
+}
+export interface AgentMessageDto { id: string; role: string; content: string; metadata: unknown; createdAt: string }
+export interface AgentMessagePageDto { items: AgentMessageDto[]; nextCursor: string | null }
 export interface StartAgentRunInput {
   projectId: string; conversationId: string; chapterId?: string; prompt: string; scope: AgentScope; targetId?: string; providerConfig: AgentProviderConfig
 }

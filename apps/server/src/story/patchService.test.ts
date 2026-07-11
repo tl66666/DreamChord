@@ -14,6 +14,7 @@ const migrations = [
   '20260629065808_init',
   '20260629104058_add_source_handle',
   '20260711000000_add_creative_agent',
+  '20260712010000_expand_agent_conversations',
 ]
 const client = new PrismaClient({ datasources: { db: { url: databaseUrl } } })
 

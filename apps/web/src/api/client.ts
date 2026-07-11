@@ -1,6 +1,6 @@
 import axios from 'axios'
 import { useAuthStore } from '../stores/authStore'
-import type { AgentConversationDto, AgentProviderConfig, AgentRunDto, AppliedPatchDto, StartAgentRunInput } from '../agent/agentTypes'
+import type { AgentConversationDto, AgentMessagePageDto, AgentProviderConfig, AgentRunDto, AppliedPatchDto, StartAgentRunInput } from '../agent/agentTypes'
 
 export const api = axios.create({
   baseURL: '/api',
@@ -360,8 +360,27 @@ export async function getAgentConversations(projectId: string): Promise<AgentCon
   return data
 }
 
-export async function createAgentConversation(projectId: string, payload: { title: string; scope: string }): Promise<AgentConversationDto> {
+export async function createAgentConversation(projectId: string, payload: { title: string; scope: string; chapterId?: string }): Promise<AgentConversationDto> {
   const { data } = await api.post(`/projects/${projectId}/agent/conversations`, payload)
+  return data
+}
+
+export async function getAgentConversation(conversationId: string): Promise<AgentConversationDto> {
+  const { data } = await api.get(`/agent/conversations/${conversationId}`)
+  return data
+}
+
+export async function updateAgentConversation(conversationId: string, payload: { title?: string; scope?: string; chapterId?: string | null; isPinned?: boolean }): Promise<AgentConversationDto> {
+  const { data } = await api.patch(`/agent/conversations/${conversationId}`, payload)
+  return data
+}
+
+export async function deleteAgentConversation(conversationId: string): Promise<void> {
+  await api.delete(`/agent/conversations/${conversationId}`)
+}
+
+export async function getAgentMessages(conversationId: string, cursor?: string, limit = 30): Promise<AgentMessagePageDto> {
+  const { data } = await api.get(`/agent/conversations/${conversationId}/messages`, { params: { cursor, limit } })
   return data
 }
 
