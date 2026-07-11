@@ -1,5 +1,6 @@
 import { create } from 'zustand'
 import type { Node, Edge } from '@xyflow/react'
+import { createEditorHistory, type EditorHistory } from '../editor/editorHistory'
 
 export type NodeType =
   | 'dialogue'
@@ -51,6 +52,9 @@ interface EditorState {
   isLoading: boolean
   isSaving: boolean
   lastSavedAt: Date | null
+  history: EditorHistory
+  canUndo: boolean
+  canRedo: boolean
 
   setProject: (project: ProjectData) => void
   setChapterId: (id: string | null) => void
@@ -64,6 +68,10 @@ interface EditorState {
   setLoading: (loading: boolean) => void
   setSaving: (saving: boolean) => void
   setLastSavedAt: (date: Date) => void
+  commitGraph: (nodes: Node[], edges: Edge[]) => void
+  hydrateGraph: (nodes: Node[], edges: Edge[]) => void
+  undo: () => void
+  redo: () => void
 }
 
 export const useEditorStore = create<EditorState>((set, get) => ({
@@ -76,6 +84,9 @@ export const useEditorStore = create<EditorState>((set, get) => ({
   isLoading: false,
   isSaving: false,
   lastSavedAt: null,
+  history: createEditorHistory({ nodes: [], edges: [] }),
+  canUndo: false,
+  canRedo: false,
 
   setProject: (project) => set({ project }),
   setChapterId: (id) => set({ chapterId: id }),
@@ -90,20 +101,24 @@ export const useEditorStore = create<EditorState>((set, get) => ({
     })),
   setSelectedNodeId: (id) => set({ selectedNodeId: id }),
   updateNodeData: (nodeId, data) => {
-    const { nodes } = get()
-    set({
+    const { nodes, edges, history } = get()
+    const next = history.commit({
       nodes: nodes.map((node) =>
         node.id === nodeId ? { ...node, data: { ...node.data, ...data } } : node,
       ),
+      edges,
     })
+    set({ nodes: next.current.nodes, edges: next.current.edges, history: next, canUndo: next.canUndo, canRedo: next.canRedo })
   },
   updateNodePosition: (nodeId, position) => {
-    const { nodes } = get()
-    set({
+    const { nodes, edges, history } = get()
+    const next = history.commit({
       nodes: nodes.map((node) =>
         node.id === nodeId ? { ...node, position } : node,
       ),
+      edges,
     })
+    set({ nodes: next.current.nodes, edges: next.current.edges, history: next, canUndo: next.canUndo, canRedo: next.canRedo })
   },
   addNode: (type, data = {}) => {
     const { nodes } = get()
@@ -126,9 +141,26 @@ export const useEditorStore = create<EditorState>((set, get) => ({
       position: { x: 250 + Math.random() * 80, y: 120 + nodes.length * 90 },
       data: { ...defaults[type], ...data },
     }
-    set({ nodes: [...nodes, newNode], selectedNodeId: id })
+    const history = get().history.commit({ nodes: [...nodes, newNode], edges: get().edges })
+    set({ nodes: history.current.nodes, edges: history.current.edges, history, canUndo: history.canUndo, canRedo: history.canRedo, selectedNodeId: id })
   },
   setLoading: (loading) => set({ isLoading: loading }),
   setSaving: (saving) => set({ isSaving: saving }),
   setLastSavedAt: (date) => set({ lastSavedAt: date }),
+  commitGraph: (nodes, edges) => set((state) => {
+    const history = state.history.commit({ nodes, edges })
+    return { nodes: history.current.nodes, edges: history.current.edges, history, canUndo: history.canUndo, canRedo: history.canRedo }
+  }),
+  hydrateGraph: (nodes, edges) => set((state) => {
+    const history = state.history.hydrate({ nodes, edges })
+    return { nodes: history.current.nodes, edges: history.current.edges, history, canUndo: false, canRedo: false }
+  }),
+  undo: () => set((state) => {
+    const history = state.history.undo()
+    return { nodes: history.current.nodes, edges: history.current.edges, history, canUndo: history.canUndo, canRedo: history.canRedo }
+  }),
+  redo: () => set((state) => {
+    const history = state.history.redo()
+    return { nodes: history.current.nodes, edges: history.current.edges, history, canUndo: history.canUndo, canRedo: history.canRedo }
+  }),
 }))

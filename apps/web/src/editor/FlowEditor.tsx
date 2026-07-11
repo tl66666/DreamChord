@@ -14,7 +14,7 @@ import {
 import '@xyflow/react/dist/style.css'
 import {
   Play, Save, Sparkles, Image, Settings, Eye, EyeOff, ArrowLeft,
-  LayoutGrid, GitBranch, Copy, Check, ListChecks, Plus, Trash2,
+  LayoutGrid, GitBranch, Copy, Check, ListChecks, Plus, Trash2, Undo2, Redo2,
 } from 'lucide-react'
 import AgentPanel from '../agent/AgentPanel'
 import type { AgentScope, AppliedPatchDto } from '../agent/agentTypes'
@@ -45,6 +45,7 @@ import {
 import { getApiError, convertServerNodes, convertServerEdges, ensureLegacySceneGroups } from './flowEditorUtils'
 import { ProjectHealthPanel } from './ProjectHealthPanel'
 import { editorPaneClasses } from './responsiveLayout'
+import { SaveCoordinator, type SaveState } from './saveCoordinator'
 
 export default function FlowEditor() {
   const { projectId } = useParams<{ projectId: string }>()
@@ -72,7 +73,28 @@ export default function FlowEditor() {
   const edges = store.edges
   const [project, setProject] = useState<ProjectDetail | null>(null)
   const [activeChapterId, setActiveChapterId] = useState<string | null>(null)
+  const [saveState, setSaveState] = useState<SaveState>('clean')
   const autoSaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const toastRef = useRef(toast)
+  toastRef.current = toast
+  const saveCoordinator = useMemo(() => new SaveCoordinator<SaveChapterPayload>({
+    readLatest: () => {
+      const state = useEditorStore.getState()
+      return {
+        chapterId: state.chapterId || '', baseVersion: state.chapterVersion,
+        nodes: state.nodes.map((node) => ({ nodeId: node.id, type: node.type || 'dialogue', positionX: node.position.x, positionY: node.position.y, data: JSON.stringify(node.data) })),
+        edges: state.edges.map((edge) => ({ edgeId: edge.id, source: edge.source, target: edge.target, label: typeof edge.label === 'string' ? edge.label : undefined, sourceHandle: typeof edge.sourceHandle === 'string' ? edge.sourceHandle : undefined, animated: edge.animated ?? true })),
+      }
+    },
+    save: async (payload) => {
+      if (!projectId || projectId === 'new' || !payload.chapterId) throw new Error('当前章节不可保存')
+      const saved = await saveChapter(projectId, payload)
+      useEditorStore.getState().setChapterVersion(saved.version)
+      useEditorStore.getState().setLastSavedAt(new Date())
+    },
+    onStateChange: (state) => { setSaveState(state); useEditorStore.getState().setSaving(state === 'saving') },
+    onError: (error, state) => toastRef.current.error(state === 'conflict' ? '章节已发生变化，请重新打开项目后再继续编辑。' : getApiError(error, '保存失败')),
+  }), [projectId])
 
   // 组件卸载时清理自动保存定时器，防止引用已卸载组件状态
   useEffect(() => {
@@ -113,8 +135,8 @@ export default function FlowEditor() {
     store.setChapterVersion(chapter.version || 1)
     const flowNodes = ensureLegacySceneGroups(convertServerNodes(chapter.nodes))
     const flowEdges = convertServerEdges(chapter.edges)
-    store.setNodes(flowNodes)
-    store.setEdges(flowEdges)
+    store.hydrateGraph(flowNodes, flowEdges)
+    saveCoordinator.reset()
     store.setSelectedNodeId(null)
     // 自动选中第一个场景
     const scenes = buildSceneList(flowNodes, flowEdges)
@@ -412,8 +434,7 @@ export default function FlowEditor() {
   }
 
   const handleUpdateGraph = (newNodes: Node[], newEdges: Edge[]) => {
-    store.setNodes(newNodes)
-    store.setEdges(newEdges)
+    store.commitGraph(newNodes, newEdges)
     triggerAutoSave()
   }
 
@@ -446,33 +467,16 @@ export default function FlowEditor() {
   const handleSave = async () => {
     if (!projectId || projectId === 'new') { toast.info('请先从首页新建故事项目，再保存编辑内容。'); return false }
     if (!store.chapterId) { toast.info('当前项目还没有可保存的章节，请重新打开项目后再试。'); return false }
-    const editorState = useEditorStore.getState()
-    store.setSaving(true)
-    try {
-      const payload: SaveChapterPayload = {
-        chapterId: store.chapterId,
-        baseVersion: store.chapterVersion,
-        nodes: editorState.nodes.map((n) => ({ nodeId: n.id, type: n.type || 'dialogue', positionX: n.position.x, positionY: n.position.y, data: JSON.stringify(n.data) })),
-        edges: editorState.edges.map((e) => ({ edgeId: e.id, source: e.source, target: e.target, label: typeof e.label === 'string' ? e.label : undefined, sourceHandle: typeof e.sourceHandle === 'string' ? e.sourceHandle : undefined, animated: e.animated ?? true })),
-      }
-      const saved = await saveChapter(projectId, payload)
-      store.setChapterVersion(saved.version)
-      store.setLastSavedAt(new Date())
-      return true
-    } catch (err: unknown) {
-      console.error('保存失败', err)
-      const message = getApiError(err, '保存失败')
-      toast.error(message === '章节已被其他操作修改' ? '章节已发生变化，请重新打开项目后再继续编辑。' : message)
-      return false
-    } finally {
-      store.setSaving(false)
-    }
+    saveCoordinator.markDirty()
+    await saveCoordinator.flush()
+    return saveCoordinator.state === 'saved'
   }
 
   const triggerAutoSave = () => {
     if (!projectId || projectId === 'new') return
+    saveCoordinator.markDirty()
     if (autoSaveTimer.current) clearTimeout(autoSaveTimer.current)
-    autoSaveTimer.current = setTimeout(() => handleSave(), 3000)
+    autoSaveTimer.current = setTimeout(() => { void saveCoordinator.flush() }, 3000)
   }
 
   const handlePreview = async () => {
@@ -545,8 +549,8 @@ export default function FlowEditor() {
       if (remainingChapter) {
         loadChapterIntoEditor(remainingChapter)
       } else {
-        store.setNodes([])
-        store.setEdges([])
+        store.hydrateGraph([], [])
+        saveCoordinator.reset()
         setSelectedSceneId(null)
       }
     } catch (err: unknown) {
@@ -584,11 +588,39 @@ export default function FlowEditor() {
 
   useEffect(() => {
     const onBeforeUnload = (e: BeforeUnloadEvent) => {
-      if (store.isSaving) { e.preventDefault(); e.returnValue = '' }
+      if (saveCoordinator.isDirty) { e.preventDefault(); e.returnValue = '' }
     }
     window.addEventListener('beforeunload', onBeforeUnload)
     return () => window.removeEventListener('beforeunload', onBeforeUnload)
-  }, [store.isSaving])
+  }, [saveCoordinator, saveState])
+
+  const undoGraph = () => {
+    if (!store.canUndo) return
+    store.undo()
+    triggerAutoSave()
+  }
+  const redoGraph = () => {
+    if (!store.canRedo) return
+    store.redo()
+    triggerAutoSave()
+  }
+
+  useEffect(() => {
+    const onKeyDown = (event: KeyboardEvent) => {
+      const target = event.target as HTMLElement | null
+      if (target?.matches('input, textarea, select, [contenteditable="true"]')) return
+      if (!(event.ctrlKey || event.metaKey)) return
+      if (event.key.toLocaleLowerCase() === 'z') { event.preventDefault(); if (event.shiftKey) redoGraph(); else undoGraph() }
+      else if (event.key.toLocaleLowerCase() === 'y') { event.preventDefault(); redoGraph() }
+    }
+    window.addEventListener('keydown', onKeyDown)
+    return () => window.removeEventListener('keydown', onKeyDown)
+  })
+
+  const navigateHome = async () => {
+    if (saveCoordinator.isDirty && !await confirm({ title: '离开编辑器', message: '仍有内容尚未保存，确定离开吗？', danger: true, confirmText: '离开' })) return
+    navigate('/')
+  }
 
   const paneClasses = editorPaneClasses(showAssets || showAI)
 
@@ -597,7 +629,7 @@ export default function FlowEditor() {
       {/* === 顶部工具栏 === */}
       <div className="z-20 flex flex-wrap items-center justify-between gap-3 border-b border-dream-100 bg-white px-4 py-2.5 shadow-sm">
         <div className="flex min-w-0 items-center gap-3">
-          <button onClick={() => navigate('/')} title="返回首页" className="inline-flex items-center gap-1 rounded-lg border border-dream-200 bg-white px-2.5 py-1.5 text-sm font-medium text-dream-700 transition hover:bg-dream-50">
+          <button onClick={() => void navigateHome()} title="返回首页" className="inline-flex items-center gap-1 rounded-lg border border-dream-200 bg-white px-2.5 py-1.5 text-sm font-medium text-dream-700 transition hover:bg-dream-50">
             <ArrowLeft className="h-4 w-4" /> 首页
           </button>
           <h1 className="min-w-0 max-w-[200px] truncate font-semibold text-dream-900" title={store.project?.title || '未命名项目'}>
@@ -609,6 +641,10 @@ export default function FlowEditor() {
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
+          <div className="flex border border-dream-200 bg-white p-0.5">
+            <button type="button" aria-label="撤销图谱修改" title="撤销 (Ctrl/Cmd+Z)" disabled={!store.canUndo} onClick={undoGraph} className="flex h-7 w-7 items-center justify-center text-dream-700 hover:bg-dream-50 disabled:opacity-30"><Undo2 className="h-4 w-4" /></button>
+            <button type="button" aria-label="重做图谱修改" title="重做 (Ctrl/Cmd+Shift+Z)" disabled={!store.canRedo} onClick={redoGraph} className="flex h-7 w-7 items-center justify-center text-dream-700 hover:bg-dream-50 disabled:opacity-30"><Redo2 className="h-4 w-4" /></button>
+          </div>
           {/* 章节切换 */}
           {project && project.chapters.length > 0 && (
             <div className="flex max-w-full items-center gap-1 overflow-x-auto rounded-lg border border-dream-200 bg-white p-0.5">
@@ -674,7 +710,7 @@ export default function FlowEditor() {
           </button>
           <button onClick={handleSave} disabled={store.isSaving} className="inline-flex items-center gap-1.5 rounded-lg border border-dream-200 bg-white px-3 py-1.5 text-sm font-medium text-dream-700 transition hover:bg-dream-50 disabled:opacity-50">
             <Save className={`h-4 w-4 ${store.isSaving ? 'animate-spin' : ''}`} />
-            {store.isSaving ? '保存中' : store.lastSavedAt ? '已保存' : '保存'}
+            {saveState === 'saving' ? '保存中' : saveState === 'conflict' ? '版本冲突' : saveState === 'error' ? '重试保存' : store.lastSavedAt ? '已保存' : '保存'}
           </button>
         </div>
       </div>
@@ -761,10 +797,10 @@ export default function FlowEditor() {
                   edges: edges.map((edge) => ({ id: edge.id, source: edge.source, target: edge.target, label: typeof edge.label === 'string' ? edge.label : undefined, sourceHandle: edge.sourceHandle || undefined, animated: edge.animated ?? true })),
                 }}
                 onApplyGraph={(result: AppliedPatchDto) => {
-                  store.setNodes(result.graph.nodes)
-                  store.setEdges(result.graph.edges)
+                  store.commitGraph(result.graph.nodes, result.graph.edges)
                   store.setChapterVersion(result.version)
                   store.setLastSavedAt(new Date())
+                  saveCoordinator.reset()
                   toast.success('章节图已更新，可以继续编辑。')
                 }}
                 onSelectNode={(nodeId) => {
