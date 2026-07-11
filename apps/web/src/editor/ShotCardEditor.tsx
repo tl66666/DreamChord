@@ -491,7 +491,7 @@ export default function ShotCardEditor({
       setPendingQuickText(text)
     }
     setQuickInput('')
-  }, [quickInput, characters, quickAppendDialogue])
+  }, [quickInput, characters, quickAppendDialogue, toast])
 
   const importManuscript = useCallback((text: string) => {
     if (!selectedSceneId) return 0

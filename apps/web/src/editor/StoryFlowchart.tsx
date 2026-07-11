@@ -151,7 +151,7 @@ export default function StoryFlowchart({
     const worldX = (e.clientX - rect.left - offsetRef.current.x) / scaleRef.current
     const worldY = (e.clientY - rect.top - offsetRef.current.y) / scaleRef.current
     setConnecting({ sourceSceneId: sceneId, mouseX: worldX, mouseY: worldY })
-  }, [containerRef])
+  }, [containerRef, offsetRef, scaleRef])
 
   const handleCompleteConnection = useCallback((targetSceneId: string) => {
     setConnecting(prev => {
@@ -181,7 +181,7 @@ export default function StoryFlowchart({
       window.removeEventListener('mousemove', handleMove)
       window.removeEventListener('mouseup', handleUp)
     }
-  }, [connecting, containerRef])
+  }, [connecting, containerRef, offsetRef, scaleRef])
 
   // 连接线右键断开
   const [disconnectMenu, setDisconnectMenu] = useState<{ visible: boolean; x: number; y: number; conn: SceneConnection | null }>({

@@ -68,7 +68,7 @@ export default function VisualNovelPlayer() {
   const [isSkip, setIsSkip] = useState(false)
   const [finished, setFinished] = useState(false)
   const [settings, setSettings] = useState<PlayerSettings>(DEFAULT_SETTINGS)
-  const [tick, setTick] = useState(0)
+  const [, setTick] = useState(0)
 
   const autoTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const typingRef = useRef<ReturnType<typeof setInterval> | null>(null)
@@ -160,9 +160,9 @@ export default function VisualNovelPlayer() {
         toast.error('加载项目失败')
       })
       .finally(() => setLoading(false))
-  }, [location.search, projectId])
+  }, [location.search, projectId, toast])
 
-  const currentScene = useMemo(() => engine?.currentScene() || null, [engine, tick])
+  const currentScene = engine?.currentScene() || null
 
   const backgroundUrl = useMemo(() => {
     if (!currentScene) return '/assets/backgrounds/bg-starry.png'

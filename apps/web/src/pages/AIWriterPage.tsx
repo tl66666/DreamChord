@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { Bot, ChevronRight, Library, Loader2, Settings } from 'lucide-react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import type { StoryGraph, StoryNodeType } from '@dreamchord/story-domain'
@@ -19,6 +19,7 @@ export default function AIWriterPage() {
 
   const selectedChapter = selectedProject?.chapters.find((chapter) => chapter.id === selectedChapterId) ?? null
   const graph = useMemo(() => chapterToGraph(selectedChapter), [selectedChapter])
+  const initialSelection = useRef({ projectId: selectedProjectId, chapterId: selectedChapterId })
 
   useEffect(() => {
     let active = true
@@ -26,11 +27,11 @@ export default function AIWriterPage() {
       .then(async (items) => {
         if (!active) return
         setProjects(items)
-        const summary = items.find((item) => item.id === selectedProjectId) ?? items[0]
+        const summary = items.find((item) => item.id === initialSelection.current.projectId) ?? items[0]
         if (!summary) return
         const project = await getProject(summary.id)
         if (!active) return
-        const chapter = project.chapters.find((item) => item.id === selectedChapterId) ?? project.chapters[0]
+        const chapter = project.chapters.find((item) => item.id === initialSelection.current.chapterId) ?? project.chapters[0]
         setSelectedProject(project)
         setSelectedProjectId(project.id)
         setSelectedChapterId(chapter?.id ?? '')
