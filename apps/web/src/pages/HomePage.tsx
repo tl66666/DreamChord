@@ -11,6 +11,7 @@ import {
   Sparkles,
   Trash2,
   Download,
+  Menu,
   Upload,
   X,
 } from 'lucide-react'
@@ -37,6 +38,7 @@ export default function HomePage() {
   const [editingId, setEditingId] = useState<string | null>(null)
   const [editingTitle, setEditingTitle] = useState('')
   const [deletingId, setDeletingId] = useState<string | null>(null)
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const importInputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
@@ -109,13 +111,13 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen bg-slate-50">
-      <nav className="border-b border-slate-200 bg-white/90 px-6 py-4 backdrop-blur">
+      <nav className="border-b border-slate-200 bg-white/90 px-4 py-3 backdrop-blur sm:px-6 sm:py-4">
         <div className="mx-auto flex max-w-7xl items-center justify-between">
           <Link to="/" className="flex items-center gap-3">
             <img src="/assets/logo.png" alt="DreamChord" className="h-10 w-10 rounded-xl ring-1 ring-black/5" />
-            <span className="text-xl font-bold text-slate-950">DreamChord</span>
+            <span className="text-lg font-bold text-slate-950 sm:text-xl">DreamChord</span>
           </Link>
-          <div className="flex items-center gap-4">
+          <div className="hidden items-center gap-4 md:flex">
             <Link to="/library" className="text-sm font-medium text-slate-700 hover:text-dream-600">素材库</Link>
             <Link to="/agent" className="text-sm font-medium text-slate-700 hover:text-dream-600">创作 Agent</Link>
             <Link to="/explore" className="text-sm font-medium text-slate-700 hover:text-dream-600">发现作品</Link>
@@ -132,7 +134,31 @@ export default function HomePage() {
               </div>
             ))}
           </div>
+          <button
+            type="button"
+            aria-label={mobileMenuOpen ? '关闭导航菜单' : '打开导航菜单'}
+            aria-expanded={mobileMenuOpen}
+            onClick={() => setMobileMenuOpen((open) => !open)}
+            className="grid h-10 w-10 place-items-center rounded-md border border-slate-200 text-slate-700 md:hidden"
+          >
+            {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+          </button>
         </div>
+        {mobileMenuOpen && <div role="navigation" aria-label="移动端导航" className="mx-auto mt-3 max-w-7xl border-t border-slate-200 pt-3 md:hidden">
+          <div className="grid grid-cols-2 gap-2">
+            <Link onClick={() => setMobileMenuOpen(false)} to="/library" className="rounded-md px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100">素材库</Link>
+            <Link onClick={() => setMobileMenuOpen(false)} to="/agent" className="rounded-md px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100">创作 Agent</Link>
+            <Link onClick={() => setMobileMenuOpen(false)} to="/explore" className="rounded-md px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100">发现作品</Link>
+            <Link onClick={() => setMobileMenuOpen(false)} to="/settings" className="rounded-md px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100">设置</Link>
+          </div>
+          {!isLoading && (user ? <div className="mt-3 flex items-center justify-between border-t border-slate-200 pt-3">
+            <span className="truncate text-sm text-slate-600">{user.nickname || user.username}</span>
+            <button type="button" aria-label="退出登录" onClick={logout} className="rounded-md bg-slate-100 px-4 py-2 text-sm font-medium text-slate-700">退出</button>
+          </div> : <div className="mt-3 grid grid-cols-2 gap-2 border-t border-slate-200 pt-3">
+            <Link onClick={() => setMobileMenuOpen(false)} to="/login" className="rounded-md px-3 py-2 text-center text-sm font-medium text-slate-700">登录</Link>
+            <Link onClick={() => setMobileMenuOpen(false)} to="/register" className="rounded-md bg-dream-600 px-3 py-2 text-center text-sm font-medium text-white">注册</Link>
+          </div>)}
+        </div>}
       </nav>
 
       <section className="mx-auto grid max-w-7xl items-center gap-12 px-6 py-14 lg:grid-cols-[1fr_520px]">
