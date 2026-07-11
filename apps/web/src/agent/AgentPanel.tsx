@@ -10,16 +10,17 @@ import PatchPreview from './PatchPreview'
 import type { AgentScope, AppliedPatchDto } from './agentTypes'
 import { useAgentRun } from './useAgentRun'
 
-export default function AgentPanel({ projectId, chapterId, selectedNodeId, selectedSceneId, graph, taskRequest, onApplyGraph, onSelectNode, onClose }: {
+export default function AgentPanel({ projectId, chapterId, selectedNodeId, selectedSceneId, graph, taskRequest, initialConversationId = '', onConversationChange, onApplyGraph, onSelectNode, onClose }: {
   projectId: string; chapterId: string; chapterVersion: number; selectedNodeId: string | null; selectedSceneId: string | null; graph: StoryGraph
   onApplyGraph: (result: AppliedPatchDto) => void; onSelectNode: (nodeId: string) => void; onClose?: () => void
   taskRequest?: { id: number; prompt: string; scope: AgentScope }
+  initialConversationId?: string; onConversationChange?: (conversationId: string) => void
 }) {
   const controller = useAgentRun()
   const provider = getDefaultProvider()
   const [prompt, setPrompt] = useState('')
   const [scope, setScope] = useState<AgentScope>('chapter')
-  const [conversationId, setConversationId] = useState('')
+  const [conversationId, setConversationId] = useState(initialConversationId)
   const [localReport, setLocalReport] = useState<ReturnType<typeof analyzeStoryGraph> | null>(null)
   const [busy, setBusy] = useState(false)
 
@@ -29,6 +30,8 @@ export default function AgentPanel({ projectId, chapterId, selectedNodeId, selec
     setScope(taskRequest.scope)
   }, [taskRequest])
 
+  useEffect(() => { setConversationId(initialConversationId) }, [initialConversationId])
+
   const runAgent = async () => {
     if (!provider || !prompt.trim()) return
     let id = conversationId
@@ -36,6 +39,7 @@ export default function AgentPanel({ projectId, chapterId, selectedNodeId, selec
       const conversation = await createAgentConversation(projectId, { title: prompt.trim().slice(0, 40), scope })
       id = conversation.id; setConversationId(id)
     }
+    onConversationChange?.(id)
     await controller.start({ projectId, conversationId: id, chapterId, prompt: prompt.trim(), scope, targetId: scope === 'card' ? selectedNodeId ?? undefined : scope === 'scene' ? selectedSceneId ?? undefined : undefined, providerConfig: { provider: provider.provider, model: provider.model, apiKey: provider.apiKey, baseUrl: provider.baseUrl } })
   }
 

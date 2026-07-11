@@ -151,7 +151,7 @@ export default function LibraryPage() {
             </div>
           </Link>
           <div className="flex items-center gap-2">
-            <button onClick={() => navigate('/ai-writer')} className="rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50">AI 写作台</button>
+            <button onClick={() => navigate('/agent')} className="rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50">创作 Agent</button>
             <button onClick={() => navigate(selectedProjectId ? `/editor/${selectedProjectId}` : '/')} className="rounded-lg bg-dream-600 px-4 py-2 text-sm font-medium text-white hover:bg-dream-700">去编辑器使用</button>
           </div>
         </div>

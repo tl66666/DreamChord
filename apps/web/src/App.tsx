@@ -68,7 +68,8 @@ function App() {
               <Route path="/explore" element={<ExplorePage />} />
               <Route path="/settings" element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
               <Route path="/library" element={<ProtectedRoute><LibraryPage /></ProtectedRoute>} />
-              <Route path="/ai-writer" element={<ProtectedRoute><AIWriterPage /></ProtectedRoute>} />
+              <Route path="/agent" element={<ProtectedRoute><AIWriterPage /></ProtectedRoute>} />
+              <Route path="/ai-writer" element={<Navigate to="/agent" replace />} />
               <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
           </Suspense>

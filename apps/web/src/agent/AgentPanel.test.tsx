@@ -1,11 +1,13 @@
 // @vitest-environment jsdom
-import { cleanup, render, screen } from '@testing-library/react'
+import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import AgentPanel from './AgentPanel'
 
 const state = vi.hoisted(() => ({ controller: {} as Record<string, unknown>, provider: null as null | { provider: string; model: string; apiKey: string } }))
 vi.mock('./useAgentRun', () => ({ useAgentRun: () => state.controller }))
 vi.mock('../lib/aiConfig', () => ({ getDefaultProvider: () => state.provider }))
+const createConversation = vi.hoisted(() => vi.fn(async () => ({ id: 'conversation-new' })))
+vi.mock('../api/client', () => ({ createAgentConversation: createConversation }))
 
 const baseRun = {
   id: 'run', prompt: '检查', scope: 'chapter', targetId: null, provider: 'test', model: 'fake', plan: ['读取章节', '检查结构'],
@@ -54,5 +56,18 @@ describe('AgentPanel', () => {
     render(<AgentPanel {...props} />)
     expect(screen.getByRole('button', { name: '运行剧情体检' })).toBeTruthy()
     expect(screen.getByText('配置模型后可使用创作任务')).toBeTruthy()
+  })
+
+  it('reuses and reports the full-screen conversation id', async () => {
+    const onConversationChange = vi.fn()
+    state.controller = controller(null)
+    render(<AgentPanel {...props} initialConversationId="conversation-existing" onConversationChange={onConversationChange} />)
+    fireEvent.change(screen.getByLabelText('创作任务'), { target: { value: '检查第二章分支' } })
+    fireEvent.click(screen.getByRole('button', { name: '运行 Agent' }))
+
+    await waitFor(() => expect(state.controller.start).toHaveBeenCalled())
+    expect(state.controller.start).toHaveBeenCalledWith(expect.objectContaining({ conversationId: 'conversation-existing' }))
+    expect(createConversation).not.toHaveBeenCalled()
+    expect(onConversationChange).toHaveBeenCalledWith('conversation-existing')
   })
 })

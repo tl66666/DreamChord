@@ -1,8 +1,31 @@
 import { Router, type Request, type Response, type Router as ExpressRouter } from 'express'
+import { z } from 'zod'
 import { createProvider, type LLMMessage } from '../llm/providers.js'
 import { authenticateToken } from '../middleware/auth.js'
+import { parseBody } from '../validation/http.js'
 
 const router: ExpressRouter = Router()
+
+const providerFields = {
+  provider: z.string().trim().min(1).max(80),
+  model: z.string().trim().min(1).max(160),
+  apiKey: z.string().min(1).max(10_000),
+  baseUrl: z.string().url().max(2_000).optional(),
+}
+const temperature = z.number().min(0).max(2).default(0.7)
+const context = z.string().trim().min(1).max(20_000)
+
+export const aiRequestSchemas = {
+  chat: z.object({
+    ...providerFields,
+    messages: z.array(z.object({ role: z.enum(['user', 'assistant']), content: context }).strict()).min(1).max(50),
+    temperature,
+  }).strict(),
+  polish: z.object({ ...providerFields, text: context, style: z.string().trim().min(1).max(120).default('自然生动'), temperature }).strict(),
+  continueStory: z.object({ ...providerFields, context, temperature: z.number().min(0).max(2).default(0.8) }).strict(),
+  choices: z.object({ ...providerFields, context, count: z.number().int().min(2).max(6).default(3), temperature: z.number().min(0).max(2).default(0.9) }).strict(),
+  generateStory: z.object({ ...providerFields, prompt: z.string().trim().min(1).max(4_000), context: z.string().max(20_000).default(''), temperature: z.number().min(0).max(2).default(0.8) }).strict(),
+}
 
 const SYSTEM_PROMPT = `你是一位资深的视觉小说编剧助手。你擅长润色对话、续写剧情、设计分支选项、扩写世界观。
 请用中文回答，保持二次元叙事风格，语气自然生动。`
@@ -32,25 +55,22 @@ async function callLLM(
   }
 }
 
+// Deprecated compatibility API. New project-aware work must use /api/projects/:id/agent.
 // AI 调用需要登录，避免未认证用户滥用
 router.use(authenticateToken)
 
 router.post('/chat', (req: Request, res: Response) => {
-  const { provider, model, apiKey, baseUrl, messages, temperature = 0.7 } = req.body
-
-  if (!provider || !model || !apiKey) {
-    return res.status(400).json({ error: '缺少 provider / model / apiKey' })
-  }
+  const input = parseBody(aiRequestSchemas.chat, req, res)
+  if (!input) return
+  const { provider, model, apiKey, baseUrl, messages, temperature } = input
 
   return callLLM(provider, model, apiKey, baseUrl, messages, temperature, res)
 })
 
 router.post('/polish', (req: Request, res: Response) => {
-  const { provider, model, apiKey, baseUrl, text, temperature = 0.7, style = '自然生动' } = req.body
-
-  if (!provider || !model || !apiKey || !text) {
-    return res.status(400).json({ error: '缺少必要参数' })
-  }
+  const input = parseBody(aiRequestSchemas.polish, req, res)
+  if (!input) return
+  const { provider, model, apiKey, baseUrl, text, temperature, style } = input
 
   const messages: LLMMessage[] = [
     {
@@ -63,11 +83,9 @@ router.post('/polish', (req: Request, res: Response) => {
 })
 
 router.post('/continue', (req: Request, res: Response) => {
-  const { provider, model, apiKey, baseUrl, context, temperature = 0.8 } = req.body
-
-  if (!provider || !model || !apiKey || !context) {
-    return res.status(400).json({ error: '缺少必要参数' })
-  }
+  const input = parseBody(aiRequestSchemas.continueStory, req, res)
+  if (!input) return
+  const { provider, model, apiKey, baseUrl, context, temperature } = input
 
   const messages: LLMMessage[] = [
     {
@@ -80,11 +98,9 @@ router.post('/continue', (req: Request, res: Response) => {
 })
 
 router.post('/choices', (req: Request, res: Response) => {
-  const { provider, model, apiKey, baseUrl, context, count = 3, temperature = 0.9 } = req.body
-
-  if (!provider || !model || !apiKey || !context) {
-    return res.status(400).json({ error: '缺少必要参数' })
-  }
+  const input = parseBody(aiRequestSchemas.choices, req, res)
+  if (!input) return
+  const { provider, model, apiKey, baseUrl, context, count, temperature } = input
 
   const messages: LLMMessage[] = [
     {
@@ -135,11 +151,9 @@ function extractJson(text: string): unknown {
 }
 
 router.post('/generate-story', async (req: Request, res: Response) => {
-  const { provider, model, apiKey, baseUrl, prompt, context = '', temperature = 0.8 } = req.body
-
-  if (!provider || !model || !apiKey || !prompt) {
-    return res.status(400).json({ error: '缺少必要参数' })
-  }
+  const input = parseBody(aiRequestSchemas.generateStory, req, res)
+  if (!input) return
+  const { provider, model, apiKey, baseUrl, prompt, context, temperature } = input
 
   try {
     const llm = createProvider(provider, { apiKey, model, baseUrl })

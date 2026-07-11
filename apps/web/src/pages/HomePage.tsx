@@ -96,7 +96,7 @@ export default function HomePage() {
           </Link>
           <div className="flex items-center gap-4">
             <Link to="/library" className="text-sm font-medium text-slate-700 hover:text-dream-600">素材库</Link>
-            <Link to="/ai-writer" className="text-sm font-medium text-slate-700 hover:text-dream-600">AI 写作</Link>
+            <Link to="/agent" className="text-sm font-medium text-slate-700 hover:text-dream-600">创作 Agent</Link>
             <Link to="/explore" className="text-sm font-medium text-slate-700 hover:text-dream-600">发现作品</Link>
             <Link to="/settings" className="text-sm font-medium text-slate-700 hover:text-dream-600">设置</Link>
             {!isLoading && (user ? (
@@ -118,7 +118,7 @@ export default function HomePage() {
         <div className="space-y-7">
           <div className="inline-flex items-center gap-2 rounded-full border border-dream-200 bg-white px-4 py-1.5 text-sm text-dream-700">
             <Sparkles className="h-4 w-4" />
-            节点剧情 · 独立素材库 · AI 写作闭环
+            节点剧情 · 独立素材库 · Agent 创作闭环
           </div>
           <h1 className="text-5xl font-bold leading-tight text-slate-950">
             把模糊灵感
@@ -126,7 +126,7 @@ export default function HomePage() {
             变成能玩的视觉小说
           </h1>
           <p className="max-w-xl text-lg leading-8 text-slate-700">
-            DreamChord 把故事项目、角色设定、背景素材、剧情模板和 AI 辅助分开管理。素材库只管理素材，工作台只编辑故事，AI 写作台负责把想法变成可放入节点的文本。
+            DreamChord 把故事项目、角色设定、背景素材和剧情结构放进同一条创作链路。创作 Agent 会读取项目上下文，先规划和校验，再由你预览、应用或撤销变更。
           </p>
           <div className="flex flex-wrap gap-3">
             <button onClick={handleCreate} disabled={creating} className="rounded-lg bg-dream-600 px-6 py-3 font-medium text-white shadow-lg shadow-dream-500/20 hover:bg-dream-700 disabled:opacity-50">
@@ -229,11 +229,11 @@ export default function HomePage() {
           />
           <FeatureCard
             icon={<Bot className="h-5 w-5" />}
-            title="AI 写作辅助"
-            desc="围绕当前角色和上下文生成大纲、续写、台词、选项分支和节点草稿。"
-            items={['未配置 API 也能生成本地草稿', '配置模型后调用真实 AI', '结果可复制或保存到草稿箱']}
-            action="打开 AI 写作台"
-            onClick={() => navigate('/ai-writer')}
+            title="创作 Agent"
+            desc="基于故事圣经和真实章节结构诊断问题，生成经过规则校验的节点图变更。"
+            items={['先展示计划和上下文来源', '变更应用前可预览差异', '应用后保留版本并支持撤销']}
+            action="打开创作 Agent"
+            onClick={() => navigate('/agent')}
           />
         </div>
       </section>
