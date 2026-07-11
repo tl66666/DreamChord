@@ -24,7 +24,7 @@ function LocationProbe() {
 describe('full-screen creative agent', () => {
   afterEach(cleanup)
   it('shows project and chapter selection before the agent workspace', async () => {
-    render(<MemoryRouter initialEntries={['/agent']}><FeedbackProvider><AIWriterPage /><LocationProbe /></FeedbackProvider></MemoryRouter>)
+    render(<MemoryRouter initialEntries={['/agent']} future={{ v7_startTransition: true, v7_relativeSplatPath: true }}><FeedbackProvider><AIWriterPage /><LocationProbe /></FeedbackProvider></MemoryRouter>)
     expect(screen.getByRole('heading', { name: '创作 Agent' })).toBeTruthy()
     await waitFor(() => expect(screen.getByLabelText('选择项目')).toBeTruthy())
     expect(screen.getByLabelText('选择章节')).toBeTruthy()
