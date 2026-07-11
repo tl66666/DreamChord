@@ -19,7 +19,8 @@ model User {
 
   projects      Project[]
   comments      Comment[]
-  aiConfigs     AIProviderConfig[]
+  agentConversations AgentConversation[]
+  agentRuns     AgentRun[]
 
   @@map("users")
 }
@@ -42,6 +43,10 @@ model Project {
   characters    Character[]
   assets        Asset[]
   comments      Comment[]
+  storyBible    StoryBible?
+  agentConversations AgentConversation[]
+  agentRuns     AgentRun[]
+  storyPatches  StoryPatch[]
 
   @@index([authorId])
   @@map("projects")
@@ -51,6 +56,7 @@ model Chapter {
   id            String    @id @default(uuid())
   title         String    @default("未命名章节")
   order         Int       @default(0)
+  version       Int       @default(1)
   createdAt     DateTime  @default(now()) @map("created_at")
   updatedAt     DateTime  @updatedAt @map("updated_at")
 
@@ -59,6 +65,9 @@ model Chapter {
 
   nodes         FlowNode[]
   edges         FlowEdge[]
+  agentRuns     AgentRun[]
+  storyPatches  StoryPatch[]
+  snapshots     ChapterSnapshot[]
 
   @@index([projectId])
   @@map("chapters")
@@ -157,21 +166,123 @@ model Comment {
   @@map("comments")
 }
 
-model AIProviderConfig {
+model StoryBible {
+  id        String   @id @default(uuid())
+  content   String   @default("{}")
+  version   Int      @default(1)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  projectId String  @unique @map("project_id")
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@map("story_bibles")
+}
+
+model AgentConversation {
+  id        String   @id @default(uuid())
+  title     String
+  scope     String
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  userId    String  @map("user_id")
+  user      User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  projectId String  @map("project_id")
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  messages AgentMessage[]
+  runs     AgentRun[]
+
+  @@index([userId, projectId])
+  @@map("agent_conversations")
+}
+
+model AgentMessage {
+  id        String   @id @default(uuid())
+  role      String
+  content   String
+  metadata  String   @default("{}")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  conversationId String            @map("conversation_id")
+  conversation   AgentConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  @@index([conversationId, createdAt])
+  @@map("agent_messages")
+}
+
+model AgentRun {
   id            String    @id @default(uuid())
+  status        String    @default("queued")
+  prompt        String
+  scope         String
+  targetId      String?   @map("target_id")
   provider      String
-  apiKey        String    @map("api_key")
-  baseUrl       String?   @map("base_url")
   model         String
-  isEnabled     Boolean   @default(true) @map("is_enabled")
-  isDefault     Boolean   @default(false) @map("is_default")
+  plan          String    @default("[]")
+  timeline      String    @default("[]")
+  sources       String    @default("[]")
+  validation    String    @default("{}")
+  errorCode     String?   @map("error_code")
+  errorMessage  String?   @map("error_message")
+  usage         String    @default("{}")
   createdAt     DateTime  @default(now()) @map("created_at")
   updatedAt     DateTime  @updatedAt @map("updated_at")
+  completedAt   DateTime? @map("completed_at")
 
-  userId        String    @map("user_id")
-  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId         String            @map("user_id")
+  user           User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  projectId      String            @map("project_id")
+  project        Project           @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  chapterId      String?           @map("chapter_id")
+  chapter        Chapter?          @relation(fields: [chapterId], references: [id], onDelete: Cascade)
+  conversationId String            @map("conversation_id")
+  conversation   AgentConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  patch           StoryPatch?
 
-  @@index([userId])
-  @@unique([userId, provider])
-  @@map("ai_provider_configs")
+  @@index([userId, projectId])
+  @@index([status])
+  @@index([conversationId, createdAt])
+  @@map("agent_runs")
+}
+
+model StoryPatch {
+  id             String    @id @default(uuid())
+  payload        String
+  validation     String    @default("{}")
+  diff           String    @default("{}")
+  status         String    @default("proposed")
+  baseVersion    Int       @map("base_version")
+  appliedVersion Int?      @map("applied_version")
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
+
+  runId     String   @unique @map("run_id")
+  run       AgentRun @relation(fields: [runId], references: [id], onDelete: Cascade)
+  projectId String   @map("project_id")
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  chapterId String   @map("chapter_id")
+  chapter   Chapter  @relation(fields: [chapterId], references: [id], onDelete: Cascade)
+  snapshot  ChapterSnapshot?
+
+  @@index([projectId, chapterId])
+  @@index([status])
+  @@map("story_patches")
+}
+
+model ChapterSnapshot {
+  id        String   @id @default(uuid())
+  nodes     String
+  edges     String
+  version   Int
+  createdAt DateTime @default(now()) @map("created_at")
+
+  patchId   String     @unique @map("patch_id")
+  patch     StoryPatch @relation(fields: [patchId], references: [id], onDelete: Cascade)
+  chapterId String     @map("chapter_id")
+  chapter   Chapter    @relation(fields: [chapterId], references: [id], onDelete: Cascade)
+
+  @@index([chapterId])
+  @@map("chapter_snapshots")
 }

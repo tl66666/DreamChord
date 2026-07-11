@@ -44,6 +44,7 @@ export interface ProjectData {
 interface EditorState {
   project: ProjectData | null
   chapterId: string | null
+  chapterVersion: number
   nodes: Node[]
   edges: Edge[]
   selectedNodeId: string | null
@@ -53,6 +54,7 @@ interface EditorState {
 
   setProject: (project: ProjectData) => void
   setChapterId: (id: string | null) => void
+  setChapterVersion: (version: number) => void
   setNodes: (nodes: Node[] | ((prev: Node[]) => Node[])) => void
   setEdges: (edges: Edge[] | ((prev: Edge[]) => Edge[])) => void
   setSelectedNodeId: (id: string | null) => void
@@ -67,6 +69,7 @@ interface EditorState {
 export const useEditorStore = create<EditorState>((set, get) => ({
   project: null,
   chapterId: null,
+  chapterVersion: 1,
   nodes: [],
   edges: [],
   selectedNodeId: null,
@@ -76,6 +79,7 @@ export const useEditorStore = create<EditorState>((set, get) => ({
 
   setProject: (project) => set({ project }),
   setChapterId: (id) => set({ chapterId: id }),
+  setChapterVersion: (version) => set({ chapterVersion: version }),
   setNodes: (nodes) =>
     set((state) => ({
       nodes: typeof nodes === 'function' ? nodes(state.nodes) : nodes,

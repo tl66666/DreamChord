@@ -79,6 +79,7 @@ export interface Chapter {
   id: string
   title: string
   order: number
+  version: number
   nodes: FlowNode[]
   edges: FlowEdge[]
 }
@@ -222,6 +223,7 @@ export async function replaceAssetFile(
 
 export interface SaveChapterPayload {
   chapterId: string
+  baseVersion: number
   nodes: {
     nodeId: string
     type: string
@@ -239,8 +241,9 @@ export interface SaveChapterPayload {
   }[]
 }
 
-export async function saveChapter(projectId: string, payload: SaveChapterPayload): Promise<void> {
-  await api.put(`/projects/${projectId}/chapters/${payload.chapterId}`, payload)
+export async function saveChapter(projectId: string, payload: SaveChapterPayload): Promise<{ version: number }> {
+  const { data } = await api.put(`/projects/${projectId}/chapters/${payload.chapterId}`, payload)
+  return data
 }
 
 export async function polishText(payload: {
