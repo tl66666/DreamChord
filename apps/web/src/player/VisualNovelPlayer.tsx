@@ -485,8 +485,8 @@ export default function VisualNovelPlayer() {
             onClick={(event) => event.stopPropagation()}
           >
             <div className="max-w-md rounded-2xl border border-white/10 bg-black/64 p-8 text-center shadow-2xl">
-              <h2 className="mb-2 text-2xl font-bold text-white">第一章 · 节点觉醒</h2>
-              <p className="mb-6 text-sm text-white/60">现实已保存，故事才刚刚开始。</p>
+              <h2 className="mb-2 text-2xl font-bold text-white">第一章 · 终页归弦</h2>
+              <p className="mb-6 text-sm text-white/60">终页已经保存，新的故事线正在等待你。</p>
               <div className="flex flex-col gap-3">
                 <button onClick={restart} className="inline-flex items-center justify-center gap-2 rounded-xl bg-dream-600 px-5 py-2.5 text-sm font-medium text-white transition hover:bg-dream-700">
                   <RotateCcw className="h-4 w-4" />

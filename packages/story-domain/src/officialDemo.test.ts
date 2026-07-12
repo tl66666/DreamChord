@@ -5,6 +5,7 @@ describe('official demo graph', () => {
   it('contains nine named and connected scenes', () => {
     const groups = new Set(OFFICIAL_DEMO.graph.nodes.map((node) => node.data.sceneGroupId))
     expect(groups.size).toBe(9)
+    expect([...new Set(OFFICIAL_DEMO.graph.nodes.map((node) => node.data.sceneCode))].sort()).toEqual(['1-1', '1-2', '1-3', '1-4', '1-5', '1-6', '1-7', '1-8', '1-9'])
     expect(OFFICIAL_DEMO.graph.nodes.every((node) => typeof node.data.sceneTitle === 'string' && node.data.sceneTitle.trim())).toBe(true)
     const nodeIds = new Set(OFFICIAL_DEMO.graph.nodes.map((node) => node.id))
     expect(OFFICIAL_DEMO.graph.edges.every((edge) => nodeIds.has(edge.source) && nodeIds.has(edge.target))).toBe(true)

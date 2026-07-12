@@ -5,7 +5,8 @@ const edges: StoryEdge[] = []
 let x = 80
 
 function add(id: string, type: StoryNodeType, sceneGroupId: string, sceneTitle: string, data: Record<string, unknown>) {
-  nodes.push({ id, type, position: { x, y: 100 + (nodes.length % 5) * 150 }, data: { ...data, sceneGroupId, sceneTitle, sceneCode: sceneGroupId } })
+  const sceneNumber = Number(sceneGroupId.match(/^scene-(\d+)/)?.[1] ?? 1)
+  nodes.push({ id, type, position: { x, y: 100 + (nodes.length % 5) * 150 }, data: { ...data, sceneGroupId, sceneTitle, sceneCode: `1-${sceneNumber}` } })
   x += 150
   return id
 }

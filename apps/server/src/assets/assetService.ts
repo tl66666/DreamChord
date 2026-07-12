@@ -35,7 +35,8 @@ export class PrismaAssetService {
     const asset = await this.requireOwnedAsset(assetId, userId)
     const source = await readFile(this.pathFromUrl(asset.url)).catch(() => { throw new Error('原始素材文件不存在') })
     const inspection = await inspectImage(source)
-    const { project: _project, ...publicAsset } = asset
+    const publicAsset: Partial<typeof asset> = { ...asset }
+    delete publicAsset.project
     return { asset: publicAsset, ...inspection }
   }
 

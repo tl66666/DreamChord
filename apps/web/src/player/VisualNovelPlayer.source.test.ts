@@ -7,5 +7,6 @@ describe('player data source', () => {
     expect(source).toContain('getProject(projectId)')
     expect(source).not.toContain("../engine/demo")
     expect(source).not.toContain('projectId === DEMO_ID')
+    expect(source).toContain('第一章 · 终页归弦')
   })
 })
