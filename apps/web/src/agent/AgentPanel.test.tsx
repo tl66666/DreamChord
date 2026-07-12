@@ -46,6 +46,13 @@ describe('AgentPanel', () => {
     expect(screen.queryByRole('button', { name: '应用变更' })).toBeNull()
   })
 
+  it('does not offer undo after a completed read-only conversation', () => {
+    state.controller = controller({ ...baseRun, status: 'completed', patch: null })
+    render(<AgentPanel {...props} />)
+
+    expect(screen.queryByRole('button', { name: '撤销变更' })).toBeNull()
+  })
+
   it('shows approval commands and patch diff while awaiting approval', () => {
     state.controller = controller({ ...baseRun, status: 'awaiting_approval', patch: { id: 'patch', status: 'proposed', payload: { operations: [] }, validation: { valid: true }, diff: { addedNodeIds: ['new'], updatedNodeIds: [], removedNodeIds: [], addedEdgeIds: [], removedEdgeIds: [] }, baseVersion: 1, appliedVersion: null } })
     render(<AgentPanel {...props} />)

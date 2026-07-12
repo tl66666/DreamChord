@@ -66,6 +66,9 @@ export default function AgentPanel({ projectId, chapterId, chapterVersion, selec
   }
 
   const canCompose = !controller.run || ['completed', 'failed', 'cancelled'].includes(controller.run.status)
+  const showApprovalBar = Boolean(controller.run && (
+    controller.run.patch || ['queued', 'planning', 'gathering_context', 'drafting', 'validating', 'applying'].includes(controller.run.status)
+  ))
 
   return (
     <aside className="flex h-full flex-col bg-white text-slate-900">
@@ -80,7 +83,7 @@ export default function AgentPanel({ projectId, chapterId, chapterVersion, selec
         {controller.run && <AgentTimeline run={controller.run} />}
         {controller.run?.patch && <PatchPreview patch={controller.run.patch} onSelectNode={onSelectNode} />}
       </div>
-      {controller.run && <AgentApprovalBar status={controller.run.status} busy={busy} mutationBlockedReason={mutationBlockedReason} onCancel={() => void controller.cancel()} onReject={() => void controller.reject()} onApply={() => void applyAction(controller.apply)} onUndo={() => void applyAction(controller.undo)} />}
+      {controller.run && showApprovalBar && <AgentApprovalBar status={controller.run.status} busy={busy} mutationBlockedReason={mutationBlockedReason} onCancel={() => void controller.cancel()} onReject={() => void controller.reject()} onApply={() => void applyAction(controller.apply)} onUndo={() => void applyAction(controller.undo)} />}
     </aside>
   )
 }
