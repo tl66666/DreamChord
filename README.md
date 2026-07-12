@@ -1,5 +1,7 @@
 # 梦弦 DreamChord
 
+> 项目展示页：双击项目根目录的 [`PROJECT_SHOWCASE.html`](PROJECT_SHOWCASE.html)，或打开 [`docs/showcase.html`](docs/showcase.html)。展示页先介绍完整产品，再重点拆解 DreamChord Agent 的能力、架构和技术实现。
+
 面向视觉小说创作者的本地故事工作台。作者可以用章节、场景和镜头卡组织故事，管理角色立绘、背景与 CG，通过分支流程图检查剧情，并让创作 Agent 读取项目上下文、调用受限工具、提出可审核的修改。
 
 [在线项目展示](https://tl66666.github.io/DreamChord/) | [新手入门](docs/GETTING_STARTED.md) | [项目概览](docs/PROJECT_OVERVIEW.md) | [完整文档](docs/README.md)

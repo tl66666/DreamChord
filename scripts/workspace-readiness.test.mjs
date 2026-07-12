@@ -173,6 +173,7 @@ assert.ok(
 assert.match(batchLauncher, /powershell\.exe[^\r\n]*-File "%~dp0start-dreamchord\.ps1"/, 'batch launcher must delegate to the colocated PowerShell script')
 
 const showcase = readFileSync(new URL('../docs/showcase.html', import.meta.url), 'utf8')
+assert.ok(existsSync(fileURLToPath(new URL('../PROJECT_SHOWCASE.html', import.meta.url))), 'project root must expose an obvious showcase entrypoint')
 for (const screenshot of [
   'editor-1440.png',
   'flowchart-1440.png',
@@ -190,9 +191,13 @@ assert.match(showcase, /id="agent-core"/, 'showcase must include a dedicated Age
 for (const keyword of ['本地意图路由', '分层记忆', '白名单工具', '提案审批', '无 API Key']) {
   assert.ok(showcase.includes(keyword), `showcase Agent core must explain ${keyword}`)
 }
+for (const keyword of ['ReAct 风格', 'Observe', 'Reason', 'Validate', 'Approve']) {
+  assert.ok(showcase.includes(keyword), `showcase Agent core must explain ${keyword}`)
+}
 
 const repositoryRoot = fileURLToPath(new URL('..', import.meta.url))
 const publicDocuments = [
+  'PROJECT_SHOWCASE.html',
   'README.md',
   'CONTRIBUTING.md',
   'CHANGELOG.md',

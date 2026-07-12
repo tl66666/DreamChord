@@ -298,6 +298,28 @@ body {
 .section-title .italic { font-family: 'Instrument Serif', serif; font-style: italic; font-weight: 400; color: var(--accent); }
 .section-desc { font-size: 1rem; color: var(--text-dim); max-width: 680px; line-height: 1.7; }
 
+/* ═══ PROJECT OVERVIEW ═══ */
+.project-overview { padding: 6rem 1.5rem; max-width: 1200px; margin: 0 auto; position: relative; }
+.project-overview-inner { position: relative; }
+.overview-grid { display: grid; grid-template-columns: 1fr; gap: 2rem; margin-top: 3rem; }
+@media (min-width: 900px) { .overview-grid { grid-template-columns: 1.35fr 0.65fr; gap: 3rem; align-items: stretch; } }
+.overview-story { padding: 2rem; border: 1px solid var(--border); border-radius: 1rem; background: var(--bg-card); box-shadow: var(--shadow); }
+.overview-flow { display: flex; align-items: center; gap: 0.55rem; overflow-x: auto; padding-bottom: 0.4rem; scrollbar-width: thin; }
+.overview-flow-step { min-width: 118px; padding: 0.85rem 0.75rem; border: 1px solid var(--border); border-radius: 0.7rem; background: var(--bg-card-2); }
+.overview-flow-step.emphasis { border-color: var(--accent); background: rgba(124, 58, 237, 0.08); box-shadow: 0 4px 18px rgba(124, 58, 237, 0.1); }
+.overview-flow-step span { display: block; color: var(--accent); font: 500 0.68rem 'JetBrains Mono', monospace; }
+.overview-flow-step strong { display: block; margin-top: 0.35rem; font-size: 0.82rem; color: var(--text); }
+.overview-flow-step small { display: block; margin-top: 0.2rem; color: var(--text-dim); font-size: 0.66rem; line-height: 1.4; }
+.overview-flow-arrow { color: var(--accent-light); font-size: 1.15rem; flex: 0 0 auto; }
+.overview-note { margin: 1.5rem 0 0; color: var(--text-dim); font-size: 0.88rem; line-height: 1.75; }
+.overview-modules { display: grid; grid-template-columns: 1fr; gap: 0.75rem; }
+.overview-module { padding: 1.05rem 1.15rem; border-left: 3px solid var(--accent-3); background: var(--bg-card-2); border-radius: 0.55rem; }
+.overview-module:nth-child(2) { border-left-color: var(--accent-warm); }
+.overview-module:nth-child(3) { border-left-color: var(--accent-green); }
+.overview-module.highlight { border-left-color: var(--accent); background: rgba(124, 58, 237, 0.08); }
+.overview-module strong { display: block; font-size: 0.82rem; color: var(--text); }
+.overview-module span { display: block; margin-top: 0.3rem; font-size: 0.74rem; line-height: 1.55; color: var(--text-dim); }
+
 /* ═══ AGENT CORE ═══ */
 .agent-core {
   position: relative; padding: 7rem 1.5rem;
@@ -346,6 +368,13 @@ body {
 .agent-core-proof-caption strong { color: #ddd6fe; }
 .agent-core-tags { display: flex; flex-wrap: wrap; gap: 0.45rem; margin-top: 0.2rem; }
 .agent-core-tag { padding: 0.3rem 0.6rem; border: 1px solid rgba(196, 181, 253, 0.25); border-radius: 9999px; color: #d8d1e8; font-size: 0.68rem; }
+.agent-loop { padding: 1rem 1.1rem; border: 1px solid rgba(196, 181, 253, 0.2); background: rgba(0, 0, 0, 0.14); }
+.agent-loop-title { color: #ddd6fe; font-size: 0.78rem; font-weight: 700; margin-bottom: 0.7rem; }
+.agent-loop-grid { display: grid; grid-template-columns: 1fr; gap: 0.55rem; }
+@media (min-width: 560px) { .agent-loop-grid { grid-template-columns: repeat(2, 1fr); } }
+.agent-loop-grid div { padding: 0.6rem 0.7rem; background: rgba(255, 255, 255, 0.05); }
+.agent-loop-grid b { display: block; color: #fff; font: 500 0.68rem 'JetBrains Mono', monospace; }
+.agent-loop-grid span { display: block; margin-top: 0.2rem; color: #b8b1cb; font-size: 0.68rem; line-height: 1.5; }
 
 /* ═══ ABOUT ═══ */
 .about { padding: 6rem 1.5rem; position: relative; overflow: hidden;
@@ -730,6 +759,7 @@ body {
     <a href="#philosophy" class="nav-link">理念</a>
     <a href="#about" class="nav-link">定位</a>
     <a href="#compare" class="nav-link">对比</a>
+    <a href="#project-overview" class="nav-link">项目概览</a>
     <a href="#agent-core" class="nav-link">Agent 核心</a>
     <a href="#showcase" class="nav-link">界面</a>
     <a href="#characters" class="nav-link">角色</a>
@@ -802,6 +832,37 @@ body {
   </div>
 </section>
 
+<!-- ═══════════════ PROJECT OVERVIEW ═══════════════ -->
+<section class="project-overview" id="project-overview">
+  <div class="project-overview-inner">
+    <div class="section-label reveal">Project Overview · 整体介绍</div>
+    <h2 class="section-title reveal">从一个想法，<span class="italic">到一部可播放的视觉小说</span></h2>
+    <p class="section-desc reveal">DreamChord 是面向视觉小说创作者的 Web 故事工作台：把剧情写作、角色与素材管理、分支校验、Agent 协作和浏览器预览放在同一条创作链路里。</p>
+    <div class="overview-grid">
+      <div class="overview-story reveal">
+        <div class="overview-flow">
+          <div class="overview-flow-step"><span>01</span><strong>写故事</strong><small>章节 / 场景 / 镜头卡</small></div>
+          <div class="overview-flow-arrow">→</div>
+          <div class="overview-flow-step"><span>02</span><strong>管状态</strong><small>角色 / 背景 / 素材库</small></div>
+          <div class="overview-flow-arrow">→</div>
+          <div class="overview-flow-step"><span>03</span><strong>查结构</strong><small>流程图 / 体检 / 分支</small></div>
+          <div class="overview-flow-arrow">→</div>
+          <div class="overview-flow-step emphasis"><span>04</span><strong>用 Agent</strong><small>理解、建议、执行、审批</small></div>
+          <div class="overview-flow-arrow">→</div>
+          <div class="overview-flow-step"><span>05</span><strong>可播放</strong><small>浏览器预览 / 发布</small></div>
+        </div>
+        <p class="overview-note">创作者不需要学习脚本语法，也不需要手动维护 jump 和节点连线。镜头卡是写作入口，故事图是校验视图，播放器是最终结果。</p>
+      </div>
+      <div class="overview-modules reveal">
+        <div class="overview-module"><strong>故事编辑器</strong><span>6 种镜头卡、实时预览、自动保存、撤销重做和长文导入。</span></div>
+        <div class="overview-module"><strong>剧情与角色</strong><span>章节场景连续性、角色登场退场、选项分支和剧情健康检查。</span></div>
+        <div class="overview-module"><strong>素材工作室</strong><span>全局素材库、白底去除、透明裁边、立绘 / CG / 背景衍生图。</span></div>
+        <div class="overview-module highlight"><strong>项目感知 Agent</strong><span>多对话、分层记忆、工具调用、提案审批和可撤销修改。</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
 <!-- ═══════════════ AGENT CORE ═══════════════ -->
 <section class="agent-core" id="agent-core">
   <div class="agent-core-inner">
@@ -810,18 +871,28 @@ body {
     <p class="section-desc reveal">DreamChord Agent 为什么更智能？因为它先理解你的项目，再决定要不要调用工具；它能记住设定，但不会越过作者直接改稿。</p>
     <div class="agent-core-grid">
       <div class="agent-core-copy">
-        <p class="agent-core-lead reveal">这是一套自研 TypeScript Agent 编排层：本地路由负责判断问题，项目上下文负责提供事实，分层记忆负责保持连续性，白名单工具负责执行，提案审批负责把决定权留在作者手里。</p>
+        <p class="agent-core-lead reveal">这是一套自研 TypeScript Agent 编排层，不是把聊天框简单接到模型。它采用“ReAct 风格”的观察 → 推理 / 规划 → 工具执行 → 校验循环，但把工具权限、数据边界和最终写入控制在服务端。</p>
         <div class="agent-core-pipeline reveal">
           <div class="agent-core-step"><div class="agent-core-step-num">01</div><div><div class="agent-core-step-title">本地意图路由</div><div class="agent-core-step-desc">先识别“查项目、续写、查素材、体检、回顾对话”等任务，零 Key 也能回答常见问题。</div></div></div>
           <div class="agent-core-step"><div class="agent-core-step-num">02</div><div><div class="agent-core-step-title">项目上下文 + 分层记忆</div><div class="agent-core-step-desc">按项目、故事圣经、章节、角色、对话摘要和记忆优先级组装上下文，减少答非所问和设定冲突。</div></div></div>
           <div class="agent-core-step"><div class="agent-core-step-num">03</div><div><div class="agent-core-step-title">白名单工具 + 提案审批</div><div class="agent-core-step-desc">只允许读取、体检、素材检查等受控工具；剧情补丁先预览差异，作者确认后才应用，支持撤销。</div></div></div>
+        </div>
+        <div class="agent-loop reveal">
+          <div class="agent-loop-title">一次 Agent 请求如何完成</div>
+          <div class="agent-loop-grid">
+            <div><b>Observe</b><span>读取项目、章节、角色、素材、对话摘要和相关记忆。</span></div>
+            <div><b>Reason</b><span>模型只返回结构化 `tool_call` 或 `final`，最多循环 8 步。</span></div>
+            <div><b>Act</b><span>通过 Zod schema 校验参数，调用已注册的业务工具。</span></div>
+            <div><b>Validate</b><span>用 story-domain 校验剧情图、版本和补丁差异。</span></div>
+            <div><b>Approve</b><span>作者预览、应用、拒绝或撤销，Agent 不直接写数据库。</span></div>
+          </div>
         </div>
         <div class="agent-core-modes reveal">
           <div class="agent-core-mode"><strong>无 API Key</strong><span>项目检索、创作知识、结构草案、只读公共知识查询。</span></div>
           <div class="agent-core-mode"><strong>配置模型后</strong><span>续写、润色、长文本扩展与结构化补丁建议。</span></div>
           <div class="agent-core-mode"><strong>始终可控</strong><span>工具白名单、版本保护、审批、拒绝与撤销。</span></div>
         </div>
-        <div class="agent-core-tags reveal"><span class="agent-core-tag">TypeScript 编排层</span><span class="agent-core-tag">Express API</span><span class="agent-core-tag">OpenAI 兼容 Provider</span><span class="agent-core-tag">Prisma 记忆存储</span></div>
+        <div class="agent-core-tags reveal"><span class="agent-core-tag">自研 ReAct-style Executor</span><span class="agent-core-tag">TypeScript + Express</span><span class="agent-core-tag">Zod 工具 Schema</span><span class="agent-core-tag">Prisma + SQLite 记忆</span><span class="agent-core-tag">GLM / DeepSeek / Kimi / OpenAI 兼容</span></div>
       </div>
       <div class="agent-core-proof reveal">
         <div class="showcase-img-wrap">
