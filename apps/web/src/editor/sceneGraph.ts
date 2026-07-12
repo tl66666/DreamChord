@@ -46,6 +46,24 @@ export interface ShotCard {
   nodeIds: string[]
 }
 
+export function applyStageToShotCard(card: ShotCard, stage: {
+  backgroundId: string
+  characters: Array<{ characterId: string; expression: string; position: CharacterSlot['position']; action?: CharacterSlot['action'] }>
+}): ShotCard {
+  const events = new Map(card.characters.map((character) => [character.characterId, character]))
+  const onStage = stage.characters.map((character): CharacterSlot => {
+    const event = events.get(character.characterId)
+    if (event && event.action !== 'hide') return event
+    return { ...character, action: 'keep' }
+  })
+  const leaving = card.characters.filter((character) => character.action === 'hide')
+  return {
+    ...card,
+    background: stage.backgroundId || card.background,
+    characters: [...onStage, ...leaving],
+  }
+}
+
 export interface Scene {
   id: string
   code: string

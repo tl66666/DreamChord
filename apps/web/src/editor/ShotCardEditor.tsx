@@ -21,8 +21,9 @@ import {
   getNodeCharacterId, getNodeSceneCode,
   createSceneNodes, normalizeShotCard,
   layoutNodes, normalEdge, chainEdges, choiceEdge,
-  groupNodesToCards,
+  groupNodesToCards, applyStageToShotCard,
 } from './sceneGraph'
+import { resolveStageStateAfterNode } from './workbench/storyEditorGraph'
 import { loadLibraryCharacters, loadLibraryScenes, loadStoryTemplates } from '../lib/libraryData'
 import { ShotCardItem } from './ShotCardItem'
 import { parseManuscriptToShotCards } from './manuscriptUtils'
@@ -81,7 +82,7 @@ export default function ShotCardEditor({
     const sceneStart = findSceneStartNode(selectedSceneId, nodes, edges)
     if (!sceneStart) return []
     const sceneNodes = getSceneGroupNodes(sceneStart, nodes, edges)
-    return groupNodesToCards(sceneNodes)
+    return groupNodesToCards(sceneNodes).map((card) => applyStageToShotCard(card, resolveStageStateAfterNode(nodes, edges, card.id)))
   }, [nodes, edges, selectedSceneId])
 
   // 对话连续性标记：与前卡相同 speaker + background + 同场景 + 非选项
@@ -374,13 +375,14 @@ export default function ShotCardEditor({
     if (!selectedSceneId) return
     const sceneStart = findSceneStartNode(selectedSceneId, nodes, edges)
     const sceneCode = sceneStart ? getNodeSceneCode(sceneStart) || '1-1' : '1-1'
-    const existingBg = cards[0]?.background || 'bg-classroom'
+    const previousCard = cards.at(-1)
+    const existingBg = previousCard?.background || cards[0]?.background || 'bg-classroom'
     const lensType: LensType = type === 'narration' ? 'narration' : 'dialogue'
     const newCard: ShotCard = {
       id: `card-${Date.now()}`,
       sceneId: selectedSceneId, type, lensType,
       background: existingBg,
-      characters: type === 'choice' ? cards[cards.length - 1]?.characters || [] : [],
+      characters: (previousCard?.characters || []).filter((character) => character.action !== 'hide').map((character) => ({ ...character, action: 'keep' as const })),
       speaker: '旁白', speakerExpression: 'normal', speakerPosition: 'center',
       autoStageSpeaker: false, text: '',
       choices: type === 'choice' ? ['选项 1', '选项 2'] : undefined,
@@ -426,7 +428,7 @@ export default function ShotCardEditor({
       type: isNarration ? 'narration' : 'dialogue',
       lensType: isNarration ? 'narration' : 'dialogue',
       background: lastCard.background,
-      characters: lastCard.characters.map(c => ({ ...c, action: 'keep' as const })),
+      characters: lastCard.characters.filter((character) => character.action !== 'hide').map(c => ({ ...c, action: 'keep' as const })),
       speaker: speakerId,
       speakerExpression: 'normal',
       speakerPosition: speakerChar?.position || 'center',

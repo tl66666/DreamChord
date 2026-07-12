@@ -62,13 +62,19 @@ export function CardEditor({
     if (!charId) return
     const char = characters.find((c) => c.id === charId)
     if (!char) return
-    const position = card.characters.length === 0 ? 'center' : card.characters.length === 1 ? 'left' : 'right'
+    const activeCount = card.characters.filter((character) => character.action !== 'hide').length
+    const position = activeCount === 0 ? 'center' : activeCount === 1 ? 'left' : 'right'
     onUpdate({ characters: [...card.characters, { characterId: charId, expression: char.defaultExpression, position, action: 'show' }] })
     setNewCharId('')
   }
 
   const removeCharacter = (index: number) => {
-    onUpdate({ characters: card.characters.filter((_, i) => i !== index) })
+    const target = card.characters[index]
+    onUpdate({
+      characters: target?.action === 'keep'
+        ? card.characters.map((character, itemIndex) => itemIndex === index ? { ...character, action: 'hide' } : character)
+        : card.characters.filter((_, itemIndex) => itemIndex !== index),
+    })
   }
 
   const updateChoice = (index: number, text: string) => {
@@ -188,7 +194,7 @@ export function CardEditor({
                     onChange={(e) => updateCharacter(i, { expression: e.target.value })}
                     className="rounded border border-dream-200 bg-white px-1 py-0.5 text-xs"
                   >
-                    <option value="__random">🎲 随机</option>
+                    <option value="__random">随机表情</option>
                     {charInfo?.expressions.map((expr) => (
                       <option key={expr.id} value={expr.id}>{expr.label}</option>
                     ))}
@@ -207,12 +213,12 @@ export function CardEditor({
                     onChange={(e) => updateCharacter(i, { action: e.target.value as CharacterSlot['action'] })}
                     className="rounded border border-dream-200 bg-white px-1 py-0.5 text-xs"
                   >
-                    <option value="show">显示</option>
-                    <option value="hide">隐藏</option>
+                    <option value="show">登场 / 更新</option>
                     <option value="change">换表情</option>
-                    <option value="keep">保持</option>
+                    <option value="keep">保持在场</option>
+                    <option value="hide">退场</option>
                   </select>
-                  <button onClick={() => removeCharacter(i)} className="text-dream-300 hover:text-red-500">
+                  <button onClick={() => removeCharacter(i)} className="text-dream-300 hover:text-red-500" title={char.action === 'keep' ? '让角色退场' : '移除这项舞台变化'}>
                     <X className="h-3 w-3" />
                   </button>
                 </div>
@@ -274,7 +280,7 @@ export function CardEditor({
                     onChange={(e) => onUpdate({ speakerExpression: e.target.value })}
                     className="w-full rounded-lg border border-dream-200 bg-white px-2.5 py-1.5 text-sm text-dream-800 focus:border-dream-500 focus:outline-none"
                   >
-                    <option value="__random">🎲 随机</option>
+                    <option value="__random">随机表情</option>
                     {characters.find((c) => c.id === card.speaker)?.expressions.map((expr) => (
                       <option key={expr.id} value={expr.id}>{expr.label}</option>
                     ))}

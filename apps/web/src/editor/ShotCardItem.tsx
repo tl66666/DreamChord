@@ -141,13 +141,13 @@ export function ShotCardItem({
             <img src={resolveBgUrl(card.background, libraryScenes)} alt="" className="h-full w-full object-cover" onError={(e) => { (e.target as HTMLImageElement).style.opacity = '0.2' }} />
           </div>
           <div className="min-w-0 flex-1">
-            {card.characters.length > 0 && (
+            {card.characters.some((character) => character.action !== 'hide') && (
               <div className="mb-1 flex flex-wrap gap-1">
-                {card.characters.map((c) => {
+                {card.characters.filter((character) => character.action !== 'hide').map((c) => {
                   const char = characters.find((ch) => ch.id === c.characterId)
                   return (
                     <span key={c.characterId} className="rounded-full px-2 py-0.5 text-xs" style={{ backgroundColor: `${char?.color || '#a78bfa'}20`, color: char?.color || '#a78bfa' }}>
-                      {char?.name || c.characterId} · {c.expression}
+                      {char?.name || c.characterId} · {c.expression}{c.action === 'keep' ? ' · 保持' : c.action === 'change' ? ' · 变化' : ' · 登场'}
                     </span>
                   )
                 })}
