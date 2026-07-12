@@ -173,7 +173,8 @@ assert.ok(
 assert.match(batchLauncher, /powershell\.exe[^\r\n]*-File "%~dp0start-dreamchord\.ps1"/, 'batch launcher must delegate to the colocated PowerShell script')
 
 const showcase = readFileSync(new URL('../docs/showcase.html', import.meta.url), 'utf8')
-assert.ok(existsSync(fileURLToPath(new URL('../PROJECT_SHOWCASE.html', import.meta.url))), 'project root must expose an obvious showcase entrypoint')
+assert.ok(existsSync(fileURLToPath(new URL('../index.html', import.meta.url))), 'project root must expose an obvious showcase entrypoint')
+assert.match(readFileSync(new URL('../index.html', import.meta.url), 'utf8'), /docs\/showcase\.html/, 'root showcase entrypoint must redirect to the canonical docs showcase')
 for (const screenshot of [
   'editor-1440.png',
   'flowchart-1440.png',
@@ -197,7 +198,7 @@ for (const keyword of ['ReAct 风格', 'Observe', 'Reason', 'Validate', 'Approve
 
 const repositoryRoot = fileURLToPath(new URL('..', import.meta.url))
 const publicDocuments = [
-  'PROJECT_SHOWCASE.html',
+  'index.html',
   'README.md',
   'CONTRIBUTING.md',
   'CHANGELOG.md',
