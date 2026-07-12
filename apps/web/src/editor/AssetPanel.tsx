@@ -4,7 +4,7 @@ import type { Node } from '@xyflow/react'
 import { BookOpen, Check, FileType, Image, Music, Pencil, RefreshCw, Search, SlidersHorizontal, Trash2, Upload, User, X } from 'lucide-react'
 import { useEditorStore } from '../stores/editorStore'
 import { useToast, useConfirm } from '../components/FeedbackProvider'
-import { deleteAsset, getProjectAssets, renameAsset, replaceAssetFile, uploadAsset, type Asset } from '../api/client'
+import { deleteAsset, getProjectAssets, renameAsset, replaceAssetFile, uploadAsset, type AcceptedAssetVariant, type Asset } from '../api/client'
 import { loadLibraryCharacters, loadLibraryScenes } from '../lib/libraryData'
 import { getNodeData } from './sceneGraph'
 import AssetProcessingSheet from '../assets/AssetProcessingSheet'
@@ -29,10 +29,12 @@ export default function AssetPanel({
   onSelect,
   selectedType,
   onClose,
+  onProjectCharacterAccepted,
 }: {
   onSelect?: (asset: Asset) => void
   selectedType?: string
   onClose?: () => void
+  onProjectCharacterAccepted?: (accepted: AcceptedAssetVariant) => void
 }) {
   const { project, nodes } = useEditorStore()
   const toast = useToast()
@@ -326,7 +328,7 @@ export default function AssetPanel({
         )}
       </div>
     </aside>
-    {processingAsset && <AssetProcessingSheet asset={processingAsset} onClose={() => setProcessingAsset(null)} onAccepted={() => void loadAssets()} />}
+    {processingAsset && <AssetProcessingSheet asset={processingAsset} onClose={() => setProcessingAsset(null)} onAccepted={(accepted) => { void loadAssets(); onProjectCharacterAccepted?.(accepted) }} />}
   </>)
 }
 

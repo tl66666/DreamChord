@@ -1,12 +1,12 @@
 import { execFileSync } from 'node:child_process'
 import { randomUUID } from 'node:crypto'
-import { mkdirSync, rmSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdirSync, rmSync, writeFileSync } from 'node:fs'
 import path from 'node:path'
 import { tmpdir } from 'node:os'
 import { PrismaClient } from '@prisma/client'
 import sharp from 'sharp'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
-import { PrismaAssetService } from './assetService.js'
+import { AssetInUseError, PrismaAssetService } from './assetService.js'
 
 const root = path.join(tmpdir(), `dreamchord-asset-service-${process.pid}-${randomUUID()}`)
 const databasePath = `${root}.db`
@@ -44,5 +44,92 @@ describe('asset service', () => {
     await service.reject(variant.id, 'owner')
     expect((await client.assetVariant.findUnique({ where: { id: variant.id } }))?.status).toBe('rejected')
     expect(await client.asset.findUnique({ where: { id: 'original' } })).toBeTruthy()
+    expect(existsSync(path.join(root, variant.url.slice('/uploads/'.length)))).toBe(false)
+  })
+
+  it('refuses to delete an accepted derived sprite while a character uses its URL', async () => {
+    const variant = await service.process('original', 'owner', { purpose: 'sprite', trim: false })
+    const accepted = await service.accept(variant.id, 'owner', { purpose: 'sprite', characterName: 'Mina', expressionName: 'happy' })
+    const variantPath = path.join(root, variant.url.slice('/uploads/'.length))
+
+    await expect(service.delete(accepted.asset.id, 'owner')).rejects.toBeInstanceOf(AssetInUseError)
+
+    expect(await client.asset.findUnique({ where: { id: accepted.asset.id } })).toBeTruthy()
+    expect(await client.sprite.findFirst({ where: { url: variant.url } })).toBeTruthy()
+    expect(existsSync(variantPath)).toBe(true)
+  })
+
+  it('refuses to delete or replace an asset while a story node uses its URL', async () => {
+    const url = '/uploads/used-background.png'
+    writeFileSync(path.join(root, 'used-background.png'), 'background')
+    const asset = await client.asset.create({ data: { projectId: 'project', name: 'used background', type: 'BACKGROUND', url } })
+    const chapter = await client.chapter.create({ data: { projectId: 'project', title: 'usage chapter' } })
+    await client.flowNode.create({ data: { chapterId: chapter.id, nodeId: 'usage-node', type: 'dialogue', positionX: 0, positionY: 0, data: JSON.stringify({ background: url }) } })
+
+    await expect(service.assertReplaceable(asset.id, 'owner')).rejects.toBeInstanceOf(AssetInUseError)
+    await expect(service.delete(asset.id, 'owner')).rejects.toBeInstanceOf(AssetInUseError)
+    expect(existsSync(path.join(root, 'used-background.png'))).toBe(true)
+  })
+
+  it('deletes an original and all unreferenced proposed and rejected variant files', async () => {
+    writeFileSync(path.join(root, 'delete-source.png'), 'source')
+    const original = await client.asset.create({ data: { projectId: 'project', name: 'delete me', type: 'CG', url: '/uploads/delete-source.png' } })
+    const proposedUrl = '/uploads/project/variants/proposed.png'
+    const rejectedUrl = '/uploads/project/variants/rejected.png'
+    mkdirSync(path.join(root, 'project', 'variants'), { recursive: true })
+    writeFileSync(path.join(root, proposedUrl.slice('/uploads/'.length)), 'proposed')
+    writeFileSync(path.join(root, rejectedUrl.slice('/uploads/'.length)), 'rejected')
+    await client.assetVariant.createMany({ data: [
+      { assetId: original.id, kind: 'cg', status: 'proposed', url: proposedUrl, mimeType: 'image/png', width: 1, height: 1 },
+      { assetId: original.id, kind: 'cg', status: 'rejected', url: rejectedUrl, mimeType: 'image/png', width: 1, height: 1 },
+    ] })
+
+    await service.delete(original.id, 'owner')
+
+    expect(await client.asset.findUnique({ where: { id: original.id } })).toBeNull()
+    expect(await client.assetVariant.count({ where: { assetId: original.id } })).toBe(0)
+    expect(existsSync(path.join(root, 'delete-source.png'))).toBe(false)
+    expect(existsSync(path.join(root, proposedUrl.slice('/uploads/'.length)))).toBe(false)
+    expect(existsSync(path.join(root, rejectedUrl.slice('/uploads/'.length)))).toBe(false)
+  })
+
+  it('keeps shared files and never follows an upload URL outside storage', async () => {
+    const sharedUrl = '/uploads/shared.png'
+    writeFileSync(path.join(root, 'shared.png'), 'shared')
+    const first = await client.asset.create({ data: { projectId: 'project', name: 'first', url: sharedUrl } })
+    await client.asset.create({ data: { projectId: 'project', name: 'second', url: sharedUrl } })
+    const outside = `${root}-outside.txt`
+    writeFileSync(outside, 'outside')
+    const escaped = await client.asset.create({ data: { projectId: 'project', name: 'escaped', url: `/uploads/../${path.basename(outside)}` } })
+
+    await service.delete(first.id, 'owner')
+    await service.delete(escaped.id, 'owner')
+
+    expect(existsSync(path.join(root, 'shared.png'))).toBe(true)
+    expect(existsSync(outside)).toBe(true)
+    rmSync(outside, { force: true })
+  })
+
+  it('does not remove a file when the database delete fails', async () => {
+    const failureRoot = path.join(root, 'failure')
+    mkdirSync(failureRoot, { recursive: true })
+    writeFileSync(path.join(failureRoot, 'asset.png'), 'keep')
+    const failingClient = {
+      $transaction: async (operation: (tx: unknown) => Promise<unknown>) => operation({
+        asset: {
+          findUnique: async () => ({ id: 'asset', projectId: 'project', url: '/uploads/asset.png', variants: [], project: { authorId: 'owner' } }),
+          delete: async () => { throw new Error('database unavailable') },
+        },
+        character: { count: async () => 0 },
+        sprite: { count: async () => 0 },
+        project: { count: async () => 0 },
+        flowNode: { count: async () => 0 },
+        storyBible: { count: async () => 0 },
+      }),
+    } as unknown as PrismaClient
+    const failingService = new PrismaAssetService(failingClient, failureRoot)
+
+    await expect(failingService.delete('asset', 'owner')).rejects.toThrow('database unavailable')
+    expect(existsSync(path.join(failureRoot, 'asset.png'))).toBe(true)
   })
 })

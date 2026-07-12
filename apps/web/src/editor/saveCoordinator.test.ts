@@ -31,4 +31,22 @@ describe('save coordinator', () => {
     failed.markDirty(); await failed.flush()
     expect(failed.state).toBe('error')
   })
+
+  it('classifies a real Axios 409 response as a conflict', async () => {
+    const axiosConflict = {
+      code: 'ERR_BAD_REQUEST',
+      message: 'Request failed with status code 409',
+      response: { status: 409 },
+    }
+    const coordinator = new SaveCoordinator({
+      readLatest: () => 1,
+      save: async () => { throw axiosConflict },
+    })
+
+    coordinator.markDirty()
+    await coordinator.flush()
+
+    expect(coordinator.state).toBe('conflict')
+    expect(coordinator.isDirty).toBe(true)
+  })
 })

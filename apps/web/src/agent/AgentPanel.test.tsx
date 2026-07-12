@@ -50,6 +50,49 @@ describe('AgentPanel', () => {
     expect(screen.getByRole('button', { name: '放弃草案' })).toBeTruthy()
   })
 
+  it('does not apply a proposal while the editor has unsaved work', () => {
+    const apply = vi.fn()
+    state.controller = { ...controller({ ...baseRun, status: 'awaiting_approval', patch: { id: 'patch', status: 'proposed', payload: { operations: [] }, validation: { valid: true }, diff: { addedNodeIds: [], updatedNodeIds: [], removedNodeIds: [], addedEdgeIds: [], removedEdgeIds: [] }, baseVersion: 1, appliedVersion: null } }), apply }
+
+    render(<AgentPanel {...props} getGraphMutationBlockedReason={() => '请先保存当前编辑，再重新生成 Agent 草稿。'} />)
+
+    const applyButton = screen.getByRole('button', { name: '应用变更' })
+    expect(applyButton).toHaveProperty('disabled', true)
+    expect(screen.getByText('请先保存当前编辑，再重新生成 Agent 草稿。')).toBeTruthy()
+    fireEvent.click(applyButton)
+    expect(apply).not.toHaveBeenCalled()
+    expect(props.onApplyGraph).not.toHaveBeenCalled()
+  })
+
+  it('does not apply a proposal generated for an older chapter version', () => {
+    const apply = vi.fn()
+    state.controller = { ...controller({ ...baseRun, status: 'awaiting_approval', patch: { id: 'patch', status: 'proposed', payload: { operations: [] }, validation: { valid: true }, diff: { addedNodeIds: [], updatedNodeIds: [], removedNodeIds: [], addedEdgeIds: [], removedEdgeIds: [] }, baseVersion: 1, appliedVersion: null } }), apply }
+
+    render(<AgentPanel {...props} chapterVersion={2} />)
+
+    const applyButton = screen.getByRole('button', { name: '应用变更' })
+    expect(applyButton).toHaveProperty('disabled', true)
+    expect(screen.getByText('章节已在草稿生成后发生变化，请重新生成 Agent 草稿。')).toBeTruthy()
+    fireEvent.click(applyButton)
+    expect(apply).not.toHaveBeenCalled()
+  })
+
+  it('rechecks editor state immediately before invoking the apply API', () => {
+    let blocked = false
+    const apply = vi.fn()
+    state.controller = { ...controller({ ...baseRun, status: 'awaiting_approval', patch: { id: 'patch', status: 'proposed', payload: { operations: [] }, validation: { valid: true }, diff: { addedNodeIds: [], updatedNodeIds: [], removedNodeIds: [], addedEdgeIds: [], removedEdgeIds: [] }, baseVersion: 1, appliedVersion: null } }), apply }
+
+    render(<AgentPanel {...props} getGraphMutationBlockedReason={() => blocked ? '编辑器刚刚产生了未保存修改。' : undefined} />)
+    const applyButton = screen.getByRole('button', { name: '应用变更' })
+    expect(applyButton).toHaveProperty('disabled', false)
+
+    blocked = true
+    fireEvent.click(applyButton)
+
+    expect(apply).not.toHaveBeenCalled()
+    expect(props.onApplyGraph).not.toHaveBeenCalled()
+  })
+
   it('keeps deterministic health check available without a provider', () => {
     state.provider = null
     state.controller = controller(null)

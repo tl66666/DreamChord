@@ -4,7 +4,7 @@ import { rmSync } from 'node:fs'
 import path from 'node:path'
 import { PrismaClient } from '@prisma/client'
 import { validateStoryGraph } from '@dreamchord/story-domain'
-import { afterAll, beforeAll, describe, expect, it } from 'vitest'
+import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest'
 import { loadAgentProjectSnapshot } from './context.js'
 import { PrismaAgentRunService } from './runService.js'
 
@@ -110,5 +110,45 @@ describe('creative agent end-to-end workflow', () => {
     expect(received).toContain('上一轮回答')
     expect(received).toContain('遗忘者的梦境')
     expect(received).toContain('雪正在追查旧车站')
+  })
+
+  it('returns a version-conflicted apply run to awaiting approval', async () => {
+    const conversation = await client.agentConversation.create({ data: { title: '冲突测试', scope: 'chapter', userId: 'owner', projectId: 'project', chapterId: 'chapter-one' } })
+    const run = await client.agentRun.create({ data: {
+      status: 'awaiting_approval', prompt: '应用冲突补丁', scope: 'chapter', provider: 'fake', model: 'controlled',
+      userId: 'owner', projectId: 'project', chapterId: 'chapter-one', conversationId: conversation.id,
+    } })
+    const chapter = await client.chapter.findUniqueOrThrow({ where: { id: 'chapter-one' }, select: { version: true } })
+    await client.storyPatch.create({ data: {
+      runId: run.id, projectId: 'project', chapterId: 'chapter-one', baseVersion: chapter.version - 1,
+      payload: JSON.stringify({ operations: [] }), validation: '{}', diff: '{}',
+    } })
+    const service = new PrismaAgentRunService(client)
+
+    await expect(service.applyRun(run.id, 'owner')).rejects.toThrow()
+    expect((await service.getRun(run.id, 'owner')).status).toBe('awaiting_approval')
+  })
+
+  it('returns the applied graph and version when artifact memory persistence fails', async () => {
+    const conversation = await client.agentConversation.create({ data: { title: '记忆失败测试', scope: 'chapter', userId: 'owner', projectId: 'project', chapterId: 'chapter-one' } })
+    const run = await client.agentRun.create({ data: {
+      status: 'awaiting_approval', prompt: '应用补丁', scope: 'chapter', provider: 'fake', model: 'controlled',
+      userId: 'owner', projectId: 'project', chapterId: 'chapter-one', conversationId: conversation.id,
+    } })
+    const chapter = await client.chapter.findUniqueOrThrow({ where: { id: 'chapter-one' }, select: { version: true } })
+    await client.storyPatch.create({ data: {
+      runId: run.id, projectId: 'project', chapterId: 'chapter-one', baseVersion: chapter.version,
+      payload: JSON.stringify({ operations: [{ kind: 'addNode', tempId: 'artifact-node', node: { type: 'subtitle', data: { text: '记忆失败也应完成' } }, anchor: { afterNodeId: 'c1-start' } }] }),
+      validation: '{}', diff: '{}',
+    } })
+    const memoryCreate = vi.spyOn(client.agentMemory, 'create').mockRejectedValueOnce(new Error('memory unavailable'))
+    const service = new PrismaAgentRunService(client)
+
+    const applied = await service.applyRun(run.id, 'owner')
+
+    expect(applied.version).toBe(chapter.version + 1)
+    expect(applied.graph.nodes.some((node) => node.data.text === '记忆失败也应完成')).toBe(true)
+    expect((await service.getRun(run.id, 'owner')).status).toBe('completed')
+    memoryCreate.mockRestore()
   })
 })

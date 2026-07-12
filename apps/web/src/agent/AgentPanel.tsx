@@ -10,12 +10,13 @@ import PatchPreview from './PatchPreview'
 import type { AgentScope, AppliedPatchDto } from './agentTypes'
 import { useAgentRun } from './useAgentRun'
 
-export default function AgentPanel({ projectId, chapterId, selectedNodeId, selectedSceneId, graph, taskRequest, initialConversationId = '', onConversationChange, onApplyGraph, onSelectNode, onClose, compact = false }: {
+export default function AgentPanel({ projectId, chapterId, chapterVersion, selectedNodeId, selectedSceneId, graph, taskRequest, initialConversationId = '', onConversationChange, onApplyGraph, onSelectNode, onClose, compact = false, getGraphMutationBlockedReason }: {
   projectId: string; chapterId: string; chapterVersion: number; selectedNodeId: string | null; selectedSceneId: string | null; graph: StoryGraph
   onApplyGraph: (result: AppliedPatchDto) => void; onSelectNode: (nodeId: string) => void; onClose?: () => void
   taskRequest?: { id: number; prompt: string; scope: AgentScope }
   initialConversationId?: string; onConversationChange?: (conversationId: string) => void
   compact?: boolean
+  getGraphMutationBlockedReason?: () => string | undefined
 }) {
   const controller = useAgentRun()
   const provider = getDefaultProvider()
@@ -45,7 +46,13 @@ export default function AgentPanel({ projectId, chapterId, selectedNodeId, selec
     setPrompt('')
   }
 
+  const versionBlockedReason = controller.run?.status === 'awaiting_approval' && controller.run.patch && controller.run.patch.baseVersion !== chapterVersion
+    ? '章节已在草稿生成后发生变化，请重新生成 Agent 草稿。'
+    : undefined
+  const mutationBlockedReason = getGraphMutationBlockedReason?.() || versionBlockedReason
+
   const applyAction = async (action: () => Promise<AppliedPatchDto>) => {
+    if (getGraphMutationBlockedReason?.() || versionBlockedReason) return
     setBusy(true)
     try { onApplyGraph(await action()) } finally { setBusy(false) }
   }
@@ -66,7 +73,7 @@ export default function AgentPanel({ projectId, chapterId, selectedNodeId, selec
         {controller.run?.patch && <PatchPreview patch={controller.run.patch} onSelectNode={onSelectNode} />}
         {controller.run?.errorMessage && <p className="m-4 rounded-lg bg-red-50 px-3 py-2 text-xs text-red-700">{controller.run.errorMessage}</p>}
       </div>
-      {controller.run && <AgentApprovalBar status={controller.run.status} busy={busy} onCancel={() => void controller.cancel()} onReject={() => void controller.reject()} onApply={() => void applyAction(controller.apply)} onUndo={() => void applyAction(controller.undo)} />}
+      {controller.run && <AgentApprovalBar status={controller.run.status} busy={busy} mutationBlockedReason={mutationBlockedReason} onCancel={() => void controller.cancel()} onReject={() => void controller.reject()} onApply={() => void applyAction(controller.apply)} onUndo={() => void applyAction(controller.undo)} />}
     </aside>
   )
 }

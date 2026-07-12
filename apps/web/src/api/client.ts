@@ -193,6 +193,7 @@ export async function importProjectBackup(manifest: unknown): Promise<{ id: stri
 }
 
 export interface AssetVariant { id: string; assetId: string; kind: 'sprite' | 'cg' | 'background'; status: string; url: string; mimeType: string; width: number; height: number; metadata: string; createdAt: string }
+export interface AcceptedAssetVariant { variant: AssetVariant; asset?: Asset; character: Pick<Character, 'id' | 'name'> | null }
 
 export async function getProjectAssets(projectId: string): Promise<Asset[]> {
   const { data } = await api.get(`/assets/${projectId}`)
@@ -390,7 +391,7 @@ export async function processAsset(assetId: string, recipe: { purpose: 'sprite' 
   return data
 }
 
-export async function acceptAssetVariant(variantId: string, payload: { purpose: 'sprite' | 'cg' | 'background'; characterId?: string; characterName?: string; expressionName?: string }) {
+export async function acceptAssetVariant(variantId: string, payload: { purpose: 'sprite' | 'cg' | 'background'; characterId?: string; characterName?: string; expressionName?: string }): Promise<AcceptedAssetVariant> {
   const { data } = await api.post(`/assets/variants/${variantId}/accept`, payload)
   return data
 }

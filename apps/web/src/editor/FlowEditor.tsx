@@ -39,7 +39,7 @@ import { useEditorStore } from '../stores/editorStore'
 import { useToast, useConfirm } from '../components/FeedbackProvider'
 import {
   getProject, createChapter, saveChapter, updateProject, deleteChapter,
-  type SaveChapterPayload,
+  type AcceptedAssetVariant, type SaveChapterPayload,
   type Asset, type ProjectDetail,
 } from '../api/client'
 import { getApiError, convertServerNodes, convertServerEdges, ensureLegacySceneGroups } from './flowEditorUtils'
@@ -47,6 +47,7 @@ import { ProjectHealthPanel } from './ProjectHealthPanel'
 import { editorPaneClasses } from './responsiveLayout'
 import { SaveCoordinator, type SaveState } from './saveCoordinator'
 import type { ProjectAssetTarget } from './ProjectAssetPicker'
+import { upsertAcceptedProjectCharacter } from './projectCharacters'
 
 export default function FlowEditor() {
   const { projectId } = useParams<{ projectId: string }>()
@@ -79,6 +80,13 @@ export default function FlowEditor() {
   const autoSaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const toastRef = useRef(toast)
   toastRef.current = toast
+  const handleProjectCharacterAccepted = (accepted: AcceptedAssetVariant) => {
+    if (!accepted.character) return
+    setProject((current) => {
+      if (!current) return current
+      return { ...current, characters: upsertAcceptedProjectCharacter(current.characters, accepted) }
+    })
+  }
   const saveCoordinator = useMemo(() => new SaveCoordinator<SaveChapterPayload>({
     readLatest: () => {
       const state = useEditorStore.getState()
@@ -481,6 +489,16 @@ export default function FlowEditor() {
     autoSaveTimer.current = setTimeout(() => { void saveCoordinator.flush() }, 3000)
   }
 
+  const getAgentGraphMutationBlockedReason = () => {
+    switch (saveCoordinator.state) {
+      case 'dirty': return '当前编辑有未保存修改。请先保存，保存后重新生成 Agent 草稿。'
+      case 'saving': return '正在保存当前编辑。保存完成后请重新生成 Agent 草稿。'
+      case 'conflict': return '当前编辑存在版本冲突。请重新打开项目并处理冲突后再使用 Agent 草稿。'
+      case 'error': return '当前编辑保存失败。请先重试保存，成功后重新生成 Agent 草稿。'
+      default: return undefined
+    }
+  }
+
   const handlePreview = async () => {
     if (projectId && projectId !== 'new') {
       const saved = await handleSave()
@@ -777,6 +795,7 @@ export default function FlowEditor() {
               onOpenAssetPicker={(target) => { setAssetTarget(target); setShowAssets(true); setShowAI(false) }}
               assetSelection={assetSelection}
               onAssetApplied={() => setAssetSelection(null)}
+              projectCharacters={project?.characters}
             />
           </div>
 
@@ -787,6 +806,7 @@ export default function FlowEditor() {
                 selectedType={assetTarget?.field === 'background' ? 'BACKGROUND' : 'CG'}
                 onSelect={handleSelectAsset}
                 onClose={() => setShowAssets(false)}
+                onProjectCharacterAccepted={handleProjectCharacterAccepted}
               />
             ) : showAI ? (
               <AgentPanel
@@ -800,6 +820,7 @@ export default function FlowEditor() {
                   nodes: nodes.map((node) => ({ id: node.id, type: (node.type || 'dialogue') as StoryNodeType, position: node.position, data: { ...node.data } })),
                   edges: edges.map((edge) => ({ id: edge.id, source: edge.source, target: edge.target, label: typeof edge.label === 'string' ? edge.label : undefined, sourceHandle: edge.sourceHandle || undefined, animated: edge.animated ?? true })),
                 }}
+                getGraphMutationBlockedReason={getAgentGraphMutationBlockedReason}
                 onApplyGraph={(result: AppliedPatchDto) => {
                   store.commitGraph(result.graph.nodes, result.graph.edges)
                   store.setChapterVersion(result.version)

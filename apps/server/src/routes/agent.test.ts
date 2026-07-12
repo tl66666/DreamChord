@@ -1,11 +1,15 @@
 import jwt from 'jsonwebtoken'
 import request from 'supertest'
-import { beforeEach, describe, expect, it } from 'vitest'
+import { lookup } from 'node:dns/promises'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { createApp } from '../app.js'
 import type { AgentRunDto, AgentRunService, CreateAgentRunInput } from '../agent/runService.js'
 import type { ConversationDto, ConversationService } from '../agent/conversationService.js'
 
 const secret = 'agent-route-test-secret-1234'
+
+vi.mock('node:dns/promises', () => ({ lookup: vi.fn() }))
+const lookupMock = vi.mocked(lookup)
 
 class MemoryAgentRunService implements AgentRunService {
   run: AgentRunDto = {
@@ -45,7 +49,12 @@ function token(userId = 'owner'): string { return jwt.sign({ userId }, secret) }
 const providerConfig = { provider: 'custom', model: 'fake', apiKey: 'top-secret-key', baseUrl: 'https://models.example.com/v1' }
 
 describe('agent routes', () => {
-  beforeEach(() => { process.env.JWT_SECRET = secret; process.env.NODE_ENV = 'test' })
+  beforeEach(() => {
+    process.env.JWT_SECRET = secret
+    process.env.NODE_ENV = 'test'
+    lookupMock.mockReset()
+    lookupMock.mockResolvedValue([{ address: '93.184.216.34', family: 4 }] as never)
+  })
 
   it('creates a conversation and queues a sanitized run', async () => {
     const app = testApp()
@@ -87,13 +96,48 @@ describe('agent routes', () => {
     expect(removed.status).toBe(204)
   })
 
-  it.each(['http://127.0.0.1:11434/v1', 'http://169.254.169.254/v1', 'http://10.1.2.3/v1'])(
-    'rejects private provider URL %s in production', async (baseUrl) => {
-      process.env.NODE_ENV = 'production'
+  it.each([
+    'ftp://models.example.com/v1',
+    'http://0.0.0.0/v1',
+    'http://127.0.0.1:11434/v1',
+    'http://169.254.169.254/v1',
+    'http://10.1.2.3/v1',
+    'http://172.16.0.1/v1',
+    'http://192.168.1.1/v1',
+    'http://224.0.0.1/v1',
+    'http://[::]/v1',
+    'http://[::1]/v1',
+    'http://[fc00::1]/v1',
+    'http://[fe80::1]/v1',
+    'http://[ff02::1]/v1',
+    'http://[::ffff:127.0.0.1]/v1',
+  ])(
+    'rejects unsafe provider URL %s in every environment', async (baseUrl) => {
       const response = await request(testApp())
         .post('/api/projects/project/agent/runs').set('Authorization', `Bearer ${token()}`)
         .send({ conversationId: 'conversation', chapterId: 'chapter', prompt: '检查', scope: 'chapter', providerConfig: { ...providerConfig, baseUrl } })
       expect(response.status).toBe(400)
     },
   )
+
+  it('rejects a provider hostname when DNS resolves to a private address', async () => {
+    lookupMock.mockResolvedValueOnce([{ address: '10.20.30.40', family: 4 }] as never)
+    const response = await request(testApp())
+      .post('/api/projects/project/agent/runs').set('Authorization', `Bearer ${token()}`)
+      .send({ conversationId: 'conversation', chapterId: 'chapter', prompt: '检查', scope: 'chapter', providerConfig: { ...providerConfig, baseUrl: 'https://private.example/v1' } })
+
+    expect(response.status).toBe(400)
+  })
+
+  it('keeps a provider hostname when every DNS result is public', async () => {
+    lookupMock.mockResolvedValueOnce([
+      { address: '93.184.216.34', family: 4 },
+      { address: '2606:2800:220:1:248:1893:25c8:1946', family: 6 },
+    ] as never)
+    const response = await request(testApp())
+      .post('/api/projects/project/agent/runs').set('Authorization', `Bearer ${token()}`)
+      .send({ conversationId: 'conversation', chapterId: 'chapter', prompt: '检查', scope: 'chapter', providerConfig })
+
+    expect(response.status).toBe(202)
+  })
 })

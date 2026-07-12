@@ -43,7 +43,10 @@ export class SaveCoordinator<T> {
       } catch (error) {
         const code = error && typeof error === 'object' && 'code' in error ? String(error.code) : ''
         const message = error instanceof Error ? error.message : ''
-        const state = code === 'conflict' || message.toLocaleLowerCase().includes('conflict') || message.includes('章节已被其他操作修改') ? 'conflict' : 'error'
+        const status = error && typeof error === 'object' && 'response' in error
+          ? (error as { response?: { status?: number } }).response?.status
+          : undefined
+        const state = status === 409 || code === 'conflict' || message.toLocaleLowerCase().includes('conflict') || message.includes('章节已被其他操作修改') ? 'conflict' : 'error'
         this.setState(state)
         this.options.onError?.(error, state)
         return

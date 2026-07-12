@@ -1,7 +1,7 @@
 import { randomUUID } from 'node:crypto'
 import { mkdir, readFile, rm, writeFile } from 'node:fs/promises'
 import path from 'node:path'
-import type { PrismaClient } from '@prisma/client'
+import type { Prisma, PrismaClient } from '@prisma/client'
 import { prisma } from '../lib/prisma.js'
 import { processImage, type ImageRecipe } from './imageProcessor.js'
 
@@ -10,6 +10,13 @@ export interface AcceptAssetInput {
   characterId?: string
   characterName?: string
   expressionName?: string
+}
+
+export class AssetInUseError extends Error {
+  constructor() {
+    super('素材仍被项目内容或角色使用，请先解除引用')
+    this.name = 'AssetInUseError'
+  }
 }
 
 function safePath(root: string, relative: string): string {
@@ -73,8 +80,72 @@ export class PrismaAssetService {
   async reject(variantId: string, userId: string): Promise<void> {
     const variant = await this.requireOwnedVariant(variantId, userId)
     if (variant.status !== 'proposed') throw new Error('素材产物当前不可拒绝')
-    await this.client.assetVariant.update({ where: { id: variant.id }, data: { status: 'rejected' } })
-    await rm(this.pathFromUrl(variant.url), { force: true }).catch(() => undefined)
+    const removableUrls = await this.client.$transaction(async (tx) => {
+      await tx.assetVariant.update({ where: { id: variant.id }, data: { status: 'rejected' } })
+      return this.findUnreferencedUrls(tx, [variant.url], variant.id)
+    })
+    await this.removeFiles(removableUrls)
+  }
+
+  async delete(assetId: string, userId: string): Promise<void> {
+    const removableUrls = await this.client.$transaction(async (tx) => {
+      const asset = await tx.asset.findUnique({
+        where: { id: assetId },
+        include: { variants: { select: { url: true } }, project: { select: { authorId: true } } },
+      })
+      if (!asset) throw new Error('素材不存在')
+      if (asset.project.authorId !== userId) throw new Error('无权访问此素材')
+
+      if (await this.countContentReferences(tx, asset.url) > 0) throw new AssetInUseError()
+
+      const urls = [...new Set([asset.url, ...asset.variants.map(({ url }) => url)])]
+      await tx.asset.delete({ where: { id: asset.id } })
+
+      return this.findUnreferencedUrls(tx, urls)
+    })
+
+    await this.removeFiles(removableUrls)
+  }
+
+  async assertReplaceable(assetId: string, userId: string): Promise<void> {
+    const asset = await this.requireOwnedAsset(assetId, userId)
+    const references = await this.client.$transaction((tx) => this.countContentReferences(tx, asset.url))
+    if (references > 0) throw new AssetInUseError()
+  }
+
+  async cleanupUnused(urls: string[]): Promise<void> {
+    const uniqueUrls = [...new Set(urls)]
+    const removableUrls = await this.client.$transaction((tx) => this.findUnreferencedUrls(tx, uniqueUrls))
+    await this.removeFiles(removableUrls)
+  }
+
+  private async findUnreferencedUrls(client: Prisma.TransactionClient, urls: string[], ignoredVariantId?: string): Promise<string[]> {
+    const remaining = await Promise.all(urls.map(async (url) => {
+      const counts = await Promise.all([
+        client.asset.count({ where: { url } }),
+        client.assetVariant.count({ where: { url, ...(ignoredVariantId ? { id: { not: ignoredVariantId } } : {}) } }),
+        this.countContentReferences(client, url),
+      ])
+      return counts.some((count) => count > 0) ? null : url
+    }))
+    return remaining.filter((url): url is string => url !== null)
+  }
+
+  private async countContentReferences(client: Prisma.TransactionClient, url: string): Promise<number> {
+    const counts = await Promise.all([
+      client.character.count({ where: { defaultSprite: url } }),
+      client.sprite.count({ where: { url } }),
+      client.project.count({ where: { cover: url } }),
+      client.flowNode.count({ where: { data: { contains: url } } }),
+      client.storyBible.count({ where: { content: { contains: url } } }),
+    ])
+    return counts.reduce((total, count) => total + count, 0)
+  }
+
+  private async removeFiles(urls: string[]): Promise<void> {
+    await Promise.all(urls.map(async (url) => {
+      try { await rm(this.pathFromUrl(url), { force: true }) } catch { /* Unsafe or unavailable files remain untouched. */ }
+    }))
   }
 
   private pathFromUrl(url: string): string {

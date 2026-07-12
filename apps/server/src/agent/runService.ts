@@ -115,14 +115,30 @@ export class PrismaAgentRunService implements AgentRunService {
   async applyRun(runId: string, userId: string) {
     const run = await this.client.agentRun.findFirst({ where: { id: runId, userId }, include: { patch: true } })
     if (!run?.patch || run.status !== 'awaiting_approval') throw new Error('任务当前不可应用')
-    await this.client.agentRun.update({ where: { id: runId }, data: { status: 'applying' } })
-    const applied = await applyPersistedStoryPatch({ patchId: run.patch.id, userId }, this.client)
-    await this.client.agentMemory.create({ data: {
-      projectId: run.projectId, userId, conversationId: run.conversationId, kind: 'artifact', status: 'active',
-      title: `已应用剧情变更：章节 ${applied.chapterId}`, content: `剧情补丁 ${run.patch.id} 已应用，章节版本更新为 ${applied.version}。`,
-      tags: JSON.stringify(['story-patch', applied.chapterId]), importance: 70, sourceType: 'editor', sourceId: run.patch.id,
-    } })
-    return applied
+    const claimed = await this.client.agentRun.updateMany({
+      where: { id: runId, status: 'awaiting_approval' },
+      data: { status: 'applying', errorCode: null, errorMessage: null },
+    })
+    if (claimed.count !== 1) throw new Error('任务当前不可应用')
+    try {
+      const applied = await applyPersistedStoryPatch({ patchId: run.patch.id, userId }, this.client)
+      await this.client.agentMemory.create({ data: {
+        projectId: run.projectId, userId, conversationId: run.conversationId, kind: 'artifact', status: 'active',
+        title: `已应用剧情变更：章节 ${applied.chapterId}`, content: `剧情补丁 ${run.patch.id} 已应用，章节版本更新为 ${applied.version}。`,
+        tags: JSON.stringify(['story-patch', applied.chapterId]), importance: 70, sourceType: 'editor', sourceId: run.patch.id,
+      } }).catch(() => undefined)
+      return applied
+    } catch (error) {
+      await this.client.agentRun.updateMany({
+        where: { id: runId, status: 'applying' },
+        data: {
+          status: 'awaiting_approval',
+          errorCode: 'apply-failed',
+          errorMessage: error instanceof Error ? error.message : '补丁应用失败',
+        },
+      })
+      throw error
+    }
   }
   async undoRun(runId: string, userId: string) {
     const run = await this.client.agentRun.findFirst({ where: { id: runId, userId }, include: { patch: true } })
@@ -208,7 +224,7 @@ export class PrismaAgentRunService implements AgentRunService {
     const [conversation, messageRows, memoryRows] = await Promise.all([
       this.client.agentConversation.findUniqueOrThrow({ where: { id: conversationId }, select: { summary: true } }),
       this.client.agentMessage.findMany({ where: { conversationId }, orderBy: [{ createdAt: 'desc' }, { id: 'desc' }], take: 31 }),
-      this.client.agentMemory.findMany({ where: { projectId, status: { not: 'forgotten' }, OR: [{ conversationId: null }, { conversationId }] } }),
+      this.client.agentMemory.findMany({ where: { projectId, status: 'active', OR: [{ conversationId: null }, { conversationId }] } }),
     ])
     const messages: ConversationMessage[] = messageRows.reverse()
     if (messages.at(-1)?.role === 'user' && messages.at(-1)?.content === query) messages.pop()

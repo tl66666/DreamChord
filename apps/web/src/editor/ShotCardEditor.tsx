@@ -27,8 +27,9 @@ import { loadLibraryCharacters, loadLibraryScenes, loadStoryTemplates } from '..
 import { ShotCardItem } from './ShotCardItem'
 import { parseManuscriptToShotCards } from './manuscriptUtils'
 import ManuscriptImporter from './ManuscriptImportPreview'
-import type { Asset } from '../api/client'
+import type { Asset, Character } from '../api/client'
 import type { ProjectAssetTarget } from './ProjectAssetPicker'
+import { mergeProjectCharacters } from './projectCharacters'
 
 interface ShotCardEditorProps {
   nodes: Node[]
@@ -48,16 +49,17 @@ interface ShotCardEditorProps {
   onOpenAssetPicker: (target: ProjectAssetTarget) => void
   assetSelection?: { target: ProjectAssetTarget; asset: Asset } | null
   onAssetApplied: () => void
+  projectCharacters?: Character[]
 }
 
 export default function ShotCardEditor({
   nodes, edges, selectedSceneId, selectedCardId,
   autoEditCardId, onConsumeAutoEdit,
   onSelectCard, onUpdateGraph, scenes, onCreateBranch, onNavigateToScene,
-  onRequestAI, onSetSceneExit, convergenceMap, onOpenAssetPicker, assetSelection, onAssetApplied,
+  onRequestAI, onSetSceneExit, convergenceMap, onOpenAssetPicker, assetSelection, onAssetApplied, projectCharacters = [],
 }: ShotCardEditorProps) {
   const toast = useToast()
-  const characters = useMemo(() => loadLibraryCharacters(), [])
+  const characters = useMemo(() => mergeProjectCharacters(loadLibraryCharacters(), projectCharacters), [projectCharacters])
   const libraryScenes = useMemo(() => loadLibraryScenes(), [])
   const storyTemplates = useMemo(() => loadStoryTemplates(), [])
   const [editingCardId, setEditingCardId] = useState<string | null>(null)

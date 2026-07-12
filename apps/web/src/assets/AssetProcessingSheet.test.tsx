@@ -17,9 +17,11 @@ const variant = { id: 'variant', assetId: 'asset', kind: 'sprite', status: 'prop
 describe('asset processing sheet', () => {
   afterEach(() => { cleanup(); vi.clearAllMocks() })
   it('processes, previews, and binds a sprite only after explicit acceptance', async () => {
+    const accepted = { variant: { ...variant, status: 'accepted' }, character: { id: 'character', name: '雪' } }
+    const onAccepted = vi.fn()
     api.process.mockResolvedValue(variant)
-    api.accept.mockResolvedValue({ variant: { ...variant, status: 'accepted' }, character: { id: 'character', name: '雪' } })
-    render(<FeedbackProvider><AssetProcessingSheet asset={asset} onClose={vi.fn()} onAccepted={vi.fn()} /></FeedbackProvider>)
+    api.accept.mockResolvedValue(accepted)
+    render(<FeedbackProvider><AssetProcessingSheet asset={asset} onClose={vi.fn()} onAccepted={onAccepted} /></FeedbackProvider>)
     fireEvent.click(screen.getByRole('button', { name: '立绘' }))
     fireEvent.change(screen.getByLabelText('白底阈值'), { target: { value: '238' } })
     fireEvent.click(screen.getByRole('button', { name: '生成预览' }))
@@ -28,5 +30,6 @@ describe('asset processing sheet', () => {
     fireEvent.change(screen.getByLabelText('表情名称'), { target: { value: 'normal' } })
     fireEvent.click(screen.getByRole('button', { name: '接受并绑定' }))
     await waitFor(() => expect(api.accept).toHaveBeenCalledWith('variant', expect.objectContaining({ purpose: 'sprite', characterName: '雪', expressionName: 'normal' })))
+    expect(onAccepted).toHaveBeenCalledWith(accepted)
   })
 })

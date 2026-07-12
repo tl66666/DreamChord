@@ -1,11 +1,11 @@
 import { useMemo, useState } from 'react'
 import { Check, Loader2, RotateCcw, Trash2, X } from 'lucide-react'
-import { acceptAssetVariant, processAsset, rejectAssetVariant, type Asset, type AssetVariant } from '../api/client'
+import { acceptAssetVariant, processAsset, rejectAssetVariant, type AcceptedAssetVariant, type Asset, type AssetVariant } from '../api/client'
 import { useToast } from '../components/FeedbackProvider'
 
 type Purpose = 'sprite' | 'cg' | 'background'
 
-export default function AssetProcessingSheet({ asset, onClose, onAccepted }: { asset: Asset; onClose: () => void; onAccepted: () => void }) {
+export default function AssetProcessingSheet({ asset, onClose, onAccepted }: { asset: Asset; onClose: () => void; onAccepted: (accepted: AcceptedAssetVariant) => void }) {
   const toast = useToast()
   const [purpose, setPurpose] = useState<Purpose>('sprite')
   const [removeWhite, setRemoveWhite] = useState(true)
@@ -28,8 +28,8 @@ export default function AssetProcessingSheet({ asset, onClose, onAccepted }: { a
     if (purpose === 'sprite' && !characterName.trim()) { toast.info('请填写角色名称'); return }
     setBusy(true)
     try {
-      await acceptAssetVariant(variant.id, { purpose, ...(purpose === 'sprite' ? { characterName: characterName.trim(), expressionName: expressionName.trim() || 'default' } : {}) })
-      toast.success(purpose === 'sprite' ? '立绘已绑定角色' : '素材已加入项目'); onAccepted(); onClose()
+      const accepted = await acceptAssetVariant(variant.id, { purpose, ...(purpose === 'sprite' ? { characterName: characterName.trim(), expressionName: expressionName.trim() || 'default' } : {}) })
+      toast.success(purpose === 'sprite' ? '立绘已绑定角色' : '素材已加入项目'); onAccepted(accepted); onClose()
     } catch { toast.error('接受素材失败') } finally { setBusy(false) }
   }
   const reject = async () => {

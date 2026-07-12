@@ -45,7 +45,7 @@ export function rankMemories(memories: RankableMemory[], options: MemoryRankOpti
   const queryTerms = terms(options.query)
 
   return memories
-    .filter((memory) => memory.status !== 'forgotten')
+    .filter((memory) => memory.status === 'active')
     .filter((memory) => memory.supersededById === null)
     .filter((memory) => memory.conversationId === null || memory.conversationId === options.conversationId)
     .map((memory) => {

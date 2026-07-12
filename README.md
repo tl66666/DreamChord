@@ -13,7 +13,7 @@ DreamChord is a browser-based visual novel studio for writing, structuring, test
 - Story flowchart, health checks, live preview, full player, publish/share flow.
 - 50-step undo/redo, serialized autosave, version-conflict detection, and dirty-navigation protection.
 - Structured manuscript parsing with review-before-import.
-- Project backup export/import with strict validation and ID remapping.
+- Portable v2 project backup/restore with embedded asset bytes, SHA-256/MIME validation, safe regenerated paths, and complete ID/URL remapping.
 - Built-in and uploaded asset library with rename, replacement, deletion, and target-aware selection.
 - Safe image preparation using Sharp: decoded image validation, white-matte removal, feathering, trimming, sprite/CG/background presets, and reviewable derived variants.
 - Responsive editor and Agent workspace for desktop, tablet, and mobile widths.
@@ -55,8 +55,10 @@ Important rules:
 - Story changes are validated as structured patches.
 - The author previews the diff before applying it.
 - Applying a patch creates a snapshot and can be undone while the chapter version is still compatible.
+- Applying or undoing is blocked while the editor is dirty, saving, conflicted, failed, or the proposal targets an older chapter version.
 - Image work remains proposed until accepted; originals are preserved.
 - API keys are used for the active request and are not persisted in project records or Agent transcripts.
+- Custom provider requests pin validated public DNS results, revalidate every redirect hop, and never forward authorization across origins.
 
 ## Story Editor
 
@@ -84,6 +86,11 @@ Uploaded images are decoded and inspected rather than trusted by file extension.
 - Transparent-edge trimming.
 - Proposed, accepted, and rejected variant lifecycle.
 - Character and expression binding for accepted sprites.
+- Reference-aware deletion: files still used by character sprites are protected, while unreferenced originals and variants are cleaned after database commit.
+
+Audio uploads are checked by file signatures, renamed with server-owned extensions, and served only from an allowlisted media surface with content sniffing disabled.
+
+Project backups include uploaded images/audio instead of metadata-only placeholders. Import creates a new project, regenerates filesystem paths and database IDs, remaps graph/Story Bible references, and enforces 20 MiB per-file plus 64 MiB aggregate decoded-asset limits. Legacy v1 metadata-only backups are rejected because they cannot restore missing bytes safely.
 
 ## One-Click Start On Windows
 

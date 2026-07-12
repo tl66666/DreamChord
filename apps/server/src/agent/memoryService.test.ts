@@ -20,15 +20,15 @@ describe('memory ranking', () => {
     expect(ranked[0]?.reasons).toContain('固定记忆')
   })
 
-  it('excludes forgotten, superseded, and other-conversation records', () => {
+  it('only includes active, unsuperseded records visible to the conversation', () => {
     const ranked = rankMemories([
+      memory({ id: 'suggested', status: 'suggested' }),
       memory({ id: 'forgotten', status: 'forgotten' }),
       memory({ id: 'superseded', supersededById: 'newer' }),
       memory({ id: 'other', conversationId: 'other-conversation' }),
       memory({ id: 'project-memory', conversationId: null }),
       memory({ id: 'current', conversationId: 'conversation' }),
     ], { query: '雪', conversationId: 'conversation', now })
-    expect(ranked.map((item) => item.memory.id)).toEqual(expect.arrayContaining(['project-memory', 'current']))
-    expect(ranked.map((item) => item.memory.id)).not.toEqual(expect.arrayContaining(['forgotten', 'superseded', 'other']))
+    expect(ranked.map((item) => item.memory.id).sort()).toEqual(['current', 'project-memory'])
   })
 })

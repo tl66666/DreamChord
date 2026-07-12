@@ -169,6 +169,10 @@ Proposal tools:
 
 Apply, undo, accept, and reject remain explicit API commands controlled by the user.
 
+The editor blocks Agent apply/undo while local graph state is dirty, saving, conflicted, or failed. A proposal whose `baseVersion` no longer matches the chapter must be regenerated; never overwrite local edits with an older server result.
+
+Custom provider URLs are checked again at the actual HTTP transport. DNS results are pinned for the connection, redirects are manual and revalidated per hop, and authorization is removed on cross-origin redirects.
+
 ### Extending Tools
 
 When adding a tool:
@@ -219,7 +223,7 @@ Do not duplicate every memory into the Story Bible. Use the Bible for stable aut
 
 ### Upload Boundary
 
-The server validates decoded content with Sharp. Filename and browser MIME are hints only. Reject malformed images, unsupported formats, excessive dimensions/pixels, and files above configured limits.
+The server validates decoded images with Sharp and audio with signature inspection. Filename and browser MIME are hints only. Uploaded files receive server-owned canonical extensions; static serving permits only known image/audio extensions and sends `X-Content-Type-Options: nosniff`. Reject malformed media, unsupported formats, excessive dimensions/pixels, and files above configured limits.
 
 ### Processing Presets
 
@@ -243,6 +247,8 @@ original asset
 
 Agent image tools may create proposals but may not accept them automatically.
 
+Asset deletion is reference-aware. A derived file still used by `Character.defaultSprite` or `Sprite.url` returns `409`; database deletion commits before unreferenced files are removed. Rejecting a proposal removes its file only when no other record shares the URL.
+
 ## Manuscript Import
 
 Long-form text is parsed into a review model before touching the graph. The preview displays chapters, scenes, card counts, and warnings. Only confirm import after the author has reviewed the structure.
@@ -251,16 +257,19 @@ Parser extensions should add explicit syntax support and regression fixtures. Av
 
 ## Backup And Restore
 
-Export returns a versioned `dreamchord-project` manifest containing project metadata, Story Bible, chapters, graph data, characters, asset metadata, and supported memories.
+Export returns a v2 `dreamchord-project` manifest containing project metadata, Story Bible, chapters, graph data, characters, supported memories, and deduplicated uploaded asset bytes. Each embedded file records decoded byte length, MIME, base64 content, and SHA-256.
 
 Import:
 
 - validates the complete manifest with strict Zod schemas;
-- limits size and array counts;
+- limits size and array counts (20 MiB per decoded file, 64 MiB aggregate, 90 MiB JSON request envelope);
+- verifies hashes and decoded media content rather than trusting manifest MIME or source URLs;
 - creates a new project;
-- remaps project, chapter, node, edge, character, asset, and memory references;
+- generates server-owned upload paths and remaps project, chapter, node, edge, character, sprite, asset, URL, graph-data, and Story Bible references;
 - never overwrites an existing project;
 - leaves the source project unchanged.
+
+Legacy v1 metadata-only manifests are rejected explicitly because they do not contain the bytes needed for a portable restore.
 
 ## Frontend Responsive Behavior
 

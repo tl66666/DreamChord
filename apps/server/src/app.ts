@@ -31,8 +31,14 @@ export function createApp(dependencies: AppDependencies = {}): Express {
     : ['http://localhost:5173', 'http://localhost:4173']
 
   app.use(cors({ origin: corsOrigins, credentials: true }))
+  app.use('/api/projects/import', express.json({ limit: '90mb' }))
   app.use(express.json({ limit: '10mb' }))
-  app.use('/uploads', express.static(path.resolve(process.cwd(), 'uploads')))
+  const mediaExtensions = new Set(['.png', '.jpg', '.jpeg', '.gif', '.webp', '.mp3', '.wav', '.ogg'])
+  app.use('/uploads', (req, res, next) => {
+    if (!mediaExtensions.has(path.extname(req.path).toLowerCase())) return res.status(404).end()
+    res.setHeader('X-Content-Type-Options', 'nosniff')
+    next()
+  }, express.static(path.resolve(process.env.UPLOAD_DIR || path.join(process.cwd(), 'uploads'))))
 
   app.use('/api/auth', authRoutes)
   app.use('/api/projects', createStoryBibleRouter(dependencies.storyBibleRepository ?? prismaStoryBibleRepository))

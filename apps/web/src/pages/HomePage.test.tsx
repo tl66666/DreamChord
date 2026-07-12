@@ -3,7 +3,7 @@ import { fireEvent, render, screen } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import { describe, expect, it, vi } from 'vitest'
 import { FeedbackProvider } from '../components/FeedbackProvider'
-import HomePage from './HomePage'
+import HomePage, { MAX_PROJECT_BACKUP_BYTES } from './HomePage'
 
 const authState = vi.hoisted(() => ({ user: { username: 'demo', nickname: '梦弦官方' }, isLoading: false, logout: vi.fn() }))
 
@@ -21,6 +21,10 @@ vi.mock('../api/client', () => ({
 }))
 
 describe('HomePage navigation', () => {
+  it('allows the portable v2 backup envelope produced by a 64 MiB asset bundle', () => {
+    expect(MAX_PROJECT_BACKUP_BYTES).toBeGreaterThanOrEqual(90 * 1024 * 1024)
+  })
+
   it('provides a compact mobile menu with the primary destinations', () => {
     render(<MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}><FeedbackProvider><HomePage /></FeedbackProvider></MemoryRouter>)
 

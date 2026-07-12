@@ -19,6 +19,8 @@ import { createProject, deleteProject, exportProjectBackup, getMyProjects, impor
 import { useAuthStore } from '../stores/authStore'
 import { useToast, useConfirm } from '../components/FeedbackProvider'
 
+export const MAX_PROJECT_BACKUP_BYTES = 90 * 1024 * 1024
+
 function getApiError(err: unknown, fallback = '操作失败'): string {
   if (typeof err === 'object' && err !== null && 'response' in err) {
     const response = (err as { response?: { data?: { error?: string } } }).response
@@ -102,7 +104,7 @@ export default function HomePage() {
   const handleImport = async (file: File | undefined) => {
     if (!file) return
     try {
-      if (file.size > 10 * 1024 * 1024) throw new Error('备份文件不能超过 10MB')
+      if (file.size > MAX_PROJECT_BACKUP_BYTES) throw new Error('备份文件不能超过 90MB')
       const imported = await importProjectBackup(JSON.parse(await file.text()))
       setMyProjects(await getMyProjects()); toast.success(`已导入「${imported.title}」`); navigate(`/editor/${imported.id}`)
     } catch (error) { toast.error(getApiError(error, error instanceof SyntaxError ? '备份文件不是有效 JSON' : '导入失败')) }

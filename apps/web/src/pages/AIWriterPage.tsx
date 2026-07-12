@@ -82,6 +82,8 @@ export default function AIWriterPage() {
   const updateConversation = (conversationId: string) => {
     setSearchParams((current) => {
       const next = new URLSearchParams(current)
+      if (selectedProjectId) next.set('project', selectedProjectId)
+      if (selectedChapterId) next.set('chapter', selectedChapterId)
       next.set('conversation', conversationId)
       return next
     }, { replace: true })
