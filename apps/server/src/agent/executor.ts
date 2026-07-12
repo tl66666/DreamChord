@@ -62,7 +62,7 @@ function toolInputHint(tool: AgentToolName): string {
 
 function readableFallback(text: string): string | null {
   const trimmed = text.trim()
-  if (!trimmed || /^[\[{]/.test(trimmed)) return null
+  if (!trimmed || trimmed.startsWith('{') || trimmed.startsWith('[')) return null
   return trimmed.slice(0, 10_000)
 }
 

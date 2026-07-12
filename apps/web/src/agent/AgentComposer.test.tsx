@@ -14,7 +14,7 @@ describe('AgentComposer local mode', () => {
       onPromptChange={vi.fn()} onScopeChange={vi.fn()} onRun={onRun} onHealth={vi.fn()} onOpenSettings={vi.fn()}
     />)
 
-    const button = screen.getByRole('button', { name: '运行本地助手' })
+    const button = screen.getByRole('button', { name: '发送给 Agent' })
     expect(button).toBeEnabled()
     fireEvent.click(button)
     expect(onRun).toHaveBeenCalledOnce()
