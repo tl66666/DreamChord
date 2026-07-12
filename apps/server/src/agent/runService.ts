@@ -10,6 +10,7 @@ import { createAgentToolRegistry, toUniformAgentToolRegistry } from './tools.js'
 import { buildRollingSummary, createConversationSources, type ConversationMessage } from './conversationMemory.js'
 import type { RankableMemory } from './memoryService.js'
 import { PrismaAssetService } from '../assets/assetService.js'
+import { runLocalAssistant } from './localAssistant.js'
 
 export type AgentRunStatus = 'queued' | 'planning' | 'gathering_context' | 'drafting' | 'validating' | 'awaiting_approval' | 'applying' | 'completed' | 'failed' | 'cancelled'
 export interface ProviderSecretConfig { provider: string; model: string; apiKey: string; baseUrl?: string }
@@ -190,17 +191,22 @@ export class PrismaAgentRunService implements AgentRunService {
     ]
     await this.client.agentRun.update({ where: { id: run.id }, data: { sources: JSON.stringify(initialContext), status: 'drafting' } })
     const rawTools = createAgentToolRegistry({
-      snapshot, chapterId: run.chapterId, conversationContext: initialContext.filter((source) => source.kind === 'conversation-history' || source.kind === 'conversation-summary'),
+      snapshot, chapterId: run.chapterId ?? undefined, conversationContext: initialContext.filter((source) => source.kind === 'conversation-history' || source.kind === 'conversation-summary'),
       memories: initialContext.filter((source) => source.kind === 'memory').map((source) => ({ id: source.id, title: source.title, content: source.content })),
       inspectAsset: (assetId) => new PrismaAssetService(this.client).inspect(assetId, run.userId),
       prepareAsset: (assetId, purpose, recipe) => new PrismaAssetService(this.client).process(assetId, run.userId, { purpose, ...recipe }),
     })
-    const provider = this.dependencies.createProvider(job.secretConfig.provider, job.secretConfig)
-    const result = await executeCreativeAgent({
-      prompt: run.prompt, initialContext, tools: toUniformAgentToolRegistry(rawTools),
-      chat: (messages) => provider.chat(messages, { temperature: 0.7, maxTokens: 4096, signal }),
-      onEvent: (event) => this.appendTimeline(run.id, event),
-    })
+    let result
+    if (job.secretConfig.provider === 'local') {
+      result = runLocalAssistant({ prompt: run.prompt, snapshot, chapterId: run.chapterId ?? undefined })
+    } else {
+      const provider = this.dependencies.createProvider(job.secretConfig.provider, job.secretConfig)
+      result = await executeCreativeAgent({
+        prompt: run.prompt, initialContext, tools: toUniformAgentToolRegistry(rawTools),
+        chat: (messages) => provider.chat(messages, { temperature: 0.7, maxTokens: 4096, signal }),
+        onEvent: (event) => this.appendTimeline(run.id, event),
+      })
+    }
     if (result.memorySuggestions.length > 0) {
       await this.client.agentMemory.createMany({ data: result.memorySuggestions.map((memory) => ({
         projectId: run.projectId, userId: run.userId, conversationId: run.conversationId, kind: memory.kind,

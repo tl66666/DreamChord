@@ -11,9 +11,13 @@ const scopeSchema = z.enum(['card', 'scene', 'chapter', 'project'])
 export const providerConfigSchema = z.object({
   provider: z.string().min(1).max(100),
   model: z.string().min(1).max(200),
-  apiKey: z.string().min(1).max(10_000),
+  apiKey: z.string().max(10_000),
   baseUrl: z.string().max(2_000).optional(),
-}).strict()
+}).strict().superRefine((value, context) => {
+  if (value.provider !== 'local' && !value.apiKey.trim()) {
+    context.addIssue({ code: z.ZodIssueCode.custom, path: ['apiKey'], message: '请填写 API Key，或使用本地助手' })
+  }
+})
 
 const conversationSchema = z.object({ title: z.string().trim().min(1).max(200), scope: scopeSchema, chapterId: z.string().min(1).optional() }).strict()
 const conversationUpdateSchema = z.object({

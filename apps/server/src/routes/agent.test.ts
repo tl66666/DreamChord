@@ -84,6 +84,18 @@ describe('agent routes', () => {
     expect(chapterRun.body.error).toContain('章节')
   })
 
+  it('accepts the built-in local provider without an API key', async () => {
+    const response = await request(testApp()).post('/api/projects/project/agent/runs')
+      .set('Authorization', `Bearer ${token()}`)
+      .send({
+        conversationId: 'conversation', prompt: '概括项目', scope: 'project',
+        providerConfig: { provider: 'local', model: 'dreamchord-local', apiKey: '' },
+      })
+
+    expect(response.status).toBe(202)
+    expect(response.body.provider).toBe('custom')
+  })
+
   it('polls, cancels, applies, and undoes a run', async () => {
     const app = testApp()
     expect((await request(app).get('/api/agent/runs/run').set('Authorization', `Bearer ${token()}`)).status).toBe(200)

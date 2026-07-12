@@ -155,6 +155,27 @@ describe('creative agent end-to-end workflow', () => {
     expect(failed.errorMessage).toBe('请选择章节后再修改剧情')
   })
 
+  it('runs the local assistant without an API key or external provider call', async () => {
+    const createProvider = vi.fn(() => { throw new Error('external provider must not be called') })
+    const service = new PrismaAgentRunService(client, {
+      loadSnapshot: (projectId) => loadAgentProjectSnapshot(projectId, client),
+      createProvider,
+    })
+    const conversation = await service.createConversation('project', 'owner', { title: '本地项目体检', scope: 'project' })
+    const queued = await service.createRun({
+      projectId: 'project', conversationId: conversation.id, prompt: '概括整个项目', scope: 'project',
+      providerConfig: { provider: 'local', model: 'dreamchord-local', apiKey: '' },
+    }, 'owner')
+    const completed = await waitForCompletion(service, queued.id)
+
+    expect(completed.status).toBe('completed')
+    expect(completed.errorMessage).toBeNull()
+    expect(createProvider).not.toHaveBeenCalled()
+    expect(await client.agentMessage.findFirst({ where: { conversationId: conversation.id, role: 'assistant' } })).toMatchObject({
+      content: expect.stringContaining('2 个章节'),
+    })
+  })
+
   it('returns a version-conflicted apply run to awaiting approval', async () => {
     const conversation = await client.agentConversation.create({ data: { title: '冲突测试', scope: 'chapter', userId: 'owner', projectId: 'project', chapterId: 'chapter-one' } })
     const run = await client.agentRun.create({ data: {
