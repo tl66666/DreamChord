@@ -18,7 +18,40 @@ export interface ProcessedImage {
 async function removeWhiteMatte(buffer: Buffer, threshold: number, feather: number): Promise<Buffer> {
   const { data, info } = await sharp(buffer, { limitInputPixels: 40_000_000 }).ensureAlpha().raw().toBuffer({ resolveWithObject: true })
   const edge = Math.max(0, threshold - feather)
-  for (let offset = 0; offset < data.length; offset += info.channels) {
+  const pixelCount = info.width * info.height
+  const visited = new Uint8Array(pixelCount)
+  const queue = new Int32Array(pixelCount)
+  let head = 0
+  let tail = 0
+  const qualifies = (pixel: number) => {
+    const offset = pixel * info.channels
+    return Math.min(data[offset]!, data[offset + 1]!, data[offset + 2]!) >= edge
+  }
+  const enqueue = (pixel: number) => {
+    if (visited[pixel] || !qualifies(pixel)) return
+    visited[pixel] = 1
+    queue[tail++] = pixel
+  }
+  for (let x = 0; x < info.width; x += 1) {
+    enqueue(x)
+    enqueue((info.height - 1) * info.width + x)
+  }
+  for (let y = 1; y < info.height - 1; y += 1) {
+    enqueue(y * info.width)
+    enqueue(y * info.width + info.width - 1)
+  }
+  while (head < tail) {
+    const pixel = queue[head++]!
+    const x = pixel % info.width
+    const y = Math.floor(pixel / info.width)
+    if (x > 0) enqueue(pixel - 1)
+    if (x + 1 < info.width) enqueue(pixel + 1)
+    if (y > 0) enqueue(pixel - info.width)
+    if (y + 1 < info.height) enqueue(pixel + info.width)
+  }
+  for (let pixel = 0; pixel < pixelCount; pixel += 1) {
+    if (!visited[pixel]) continue
+    const offset = pixel * info.channels
     const whiteness = Math.min(data[offset]!, data[offset + 1]!, data[offset + 2]!)
     if (whiteness >= threshold) data[offset + 3] = 0
     else if (feather > 0 && whiteness > edge) data[offset + 3] = Math.min(data[offset + 3]!, Math.round(255 * (threshold - whiteness) / feather))

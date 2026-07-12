@@ -25,4 +25,20 @@ describe('image processor', () => {
     expect(await sharp(background.buffer).metadata()).toMatchObject({ width: 1920, height: 1080, format: 'webp' })
     expect(source.equals(copy)).toBe(true)
   })
+
+  it('removes only white matte pixels connected to the image edge', async () => {
+    const size = 9
+    const raw = Buffer.alloc(size * size * 3, 255)
+    for (let y = 2; y <= 6; y += 1) for (let x = 2; x <= 6; x += 1) {
+      if (x !== 2 && x !== 6 && y !== 2 && y !== 6) continue
+      const offset = (y * size + x) * 3
+      raw[offset] = 24; raw[offset + 1] = 24; raw[offset + 2] = 24
+    }
+    const source = await sharp(raw, { raw: { width: size, height: size, channels: 3 } }).png().toBuffer()
+    const result = await processImage(source, { purpose: 'sprite', removeWhite: true, whiteThreshold: 245, feather: 0, trim: false })
+    const pixels = await sharp(result.buffer).ensureAlpha().raw().toBuffer()
+    const alphaAt = (x: number, y: number) => pixels[(y * 1024 + x) * 4 + 3]
+    expect(alphaAt(56, 568)).toBe(0)
+    expect(alphaAt(512, 1024)).toBe(255)
+  })
 })
