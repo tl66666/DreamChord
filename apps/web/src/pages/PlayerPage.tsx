@@ -5,7 +5,6 @@ import VisualNovelPlayer from '../player/VisualNovelPlayer'
 export default function PlayerPage() {
   const navigate = useNavigate()
   const { projectId } = useParams<{ projectId: string }>()
-  const isDemo = projectId === 'dreamchord-first-thread'
 
   return (
     <div className="relative h-screen w-screen overflow-hidden bg-black">
@@ -18,7 +17,7 @@ export default function PlayerPage() {
           <ArrowLeft className="h-4 w-4" />
           返回
         </button>
-        {!isDemo && projectId && (
+        {projectId && (
           <button
             onClick={() => navigate(`/editor/${projectId}`)}
             title="回到故事工作台"

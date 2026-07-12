@@ -1,5 +1,6 @@
 ﻿import { PrismaClient } from '@prisma/client'
 import bcrypt from 'bcryptjs'
+import { refreshOfficialDemo } from '../src/demo/officialDemoSeed.js'
 
 const prisma = new PrismaClient()
 
@@ -756,7 +757,8 @@ async function main() {
     },
   })
 
-  console.log('Seed created:', { user: user.username, projects: ['樱花下的初见', demoProject.title] })
+  const refreshedDemo = await refreshOfficialDemo(prisma, user.id)
+  console.log('Seed created:', { user: user.username, projects: ['樱花下的初见', refreshedDemo.title] })
 }
 
 main()

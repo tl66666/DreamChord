@@ -6,7 +6,6 @@ import { History, SkipForward, Play, Pause, Settings, RotateCcw, Compass, PenLin
 import { getProject, type ProjectDetail } from '../api/client'
 import { safeJsonParse } from '../lib/safeJsonParse'
 import { createRuntimeEngine } from '../engine/runtime'
-import { DEMO_RUNTIME_STORY } from '../engine/demo'
 import { convertFlowToRuntime } from '../engine/converter'
 import {
   CHARACTER_REGISTRY,
@@ -38,8 +37,6 @@ const DEFAULT_SETTINGS: PlayerSettings = {
   bgmVolume: 0.5,
   sfxVolume: 0.7,
 }
-
-const DEMO_ID = 'dreamchord-first-thread'
 
 const POSITION_CLASS: Record<string, string> = {
   left: 'left-[5%] md:left-[12%]',
@@ -129,24 +126,6 @@ export default function VisualNovelPlayer() {
   useEffect(() => {
     if (!projectId) return
     setLoading(true)
-
-    if (projectId === DEMO_ID) {
-      const runtime = createRuntimeEngine(DEMO_RUNTIME_STORY)
-      setEngine(runtime)
-      setProject({
-        id: DEMO_ID,
-        title: DEMO_RUNTIME_STORY.title,
-        description: 'DreamChord Engine Demo',
-        cover: '/assets/hero.png',
-        isPublic: true,
-        isPublished: true,
-        author: { username: 'dreamchord', nickname: null },
-        chapters: [],
-        characters: [],
-      })
-      setLoading(false)
-      return
-    }
 
     getProject(projectId)
       .then((data) => {
@@ -521,7 +500,7 @@ export default function VisualNovelPlayer() {
                   <PenLine className="h-4 w-4" />
                   创作故事
                 </button>
-                {projectId && projectId !== DEMO_ID && (
+                {projectId && (
                   <button onClick={() => navigate(`/editor/${projectId}`)} className="inline-flex items-center justify-center gap-2 rounded-xl border border-dream-300/30 bg-dream-500/20 px-5 py-2.5 text-sm text-white transition hover:bg-dream-500/30">
                     <PenLine className="h-4 w-4" />
                     回到工作台
