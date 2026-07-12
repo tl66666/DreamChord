@@ -219,8 +219,9 @@ body {
 }
 .nav-links {
   display: flex; gap: 1.4rem; align-items: center;
-  margin: 0 auto;
+  flex: 1; min-width: 0; margin: 0 1rem;
   overflow-x: auto; scrollbar-width: none; -ms-overflow-style: none;
+  overscroll-behavior-inline: contain;
 }
 .nav-links::-webkit-scrollbar { display: none; }
 .nav-link {
@@ -250,7 +251,7 @@ body {
   .nav.scrolled { padding: 0.4rem 0.75rem; }
   .nav-brand { font-size: 0.9rem; }
   .nav-brand .brand-accent { display: none; }
-  .nav-links { gap: 0.9rem; }
+  .nav-links { gap: 0.9rem; margin: 0 0.5rem; }
   .nav-link { font-size: 0.72rem; }
   .nav-cta { padding: 0.35rem 0.8rem; font-size: 0.72rem; }
   .nav-cta svg { display: none; }
@@ -943,7 +944,7 @@ body {
           <span class="showcase-img-dot g"></span>
           <span class="showcase-img-url">localhost:5173/editor → 剧情流程图</span>
         </div>
-        <img src="screenshots/flowchart.jpg" alt="剧情流程图界面" loading="lazy">
+        <img src="screenshots/flowchart-1440.png" alt="官方演示剧情流程图真实界面" loading="lazy">
       </div>
       <div class="showcase-text">
         <div class="showcase-num">02 / Flowchart</div>
@@ -959,8 +960,33 @@ body {
       </div>
     </div>
 
-    <!-- 3. 创作 Agent -->
+    <!-- 3. 素材进入镜头卡 -->
     <div class="showcase-block reveal">
+      <div class="showcase-img-wrap">
+        <div class="showcase-img-bar">
+          <span class="showcase-img-dot r"></span>
+          <span class="showcase-img-dot y"></span>
+          <span class="showcase-img-dot g"></span>
+          <span class="showcase-img-url">localhost:5173/editor → 背景 / CG</span>
+        </div>
+        <img src="screenshots/editor-assets-1440.png" alt="故事镜头中的背景与 CG 素材选择真实界面" loading="lazy">
+      </div>
+      <div class="showcase-text">
+        <div class="showcase-num">03 / Asset to Story</div>
+        <h3 class="showcase-title">处理完，直接放进故事</h3>
+        <p class="showcase-desc">镜头卡里的项目素材入口会合并展示背景与 CG，两类图片都能作为全屏故事画面。接受并绑定的透明立绘则立即进入角色舞台、发言人和表情选择器，不需要刷新页面或手工填写文件地址。</p>
+        <ul class="showcase-features">
+          <li>背景与 CG 合并选择，音乐和其他文件不会混入</li>
+          <li>内置背景与项目上传素材在同一面板完成选择</li>
+          <li>接受立绘后立即加入当前镜头的角色选择器</li>
+          <li>选择结果沿用章节图、自动保存和播放器渲染路径</li>
+          <li>新建场景自带有效默认背景，不出现空白破图</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- 4. 创作 Agent -->
+    <div class="showcase-block reverse reveal">
       <div class="showcase-img-wrap">
         <div class="showcase-img-bar">
           <span class="showcase-img-dot r"></span>
@@ -971,7 +997,7 @@ body {
         <img src="screenshots/agent-workspace-1440.png" alt="多对话创作 Agent 工作区" loading="lazy">
       </div>
       <div class="showcase-text">
-        <div class="showcase-num">03 / Creative Agent</div>
+        <div class="showcase-num">04 / Creative Agent</div>
         <h3 class="showcase-title">多对话创作 Agent</h3>
         <p class="showcase-desc">每个对话可以处理不同任务：续写当前场景、修补分支、检查人物动机或准备图片素材。Agent 会读取对话历史、滚动摘要、故事圣经、章节图和分层记忆，先计划并调用受限工具，再提交结构化补丁供作者预览、应用、拒绝或撤销。</p>
         <ul class="showcase-features">
@@ -985,8 +1011,8 @@ body {
       </div>
     </div>
 
-    <!-- 4. 素材库 -->
-    <div class="showcase-block reverse reveal">
+    <!-- 5. 素材库 -->
+    <div class="showcase-block reveal">
       <div class="showcase-img-wrap">
         <div class="showcase-img-bar">
           <span class="showcase-img-dot r"></span>
@@ -997,14 +1023,13 @@ body {
         <img src="screenshots/asset-processing-1440.png" alt="素材处理工作室" loading="lazy">
       </div>
       <div class="showcase-text">
-        <div class="showcase-num">04 / Assets</div>
+        <div class="showcase-num">05 / Assets</div>
         <h3 class="showcase-title">素材库与图片处理</h3>
-        <p class="showcase-desc">上传图片后，服务端会先解码验证真实格式、尺寸与像素规模。处理工作室可去除白底、羽化边缘、裁掉透明边缘，并按立绘、CG、背景三种用途生成规范尺寸；衍生图先进入待确认状态，原图始终保留。</p>
+        <p class="showcase-desc">截图来自一次真实的白底人物验收：系统解码 1024×1536 JPEG，判断为浅色平底角色图并给出 90% 置信度，再通过边缘连通去底生成透明立绘候选。左侧原图、右侧处理结果并排展示，作者确认后才能绑定角色。</p>
         <ul class="showcase-features">
-          <li>角色立绘 + 表情差分（normal / smile / serious）</li>
-          <li>背景图库：樱花坡道、教室、咖啡馆、星空</li>
-          <li>戏剧冲突粉色高亮，快速定位角色核心矛盾</li>
-          <li>立绘差分底部选择器，一键切换调用</li>
+          <li>透明、浅色纯底、复杂背景分级分析与用途推荐</li>
+          <li>边缘连通去白底，避免整块删除封闭的白色衣物和高光</li>
+          <li>阈值、羽化和透明边缘裁切均可在预览前调整</li>
           <li>立绘输出 1024×1536 透明 PNG</li>
           <li>CG / 背景输出 1920×1080 WebP</li>
           <li>衍生图支持接受、绑定角色表情或拒绝删除</li>
@@ -1012,8 +1037,8 @@ body {
       </div>
     </div>
 
-    <!-- 5. 作品广场 -->
-    <div class="showcase-block reveal">
+    <!-- 6. 项目首页 -->
+    <div class="showcase-block reverse reveal">
       <div class="showcase-img-wrap">
         <div class="showcase-img-bar">
           <span class="showcase-img-dot r"></span>
@@ -1024,7 +1049,7 @@ body {
         <img src="screenshots/home-1440.png" alt="首页项目工作区" loading="lazy">
       </div>
       <div class="showcase-text">
-        <div class="showcase-num">05 / Gallery</div>
+        <div class="showcase-num">06 / Projects</div>
         <h3 class="showcase-title">项目首页与备份恢复</h3>
         <p class="showcase-desc">首页集中管理故事项目、发布状态和创作入口。项目可导出为版本化 DreamChord 备份，再通过严格校验和 ID 重映射恢复为新项目；移动端导航收敛为可访问菜单，不再挤压品牌和页面内容。</p>
         <ul class="showcase-features">

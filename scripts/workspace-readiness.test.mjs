@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict'
-import { mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { spawnSync } from 'node:child_process'
@@ -171,5 +171,19 @@ assert.ok(
   'batch launcher must remain ASCII so legacy cmd.exe can parse Chinese project paths reliably',
 )
 assert.match(batchLauncher, /powershell\.exe[^\r\n]*-File "%~dp0start-dreamchord\.ps1"/, 'batch launcher must delegate to the colocated PowerShell script')
+
+const showcase = readFileSync(new URL('../docs/showcase.html', import.meta.url), 'utf8')
+for (const screenshot of [
+  'editor-1440.png',
+  'flowchart-1440.png',
+  'editor-assets-1440.png',
+  'agent-workspace-1440.png',
+  'asset-processing-1440.png',
+  'home-1440.png',
+]) {
+  assert.ok(showcase.includes(`screenshots/${screenshot}`), `showcase must use the real ${screenshot} browser capture`)
+  assert.ok(existsSync(fileURLToPath(new URL(`../docs/screenshots/${screenshot}`, import.meta.url))), `${screenshot} must exist`)
+}
+assert.doesNotMatch(showcase, /screenshots\/flowchart\.jpg/, 'showcase must not use the stale flowchart placeholder')
 
 console.log('workspace readiness scripts are configured')

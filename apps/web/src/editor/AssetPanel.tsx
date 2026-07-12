@@ -174,7 +174,7 @@ export default function AssetPanel({
             <button
               onClick={() => fileInputRef.current?.click()}
               disabled={uploading || !project?.id || activeType === 'SETTING'}
-              className="inline-flex items-center gap-1 rounded-lg bg-dream-600 px-3 py-1.5 text-xs font-medium text-white transition hover:bg-dream-700 disabled:opacity-50"
+                className="inline-flex shrink-0 items-center gap-1 whitespace-nowrap rounded-lg bg-dream-600 px-3 py-1.5 text-xs font-medium text-white transition hover:bg-dream-700 disabled:opacity-50"
             >
               <Upload className="h-3.5 w-3.5" />
               {uploading ? '处理中' : '上传'}
