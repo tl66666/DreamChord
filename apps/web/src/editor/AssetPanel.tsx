@@ -4,7 +4,7 @@ import type { Node } from '@xyflow/react'
 import { BookOpen, Check, FileType, Image, Music, Pencil, RefreshCw, Search, SlidersHorizontal, Trash2, Upload, User, X } from 'lucide-react'
 import { useEditorStore } from '../stores/editorStore'
 import { useToast, useConfirm } from '../components/FeedbackProvider'
-import { deleteAsset, getProjectAssets, renameAsset, replaceAssetFile, uploadAsset, type AcceptedAssetVariant, type Asset } from '../api/client'
+import { deleteAsset, getAssetLibrary, renameAsset, replaceAssetFile, uploadAsset, type AcceptedAssetVariant, type Asset } from '../api/client'
 import { loadLibraryCharacters, loadLibraryScenes } from '../lib/libraryData'
 import { getNodeData } from './sceneGraph'
 import AssetProcessingSheet from '../assets/AssetProcessingSheet'
@@ -79,7 +79,7 @@ export default function AssetPanel({
     if (!project?.id) return
     setLoading(true)
     try {
-      setAssets(await getProjectAssets(project.id))
+      setAssets(await getAssetLibrary())
     } catch (err) {
       console.error(err)
     } finally {
@@ -113,7 +113,7 @@ export default function AssetPanel({
     setUploading(true)
     try {
       if (activeType === 'SETTING') return
-      await uploadAsset(project.id, file, activeType)
+      await uploadAsset(file, activeType, project.id)
       await loadAssets()
     } catch (err: unknown) {
       toast.error(getApiError(err, '上传失败'))
@@ -297,7 +297,7 @@ export default function AssetPanel({
 
             {/* 上传素材 */}
             <div className="mb-2 flex items-center gap-1.5">
-              <h4 className="text-xs font-semibold text-dream-700">项目上传素材</h4>
+            <h4 className="text-xs font-semibold text-dream-700">我的全局素材</h4>
               <span className="text-[10px] text-dream-400">{filteredAssets.length} 个</span>
             </div>
             {filteredAssets.length === 0 ? (
@@ -338,7 +338,7 @@ export default function AssetPanel({
         )}
       </div>
     </aside>
-    {processingAsset && <AssetProcessingSheet asset={processingAsset} onClose={() => setProcessingAsset(null)} onAccepted={(accepted) => { void loadAssets(); onProjectCharacterAccepted?.(accepted) }} />}
+    {processingAsset && <AssetProcessingSheet asset={processingAsset} projectId={project?.id} onClose={() => setProcessingAsset(null)} onAccepted={(accepted) => { void loadAssets(); onProjectCharacterAccepted?.(accepted) }} />}
   </>)
 }
 

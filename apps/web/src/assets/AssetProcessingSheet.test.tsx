@@ -23,7 +23,7 @@ describe('asset processing sheet', () => {
     api.process.mockResolvedValue(variant)
     api.accept.mockResolvedValue(accepted)
     api.inspect.mockResolvedValue({ analysis: { background: 'flat-light', recommendedPurpose: 'sprite', recommendedRecipe: { removeWhite: true, trim: true, whiteThreshold: 245, feather: 8 }, confidence: 0.92, reasons: ['纵向构图适合角色立绘。'], warnings: [] } })
-    render(<FeedbackProvider><AssetProcessingSheet asset={asset} onClose={vi.fn()} onAccepted={onAccepted} /></FeedbackProvider>)
+    render(<FeedbackProvider><AssetProcessingSheet asset={asset} projectId="project" onClose={vi.fn()} onAccepted={onAccepted} /></FeedbackProvider>)
     fireEvent.click(screen.getByRole('button', { name: '立绘' }))
     fireEvent.change(screen.getByLabelText('白底阈值'), { target: { value: '238' } })
     fireEvent.click(screen.getByRole('button', { name: '生成预览' }))
@@ -31,7 +31,7 @@ describe('asset processing sheet', () => {
     fireEvent.change(screen.getByLabelText('角色名称'), { target: { value: '雪' } })
     fireEvent.change(screen.getByLabelText('表情名称'), { target: { value: 'normal' } })
     fireEvent.click(screen.getByRole('button', { name: '接受并绑定' }))
-    await waitFor(() => expect(api.accept).toHaveBeenCalledWith('variant', expect.objectContaining({ purpose: 'sprite', characterName: '雪', expressionName: 'normal' })))
+    await waitFor(() => expect(api.accept).toHaveBeenCalledWith('variant', expect.objectContaining({ purpose: 'sprite', projectId: 'project', characterName: '雪', expressionName: 'normal' })))
     expect(onAccepted).toHaveBeenCalledWith(accepted)
   })
 
@@ -49,5 +49,20 @@ describe('asset processing sheet', () => {
     expect(await screen.findByText('推荐：剧情 CG')).toBeTruthy()
     expect(screen.getByText(/复杂背景无法可靠自动抠图/)).toBeTruthy()
     expect(screen.queryByLabelText('去除白色背景')).toBeNull()
+  })
+
+  it('accepts a processed sprite into the global library without character binding', async () => {
+    const accepted = { variant: { ...variant, status: 'accepted' }, asset: { ...asset, id: 'derived' }, character: null }
+    api.process.mockResolvedValue(variant)
+    api.accept.mockResolvedValue(accepted)
+    api.inspect.mockResolvedValue({ analysis: { background: 'flat-light', recommendedPurpose: 'sprite', recommendedRecipe: { removeWhite: true, trim: true, whiteThreshold: 245, feather: 8 }, confidence: 0.92, reasons: [], warnings: [] } })
+    render(<FeedbackProvider><AssetProcessingSheet asset={asset} onClose={vi.fn()} onAccepted={vi.fn()} /></FeedbackProvider>)
+
+    fireEvent.click(await screen.findByRole('button', { name: '生成预览' }))
+    await screen.findByAltText('处理结果')
+    expect(screen.queryByLabelText('角色名称')).toBeNull()
+    fireEvent.click(screen.getByRole('button', { name: '接受到素材库' }))
+
+    await waitFor(() => expect(api.accept).toHaveBeenCalledWith('variant', { purpose: 'sprite' }))
   })
 })

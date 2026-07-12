@@ -16,7 +16,7 @@ type Purpose = 'sprite' | 'cg' | 'background'
 const PURPOSE_LABEL: Record<Purpose, string> = { sprite: '角色立绘', cg: '剧情 CG', background: '场景背景' }
 const CHECKER = 'bg-[linear-gradient(45deg,#e2e8f0_25%,transparent_25%),linear-gradient(-45deg,#e2e8f0_25%,transparent_25%),linear-gradient(45deg,transparent_75%,#e2e8f0_75%),linear-gradient(-45deg,transparent_75%,#e2e8f0_75%)] bg-[length:20px_20px]'
 
-export default function AssetProcessingSheet({ asset, onClose, onAccepted }: { asset: Asset; onClose: () => void; onAccepted: (accepted: AcceptedAssetVariant) => void }) {
+export default function AssetProcessingSheet({ asset, projectId, onClose, onAccepted }: { asset: Asset; projectId?: string; onClose: () => void; onAccepted: (accepted: AcceptedAssetVariant) => void }) {
   const toast = useToast()
   const [purpose, setPurpose] = useState<Purpose>('sprite')
   const [removeWhite, setRemoveWhite] = useState(true)
@@ -56,11 +56,14 @@ export default function AssetProcessingSheet({ asset, onClose, onAccepted }: { a
   }
   const accept = async () => {
     if (!variant) return
-    if (purpose === 'sprite' && !characterName.trim()) { toast.info('请填写角色名称'); return }
+    if (purpose === 'sprite' && projectId && !characterName.trim()) { toast.info('请填写角色名称'); return }
     setBusy(true)
     try {
-      const accepted = await acceptAssetVariant(variant.id, { purpose, ...(purpose === 'sprite' ? { characterName: characterName.trim(), expressionName: expressionName.trim() || 'default' } : {}) })
-      toast.success(purpose === 'sprite' ? '立绘已绑定角色' : '素材已加入项目')
+      const accepted = await acceptAssetVariant(variant.id, {
+        purpose,
+        ...(purpose === 'sprite' && projectId ? { projectId, characterName: characterName.trim(), expressionName: expressionName.trim() || 'default' } : {}),
+      })
+      toast.success(purpose === 'sprite' && projectId ? '立绘已加入素材库并绑定角色' : '处理结果已加入素材库')
       onAccepted(accepted); onClose()
     } catch { toast.error('接受素材失败') } finally { setBusy(false) }
   }
@@ -96,7 +99,7 @@ export default function AssetProcessingSheet({ asset, onClose, onAccepted }: { a
           <label className="mt-3 flex items-center gap-2 text-xs text-slate-700"><input aria-label="裁掉透明边缘" type="checkbox" checked={trim} onChange={(event) => changeRecipe(() => setTrim(event.target.checked))} />裁掉透明边缘</label>
           {purpose === 'sprite' && <><label className="mt-4 block text-xs text-slate-600">白底阈值 <span className="float-right font-mono">{threshold}</span><input aria-label="白底阈值" type="range" min="180" max="255" value={threshold} onChange={(event) => changeRecipe(() => setThreshold(Number(event.target.value)))} className="mt-2 w-full" /></label><label className="mt-4 block text-xs text-slate-600">边缘羽化 <span className="float-right font-mono">{feather}</span><input aria-label="边缘羽化" type="range" min="0" max="40" value={feather} onChange={(event) => changeRecipe(() => setFeather(Number(event.target.value)))} className="mt-2 w-full" /></label></>}
           <button type="button" aria-label="生成预览" disabled={busy} onClick={() => void generatePreview()} className="mt-5 flex h-10 w-full items-center justify-center gap-2 bg-cyan-700 text-sm font-medium text-white hover:bg-cyan-800 disabled:opacity-50">{busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <RotateCcw className="h-4 w-4" />}生成预览</button>
-          {purpose === 'sprite' && variant && <div className="mt-5 space-y-3 border-t border-slate-200 pt-4"><label className="block text-xs text-slate-600">角色名称<input aria-label="角色名称" value={characterName} onChange={(event) => setCharacterName(event.target.value)} className="mt-1 h-9 w-full border border-slate-200 px-2 text-sm" /></label><label className="block text-xs text-slate-600">表情名称<input aria-label="表情名称" value={expressionName} onChange={(event) => setExpressionName(event.target.value)} className="mt-1 h-9 w-full border border-slate-200 px-2 text-sm" /></label></div>}
+          {purpose === 'sprite' && variant && projectId && <div className="mt-5 space-y-3 border-t border-slate-200 pt-4"><label className="block text-xs text-slate-600">角色名称<input aria-label="角色名称" value={characterName} onChange={(event) => setCharacterName(event.target.value)} className="mt-1 h-9 w-full border border-slate-200 px-2 text-sm" /></label><label className="block text-xs text-slate-600">表情名称<input aria-label="表情名称" value={expressionName} onChange={(event) => setExpressionName(event.target.value)} className="mt-1 h-9 w-full border border-slate-200 px-2 text-sm" /></label></div>}
         </div>
 
         <div className="grid min-h-[420px] grid-cols-1 gap-px bg-slate-200 md:grid-cols-2">
@@ -105,7 +108,7 @@ export default function AssetProcessingSheet({ asset, onClose, onAccepted }: { a
         </div>
       </div>
 
-      <footer className="flex justify-end gap-2 border-t border-slate-200 px-5 py-4">{variant && <button type="button" aria-label="拒绝衍生图" disabled={busy} onClick={() => void reject()} className="flex h-9 items-center gap-1.5 border border-red-200 px-3 text-sm text-red-700 hover:bg-red-50"><Trash2 className="h-4 w-4" />拒绝</button>}<button type="button" aria-label="接受并绑定" disabled={!variant || busy} onClick={() => void accept()} className="flex h-9 items-center gap-1.5 bg-slate-950 px-4 text-sm font-medium text-white disabled:opacity-40"><Check className="h-4 w-4" />{purpose === 'sprite' ? '接受并绑定' : '接受为项目素材'}</button></footer>
+      <footer className="flex justify-end gap-2 border-t border-slate-200 px-5 py-4">{variant && <button type="button" aria-label="拒绝衍生图" disabled={busy} onClick={() => void reject()} className="flex h-9 items-center gap-1.5 border border-red-200 px-3 text-sm text-red-700 hover:bg-red-50"><Trash2 className="h-4 w-4" />拒绝</button>}<button type="button" aria-label={purpose === 'sprite' && projectId ? '接受并绑定' : '接受到素材库'} disabled={!variant || busy} onClick={() => void accept()} className="flex h-9 items-center gap-1.5 bg-slate-950 px-4 text-sm font-medium text-white disabled:opacity-40"><Check className="h-4 w-4" />{purpose === 'sprite' && projectId ? '接受并绑定' : '接受到素材库'}</button></footer>
     </section>
   </div>
 }

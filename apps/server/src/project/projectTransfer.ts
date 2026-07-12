@@ -69,6 +69,20 @@ function remapJson(value: unknown, replacements: Map<string, string>): unknown {
   return value
 }
 
+function collectUploadUrls(value: unknown, urls: Set<string>): void {
+  if (typeof value === 'string') {
+    if (isSafeUploadUrl(value)) urls.add(value)
+    return
+  }
+  if (Array.isArray(value)) {
+    value.forEach((item) => collectUploadUrls(item, urls))
+    return
+  }
+  if (value && typeof value === 'object') {
+    Object.values(value as Record<string, unknown>).forEach((item) => collectUploadUrls(item, urls))
+  }
+}
+
 function audioMime(buffer: Buffer): 'audio/mpeg' | 'audio/wav' | 'audio/ogg' | null {
   try { return inspectAudio(buffer).mimeType }
   catch { return null }
@@ -119,10 +133,24 @@ export async function exportProject(projectId: string, userId: string, client: P
   if (!project) throw new Error('项目不存在')
   if (project.authorId !== userId) throw new Error('无权导出此项目')
 
+  const referencedUploadUrls = new Set<string>()
+  collectUploadUrls(project.cover, referencedUploadUrls)
+  collectUploadUrls(project.storyBible ? parseJson(project.storyBible.content) : null, referencedUploadUrls)
+  project.chapters.forEach((chapter) => chapter.nodes.forEach((node) => collectUploadUrls(parseJson(node.data), referencedUploadUrls)))
+  project.characters.forEach((character) => {
+    collectUploadUrls(character.defaultSprite, referencedUploadUrls)
+    character.sprites.forEach((sprite) => collectUploadUrls(sprite.url, referencedUploadUrls))
+  })
+  const ownerAssets = await client.asset.findMany({ where: { ownerId: userId } })
+  const exportAssets = [...new Map([
+    ...project.assets,
+    ...ownerAssets.filter((asset) => referencedUploadUrls.has(asset.url)),
+  ].map((asset) => [asset.id, asset])).values()]
+
   const files: ProjectManifest['files'] = []
   const byUrl = new Map<string, Resource>()
   const embedding = new Map<string, Promise<Resource>>()
-  const mimeHints = new Map(project.assets.map((asset) => [asset.url, asset.mimeType]))
+  const mimeHints = new Map(exportAssets.map((asset) => [asset.url, asset.mimeType]))
   let totalBytes = 0
   const embed = (url: string): Promise<Resource> => {
     const existing = byUrl.get(url)
@@ -148,7 +176,7 @@ export async function exportProject(projectId: string, userId: string, client: P
   }
 
   const cover = await embed(project.cover)
-  const assets = await Promise.all(project.assets.map(async (asset) => ({ id: asset.id, name: asset.name, type: asset.type, resource: await embed(asset.url), mimeType: asset.mimeType, width: asset.width, height: asset.height, hasAlpha: asset.hasAlpha })))
+  const assets = await Promise.all(exportAssets.map(async (asset) => ({ id: asset.id, name: asset.name, type: asset.type, resource: await embed(asset.url), mimeType: asset.mimeType, width: asset.width, height: asset.height, hasAlpha: asset.hasAlpha })))
   const characters = await Promise.all(project.characters.map(async (character) => ({ id: character.id, name: character.name, description: character.description ?? '', color: character.color, defaultSprite: await embed(character.defaultSprite), sprites: await Promise.all(character.sprites.map(async (sprite) => ({ id: sprite.id, name: sprite.name, resource: await embed(sprite.url) }))) })))
   return projectManifestSchema.parse({
     format: 'dreamchord-project', version: 2, exportedAt: new Date().toISOString(),

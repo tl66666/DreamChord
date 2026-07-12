@@ -44,7 +44,7 @@ describe('project transfer', () => {
       { projectId: 'project', userId: 'owner', kind: 'canon', status: 'active', title: '规则', content: '不能回头' },
       { projectId: 'project', userId: 'owner', kind: 'plot', status: 'forgotten', title: '废案', content: '删除' },
     ] })
-  })
+  }, 30_000)
   afterAll(async () => { await client.$disconnect(); rmSync(databasePath, { force: true }); rmSync(storageRoot, { recursive: true, force: true }) })
 
   it('round-trips embedded bytes and remaps every project-owned reference', async () => {
@@ -78,6 +78,30 @@ describe('project transfer', () => {
     expect(JSON.parse(copy.storyBible!.content).characterNotes[character.id]).toEqual({ portrait: asset.url, assetId: asset.id })
     expect(copy.agentMemories[0]?.title).toBe('规则')
     expect(readFileSync(path.join(storageRoot, asset.url.slice('/uploads/'.length)))).toEqual(sourceImage)
+  })
+
+  it('embeds an owner asset referenced by a project even when it originated elsewhere', async () => {
+    const globalUrl = '/uploads/library/owner/global-background.png'
+    const globalPath = path.join(storageRoot, globalUrl.slice('/uploads/'.length))
+    mkdirSync(path.dirname(globalPath), { recursive: true })
+    writeFileSync(globalPath, sourceImage)
+    const origin = await client.project.create({ data: { title: '素材来源', authorId: 'owner' } })
+    const target = await client.project.create({ data: {
+      title: '引用素材的故事', authorId: 'owner',
+      chapters: { create: { title: '第一章', nodes: { create: { nodeId: 'global-node', type: 'background', positionX: 0, positionY: 0, data: JSON.stringify({ background: globalUrl }) } } } },
+    } })
+    await client.asset.create({ data: { ownerId: 'owner', projectId: origin.id, name: '全局港口背景', type: 'BACKGROUND', url: globalUrl, mimeType: 'image/png', width: 2, height: 2 } })
+
+    try {
+      const manifest = await exportProject(target.id, 'owner', client, storageRoot)
+      expect(manifest.assets).toEqual(expect.arrayContaining([expect.objectContaining({ name: '全局港口背景' })]))
+      expect(manifest.files).toHaveLength(1)
+      expect(Buffer.from(manifest.files[0]!.data, 'base64')).toEqual(sourceImage)
+    } finally {
+      await client.project.delete({ where: { id: target.id } })
+      await client.project.delete({ where: { id: origin.id } })
+      rmSync(globalPath, { force: true })
+    }
   })
 
   it('rejects unsafe or out-of-root source URLs during export', async () => {

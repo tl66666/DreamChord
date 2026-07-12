@@ -1,7 +1,7 @@
-import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
+import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { Archive, BookOpen, Edit3, Image as ImageIcon, Loader2, Plus, RotateCcw, Save, SlidersHorizontal, Trash2, Upload, Users, X } from 'lucide-react'
-import { deleteAsset, getMyProjects, getProjectAssets, renameAsset, uploadAsset, type Asset, type ProjectDetail } from '../api/client'
+import { deleteAsset, getAssetLibrary, renameAsset, uploadAsset, type Asset } from '../api/client'
 import {
   CHARACTER_KEY,
   SCENE_KEY,
@@ -35,7 +35,7 @@ const tabs: { id: LibraryTab; label: string; icon: ReactNode }[] = [
   { id: 'characters', label: '角色库', icon: <Users className="h-4 w-4" /> },
   { id: 'scenes', label: '场景库', icon: <ImageIcon className="h-4 w-4" /> },
   { id: 'stories', label: '剧情与模板', icon: <BookOpen className="h-4 w-4" /> },
-  { id: 'projectAssets', label: '项目上传', icon: <Archive className="h-4 w-4" /> },
+  { id: 'projectAssets', label: '全局素材', icon: <Archive className="h-4 w-4" /> },
 ]
 
 export default function LibraryPage() {
@@ -52,8 +52,6 @@ export default function LibraryPage() {
   const [editingScene, setEditingScene] = useState<LibraryScene | null>(null)
   const [editingTemplate, setEditingTemplate] = useState<StoryTemplate | null>(null)
   const [selectedExpression, setSelectedExpression] = useState<Record<string, string>>({})
-  const [projects, setProjects] = useState<ProjectDetail[]>([])
-  const [selectedProjectId, setSelectedProjectId] = useState('')
   const [assets, setAssets] = useState<Asset[]>([])
   const [assetType, setAssetType] = useState('CG')
   const [assetLoading, setAssetLoading] = useState(false)
@@ -61,29 +59,14 @@ export default function LibraryPage() {
   const [renameValue, setRenameValue] = useState('')
   const [processingAsset, setProcessingAsset] = useState<Asset | null>(null)
 
-  const selectedProject = useMemo(() => projects.find((project) => project.id === selectedProjectId), [projects, selectedProjectId])
-
   useEffect(() => {
     if (!user) return
-    getMyProjects()
-      .then((items) => {
-        setProjects(items)
-        setSelectedProjectId((current) => current || items[0]?.id || '')
-      })
-      .catch(console.error)
-  }, [user])
-
-  useEffect(() => {
-    if (!selectedProjectId) {
-      setAssets([])
-      return
-    }
     setAssetLoading(true)
-    getProjectAssets(selectedProjectId)
+    getAssetLibrary()
       .then(setAssets)
       .catch(console.error)
       .finally(() => setAssetLoading(false))
-  }, [selectedProjectId])
+  }, [user])
 
   const saveCharacter = () => {
     if (!editingCharacter) return
@@ -114,13 +97,13 @@ export default function LibraryPage() {
   }
 
   const handleUpload = async (file: File | undefined) => {
-    if (!file || !selectedProjectId) return
+    if (!file) return
     setAssetLoading(true)
     try {
-      const uploaded = await uploadAsset(selectedProjectId, file, assetType)
+      const uploaded = await uploadAsset(file, assetType)
       setAssets((prev) => [uploaded, ...prev])
     } catch (err: unknown) {
-      toast.error(getApiError(err, '上传失败，请确认已经登录并选择项目'))
+      toast.error(getApiError(err, '上传失败，请确认已经登录并检查文件格式'))
     } finally {
       setAssetLoading(false)
       if (fileInputRef.current) fileInputRef.current.value = ''
@@ -154,7 +137,7 @@ export default function LibraryPage() {
           </Link>
           <div className="flex items-center gap-2">
             <button onClick={() => navigate('/agent')} className="rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50">创作 Agent</button>
-            <button onClick={() => navigate(selectedProjectId ? `/editor/${selectedProjectId}` : '/')} className="rounded-lg bg-dream-600 px-4 py-2 text-sm font-medium text-white hover:bg-dream-700">去编辑器使用</button>
+            <button onClick={() => navigate('/')} className="rounded-lg bg-dream-600 px-4 py-2 text-sm font-medium text-white hover:bg-dream-700">去编辑器使用</button>
           </div>
         </div>
       </header>
@@ -214,16 +197,12 @@ export default function LibraryPage() {
           {activeTab === 'projectAssets' && (
             <ProjectAssetLibrary
               user={user}
-              projects={projects}
-              selectedProjectId={selectedProjectId}
-              selectedProjectTitle={selectedProject?.title}
               assets={assets}
               assetType={assetType}
               assetLoading={assetLoading}
               renamingId={renamingId}
               renameValue={renameValue}
               fileInputRef={fileInputRef}
-              onSelectProject={setSelectedProjectId}
               onAssetTypeChange={setAssetType}
               onUpload={handleUpload}
               onStartRename={(asset) => { setRenamingId(asset.id); setRenameValue(asset.name) }}
@@ -238,7 +217,7 @@ export default function LibraryPage() {
                   url: asset.url,
                   type: '用户上传',
                   description: '用户上传的背景场景，可在编辑器镜头卡里直接选择。',
-                  usage: selectedProject?.title ? `用于《${selectedProject.title}》或其他故事项目。` : '用于故事场景背景。',
+                  usage: '可用于任意故事项目的场景背景。',
                   updatedAt: today(),
                 })))
                 setActiveTab('scenes')
@@ -267,7 +246,7 @@ export default function LibraryPage() {
         </section>
       </div>
     </main>
-    {processingAsset && <AssetProcessingSheet asset={processingAsset} onClose={() => setProcessingAsset(null)} onAccepted={() => selectedProjectId && getProjectAssets(selectedProjectId).then(setAssets)} />}
+    {processingAsset && <AssetProcessingSheet asset={processingAsset} onClose={() => setProcessingAsset(null)} onAccepted={() => void getAssetLibrary().then(setAssets)} />}
   </>)
 }
 
@@ -453,23 +432,20 @@ function StoryLibrary(props: { templates: StoryTemplate[]; editingTemplate: Stor
   )
 }
 
-function ProjectAssetLibrary(props: { user: unknown; projects: ProjectDetail[]; selectedProjectId: string; selectedProjectTitle?: string; assets: Asset[]; assetType: string; assetLoading: boolean; renamingId: string | null; renameValue: string; fileInputRef: React.RefObject<HTMLInputElement>; onSelectProject: (id: string) => void; onAssetTypeChange: (type: string) => void; onUpload: (file: File | undefined) => void; onStartRename: (asset: Asset) => void; onRenameValueChange: (value: string) => void; onConfirmRename: (asset: Asset) => void; onCancelRename: () => void; onDelete: (asset: Asset) => void; onRegisterScene: (asset: Asset) => void; onRegisterCharacter: (asset: Asset) => void; onProcess: (asset: Asset) => void }) {
-  const { user, projects, selectedProjectId, selectedProjectTitle, assets, assetType, assetLoading, renamingId, renameValue, fileInputRef, onSelectProject, onAssetTypeChange, onUpload, onStartRename, onRenameValueChange, onConfirmRename, onCancelRename, onDelete, onRegisterScene, onRegisterCharacter, onProcess } = props
+function ProjectAssetLibrary(props: { user: unknown; assets: Asset[]; assetType: string; assetLoading: boolean; renamingId: string | null; renameValue: string; fileInputRef: React.RefObject<HTMLInputElement>; onAssetTypeChange: (type: string) => void; onUpload: (file: File | undefined) => void; onStartRename: (asset: Asset) => void; onRenameValueChange: (value: string) => void; onConfirmRename: (asset: Asset) => void; onCancelRename: () => void; onDelete: (asset: Asset) => void; onRegisterScene: (asset: Asset) => void; onRegisterCharacter: (asset: Asset) => void; onProcess: (asset: Asset) => void }) {
+  const { user, assets, assetType, assetLoading, renamingId, renameValue, fileInputRef, onAssetTypeChange, onUpload, onStartRename, onRenameValueChange, onConfirmRename, onCancelRename, onDelete, onRegisterScene, onRegisterCharacter, onProcess } = props
   if (!user) {
     return (
       <div>
-        <SectionTitle title="项目上传" desc="上传素材需要登录，因为文件要归属到具体故事项目。" />
-        <Link to="/login" className="inline-flex rounded-lg bg-dream-600 px-4 py-2 text-sm font-medium text-white hover:bg-dream-700">登录后管理项目素材</Link>
+        <SectionTitle title="全局素材" desc="登录后上传的素材归属于你的账号，可在所有故事项目中复用。" />
+        <Link to="/login" className="inline-flex rounded-lg bg-dream-600 px-4 py-2 text-sm font-medium text-white hover:bg-dream-700">登录后管理素材</Link>
       </div>
     )
   }
   return (
     <div>
-      <SectionTitle title="项目上传" desc="管理当前项目的真实上传文件。角色库和场景库负责设定，这里负责文件。" />
-      <div className="mb-5 grid gap-3 rounded-lg border border-slate-200 bg-slate-50 p-4 md:grid-cols-[1fr_auto_auto]">
-        <select value={selectedProjectId} onChange={(event) => onSelectProject(event.target.value)} className="rounded-md border border-slate-200 bg-white px-3 py-2 text-sm">
-          {projects.map((project) => <option key={project.id} value={project.id}>{project.title}</option>)}
-        </select>
+      <SectionTitle title="全局素材" desc="上传一次即可在所有故事项目和章节中使用。可在这里重命名、处理或安全删除素材。" />
+      <div className="mb-5 grid gap-3 rounded-lg border border-slate-200 bg-slate-50 p-4 md:grid-cols-[1fr_auto]">
         <select value={assetType} onChange={(event) => onAssetTypeChange(event.target.value)} className="rounded-md border border-slate-200 bg-white px-3 py-2 text-sm">
           <option value="CG">角色立绘 / CG</option>
           <option value="BACKGROUND">背景图</option>
@@ -479,10 +455,10 @@ function ProjectAssetLibrary(props: { user: unknown; projects: ProjectDetail[]; 
         <label className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-md bg-dream-600 px-4 py-2 text-sm font-medium text-white hover:bg-dream-700">
           {assetLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
           上传素材
-          <input ref={fileInputRef} type="file" className="hidden" onChange={(event) => onUpload(event.target.files?.[0])} />
+          <input ref={fileInputRef} aria-label="上传素材文件" type="file" className="hidden" onChange={(event) => onUpload(event.target.files?.[0])} />
         </label>
       </div>
-      <p className="mb-3 text-sm text-slate-500">当前项目：{selectedProjectTitle || '未选择项目'}</p>
+      <p className="mb-3 text-sm text-slate-500">账号素材库 · 所有故事项目均可读取</p>
       <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
         {assets.map((asset) => (
           <article key={asset.id} className="overflow-hidden rounded-lg border border-slate-200">
@@ -520,7 +496,7 @@ function ProjectAssetLibrary(props: { user: unknown; projects: ProjectDetail[]; 
           </article>
         ))}
       </div>
-      {!assetLoading && assets.length === 0 && <EmptyState text="这个项目还没有上传素材。" />}
+      {!assetLoading && assets.length === 0 && <EmptyState text="素材库还是空的，上传图片或音频后即可在任意故事中使用。" />}
     </div>
   )
 }

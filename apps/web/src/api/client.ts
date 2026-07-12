@@ -169,6 +169,8 @@ export async function deleteProject(id: string): Promise<void> {
 
 export interface Asset {
   id: string
+  ownerId?: string
+  projectId?: string | null
   name: string
   type: string
   url: string
@@ -223,6 +225,11 @@ export async function getProjectAssets(projectId: string): Promise<Asset[]> {
   return data
 }
 
+export async function getAssetLibrary(): Promise<Asset[]> {
+  const { data } = await api.get('/assets')
+  return data
+}
+
 export async function inspectAsset(assetId: string): Promise<AssetInspection> {
   const { data } = await api.get(`/assets/${assetId}/inspection`)
   return data
@@ -238,13 +245,13 @@ export async function renameAsset(assetId: string, name: string): Promise<Asset>
 }
 
 export async function uploadAsset(
-  projectId: string,
   file: File,
   type: string,
+  projectId?: string,
 ): Promise<Asset> {
   const formData = new FormData()
   formData.append('file', file)
-  formData.append('projectId', projectId)
+  if (projectId) formData.append('projectId', projectId)
   formData.append('type', type)
   formData.append('name', file.name)
 
@@ -419,7 +426,7 @@ export async function processAsset(assetId: string, recipe: { purpose: 'sprite' 
   return data
 }
 
-export async function acceptAssetVariant(variantId: string, payload: { purpose: 'sprite' | 'cg' | 'background'; characterId?: string; characterName?: string; expressionName?: string }): Promise<AcceptedAssetVariant> {
+export async function acceptAssetVariant(variantId: string, payload: { purpose: 'sprite' | 'cg' | 'background'; projectId?: string; characterId?: string; characterName?: string; expressionName?: string }): Promise<AcceptedAssetVariant> {
   const { data } = await api.post(`/assets/variants/${variantId}/accept`, payload)
   return data
 }
