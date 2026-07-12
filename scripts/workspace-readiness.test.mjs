@@ -175,9 +175,11 @@ assert.match(batchLauncher, /powershell\.exe[^\r\n]*-File "%~dp0start-dreamchord
 const showcase = readFileSync(new URL('../docs/showcase.html', import.meta.url), 'utf8')
 for (const screenshot of [
   'editor-1440.png',
+  'editor-stage-continuity-1440.png',
   'flowchart-1440.png',
   'editor-assets-1440.png',
   'agent-workspace-1440.png',
+  'agent-conversation-routing-1440.png',
   'asset-processing-1440.png',
   'home-1440.png',
 ]) {

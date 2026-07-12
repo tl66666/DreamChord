@@ -121,7 +121,7 @@ export default function HomePage() {
           </Link>
           <div className="hidden items-center gap-4 md:flex">
             <Link to="/library" className="text-sm font-medium text-slate-700 hover:text-dream-600">素材库</Link>
-            <Link to="/agent" className="text-sm font-medium text-slate-700 hover:text-dream-600">创作 Agent</Link>
+            <Link to="/agent" className="inline-flex min-h-10 items-center gap-1.5 rounded-md bg-slate-950 px-3 text-sm font-semibold text-white hover:bg-cyan-800"><Bot className="h-4 w-4" />创作 Agent</Link>
             <Link to="/explore" className="text-sm font-medium text-slate-700 hover:text-dream-600">发现作品</Link>
             <Link to="/settings" className="text-sm font-medium text-slate-700 hover:text-dream-600">设置</Link>
             {!isLoading && (user ? (
@@ -149,7 +149,7 @@ export default function HomePage() {
         {mobileMenuOpen && <div role="navigation" aria-label="移动端导航" className="mx-auto mt-3 max-w-7xl border-t border-slate-200 pt-3 md:hidden">
           <div className="grid grid-cols-2 gap-2">
             <Link onClick={() => setMobileMenuOpen(false)} to="/library" className="rounded-md px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100">素材库</Link>
-            <Link onClick={() => setMobileMenuOpen(false)} to="/agent" className="rounded-md px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100">创作 Agent</Link>
+            <Link onClick={() => setMobileMenuOpen(false)} to="/agent" className="inline-flex items-center gap-1.5 rounded-md bg-slate-950 px-3 py-2 text-sm font-semibold text-white"><Bot className="h-4 w-4" />创作 Agent</Link>
             <Link onClick={() => setMobileMenuOpen(false)} to="/explore" className="rounded-md px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100">发现作品</Link>
             <Link onClick={() => setMobileMenuOpen(false)} to="/settings" className="rounded-md px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100">设置</Link>
           </div>
@@ -169,24 +169,23 @@ export default function HomePage() {
             <Sparkles className="h-4 w-4" />
             节点剧情 · 独立素材库 · Agent 创作闭环
           </div>
-          <h1 className="text-5xl font-bold leading-tight text-slate-950">
-            把模糊灵感
+          <h1 className="text-4xl font-bold leading-tight text-slate-950 sm:text-5xl">
+            DreamChord 创作 Agent
             <br />
-            变成能玩的视觉小说
+            <span className="text-dream-700">把灵感变成能玩的故事</span>
           </h1>
           <p className="max-w-xl text-lg leading-8 text-slate-700">
-            DreamChord 把故事项目、角色设定、背景素材和剧情结构放进同一条创作链路。创作 Agent 会读取项目上下文，先规划和校验，再由你预览、应用或撤销变更。
+            Agent 会结合故事圣经、章节、角色、素材、最近对话和分层记忆回答问题。普通对话默认只读；明确修改时才调用工具生成候选，由你预览、应用或撤销。
           </p>
           <div className="flex flex-wrap gap-3">
             <button onClick={handleCreate} disabled={creating} className="rounded-lg bg-dream-600 px-6 py-3 font-medium text-white shadow-lg shadow-dream-500/20 hover:bg-dream-700 disabled:opacity-50">
               {creating ? <span className="flex items-center gap-2"><Loader2 className="h-4 w-4 animate-spin" /> 创建中</span> : '新建故事'}
             </button>
-            <Link to="/library" className="rounded-lg border border-slate-200 bg-white px-6 py-3 font-medium text-slate-700 hover:bg-slate-50">打开素材库</Link>
+            <Link to="/agent" className="inline-flex items-center gap-2 rounded-lg bg-slate-950 px-6 py-3 font-medium text-white hover:bg-cyan-800"><Bot className="h-4 w-4" />和 Agent 一起创作</Link>
             <Link to="/play/dreamchord-first-thread" className="rounded-lg border border-slate-200 bg-white px-6 py-3 font-medium text-slate-700 hover:bg-slate-50">试玩演示</Link>
           </div>
         </div>
         <div className="relative">
-          <div className="absolute inset-0 rounded-3xl bg-dream-300/20 blur-3xl" />
           <img src="/assets/hero.png" alt="DreamChord 编辑器预览" className="relative rounded-lg border border-white shadow-2xl" />
         </div>
       </section>
@@ -240,8 +239,9 @@ export default function HomePage() {
                       )}
                     </div>
                     <p className="mb-4 line-clamp-2 text-sm text-slate-600">{project.description || '暂无简介'}</p>
-                    <div className="grid grid-cols-3 gap-2">
-                      <Link to={`/editor/${project.id}`} className="rounded-md bg-dream-600 py-2 text-center text-sm font-medium text-white hover:bg-dream-700">编辑</Link>
+                    <div className="grid grid-cols-2 gap-2">
+                      <Link to={`/editor/${project.id}`} className="rounded-md bg-dream-600 py-2 text-center text-sm font-medium text-white hover:bg-dream-700">继续编辑</Link>
+                      <Link to={`/agent?project=${project.id}`} className="inline-flex items-center justify-center gap-1 rounded-md bg-slate-950 py-2 text-center text-sm font-medium text-white hover:bg-cyan-800"><Bot className="h-3.5 w-3.5" />问 Agent</Link>
                       <Link to={`/play/${project.id}`} className="rounded-md border border-slate-200 py-2 text-center text-sm font-medium text-slate-700 hover:bg-slate-50">预览</Link>
                       <Link to="/library" className="rounded-md border border-slate-200 py-2 text-center text-sm font-medium text-slate-700 hover:bg-slate-50">素材</Link>
                     </div>
@@ -256,7 +256,7 @@ export default function HomePage() {
       <section className="mx-auto max-w-7xl px-6 py-16">
         <div className="mb-8">
           <p className="text-sm font-semibold text-dream-600">完整创作闭环</p>
-          <h2 className="text-2xl font-bold text-slate-950">三个入口，对应三个真实工作区</h2>
+          <h2 className="text-2xl font-bold text-slate-950">Agent 串起三个真实工作区</h2>
         </div>
         <div className="grid gap-5 lg:grid-cols-3">
           <FeatureCard
@@ -278,8 +278,8 @@ export default function HomePage() {
           <FeatureCard
             icon={<Bot className="h-5 w-5" />}
             title="创作 Agent"
-            desc="基于故事圣经和真实章节结构诊断问题，生成经过规则校验的节点图变更。"
-            items={['先展示计划和上下文来源', '变更应用前可预览差异', '应用后保留版本并支持撤销']}
+            desc="先自然对话，再按需要读取项目、记忆和受限工具；只有明确修改才进入审批。"
+            items={['项目对话无需绑定章节', '多对话分别保存创作上下文', '变更应用前预览，应用后可撤销']}
             action="打开创作 Agent"
             onClick={() => navigate('/agent')}
           />

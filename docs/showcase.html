@@ -935,8 +935,33 @@ body {
       </div>
     </div>
 
-    <!-- 2. 剧情流程图 -->
+    <!-- 2. 舞台连续性 -->
     <div class="showcase-block reverse reveal">
+      <div class="showcase-img-wrap">
+        <div class="showcase-img-bar">
+          <span class="showcase-img-dot r"></span>
+          <span class="showcase-img-dot y"></span>
+          <span class="showcase-img-dot g"></span>
+          <span class="showcase-img-url">localhost:5173/editor → 下一镜头</span>
+        </div>
+        <img src="screenshots/editor-stage-continuity-1440.png" alt="新镜头继承背景和在场角色的真实编辑界面" loading="lazy">
+      </div>
+      <div class="showcase-text">
+        <div class="showcase-num">02 / Stage Continuity</div>
+        <h3 class="showcase-title">人物不会凭空消失</h3>
+        <p class="showcase-desc">新镜头沿当前剧情路径继承背景和舞台。截图中上一镜头的雪与影自动进入新对话，并明确标成“保持在场”；新增人物会产生登场事件，换表情只更新该人物，退场则生成可播放的隐藏事件。</p>
+        <ul class="showcase-features">
+          <li>普通添加、快速续接和新场景使用同一套舞台语义</li>
+          <li>卡片展示最终舞台，不只展示本镜头新增节点</li>
+          <li>分支分别计算背景与人物状态，不会跨分支串线</li>
+          <li>汇合点状态不一致时提示作者明确重置</li>
+          <li>编辑器、实时预览和完整播放器结果一致</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- 3. 剧情流程图 -->
+    <div class="showcase-block reveal">
       <div class="showcase-img-wrap">
         <div class="showcase-img-bar">
           <span class="showcase-img-dot r"></span>
@@ -947,7 +972,7 @@ body {
         <img src="screenshots/flowchart-1440.png" alt="官方演示剧情流程图真实界面" loading="lazy">
       </div>
       <div class="showcase-text">
-        <div class="showcase-num">02 / Flowchart</div>
+        <div class="showcase-num">03 / Flowchart</div>
         <h3 class="showcase-title">剧情流程图</h3>
         <p class="showcase-desc">当剧情复杂到需要全局视角时，切换到剧情流程图视图。这是 galgame 风格的全局可视化——所有场景以卡片形式排列，按章节分行。普通场景间用实线箭头连接，选项分支用虚线箭头并标注选项文本。汇合场景（接收多条不同场景入边）自动检测并以紫色高亮 + GitMerge 图标标识。支持滚轮缩放、拖拽平移、拖拽场景卡片调整位置、拖拽创建场景间连接。</p>
         <ul class="showcase-features">
@@ -960,8 +985,8 @@ body {
       </div>
     </div>
 
-    <!-- 3. 素材进入镜头卡 -->
-    <div class="showcase-block reveal">
+    <!-- 4. 素材进入镜头卡 -->
+    <div class="showcase-block reverse reveal">
       <div class="showcase-img-wrap">
         <div class="showcase-img-bar">
           <span class="showcase-img-dot r"></span>
@@ -972,7 +997,7 @@ body {
         <img src="screenshots/editor-assets-1440.png" alt="故事镜头中的背景与 CG 素材选择真实界面" loading="lazy">
       </div>
       <div class="showcase-text">
-        <div class="showcase-num">03 / Asset to Story</div>
+        <div class="showcase-num">04 / Asset to Story</div>
         <h3 class="showcase-title">处理完，直接放进故事</h3>
         <p class="showcase-desc">镜头卡里的全局素材入口会合并展示背景与 CG，两类图片都能作为全屏故事画面。作者上传一次即可在名下所有故事复用；透明立绘在目标故事绑定角色和表情后，会立即进入舞台、发言人和表情选择器。</p>
         <ul class="showcase-features">
@@ -980,13 +1005,14 @@ body {
           <li>内置背景与账号全局素材在同一面板完成选择</li>
           <li>接受立绘后立即加入当前镜头的角色选择器</li>
           <li>选择结果沿用章节图、自动保存和播放器渲染路径</li>
-          <li>新建场景自带有效默认背景，不出现空白破图</li>
+          <li>新场景继承背景和在场角色，登场、更新、退场都有明确事件</li>
+          <li>各分支独立计算舞台，试玩时不会串入另一分支的人物</li>
         </ul>
       </div>
     </div>
 
-    <!-- 4. 创作 Agent -->
-    <div class="showcase-block reverse reveal">
+    <!-- 5. 创作 Agent -->
+    <div class="showcase-block reveal">
       <div class="showcase-img-wrap">
         <div class="showcase-img-bar">
           <span class="showcase-img-dot r"></span>
@@ -997,9 +1023,9 @@ body {
         <img src="screenshots/agent-workspace-1440.png" alt="DreamChord Agent 多对话工作台真实界面" loading="lazy">
       </div>
       <div class="showcase-text">
-        <div class="showcase-num">04 / Creative Agent</div>
+        <div class="showcase-num">05 / Creative Agent</div>
         <h3 class="showcase-title">多对话创作 Agent</h3>
-        <p class="showcase-desc">Agent 先是一个能正常交流的创作伙伴：问候、能力说明和下一步建议会立即结合当前项目回答。复杂问题再读取对话历史、故事圣经和分层记忆；续写、改图等任务进入工具协议和审批流程。模型返回格式不标准时会自动兼容或转成安全只读答复。</p>
+        <p class="showcase-desc">Agent 先是一个能正常交流的创作伙伴：时间、问候、能力说明和下一步建议会即时回答；一般问题进入默认只读对话，并按需读取项目、故事圣经和分层记忆；明确续写、改图等任务才进入工具协议和审批流程。</p>
         <ul class="showcase-features">
           <li>新建、搜索、重命名、置顶和删除独立对话</li>
           <li>了解项目、检查剧情、梳理角色、素材建议四个快捷入口</li>
@@ -1013,8 +1039,8 @@ body {
       </div>
     </div>
 
-    <!-- 5. Agent 自然对话 -->
-    <div class="showcase-block reveal">
+    <!-- 6. Agent 自然对话 -->
+    <div class="showcase-block reverse reveal">
       <div class="showcase-img-wrap">
         <div class="showcase-img-bar">
           <span class="showcase-img-dot r"></span>
@@ -1022,14 +1048,14 @@ body {
           <span class="showcase-img-dot g"></span>
           <span class="showcase-img-url">localhost:5173/agent → 项目对话</span>
         </div>
-        <img src="screenshots/agent-capabilities-1440.png" alt="DreamChord Agent 自然对话、项目上下文与快捷能力入口" loading="lazy">
+        <img src="screenshots/agent-conversation-routing-1440.png" alt="DreamChord Agent 回答时间并说明无模型能力边界的真实对话" loading="lazy">
       </div>
       <div class="showcase-text">
-        <div class="showcase-num">05 / Resilient Conversation</div>
+        <div class="showcase-num">06 / Resilient Conversation</div>
         <h3 class="showcase-title">简单问题，立即答；复杂任务，稳妥做</h3>
-        <p class="showcase-desc">“你好”、能力询问和下一步建议由本地会话层结合当前项目即时回答，不依赖外部模型，也不会因为模型 JSON 格式差异而失败。需要分析或创作时再进入模型、记忆与工具链，响应异常则降级为安全的只读答复。</p>
+        <p class="showcase-desc">“现在几点”、问候、能力询问和下一步建议由本地层即时回答。普通问题允许模型直接返回自然文本，不再强制套用剧情补丁 JSON；只读模式即使收到错误补丁也只保留文字，不会修改故事或让整次对话失败。</p>
         <ul class="showcase-features">
-          <li>常见问候和轻量问题零配置、低延迟可用</li>
+          <li>时间日期、常见问候和轻量问题零配置、低延迟可用</li>
           <li>自然文本、Markdown 代码块和常见空字段均可兼容</li>
           <li>异常降级只返回文字，不会暗中修改故事或记忆</li>
           <li>失败原因使用中文说明，并保留继续对话与重试入口</li>
@@ -1037,7 +1063,7 @@ body {
       </div>
     </div>
 
-    <!-- 6. 素材库 -->
+    <!-- 7. 素材库 -->
     <div class="showcase-block reveal">
       <div class="showcase-img-wrap">
         <div class="showcase-img-bar">
@@ -1049,7 +1075,7 @@ body {
         <img src="screenshots/asset-processing-1440.png" alt="素材处理工作室" loading="lazy">
       </div>
       <div class="showcase-text">
-        <div class="showcase-num">06 / Assets</div>
+        <div class="showcase-num">07 / Assets</div>
         <h3 class="showcase-title">全局素材库与图片处理</h3>
         <p class="showcase-desc">截图来自一次真实的白底人物验收：系统解码 1024×1536 JPEG，判断为浅色平底角色图并给出 90% 置信度，再通过边缘连通去底生成透明立绘候选。作者可先接受到全局素材库，进入具体故事后再绑定角色。</p>
         <ul class="showcase-features">
@@ -1063,7 +1089,7 @@ body {
       </div>
     </div>
 
-    <!-- 7. 项目首页 -->
+    <!-- 8. 项目首页 -->
     <div class="showcase-block reverse reveal">
       <div class="showcase-img-wrap">
         <div class="showcase-img-bar">
@@ -1075,13 +1101,13 @@ body {
         <img src="screenshots/home-1440.png" alt="首页项目工作区" loading="lazy">
       </div>
       <div class="showcase-text">
-        <div class="showcase-num">07 / Projects</div>
+        <div class="showcase-num">08 / Projects</div>
         <h3 class="showcase-title">项目首页与备份恢复</h3>
         <p class="showcase-desc">首页集中管理故事项目、发布状态和创作入口。项目可导出为版本化 DreamChord 备份，再通过严格校验和 ID 重映射恢复为新项目；移动端导航收敛为可访问菜单，不再挤压品牌和页面内容。</p>
         <ul class="showcase-features">
           <li>一键发布到作品广场，生成可分享链接</li>
           <li>项目卡片显示发布状态、场景数、节点数</li>
-          <li>新建故事 / 打开素材库 / 试玩演示三入口</li>
+          <li>每个项目直接进入继续编辑、问 Agent、预览和素材工作流</li>
           <li>浏览器直接运行，无需安装客户端</li>
           <li>项目备份导出 / 导入，源项目保持不变</li>
           <li>移动端首页、编辑器、Agent 与播放器响应式适配</li>
@@ -1215,7 +1241,7 @@ body {
   <div class="workflow-chain">
     <div class="workflow-step reveal"><div class="workflow-num">01</div><div class="workflow-content"><h4>用户创建镜头卡</h4><p>填写背景、选择角色、编写台词——像写小说一样，无需理解节点图</p><div class="workflow-arrow">background → character → dialogue</div></div></div>
     <div class="workflow-step reveal"><div class="workflow-num">02</div><div class="workflow-content"><h4>系统自动生成节点和边</h4><p>createSceneNodes 创建背景/角色/文本节点，chainEdges 连接节点链，normalEdge 连接场景间</p><div class="workflow-arrow">nodes[] + edges[] → 节点图</div></div></div>
-    <div class="workflow-step reveal"><div class="workflow-num">03</div><div class="workflow-content"><h4>转换器 DFS 遍历生成 RuntimeStory</h4><p>convertFlowToRuntime 从起始节点深度优先遍历，追踪角色状态和背景变化，生成线性场景数组</p><div class="workflow-arrow">nodes + edges → RuntimeStory.scenes[]</div></div></div>
+    <div class="workflow-step reveal"><div class="workflow-num">03</div><div class="workflow-content"><h4>按剧情路径生成 RuntimeStory</h4><p>convertFlowToRuntime 为每个可播放镜头沿真实前驱路径解析背景和角色状态，分支之间不会共享可变舞台</p><div class="workflow-arrow">path stage → RuntimeStory.scenes[]</div></div></div>
     <div class="workflow-step reveal"><div class="workflow-num">04</div><div class="workflow-content"><h4>运行时引擎驱动播放器</h4><p>createRuntimeEngine 管理场景推进 next()、分支选择 choose() 和事件触发 emit()</p><div class="workflow-arrow">next() → choose() → emit()</div></div></div>
     <div class="workflow-step reveal"><div class="workflow-num">05</div><div class="workflow-content"><h4>播放器渲染视觉效果</h4><p>打字机逐字效果、角色立绘淡入淡出、选项按钮渲染、Web Audio 音效播放</p><div class="workflow-arrow">VisualNovelPlayer → 浏览器</div></div></div>
   </div>
@@ -1327,7 +1353,7 @@ cd DreamChord && pnpm install --frozen-lockfile</code></div></div>
     </div>
     <div class="faq-item reveal">
       <div class="faq-q">AI 功能是必须的吗？不配置 AI 能用吗？<span class="faq-icon">+</span></div>
-      <div class="faq-a"><div class="faq-a-inner">基础编辑、自动保存、剧情体检、素材处理、备份恢复和播放器都不依赖模型。未配置 API Key 时，Agent 仍能自然问候、解释能力、建议下一步、概括项目、盘点角色素材和检查剧情结构；续写和改写等开放式生成再配置 GLM、DeepSeek、Kimi、OpenAI 或其他兼容接口。</div></div>
+      <div class="faq-a"><div class="faq-a-inner">基础编辑、自动保存、剧情体检、素材处理、备份恢复和播放器都不依赖模型。未配置 API Key 时，Agent 仍能回答时间日期、自然问候、解释能力、建议下一步、概括项目、盘点角色素材和检查剧情结构；一般知识问答、续写和改写等开放任务再配置 GLM、DeepSeek、Kimi、OpenAI 或其他兼容接口。</div></div>
     </div>
     <div class="faq-item reveal">
       <div class="faq-q">角色立绘为什么有白底？怎么处理？<span class="faq-icon">+</span></div>
