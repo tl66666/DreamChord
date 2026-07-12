@@ -48,8 +48,9 @@ function normalizeToolInput(tool: AgentToolName, value: unknown): unknown {
   if (!SINGLE_ASSET_TOOLS.has(tool) || !value || typeof value !== 'object' || Array.isArray(value)) return value
   const record = value as Record<string, unknown>
   if (typeof record.assetId === 'string' || !Array.isArray(record.ids) || record.ids.length !== 1 || typeof record.ids[0] !== 'string') return value
-  const { ids: _ids, ...rest } = record
-  return { ...rest, assetId: record.ids[0] }
+  const normalized: Record<string, unknown> = { ...record, assetId: record.ids[0] }
+  delete normalized.ids
+  return normalized
 }
 
 function toolInputHint(tool: AgentToolName): string {
