@@ -159,6 +159,39 @@ describe('creative agent end-to-end workflow', () => {
     })
   })
 
+  it('does not overwrite a cancellation that happens while persisting a reply', async () => {
+    const service = new PrismaAgentRunService(client, {
+      loadSnapshot: (projectId) => loadAgentProjectSnapshot(projectId, client),
+      createProvider: () => ({ chat: async () => JSON.stringify({ type: 'final', summary: 'cancel race', plan: [] }) }),
+    })
+    const conversation = await service.createConversation('project', 'owner', { title: 'cancel race', scope: 'project' })
+    let runId = ''
+    const serviceWithPrivate = service as unknown as {
+      refreshConversationSummary: (id: string) => Promise<void>
+    }
+    const originalRefresh = serviceWithPrivate.refreshConversationSummary
+    serviceWithPrivate.refreshConversationSummary = async (id) => {
+      while (!runId) await new Promise((resolve) => setTimeout(resolve, 1))
+      await service.cancelRun(runId, 'owner')
+      await originalRefresh.call(service, id)
+    }
+    const queued = await service.createRun({
+      projectId: 'project', conversationId: conversation.id, prompt: '概括整个项目', scope: 'project',
+      providerConfig: { provider: 'fake', model: 'controlled', apiKey: 'memory-only' },
+    }, 'owner')
+    runId = queued.id
+
+    for (let attempt = 0; attempt < 100; attempt += 1) {
+      const run = await service.getRun(queued.id, 'owner')
+      if (['completed', 'cancelled', 'failed'].includes(run.status)) {
+        expect(run.status).toBe('cancelled')
+        return
+      }
+      await new Promise((resolve) => setTimeout(resolve, 10))
+    }
+    throw new Error('Agent run did not settle')
+  })
+
   it('runs the local assistant without an API key or external provider call', async () => {
     const createProvider = vi.fn(() => { throw new Error('external provider must not be called') })
     const service = new PrismaAgentRunService(client, {
