@@ -41,13 +41,14 @@ export function createApp(dependencies: AppDependencies = {}): Express {
   }, express.static(path.resolve(process.env.UPLOAD_DIR || path.join(process.cwd(), 'uploads'))))
 
   app.use('/api/auth', authRoutes)
+  // Public gallery and published-project reads must run before project-scoped auth routers.
+  app.use('/api/projects', projectRoutes)
   app.use('/api/projects', createStoryBibleRouter(dependencies.storyBibleRepository ?? prismaStoryBibleRepository))
   app.use('/api/projects', createChapterSaveRouter(dependencies.chapterSaveRepository ?? prismaChapterSaveRepository))
   app.use('/api/projects', createHealthRouter(dependencies.healthRepository ?? prismaHealthRepository))
   app.use('/api/projects', createAgentProjectRouter(dependencies.agentRunService ?? prismaAgentRunService, dependencies.conversationService ?? prismaConversationService))
   app.use('/api/projects', createMemoryProjectRouter(dependencies.memoryService ?? prismaMemoryService))
   app.use('/api/projects', createProjectTransferRouter())
-  app.use('/api/projects', projectRoutes)
   app.use('/api/agent', createAgentRunRouter(dependencies.agentRunService ?? prismaAgentRunService, dependencies.conversationService ?? prismaConversationService))
   app.use('/api/agent', createMemoryRouter(dependencies.memoryService ?? prismaMemoryService))
   app.use('/api/assets', assetRoutes)

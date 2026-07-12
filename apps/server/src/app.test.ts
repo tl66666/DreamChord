@@ -38,4 +38,10 @@ describe('upload static serving', () => {
 
     expect(response.status).toBe(401)
   }, 20_000)
+
+  it('allows anonymous readers to load a published project', async () => {
+    const response = await request(createApp()).get('/api/projects/dreamchord-first-thread')
+    expect(response.status).toBe(200)
+    expect(response.body).toMatchObject({ id: 'dreamchord-first-thread', isPublished: true })
+  })
 })
