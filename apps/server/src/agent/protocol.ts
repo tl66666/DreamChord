@@ -25,15 +25,29 @@ const responseSchema = z.discriminatedUnion('type', [toolCallSchema, finalSchema
 export type AgentModelResponse = z.infer<typeof responseSchema>
 export type AgentFinalResponse = z.infer<typeof finalSchema>
 
-function stripFence(text: string): string {
+function extractJsonPayload(text: string): string {
   const trimmed = text.trim()
-  const match = trimmed.match(/^```(?:json)?\s*([\s\S]*?)\s*```$/i)
-  return match?.[1] ?? trimmed
+  const fenced = trimmed.match(/```(?:json)?\s*([\s\S]*?)\s*```/i)
+  if (fenced?.[1]) return fenced[1]
+  const start = trimmed.indexOf('{')
+  const end = trimmed.lastIndexOf('}')
+  return start >= 0 && end > start ? trimmed.slice(start, end + 1) : trimmed
+}
+
+function normalizeFinalResponse(value: unknown): unknown {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return value
+  const record = value as Record<string, unknown>
+  if (record.type !== 'final') return value
+  const normalized: Record<string, unknown> = { ...record, plan: Array.isArray(record.plan) ? record.plan : [] }
+  for (const key of ['patch', 'suggestions', 'memorySuggestions', 'artifactRefs']) {
+    if (normalized[key] === null) delete normalized[key]
+  }
+  return normalized
 }
 
 export function parseAgentModelResponse(text: string): AgentModelResponse {
   try {
-    const parsed: unknown = JSON.parse(stripFence(text))
+    const parsed: unknown = normalizeFinalResponse(JSON.parse(extractJsonPayload(text)))
     const result = responseSchema.safeParse(parsed)
     if (!result.success) {
       const paths = result.error.issues.map((issue) => issue.path.join('.') || 'root').join(', ')
