@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>梦弦 DreamChord — 视觉小说创作平台</title>
-<meta name="description" content="DreamChord 0.2 是浏览器里的视觉小说创作平台：镜头卡编辑、分支播放、多对话创作 Agent、分层记忆、工具调用、图片处理与项目备份。">
+<meta name="description" content="DreamChord 0.2 是浏览器里的视觉小说创作平台：自然对话创作 Agent、项目上下文、分层记忆、工具调用、镜头卡编辑、图片处理与分支播放。">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&family=Noto+Serif+SC:wght@400;700;900&family=Instrument+Serif:ital@1&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -720,7 +720,7 @@ body {
       </h1>
       <p class="hero-desc word-reveal">
         像写小说一样创作，像玩游戏一样阅读。<br>
-        浏览器里的视觉小说创作平台——镜头卡写作、分支播放、分层记忆与可审批的创作 Agent。
+        浏览器里的视觉小说创作平台——自然对话、项目记忆、受限工具与可审批的创作 Agent。
       </p>
       <div class="hero-cta-row word-reveal">
         <a href="https://github.com/tl66666/DreamChord" target="_blank" class="hero-cta">
@@ -814,7 +814,7 @@ body {
         </div>
         <div class="pain-row reveal">
           <div class="pain-point">AI 辅助缺失</div>
-          <div class="pain-solution"><strong>传统引擎痛点：</strong>普通聊天工具不了解项目结构，不记得不同创作任务，也无法安全修改分支图。<strong>DreamChord 方案：</strong>多对话创作 Agent 可先讨论整个项目，也可绑定章节后续写。它读取故事圣经、章节图、历史和分层记忆，调用受限工具生成结构化提案；作者可以查看差异、应用、拒绝或撤销，模型没有直接写库权限。</div>
+          <div class="pain-solution"><strong>传统引擎痛点：</strong>普通聊天工具不了解项目结构，不记得不同创作任务，也无法安全修改分支图。<strong>DreamChord 方案：</strong>多对话 Agent 能回答普通问题，也能读取故事圣经、章节图、历史和分层记忆。复杂任务调用受限工具生成提案；格式异常会自动修复或降级为只读答复，不会因为一句“你好”就失败。</div>
         </div>
         <div class="pain-row reveal">
           <div class="pain-point">无法即时分享</div>
@@ -994,14 +994,15 @@ body {
           <span class="showcase-img-dot g"></span>
           <span class="showcase-img-url">localhost:5173/agent</span>
         </div>
-        <img src="screenshots/agent-workspace-1440.png" alt="多对话创作 Agent 工作区" loading="lazy">
+        <img src="screenshots/agent-capabilities-1440.png" alt="DreamChord Agent 自然对话、项目上下文与快捷能力入口" loading="lazy">
       </div>
       <div class="showcase-text">
         <div class="showcase-num">04 / Creative Agent</div>
         <h3 class="showcase-title">多对话创作 Agent</h3>
-        <p class="showcase-desc">每个对话可以处理不同任务：讨论整部作品、续写当前场景、修补分支、检查人物动机或准备图片素材。对话默认不绑定章节，需要改剧情时再选择章节。未配置 API Key 也能用本地助手概括项目、盘点素材和检查剧情结构。</p>
+        <p class="showcase-desc">Agent 先是一个能正常交流的创作伙伴：问候、能力说明和下一步建议会立即结合当前项目回答。复杂问题再读取对话历史、故事圣经和分层记忆；续写、改图等任务进入工具协议和审批流程。模型返回格式不标准时会自动兼容或转成安全只读答复。</p>
         <ul class="showcase-features">
           <li>新建、搜索、重命名、置顶和删除独立对话</li>
+          <li>了解项目、检查剧情、梳理角色、素材建议四个快捷入口</li>
           <li>项目对话无需章节；续写和改图时再绑定目标章节</li>
           <li>设定、人物、剧情、决策、偏好、产物六层记忆</li>
           <li>读取上下文、搜索记忆、检查图谱、查询角色与素材</li>
@@ -1302,7 +1303,7 @@ cd DreamChord && pnpm install --frozen-lockfile</code></div></div>
     </div>
     <div class="faq-item reveal">
       <div class="faq-q">AI 功能是必须的吗？不配置 AI 能用吗？<span class="faq-icon">+</span></div>
-      <div class="faq-a"><div class="faq-a-inner">基础编辑、自动保存、剧情体检、素材处理、备份恢复和播放器都不依赖模型。未配置 API Key 时，Agent 会使用本地助手概括项目、盘点角色与素材、检查剧情结构；续写和改写等开放式生成再配置 GLM、DeepSeek、Kimi、OpenAI 或其他兼容接口。</div></div>
+      <div class="faq-a"><div class="faq-a-inner">基础编辑、自动保存、剧情体检、素材处理、备份恢复和播放器都不依赖模型。未配置 API Key 时，Agent 仍能自然问候、解释能力、建议下一步、概括项目、盘点角色素材和检查剧情结构；续写和改写等开放式生成再配置 GLM、DeepSeek、Kimi、OpenAI 或其他兼容接口。</div></div>
     </div>
     <div class="faq-item reveal">
       <div class="faq-q">角色立绘为什么有白底？怎么处理？<span class="faq-icon">+</span></div>
