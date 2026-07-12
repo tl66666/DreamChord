@@ -1,0 +1,5 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 安全漏洞报告
+    url: https://github.com/tl66666/DreamChord/security/advisories/new
+    about: 认证绕过、密钥泄漏、任意文件访问等问题请使用私密安全报告。

@@ -1,0 +1,79 @@
+name: 缺陷报告
+description: 报告可以稳定复现的功能或界面问题
+title: "[Bug] "
+labels:
+  - bug
+body:
+  - type: markdown
+    attributes:
+      value: |
+        感谢你帮助改进 DreamChord。安全漏洞请使用仓库 Security 页的私密报告入口，不要在公开 Issue 粘贴 API Key、数据库或私人素材。
+  - type: input
+    id: version
+    attributes:
+      label: 版本或提交
+      description: 可填写版本号、提交哈希或下载日期。
+      placeholder: 0.2.0 / 879b9b8
+    validations:
+      required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: 问题区域
+      options:
+        - 一键启动或安装
+        - 故事编辑器
+        - 剧情流程图或播放器
+        - 创作 Agent
+        - 素材库或图片处理
+        - 备份与恢复
+        - 登录、设置或其他页面
+        - 文档
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: 复现步骤
+      description: 从打开哪个页面开始，按顺序写出每一步。
+      placeholder: |
+        1. 使用 demo 账号登录
+        2. 打开某项目的某章节
+        3. 新建对话镜头
+        4. 点击……
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: 预期结果
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: 实际结果与错误信息
+      description: 请粘贴完整错误文本；上传前删除密钥、令牌和私人数据。
+    validations:
+      required: true
+  - type: input
+    id: environment
+    attributes:
+      label: 运行环境
+      placeholder: Windows 11、Node.js 20.15、Chrome 126
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: 截图、日志或补充信息
+      description: 界面问题请尽量附截图。不要上传 .env、数据库或未脱敏日志。
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: 提交前确认
+      options:
+        - label: 我已搜索现有 Issue，没有找到相同问题。
+          required: true
+        - label: 这个报告不包含 API Key、密码、令牌或私人素材。
+          required: true

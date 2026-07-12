@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict'
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
-import { join } from 'node:path'
+import { dirname, join, resolve } from 'node:path'
 import { spawnSync } from 'node:child_process'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 
@@ -187,5 +187,56 @@ for (const screenshot of [
   assert.ok(existsSync(fileURLToPath(new URL(`../docs/screenshots/${screenshot}`, import.meta.url))), `${screenshot} must exist`)
 }
 assert.doesNotMatch(showcase, /screenshots\/flowchart\.jpg/, 'showcase must not use the stale flowchart placeholder')
+
+const repositoryRoot = fileURLToPath(new URL('..', import.meta.url))
+const publicDocuments = [
+  'README.md',
+  'CONTRIBUTING.md',
+  'CHANGELOG.md',
+  'SECURITY.md',
+  'docs/README.md',
+  'docs/GETTING_STARTED.md',
+  'docs/CREATOR_WORKFLOW.md',
+  'docs/PROJECT_OVERVIEW.md',
+  'docs/ARCHITECTURE.md',
+  'docs/GLOSSARY.md',
+  'docs/ROADMAP.md',
+  'docs/RELEASE_GUIDE.md',
+  'docs/AGENT_GUIDE.md',
+  'docs/LONG_STORY_WORKFLOW.md',
+  '.github/PULL_REQUEST_TEMPLATE.md',
+]
+
+for (const issueTemplate of [
+  '.github/ISSUE_TEMPLATE/bug_report.yml',
+  '.github/ISSUE_TEMPLATE/feature_request.yml',
+  '.github/ISSUE_TEMPLATE/config.yml',
+]) {
+  assert.ok(
+    existsSync(resolve(repositoryRoot, issueTemplate)),
+    `required GitHub collaboration template must exist: ${issueTemplate}`,
+  )
+}
+
+for (const relativeDocumentPath of publicDocuments) {
+  const documentPath = resolve(repositoryRoot, relativeDocumentPath)
+  assert.ok(existsSync(documentPath), `required public document must exist: ${relativeDocumentPath}`)
+
+  const markdown = readFileSync(documentPath, 'utf8')
+  const linkPattern = /!?\[[^\]]*\]\(([^)]+)\)/g
+  for (const match of markdown.matchAll(linkPattern)) {
+    const rawTarget = match[1].trim().replace(/^<|>$/g, '')
+    if (/^(?:https?:|mailto:|data:)/i.test(rawTarget)) continue
+
+    const localTarget = decodeURIComponent(rawTarget.split('#', 1)[0].split('?', 1)[0])
+    if (!localTarget) continue
+
+    const resolvedTarget = resolve(dirname(documentPath), localTarget)
+    assert.ok(
+      existsSync(resolvedTarget),
+      `${relativeDocumentPath} contains a broken local link: ${rawTarget}`,
+    )
+  }
+}
 
 console.log('workspace readiness scripts are configured')

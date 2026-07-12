@@ -1,0 +1,58 @@
+name: 功能建议
+description: 描述一个真实创作场景和期望改进
+title: "[Feature] "
+labels:
+  - enhancement
+body:
+  - type: markdown
+    attributes:
+      value: |
+        请从实际创作任务出发。路线图中的功能也可以补充更具体的使用场景，但请不要把计划中的能力当成当前已实现功能。
+  - type: textarea
+    id: scenario
+    attributes:
+      label: 使用场景
+      description: 谁在什么情况下遇到了什么困难？
+    validations:
+      required: true
+  - type: textarea
+    id: current
+    attributes:
+      label: 当前做法和不足
+      description: 现在如何完成这件事，哪一步最耗时或容易出错？
+    validations:
+      required: true
+  - type: textarea
+    id: outcome
+    attributes:
+      label: 期望结果
+      description: 描述完成后的工作流，不必指定内部技术实现。
+    validations:
+      required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: 相关区域
+      options:
+        - 故事编辑器
+        - 创作 Agent
+        - 素材与图片处理
+        - 播放与发布
+        - 备份与迁移
+        - 一键启动与部署
+        - 文档与新手体验
+        - 其他
+    validations:
+      required: true
+  - type: textarea
+    id: risks
+    attributes:
+      label: 数据、安全或兼容性考虑
+      description: 如果涉及 Agent 自动写入、外部服务、用户数据或备份格式，请说明。
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: 提交前确认
+      options:
+        - label: 我已查看项目路线图和现有 Issue。
+          required: true
