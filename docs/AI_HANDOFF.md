@@ -1,411 +1,349 @@
-# DreamChord AI Handoff
+# DreamChord 0.2 Architecture And AI Handoff
 
-Last updated: 2026-07-11 (rev 6)
+Last updated: 2026-07-12
 
-This file is the practical handoff for future agents and developers. Read it before changing the editor.
+This document describes the implemented system, its safety boundaries, and the correct extension points for future maintainers or coding agents.
 
----
+## Current Status
 
-## Product Direction
+DreamChord 0.2 is a working full-stack visual-novel studio with:
 
-DreamChord is a visual novel authoring tool for non-technical users. The user writes stories as:
+- authenticated projects and publishing;
+- chapter/scene/shot-card editing;
+- branching graph generation and playback;
+- history, serialized autosave, version conflicts, and recovery states;
+- structured long-form manuscript preview/import;
+- project Story Bible and health analysis;
+- full-screen multi-conversation creative Agent;
+- layered, ranked, reviewable memory;
+- bounded story and asset tools;
+- safe image preparation and review;
+- versioned project backup/restore;
+- portable Windows one-click startup.
 
-1. Project
-2. Chapter
-3. Scene
-4. Shot card
-5. Runtime nodes and edges
+The current implementation has browser QA evidence under `docs/screenshots/` for home, editor, Agent workspace, memory center, manuscript preview, asset studio, player, and mobile layouts.
 
-The node graph is still the storage/runtime source of truth, but it is not the primary writing interface. The primary editor is the scene workspace: chapter tree on the left, shot cards in the middle, live preview on the right.
+## System Map
 
-**Core value proposition**: Hide node-graph complexity behind a card-writing UI. The user writes "who says what"; the system builds the nodes and edges.
+```text
+Browser
+  Home / Library / Settings
+  FlowEditor
+    SceneTree
+    ShotCardEditor
+    StoryFlowchart
+    MiniPreview
+    AssetPanel
+    compact AgentPanel
+  AIWriterPage
+    ConversationSidebar
+    ConversationTranscript
+    AgentPanel
+    AgentContextPanel
+    MemoryCenter
+  VisualNovelPlayer
+        |
+        | REST + JWT
+        v
+Express API
+  project / chapter / asset / backup routes
+  Agent conversation and run routes
+        |
+        +-> Prisma + SQLite
+        +-> Sharp image pipeline
+        +-> OpenAI-compatible model provider
+        +-> @dreamchord/story-domain
+```
 
-## Creative Agent (Rev 6)
+## Editor Data Flow
 
-The previous fixed-response AI writer and `AIAssistantPanel` were removed. Both `/agent` and the editor rail now use `apps/web/src/agent/AgentPanel.tsx`.
+The browser loads server graph records and converts them into React Flow nodes and edges. `useEditorStore` owns the active graph and its history.
 
-The server uses one bounded Agent: persisted run state, at most eight model steps, a fixed tool registry, strict structured responses, shared story-graph validation, diff preview, explicit approval, transactional apply, and guarded undo. API keys are passed from the browser into in-process queue memory and are never persisted or returned.
+```text
+server chapter
+  -> convertServerNodes / convertServerEdges
+  -> ensureLegacySceneGroups
+  -> hydrateGraph (history reset)
+  -> scene/card editing
+  -> commitGraph (history snapshot)
+  -> SaveCoordinator
+  -> strict PUT body
+  -> atomic chapter version claim
+```
 
-Important paths:
+### Save Contract
 
-| Path | Role |
+URL:
+
+```text
+PUT /api/projects/:projectId/chapters/:chapterId
+```
+
+Body:
+
+```json
+{
+  "baseVersion": 1,
+  "nodes": [],
+  "edges": []
+}
+```
+
+The body schema is strict. Do not send `chapterId` inside it. The server increments a version only when `baseVersion` matches. A mismatch returns `409` with the current version.
+
+The autosave coordinator serializes writes and saves the newest revision after an in-flight write. Conflict/error states remain dirty so navigation protection stays active.
+
+## Story Domain
+
+`packages/story-domain` is the shared contract for graph semantics, patch operations, health analysis, and validation. Agent tools and editor code should depend on this package rather than inventing local graph formats.
+
+Core expectations:
+
+- node and edge IDs are unique;
+- edges reference existing nodes;
+- choice branches preserve handle-to-choice mapping;
+- patch operation counts are bounded;
+- graph health is checked before approval/application;
+- conversion to runtime remains deterministic.
+
+## Creative Agent
+
+### User Model
+
+The Agent has two surfaces:
+
+- Compact editor panel for a quick task in the current project.
+- Full-screen `/agent` workspace for multiple conversations, transcripts, memory, context, and long-running creative work.
+
+Each conversation can focus on a different objective. Conversation records store title, scope, chapter ownership, pinned state, summary, and timestamps. Messages and conversation-scoped memories are deleted with the conversation; already applied story changes remain in the chapter audit trail.
+
+### Run Pipeline
+
+```text
+request
+  -> authorize project + conversation + chapter
+  -> assemble context
+  -> plan
+  -> execute allowlisted tools
+  -> build structured proposal
+  -> validate graph and limits
+  -> await author approval
+  -> transactional apply + snapshot
+  -> optional version-safe undo
+```
+
+The model is not given a direct database write tool.
+
+### Context Assembly
+
+Context is assembled from:
+
+- the active conversation transcript;
+- rolling conversation summary;
+- project and chapter metadata;
+- selected node/scene/chapter scope;
+- Story Bible;
+- ranked active memories;
+- character profiles;
+- project asset metadata;
+- story graph excerpts and health issues.
+
+Context trimming must preserve ownership and priority before token reduction. Never mix another conversation's private memory into the active run.
+
+### Tool Categories
+
+Read tools:
+
+- conversation context and summaries;
+- memory search;
+- project/chapter/scene/card lookup;
+- Story Bible and character profiles;
+- assets and accepted variants;
+- story health and bounded search.
+
+Proposal tools:
+
+- create/modify validated story patches;
+- propose branch completion or continuation;
+- propose safe image preparation.
+
+Apply, undo, accept, and reject remain explicit API commands controlled by the user.
+
+The editor blocks Agent apply/undo while local graph state is dirty, saving, conflicted, or failed. A proposal whose `baseVersion` no longer matches the chapter must be regenerated; never overwrite local edits with an older server result.
+
+Custom provider URLs are checked again at the actual HTTP transport. DNS results are pinned for the connection, redirects are manual and revalidated per hop, and authorization is removed on cross-origin redirects.
+
+### Extending Tools
+
+When adding a tool:
+
+1. Define its input/output schema.
+2. Register it in the allowlist and prompt-facing description.
+3. Implement authorization and resource bounds.
+4. Add focused service tests.
+5. Confirm tool output is serializable and contains no secret.
+6. Add it to context/tool strategy UI only if users need to understand it.
+
+Avoid generic filesystem, shell, SQL, network, or arbitrary-code tools.
+
+## Layered Memory
+
+### Kinds
+
+| Kind | Purpose |
 |---|---|
-| `packages/story-domain` | Provider-neutral graph types, deterministic health checks, strict patch schema, apply/diff/validation |
-| `apps/server/src/agent` | Context builder, tools, protocol, executor, queue, run lifecycle |
-| `apps/server/src/story/patchService.ts` | SQLite transaction, chapter snapshot, version conflict protection, undo |
-| `apps/server/src/routes/storyBible.ts` | Project-level world, theme, style, timeline, forbidden elements, character notes |
-| `apps/web/src/agent` | Shared composer, progress timeline, patch preview, approval controls and polling |
-| `apps/web/src/pages/AIWriterPage.tsx` | Full-screen Agent with project/chapter/conversation URL context |
+| `canon` | World rules and immutable facts |
+| `character` | Voice, goals, secrets, relationships |
+| `plot` | Active plot state and unresolved threads |
+| `decision` | Accepted creative decisions |
+| `preference` | Author style and workflow preferences |
+| `artifact` | Applied patches and generated artifacts |
 
-Compatibility routes under `/api/ai/*` remain for old clients and now use strict bounded input schemas. Do not add new features there.
+### States
 
----
-
-## Current Architecture
-
-### Important files
-
-| File | Role |
+| State | Agent use |
 |---|---|
-| `apps/web/src/editor/FlowEditor.tsx` | Main editor shell: chapter switching, save/preview, three-column layout, state management (Zustand single source) |
-| `apps/web/src/editor/SceneTree.tsx` | Left column: chapter/scene list, add/delete/rename scene and chapter |
-| `apps/web/src/editor/ShotCardEditor.tsx` | Middle column: shot-card authoring UI with inline AI buttons, card CRUD, manuscript import, quick append |
-| `apps/web/src/editor/ShotCardItem.tsx` | Shot card display component: collapsed/expanded views, choice warning badges |
-| `apps/web/src/editor/CardEditor.tsx` | Shot card edit form: background/character/dialogue/choice editing, branch target management |
-| `apps/web/src/editor/MiniPreview.tsx` | Right column default: live card preview |
-| `apps/web/src/editor/AssetPanel.tsx` | Right column (when open): asset library with built-in + uploaded materials |
-| `apps/web/src/agent/AgentPanel.tsx` | Shared editor/full-screen Agent rail |
-| `apps/web/src/editor/StoryFlowchart.tsx` | Flow view: galgame-style story flowchart with convergence visualization |
-| `apps/web/src/editor/SceneCard.tsx` | Flowchart scene card component with branch/convergence badges |
-| `apps/web/src/editor/ProjectHealthPanel.tsx` | Project health checker: 12-item diagnostic report |
-| `apps/web/src/editor/sceneGraph.ts` | Scene/card/node conversion utilities, chapter numbering, type-safe accessors |
-| `apps/web/src/editor/flowEditorUtils.ts` | Extracted FlowEditor utilities (autosave, convergence detection, etc.) |
-| `apps/web/src/engine/converter.ts` | Converts saved React Flow nodes into runtime scenes (DFS traversal) |
-| `apps/web/src/engine/runtime.ts` | Runtime state machine: next(), choose(), emit() |
-| `apps/web/src/engine/types.ts` | RuntimeStory / RuntimeScene / WorldState type definitions |
-| `apps/web/src/engine/characters.ts` | Character registry, sprite URL resolution |
-| `apps/web/src/engine/demo.ts` | Official demo story RuntimeStory data |
-| `apps/web/src/player/VisualNovelPlayer.tsx` | Visual novel player: typewriter, sprites, choices, audio |
-| `apps/web/src/components/FeedbackProvider.tsx` | Global Toast/Confirm system replacing native alert/confirm |
-| `apps/web/src/lib/libraryData.ts` | Local library defaults and localStorage keys |
-| `apps/web/src/lib/safeJsonParse.ts` | Type-safe JSON.parse wrapper |
-| `apps/server/src/routes/projects.ts` | Backend: project/chapter CRUD, asset upload, chapter delete |
+| `suggested` | Visible for review, excluded from authoritative context |
+| `active` | Eligible for ranking and context assembly |
+| `forgotten` | Retained for audit, excluded from Agent context |
 
-### Compatibility files (do not add new architecture here)
+Each memory includes project ownership, optional conversation ownership, title, content, tags, importance, pin status, source/provenance, supersession, and timestamps.
 
-- `apps/web/src/editor/WorkbenchPanel.tsx` is now a 38-line tab shell; implementations live in `editor/workbench/`.
-- `apps/web/src/editor/NodePalette.tsx`
-- `apps/web/src/editor/PropertyPanel.tsx`
+Ranking occurs after ownership and state filtering. Pinned/high-importance/relevant memories rank higher. Conversation-scoped records must never appear in another conversation.
 
----
+Applied story patches create active `artifact` memories. Model-extracted facts remain suggested until approved.
 
-## State Management
+## Story Bible
 
-### Single source of truth (Zustand)
+The Story Bible holds world summary, themes, style guide, timeline rules, forbidden elements, and per-character notes. It is project-level context and should remain concise enough to be loaded regularly.
 
-The editor uses Zustand (`useEditorStore`) as the **single data source**. `FlowEditor` reads `store.nodes` and `store.edges` directly. All updates go through `store.setNodes()` / `store.setEdges()`.
+Do not duplicate every memory into the Story Bible. Use the Bible for stable author-maintained rules and memory for provenance-rich evolving knowledge.
 
-> **Design decision (rev 5)**: Removed `useNodesState` / `useEdgesState` local copies and their sync effects. The previous dual-state-source pattern caused race conditions where local and global state could diverge. Now there is exactly one source.
+## Asset Pipeline
 
-### Key state flows
+### Upload Boundary
 
-```
-User edits card → ShotCardEditor.onUpdateGraph(nodes, edges)
-                              ↓
-                    FlowEditor.handleUpdateGraph()
-                              ↓
-                    store.setNodes() + store.setEdges()
-                              ↓
-                    triggerAutoSave() (debounced)
+The server validates decoded images with Sharp and audio with signature inspection. Filename and browser MIME are hints only. Uploaded files receive server-owned canonical extensions; static serving permits only known image/audio extensions and sends `X-Content-Type-Options: nosniff`. Reject malformed media, unsupported formats, excessive dimensions/pixels, and files above configured limits.
+
+### Processing Presets
+
+| Purpose | Output |
+|---|---|
+| Sprite | 1024x1536 transparent PNG |
+| CG | 1920x1080 WebP |
+| Background | 1920x1080 WebP |
+
+Sprite processing may remove white matte, feather the alpha edge, and trim transparency. CG/background use appropriate crop/fit behavior without white-background removal.
+
+### Variant Lifecycle
+
+```text
+original asset
+  -> process
+  -> proposed variant
+  -> accept -> active project asset / character-expression binding
+  -> reject -> derived file removed, original preserved
 ```
 
-### Async state reads
+Agent image tools may create proposals but may not accept them automatically.
 
-In async functions (e.g., `handleSave`), use `useEditorStore.getState()` to read the latest state, since the component closure may be stale.
+Asset deletion is reference-aware. A derived file still used by `Character.defaultSprite` or `Sprite.url` returns `409`; database deletion commits before unreferenced files are removed. Rejecting a proposal removes its file only when no other record shares the URL.
 
----
+## Manuscript Import
 
-## Three-Column Layout
+Long-form text is parsed into a review model before touching the graph. The preview displays chapters, scenes, card counts, and warnings. Only confirm import after the author has reviewed the structure.
 
-The editor uses a three-column layout:
+Parser extensions should add explicit syntax support and regression fixtures. Avoid guessing complicated hierarchy from punctuation alone.
 
-- **Left (w-56)**: SceneTree — chapter/scene tree with add/delete/rename
-- **Center (flex-1)**: ShotCardEditor — shot card list with inline editing and AI buttons
-- **Right (w-80)**: Context-switching panel — defaults to MiniPreview, swaps to AssetPanel or AgentPanel when their toolbar buttons are toggled. Each panel has a close button to return to preview.
+## Backup And Restore
 
-The right panel is NOT a floating overlay. It replaces MiniPreview in the same column, preventing overlap issues.
+Export returns a v2 `dreamchord-project` manifest containing project metadata, Story Bible, chapters, graph data, characters, supported memories, and deduplicated uploaded asset bytes. Each embedded file records decoded byte length, MIME, base64 content, and SHA-256.
 
----
+Import:
 
-## Scene And Shot Card Rules
+- validates the complete manifest with strict Zod schemas;
+- limits size and array counts (20 MiB per decoded file, 64 MiB aggregate, 90 MiB JSON request envelope);
+- verifies hashes and decoded media content rather than trusting manifest MIME or source URLs;
+- creates a new project;
+- generates server-owned upload paths and remaps project, chapter, node, edge, character, sprite, asset, URL, graph-data, and Story Bible references;
+- never overwrites an existing project;
+- leaves the source project unchanged.
 
-Each scene is a group of nodes sharing `sceneGroupId`.
+Legacy v1 metadata-only manifests are rejected explicitly because they do not contain the bytes needed for a portable restore.
 
-Each shot card compiles to:
-- one background node (can be shared across consecutive cards)
-- zero or more character nodes
-- one dialogue/subtitle/choice node
+## Frontend Responsive Behavior
 
-Key data fields: `sceneGroupId`, `sceneCode`, `sceneTitle`, `chapterTitle`, `lensType`, `characterId`, `expression`, `position`, `action`, `choices`, `autoStageSpeaker`.
+Validated viewports:
 
-### Scene start node detection
+- 1440x900
+- 1024x768
+- 430x932
+- 390x844
 
-Always use `findSceneStartNode(sceneGroupId, nodes, edges)` — never `nodes.find()`. The start node is defined as the node with no incoming edge from the same scene. Using array order causes bugs when text nodes precede background nodes.
+At desktop widths, the editor uses scene tree, card editor, and preview/tool panel. At mobile widths, secondary panes collapse and the shot-card workspace remains primary. The full Agent switches to conversations/workspace/context tabs. The home page uses a compact menu below `md`.
 
-### Shot card grouping
+## One-Click Launcher
 
-`groupNodesToCards` tracks `lastBg` so consecutive text nodes sharing the same background are grouped correctly. Do not reset `currentGroup` to `sceneNodes[0]`.
+`start-dreamchord.bat` calls `start-dreamchord.ps1` from the repository directory.
 
-### Shared background handling
+The PowerShell launcher:
 
-When multiple cards share a bg node:
-- **Fast path 2** (bg-only change): Creates a new bg node instead of modifying the shared one.
-- **Full rebuild path**: Finds the incoming edge before removing old char edges, removes it, rebuilds the chain without bg (since bg is shared), reconnects the incoming edge to the new chain's first node.
+- verifies required repository files;
+- requires Node.js 20+;
+- enables pnpm 9.1.0 via Corepack when needed;
+- selects free API/web ports;
+- creates `.env` only if missing;
+- preserves secrets while updating local port/CORS values;
+- installs with `--frozen-lockfile`;
+- generates Prisma client, deploys migrations, and runs idempotent seed;
+- starts API/web windows and waits for readiness;
+- opens the browser only after both services respond.
 
-### Card insertion into existing chains (rev 5 fix)
+Use `-SetupOnly` for clean-directory verification and `-NoBrowser` for automated runs.
 
-When `addCard` or `quickAppendDialogue` adds a new card to a scene whose last node already has an outgoing edge (to the next scene), the new nodes must be **inserted into the chain**:
+## Verification Matrix
 
-1. Find the outgoing edge from `lastSceneNode`
-2. Remove it
-3. Connect `lastSceneNode → newNodes[0]`
-4. Connect `newNodes[last] → oldTarget`
+Automated:
 
-The previous "skip if hasOutgoing" logic created orphaned nodes that DFS couldn't reach, causing choices and dialogue to silently disappear in the player.
-
-### Chapter numbering
-
-Chapter titles use Chinese numerals via `toChineseNumber(n)`: 一、二、...十、十一、...二十、二十一. The `normalizeChapterTitle(title, index)` function in FlowEditor.tsx converts old Arabic numeral titles to Chinese on display. `buildChapterList` in sceneGraph.ts also uses `toChineseNumber`.
-
-### Chapter delete
-
-Backend: `DELETE /:id/chapters/:chapterId` — protects last chapter (400 if only 1 remains).
-Frontend: `handleDeleteChapter` in FlowEditor.tsx — confirms, deletes, refreshes project, switches to first remaining chapter.
-UI: Trash icon on each chapter tab (top bar) and in SceneTree chapter header, visible when `canDeleteChapter` is true (more than 1 chapter).
-
-### Scene transition (character exit)
-
-When creating a new scene, `handleAddScene` checks the previous scene's last card with characters, carries them over with `action: 'hide'`, and generates a "——场景切换，角色退场——" narration card. This follows galgame convention of clearing the stage on scene change.
-
-### Background defaults
-
-New scenes start with empty background (`background: ''`). The preview shows a "请选择背景" placeholder. The bg dropdown has a "请选择背景..." first option. No default bg-starry or bg-classroom is forced.
-
----
-
-## Choice / Branch System
-
-### How choices work
-
-1. A choice card creates a `choice` node with `data.choices: string[]`
-2. Each choice option can have a `choiceEdge` with `sourceHandle: "choice-N"` connecting to a branch scene
-3. The converter's DFS follows all outgoing edges, including choice edges
-4. `resolvePlayableTargetId` follows the branch scene's node chain to find the first playable node (dialogue/subtitle/choice)
-5. The runtime's `choose(index)` looks up `choiceTargets[index]` and jumps to that scene
-
-### Choice target warnings (rev 5)
-
-When a choice option has no target set:
-- **CardEditor (expanded)**: Shows an amber warning badge "未设置去向" next to the option, plus a summary bar at the top: "N 个选项尚未设置分支去向"
-- **ShotCardItem (collapsed)**: Shows an amber "未设置" label next to the option text, plus a header badge with count
-
-This helps users spot incomplete branches at a glance, preventing the "flow ends directly" problem.
-
-### Choice target management
-
-- **"写这条分支" button**: Calls `onCreateBranch(index, choiceText)` → creates a new scene, removes old choice edge, adds new `choiceEdge`
-- **"跳转到已有场景" dropdown**: Calls `onSetChoiceTarget(index, sceneId)` → connects choice to an existing scene
-- **"断开" button**: Calls `onSetChoiceTarget(index, '')` → removes the choice edge
-- **"前往编辑" button**: Calls `onNavigateToScene(targetSceneId)` → switches to the branch scene
-
-### Runtime fallback (rev 5)
-
-When `choose(index)` is called but the target is undefined/empty/not found, the runtime falls back to `moveToScene(sceneIndex + 1)` (next scene) instead of ending the story. This is more forgiving than the previous behavior of jumping to the end.
-
----
-
-## Converter Details
-
-### DFS traversal
-
-`convertFlowToRuntime` does a DFS from `findStartNode` (node with no incoming edges). The `visited` Set prevents infinite loops and duplicate visits.
-
-### Choice target resolution
-
-```typescript
-const targets = scene.choices.map((_, index) => {
-  const edge = outEdges.find((item) => item.sourceHandle === `choice-${index}`)
-  return edge?.target  // undefined if no choice edge
-})
-scene.choiceTargets = targets.map((target) =>
-  target ? resolvePlayableTargetId(target) : undefined,
-)
+```bash
+pnpm lint
+pnpm test
+pnpm build
+pnpm test:readiness
+git diff --check
 ```
 
-> **Rev 5 fix**: Removed the `|| outEdges[index]` fallback that incorrectly used normal edges as choice targets, causing all choices to point to the same scene.
+Browser:
 
-### Node type mapping
+- login and project listing;
+- editor load, add card, undo, redo, autosave, refresh persistence;
+- flow view and project health entry;
+- manuscript preview without immediate import;
+- Agent conversation create/rename/pin/delete;
+- memory create/pin/forget;
+- asset upload/process/reject/delete;
+- backup export/import and imported-project cleanup;
+- player progression;
+- desktop/tablet/mobile screenshots;
+- console errors and failed network requests.
 
-| Editor node type | Runtime event | Playable? |
-|---|---|---|
-| dialogue | ON_NODE_VISUALIZE | Yes |
-| subtitle | ON_NODE_VISUALIZE | Yes |
-| choice | ON_BRANCH_SELECT | Yes |
-| background | ON_REALITY_CHANGE | No (sets currentBackground) |
-| character | ON_CHARACTER_SPAWN | No (updates onStage map) |
+## Known Product Boundaries
 
----
+- LLM generation requires a configured provider and network access.
+- The Agent intentionally does not have arbitrary shell, filesystem, browser, or database access.
+- Collaboration/multi-user real-time editing is not implemented.
+- TTS and a complete BGM timeline are future extensions, not 0.2 claims.
+- Accepted remote model output still requires author review; validation reduces risk but does not replace creative judgment.
 
-## Legacy AI Assistant (Removed)
+## Safe Next Extensions
 
-Do not restore `AIAssistantPanel` or local fixed responses. Card-level commands now open `AgentPanel` with a scoped task request.
+Recommended order:
 
-AI providers are configured in Settings. Agent shortcuts map card actions to explicit prompts and scopes; they do not bypass the plan, patch validation, approval, or version checks.
+1. Agent evaluation fixtures for consistency, character voice, and branch diversity.
+2. Memory conflict/supersession UI with side-by-side resolution.
+3. Asset generation provider adapters that still feed the proposed-variant workflow.
+4. BGM timeline and scene audio transitions.
+5. Revision history beyond single-run Agent undo.
+6. Optional PostgreSQL deployment profile and object storage adapter.
 
----
-
-## Asset Panel
-
-Shows built-in library materials (backgrounds and characters) at the top, followed by uploaded project assets. The built-in section is collapsible. Clicking a built-in asset selects it for use.
-
----
-
-## Story Flowchart
-
-`StoryFlowchart.tsx` renders a galgame-style flowchart using div + SVG:
-- Scenes grouped by chapter, laid out horizontally per chapter
-- Normal connections: solid arrows
-- Choice branches: dashed arrows with option text labels
-- Convergence scenes: purple highlight with GitMerge icon badge
-- Supports zoom (wheel), pan (drag), click-to-edit
-- Choice nodes highlighted with pink border and branch count badge
-- Supports drag-to-reorder scene cards
-- Supports drag-to-create scene connections
-
-### Convergence detection
-
-`findConvergenceScenes(nodes, edges)` in `flowEditorUtils.ts` detects scenes that receive edges from multiple source scenes (branch merge points). The flowchart renders these with purple borders and badges.
-
----
-
-## Project Health Panel
-
-`ProjectHealthPanel.tsx` runs a 12-item diagnostic check:
-
-1. Has nodes
-2. Uses scene/shot-card structure
-3. No invalid edges
-4. Single start node
-5. No broken choice exits
-6. No empty text
-7. No missing backgrounds
-8. No missing characters
-9. No orphaned nodes
-10. No unreachable scenes
-11. Has ending
-12. Published status
-
----
-
-## User Feedback System
-
-`FeedbackProvider.tsx` provides `useToast()` and `useConfirm()` hooks:
-
-- **Toast**: `toast.success(msg)`, `toast.error(msg)`, `toast.info(msg)` — auto-dismiss notifications
-- **Confirm**: `const ok = await confirm(title, message)` — async confirmation dialog
-
-All `alert()` and `confirm()` calls have been replaced (34 call sites across 9 files). **Never use native `alert()` or `confirm()` in new code.**
-
----
-
-## Sprite Rules
-
-### Generation phase: white background
-
-AI generates characters with `flat white studio background`. White background is only for post-processing (background removal).
-
-### Runtime phase: transparent PNG
-
-Files in `apps/web/public/assets/characters/` must be transparent PNGs with backgrounds already removed.
-
-### Post-processing pipeline
-
-1. Generate with white background prompt
-2. Remove background using remove.bg / Photoshop / rembg
-3. Export as transparent PNG to `assets/characters/`
-4. The checkered pattern in image viewers means "transparent", not a background
-
-> Never use `transparent background` as a generation prompt — it produces fake checkered backgrounds, not real alpha transparency.
-
----
-
-## Recent Iterations
-
-### Rev 5 (current)
-
-- **Choice bug fix**: Fixed orphaned choice nodes when `addCard`/`quickAppendDialogue` adds to a scene with an existing outgoing edge. New nodes are now inserted into the chain.
-- **Converter fix**: Removed `|| outEdges[index]` fallback that caused all choices to point to the same scene.
-- **Runtime fix**: `choose()` now falls back to next scene instead of ending story when target is unset/invalid.
-- **Type fix**: `choiceTargets` changed to `(string | undefined)[]`.
-- **Visual warnings**: Choice options without targets show amber warnings in both expanded and collapsed card views.
-- **State management**: Removed dual state source (`useNodesState` + `useEdgesState`), Zustand is now the single source of truth.
-- **End-to-end test**: Created and verified test script confirming choice/branch flow works end-to-end.
-
-### Rev 4
-
-- Chapter delete: Full stack implementation (backend API + frontend + UI).
-- Chapter numbering: Unified to Chinese numerals.
-- Chapter switch fix: `handleSwitchChapter` rewritten for formal + draft mode.
-- Panel layout: AssetPanel and the shared AgentPanel use the right column.
-- Background defaults: New scenes start with empty background.
-- Scene transition: New scenes auto-add character exit.
-- AI assistant: Linked to selected card, empty text guard, card-level AI buttons.
-- Story flowchart: New galgame-style flowchart replacing logic graph.
-
-### Rev 3 and earlier
-
-- Scene editing bug fixes: `findSceneStartNode`, `groupNodesToCards` lastBg tracking, updateCard fast paths, shared bg edge handling, `autoStageSpeaker` persistence.
-- Convergence visualization (Batch 5): Purple highlighting in flowchart and scene cards.
-- Code health: FeedbackProvider system, type-safe accessors, component splitting, Vite chunk optimization.
-
----
-
-## Verification Checklist
-
-```powershell
-# Frontend
-cd C:\Users\唐乐\Desktop\实训2\项目\apps\web
-npx tsc --noEmit
-npx vite build
-
-# Backend
-cd C:\Users\唐乐\Desktop\实训2\项目\apps\server
-npx tsc --noEmit
-```
-
-Manual smoke test:
-
-1. Open `http://localhost:5173/editor/new`.
-2. Create first scene — card auto-expands, bg dropdown shows "请选择背景...".
-3. Type text, select background, add character — all work without card collapsing.
-4. Add a choice card with options A and B — amber "未设置去向" warnings appear.
-5. Click "写这条分支" for option A — new scene created, warning replaced with green target label.
-6. Save and preview — choices appear, selecting option A jumps to the branch scene.
-7. Create second scene — auto includes character exit from scene 1.
-8. Click "素材库" — right panel shows assets, no overlap. Close returns to preview.
-9. Click "创作 Agent" — right panel shows scope, deterministic health check, plan timeline and approval controls.
-10. Switch to "剧情流程图" — flowchart shows scene cards, connections, convergence points.
-11. Chapter tabs show Chinese numerals. Delete button visible on each tab (if >1 chapter).
-12. No alert popups during editing (Toast notifications only).
-
----
-
-## Next Best Iterations
-
-1. **Playwright regression test**: Automated browser test covering the choice/branch flow.
-2. **Scene drag sorting**: In SceneTree, drag to reorder scenes, then rewrite `sceneCode`.
-3. **Manuscript import preview**: Show generated cards before committing.
-4. **Full-chapter import**: Split headings into scenes automatically.
-5. **Batch background setter**: One-click apply a background to all cards in a scene.
-6. **Asset Library search**: Search and tags across characters/scenes/templates.
-7. **Import/export project bundle**: For sharing and backup.
-8. **Mobile responsive**: Three-column collapse on narrow screens.
-9. **Vitest unit tests**: For converter, runtime, and sceneGraph utilities.
-10. **Tailwind darkMode**: Implement dark theme toggle.
-
----
-
-## Avoid
-
-- Editing generated `apps/web/dist` or `apps/server/dist` as source.
-- Using white-background sprite files in runtime character paths.
-- Using `transparent background` as an AI image generation prompt.
-- Making AI mandatory for basic project creation.
-- Letting preview read stale editor state without saving first.
-- Using `opacity-0` + `group-hover:opacity-100` for critical action buttons — users can't find them.
-- Forcing a default background on new scenes — let users choose.
-- Using `useNodesState` / `useEdgesState` alongside Zustand store — causes race conditions.
-- Using `nodes.find()` for scene start detection — use `findSceneStartNode()`.
-- Using native `alert()` / `confirm()` — use `useToast()` / `useConfirm()`.
-- Using `as Record<string, unknown>` for node data — use type-safe accessors from `sceneGraph.ts`.
-- Using `JSON.parse` directly — use `safeJsonParse<T>(str, fallback)`.
+Do not expand autonomy before adding corresponding authorization, budget, review, audit, and rollback boundaries.

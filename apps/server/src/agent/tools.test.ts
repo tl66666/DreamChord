@@ -5,14 +5,16 @@ describe('creative agent tools', () => {
   it('exposes only the fixed tool allowlist', () => {
     expect(AGENT_TOOL_NAMES).toEqual([
       'read_project_brief', 'read_chapter_outline', 'read_scene', 'search_story',
+      'read_conversation_context', 'search_memories', 'list_project_assets', 'inspect_asset', 'read_character_profile',
       'analyze_story_graph', 'create_story_patch', 'validate_story_patch',
+      'prepare_character_asset', 'prepare_cg_asset', 'prepare_background_asset',
     ])
   })
 
   it('runs deterministic graph analysis', async () => {
     const registry = createAgentToolRegistry({
       snapshot: {
-        projectId: 'p', title: '故事', description: '', bible: null, characters: [],
+        projectId: 'p', title: '故事', description: '', bible: null, characters: [], assets: [],
         chapters: [{ id: 'c', title: '第一章', version: 1, graph: {
           nodes: [{ id: 'choice', type: 'choice', position: { x: 0, y: 0 }, data: { choices: ['A'] } }], edges: [],
         } }],
@@ -22,5 +24,16 @@ describe('creative agent tools', () => {
 
     const result = await registry.analyze_story_graph.execute({})
     expect(JSON.stringify(result)).toContain('choice-exit-missing')
+  })
+
+  it('creates only a proposed asset artifact through preparation tools', async () => {
+    const proposed: string[] = []
+    const registry = createAgentToolRegistry({
+      snapshot: { projectId: 'p', title: '故事', description: '', bible: null, characters: [], assets: [{ id: 'asset', name: '原图', type: 'CG', url: '/uploads/a.png', width: 100, height: 200 }], chapters: [{ id: 'c', title: '第一章', version: 1, graph: { nodes: [], edges: [] } }] },
+      chapterId: 'c', conversationContext: [], memories: [],
+      prepareAsset: async (assetId, purpose) => { proposed.push(`${assetId}:${purpose}`); return { id: 'variant', status: 'proposed' } },
+    })
+    await registry.prepare_character_asset.execute({ assetId: 'asset', removeWhite: true, trim: true })
+    expect(proposed).toEqual(['asset:sprite'])
   })
 })

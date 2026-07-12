@@ -1,4 +1,4 @@
-import { useEffect, useState, type ReactNode } from 'react'
+import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import {
   Archive,
@@ -10,11 +10,16 @@ import {
   PlayCircle,
   Sparkles,
   Trash2,
+  Download,
+  Menu,
+  Upload,
   X,
 } from 'lucide-react'
-import { createProject, deleteProject, getMyProjects, updateProject, type ProjectDetail } from '../api/client'
+import { createProject, deleteProject, exportProjectBackup, getMyProjects, importProjectBackup, updateProject, type ProjectDetail } from '../api/client'
 import { useAuthStore } from '../stores/authStore'
 import { useToast, useConfirm } from '../components/FeedbackProvider'
+
+export const MAX_PROJECT_BACKUP_BYTES = 90 * 1024 * 1024
 
 function getApiError(err: unknown, fallback = '操作失败'): string {
   if (typeof err === 'object' && err !== null && 'response' in err) {
@@ -35,6 +40,8 @@ export default function HomePage() {
   const [editingId, setEditingId] = useState<string | null>(null)
   const [editingTitle, setEditingTitle] = useState('')
   const [deletingId, setDeletingId] = useState<string | null>(null)
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const importInputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
     if (!user) return
@@ -86,15 +93,33 @@ export default function HomePage() {
     }
   }
 
+  const handleExport = async (project: ProjectDetail) => {
+    try {
+      const manifest = await exportProjectBackup(project.id)
+      const url = URL.createObjectURL(new Blob([JSON.stringify(manifest, null, 2)], { type: 'application/json' }))
+      const link = document.createElement('a'); link.href = url; link.download = `${project.title}.dreamchord.json`; link.click(); URL.revokeObjectURL(url)
+    } catch (error) { toast.error(getApiError(error, '导出失败')) }
+  }
+
+  const handleImport = async (file: File | undefined) => {
+    if (!file) return
+    try {
+      if (file.size > MAX_PROJECT_BACKUP_BYTES) throw new Error('备份文件不能超过 90MB')
+      const imported = await importProjectBackup(JSON.parse(await file.text()))
+      setMyProjects(await getMyProjects()); toast.success(`已导入「${imported.title}」`); navigate(`/editor/${imported.id}`)
+    } catch (error) { toast.error(getApiError(error, error instanceof SyntaxError ? '备份文件不是有效 JSON' : '导入失败')) }
+    finally { if (importInputRef.current) importInputRef.current.value = '' }
+  }
+
   return (
     <div className="min-h-screen bg-slate-50">
-      <nav className="border-b border-slate-200 bg-white/90 px-6 py-4 backdrop-blur">
+      <nav className="border-b border-slate-200 bg-white/90 px-4 py-3 backdrop-blur sm:px-6 sm:py-4">
         <div className="mx-auto flex max-w-7xl items-center justify-between">
           <Link to="/" className="flex items-center gap-3">
             <img src="/assets/logo.png" alt="DreamChord" className="h-10 w-10 rounded-xl ring-1 ring-black/5" />
-            <span className="text-xl font-bold text-slate-950">DreamChord</span>
+            <span className="text-lg font-bold text-slate-950 sm:text-xl">DreamChord</span>
           </Link>
-          <div className="flex items-center gap-4">
+          <div className="hidden items-center gap-4 md:flex">
             <Link to="/library" className="text-sm font-medium text-slate-700 hover:text-dream-600">素材库</Link>
             <Link to="/agent" className="text-sm font-medium text-slate-700 hover:text-dream-600">创作 Agent</Link>
             <Link to="/explore" className="text-sm font-medium text-slate-700 hover:text-dream-600">发现作品</Link>
@@ -111,7 +136,31 @@ export default function HomePage() {
               </div>
             ))}
           </div>
+          <button
+            type="button"
+            aria-label={mobileMenuOpen ? '关闭导航菜单' : '打开导航菜单'}
+            aria-expanded={mobileMenuOpen}
+            onClick={() => setMobileMenuOpen((open) => !open)}
+            className="grid h-10 w-10 place-items-center rounded-md border border-slate-200 text-slate-700 md:hidden"
+          >
+            {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+          </button>
         </div>
+        {mobileMenuOpen && <div role="navigation" aria-label="移动端导航" className="mx-auto mt-3 max-w-7xl border-t border-slate-200 pt-3 md:hidden">
+          <div className="grid grid-cols-2 gap-2">
+            <Link onClick={() => setMobileMenuOpen(false)} to="/library" className="rounded-md px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100">素材库</Link>
+            <Link onClick={() => setMobileMenuOpen(false)} to="/agent" className="rounded-md px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100">创作 Agent</Link>
+            <Link onClick={() => setMobileMenuOpen(false)} to="/explore" className="rounded-md px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100">发现作品</Link>
+            <Link onClick={() => setMobileMenuOpen(false)} to="/settings" className="rounded-md px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100">设置</Link>
+          </div>
+          {!isLoading && (user ? <div className="mt-3 flex items-center justify-between border-t border-slate-200 pt-3">
+            <span className="truncate text-sm text-slate-600">{user.nickname || user.username}</span>
+            <button type="button" aria-label="退出登录" onClick={logout} className="rounded-md bg-slate-100 px-4 py-2 text-sm font-medium text-slate-700">退出</button>
+          </div> : <div className="mt-3 grid grid-cols-2 gap-2 border-t border-slate-200 pt-3">
+            <Link onClick={() => setMobileMenuOpen(false)} to="/login" className="rounded-md px-3 py-2 text-center text-sm font-medium text-slate-700">登录</Link>
+            <Link onClick={() => setMobileMenuOpen(false)} to="/register" className="rounded-md bg-dream-600 px-3 py-2 text-center text-sm font-medium text-white">注册</Link>
+          </div>)}
+        </div>}
       </nav>
 
       <section className="mx-auto grid max-w-7xl items-center gap-12 px-6 py-14 lg:grid-cols-[1fr_520px]">
@@ -149,9 +198,7 @@ export default function HomePage() {
               <p className="text-sm font-semibold text-dream-600">故事项目</p>
               <h2 className="text-2xl font-bold text-slate-950">我的作品</h2>
             </div>
-            <button onClick={handleCreate} disabled={creating} className="rounded-lg bg-dream-600 px-5 py-2 text-sm font-medium text-white hover:bg-dream-700 disabled:opacity-50">
-              新建故事
-            </button>
+            <div className="flex gap-2"><input ref={importInputRef} type="file" accept=".json,.dreamchord.json,application/json" className="hidden" onChange={(event) => void handleImport(event.target.files?.[0])} /><button type="button" onClick={() => importInputRef.current?.click()} className="inline-flex items-center gap-1.5 border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700"><Upload className="h-4 w-4" />导入备份</button><button onClick={handleCreate} disabled={creating} className="rounded-lg bg-dream-600 px-5 py-2 text-sm font-medium text-white hover:bg-dream-700 disabled:opacity-50">新建故事</button></div>
           </div>
           {projectsLoading ? (
             <div className="flex h-32 items-center justify-center text-slate-500"><Loader2 className="mr-2 h-5 w-5 animate-spin" /> 加载中...</div>
@@ -184,6 +231,7 @@ export default function HomePage() {
                       )}
                       {editingId !== project.id && (
                         <div className="flex items-center gap-1">
+                          <button onClick={() => void handleExport(project)} className="rounded p-1 text-cyan-700 hover:bg-cyan-50" title="导出备份"><Download className="h-3.5 w-3.5" /></button>
                           <button onClick={() => { setEditingId(project.id); setEditingTitle(project.title) }} className="rounded p-1 text-slate-500 hover:bg-slate-100"><Pencil className="h-3.5 w-3.5" /></button>
                           <button onClick={() => handleDelete(project.id)} disabled={deletingId === project.id} className="rounded p-1 text-red-500 hover:bg-red-50 disabled:opacity-50">
                             {deletingId === project.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Trash2 className="h-3.5 w-3.5" />}

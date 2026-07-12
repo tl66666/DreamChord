@@ -1,12 +1,15 @@
 {
   "name": "dreamchord",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "description": "梦弦 DreamChord - 节点式视觉小说创作平台",
   "scripts": {
     "dev": "pnpm -r --parallel dev",
+    "prepare:workspace": "pnpm --filter @dreamchord/story-domain build && pnpm --filter dreamchord-server prisma generate",
+    "pretest": "pnpm prepare:workspace",
     "build": "pnpm -r build",
     "test": "pnpm -r test",
+    "test:readiness": "node scripts/workspace-readiness.test.mjs",
     "lint": "pnpm -r lint",
     "db:migrate": "pnpm --filter server prisma migrate dev",
     "db:generate": "pnpm --filter server prisma generate",
@@ -14,8 +17,13 @@
     "db:studio": "pnpm --filter server prisma studio"
   },
   "devDependencies": {
+    "@eslint/js": "9.39.1",
     "@types/node": "^20.14.0",
-    "typescript": "^5.4.5"
+    "eslint": "9.39.1",
+    "eslint-plugin-react-hooks": "^5.0.0",
+    "globals": "^15.0.0",
+    "typescript": "^5.4.5",
+    "typescript-eslint": "^8.0.0"
   },
   "packageManager": "pnpm@9.1.0"
 }

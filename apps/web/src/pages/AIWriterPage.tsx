@@ -1,8 +1,8 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { Bot, ChevronRight, Library, Loader2, Settings } from 'lucide-react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import type { StoryGraph, StoryNodeType } from '@dreamchord/story-domain'
-import AgentPanel from '../agent/AgentPanel'
+import AgentWorkspace from '../agent/AgentWorkspace'
 import type { AppliedPatchDto } from '../agent/agentTypes'
 import { getMyProjects, getProject, type Chapter, type ProjectDetail } from '../api/client'
 
@@ -19,6 +19,7 @@ export default function AIWriterPage() {
 
   const selectedChapter = selectedProject?.chapters.find((chapter) => chapter.id === selectedChapterId) ?? null
   const graph = useMemo(() => chapterToGraph(selectedChapter), [selectedChapter])
+  const initialSelection = useRef({ projectId: selectedProjectId, chapterId: selectedChapterId })
 
   useEffect(() => {
     let active = true
@@ -26,11 +27,11 @@ export default function AIWriterPage() {
       .then(async (items) => {
         if (!active) return
         setProjects(items)
-        const summary = items.find((item) => item.id === selectedProjectId) ?? items[0]
+        const summary = items.find((item) => item.id === initialSelection.current.projectId) ?? items[0]
         if (!summary) return
         const project = await getProject(summary.id)
         if (!active) return
-        const chapter = project.chapters.find((item) => item.id === selectedChapterId) ?? project.chapters[0]
+        const chapter = project.chapters.find((item) => item.id === initialSelection.current.chapterId) ?? project.chapters[0]
         setSelectedProject(project)
         setSelectedProjectId(project.id)
         setSelectedChapterId(chapter?.id ?? '')
@@ -81,6 +82,8 @@ export default function AIWriterPage() {
   const updateConversation = (conversationId: string) => {
     setSearchParams((current) => {
       const next = new URLSearchParams(current)
+      if (selectedProjectId) next.set('project', selectedProjectId)
+      if (selectedChapterId) next.set('chapter', selectedChapterId)
       next.set('conversation', conversationId)
       return next
     }, { replace: true })
@@ -134,13 +137,14 @@ export default function AIWriterPage() {
           ) : error ? (
             <div className="grid h-full min-h-[680px] place-items-center px-6 text-sm text-red-700">{error}</div>
           ) : selectedProject && selectedChapter ? (
-            <AgentPanel
+            <AgentWorkspace
               key={`${selectedProject.id}:${selectedChapter.id}`}
               projectId={selectedProject.id}
+              projectTitle={selectedProject.title}
               chapterId={selectedChapter.id}
+              chapterTitle={selectedChapter.title}
               chapterVersion={selectedChapter.version}
               selectedNodeId={selectedNodeId}
-              selectedSceneId={null}
               graph={graph}
               initialConversationId={searchParams.get('conversation') || ''}
               onConversationChange={updateConversation}

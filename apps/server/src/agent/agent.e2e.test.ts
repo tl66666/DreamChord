@@ -1,17 +1,18 @@
 import { execFileSync } from 'node:child_process'
+import { randomUUID } from 'node:crypto'
 import { rmSync } from 'node:fs'
 import path from 'node:path'
 import { PrismaClient } from '@prisma/client'
 import { validateStoryGraph } from '@dreamchord/story-domain'
-import { afterAll, beforeAll, describe, expect, it } from 'vitest'
+import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest'
 import { loadAgentProjectSnapshot } from './context.js'
 import { PrismaAgentRunService } from './runService.js'
 
-const databasePath = path.resolve('prisma/agent-e2e-test.db')
+const databasePath = path.resolve('prisma', `agent-e2e-test-${process.pid}-${randomUUID()}.db`)
 const databaseUrl = `file:${databasePath.replaceAll('\\', '/')}`
 const prismaCli = path.resolve('node_modules/prisma/build/index.js')
 const schemaPath = path.resolve('prisma/schema.prisma')
-const migrations = ['20260629065808_init', '20260629104058_add_source_handle', '20260711000000_add_creative_agent']
+const migrations = ['20260629065808_init', '20260629104058_add_source_handle', '20260711000000_add_creative_agent', '20260712010000_expand_agent_conversations', '20260712020000_add_agent_memory', '20260712030000_add_asset_variants']
 const client = new PrismaClient({ datasources: { db: { url: databaseUrl } } })
 
 function migrateDatabase() {
@@ -27,6 +28,15 @@ async function waitForApproval(service: PrismaAgentRunService, runId: string) {
   for (let attempt = 0; attempt < 100; attempt += 1) {
     const run = await service.getRun(runId, 'owner')
     if (run.status === 'awaiting_approval' || run.status === 'failed') return run
+    await new Promise((resolve) => setTimeout(resolve, 10))
+  }
+  throw new Error('Agent run did not settle')
+}
+
+async function waitForCompletion(service: PrismaAgentRunService, runId: string) {
+  for (let attempt = 0; attempt < 100; attempt += 1) {
+    const run = await service.getRun(runId, 'owner')
+    if (['completed', 'failed'].includes(run.status)) return run
     await new Promise((resolve) => setTimeout(resolve, 10))
   }
   throw new Error('Agent run did not settle')
@@ -81,5 +91,64 @@ describe('creative agent end-to-end workflow', () => {
     expect(undone.version).toBe(3)
     expect(undone.graph.nodes.map((node) => node.id)).toEqual(['c2-start'])
     expect(undone.graph.edges).toEqual([])
+  })
+
+  it('injects same-conversation history and ranked project memory into a run', async () => {
+    const conversation = await client.agentConversation.create({ data: { title: '追查真相', scope: 'chapter', userId: 'owner', projectId: 'project', chapterId: 'chapter-one', summary: '雪正在追查旧车站。' } })
+    await client.agentMessage.createMany({ data: [
+      { conversationId: conversation.id, role: 'user', content: '上一轮问题：门后有什么？' },
+      { conversationId: conversation.id, role: 'assistant', content: '上一轮回答：门后传来列车声。' },
+    ] })
+    await client.agentMemory.create({ data: { kind: 'plot', status: 'active', title: '车站真相', content: '旧车站连接着遗忘者的梦境', importance: 95, isPinned: true, sourceType: 'user', userId: 'owner', projectId: 'project' } })
+    let received = ''
+    const service = new PrismaAgentRunService(client, {
+      loadSnapshot: (projectId) => loadAgentProjectSnapshot(projectId, client),
+      createProvider: () => ({ chat: async (messages) => { received = JSON.stringify(messages); return JSON.stringify({ type: 'final', summary: '已续写', plan: ['承接线索'] }) } }),
+    })
+    const queued = await service.createRun({ projectId: 'project', conversationId: conversation.id, chapterId: 'chapter-one', prompt: '继续写雪的调查', scope: 'chapter', providerConfig: { provider: 'fake', model: 'controlled', apiKey: 'memory-only' } }, 'owner')
+    expect((await waitForCompletion(service, queued.id)).status).toBe('completed')
+    expect(received).toContain('上一轮回答')
+    expect(received).toContain('遗忘者的梦境')
+    expect(received).toContain('雪正在追查旧车站')
+  })
+
+  it('returns a version-conflicted apply run to awaiting approval', async () => {
+    const conversation = await client.agentConversation.create({ data: { title: '冲突测试', scope: 'chapter', userId: 'owner', projectId: 'project', chapterId: 'chapter-one' } })
+    const run = await client.agentRun.create({ data: {
+      status: 'awaiting_approval', prompt: '应用冲突补丁', scope: 'chapter', provider: 'fake', model: 'controlled',
+      userId: 'owner', projectId: 'project', chapterId: 'chapter-one', conversationId: conversation.id,
+    } })
+    const chapter = await client.chapter.findUniqueOrThrow({ where: { id: 'chapter-one' }, select: { version: true } })
+    await client.storyPatch.create({ data: {
+      runId: run.id, projectId: 'project', chapterId: 'chapter-one', baseVersion: chapter.version - 1,
+      payload: JSON.stringify({ operations: [] }), validation: '{}', diff: '{}',
+    } })
+    const service = new PrismaAgentRunService(client)
+
+    await expect(service.applyRun(run.id, 'owner')).rejects.toThrow()
+    expect((await service.getRun(run.id, 'owner')).status).toBe('awaiting_approval')
+  })
+
+  it('returns the applied graph and version when artifact memory persistence fails', async () => {
+    const conversation = await client.agentConversation.create({ data: { title: '记忆失败测试', scope: 'chapter', userId: 'owner', projectId: 'project', chapterId: 'chapter-one' } })
+    const run = await client.agentRun.create({ data: {
+      status: 'awaiting_approval', prompt: '应用补丁', scope: 'chapter', provider: 'fake', model: 'controlled',
+      userId: 'owner', projectId: 'project', chapterId: 'chapter-one', conversationId: conversation.id,
+    } })
+    const chapter = await client.chapter.findUniqueOrThrow({ where: { id: 'chapter-one' }, select: { version: true } })
+    await client.storyPatch.create({ data: {
+      runId: run.id, projectId: 'project', chapterId: 'chapter-one', baseVersion: chapter.version,
+      payload: JSON.stringify({ operations: [{ kind: 'addNode', tempId: 'artifact-node', node: { type: 'subtitle', data: { text: '记忆失败也应完成' } }, anchor: { afterNodeId: 'c1-start' } }] }),
+      validation: '{}', diff: '{}',
+    } })
+    const memoryCreate = vi.spyOn(client.agentMemory, 'create').mockRejectedValueOnce(new Error('memory unavailable'))
+    const service = new PrismaAgentRunService(client)
+
+    const applied = await service.applyRun(run.id, 'owner')
+
+    expect(applied.version).toBe(chapter.version + 1)
+    expect(applied.graph.nodes.some((node) => node.data.text === '记忆失败也应完成')).toBe(true)
+    expect((await service.getRun(run.id, 'owner')).status).toBe('completed')
+    memoryCreate.mockRestore()
   })
 })

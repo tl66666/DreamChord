@@ -25,7 +25,11 @@ import {
 } from './sceneGraph'
 import { loadLibraryCharacters, loadLibraryScenes, loadStoryTemplates } from '../lib/libraryData'
 import { ShotCardItem } from './ShotCardItem'
-import { ManuscriptImporter, parseManuscriptToShotCards } from './manuscriptUtils'
+import { parseManuscriptToShotCards } from './manuscriptUtils'
+import ManuscriptImporter from './ManuscriptImportPreview'
+import type { Asset, Character } from '../api/client'
+import type { ProjectAssetTarget } from './ProjectAssetPicker'
+import { mergeProjectCharacters } from './projectCharacters'
 
 interface ShotCardEditorProps {
   nodes: Node[]
@@ -42,16 +46,20 @@ interface ShotCardEditorProps {
   onRequestAI: (mode: 'polish' | 'continue' | 'choices' | 'branchReplies' | 'storyGraph') => void
   onSetSceneExit: (sceneId: string, targetSceneId: string | null) => void
   convergenceMap: Map<string, string[]>
+  onOpenAssetPicker: (target: ProjectAssetTarget) => void
+  assetSelection?: { target: ProjectAssetTarget; asset: Asset } | null
+  onAssetApplied: () => void
+  projectCharacters?: Character[]
 }
 
 export default function ShotCardEditor({
   nodes, edges, selectedSceneId, selectedCardId,
   autoEditCardId, onConsumeAutoEdit,
   onSelectCard, onUpdateGraph, scenes, onCreateBranch, onNavigateToScene,
-  onRequestAI, onSetSceneExit, convergenceMap,
+  onRequestAI, onSetSceneExit, convergenceMap, onOpenAssetPicker, assetSelection, onAssetApplied, projectCharacters = [],
 }: ShotCardEditorProps) {
   const toast = useToast()
-  const characters = useMemo(() => loadLibraryCharacters(), [])
+  const characters = useMemo(() => mergeProjectCharacters(loadLibraryCharacters(), projectCharacters), [projectCharacters])
   const libraryScenes = useMemo(() => loadLibraryScenes(), [])
   const storyTemplates = useMemo(() => loadStoryTemplates(), [])
   const [editingCardId, setEditingCardId] = useState<string | null>(null)
@@ -356,6 +364,12 @@ export default function ShotCardEditor({
     onUpdateGraph(laidOut, allEdges)
   }, [cards, nodes, edges, onUpdateGraph])
 
+  useEffect(() => {
+    if (!assetSelection) return
+    if (assetSelection.target.field === 'background') updateCard(assetSelection.target.cardId, { background: assetSelection.asset.url })
+    onAssetApplied()
+  }, [assetSelection, onAssetApplied, updateCard])
+
   const addCard = useCallback((type: 'dialogue' | 'choice' | 'narration') => {
     if (!selectedSceneId) return
     const sceneStart = findSceneStartNode(selectedSceneId, nodes, edges)
@@ -479,7 +493,7 @@ export default function ShotCardEditor({
       setPendingQuickText(text)
     }
     setQuickInput('')
-  }, [quickInput, characters, quickAppendDialogue])
+  }, [quickInput, characters, quickAppendDialogue, toast])
 
   const importManuscript = useCallback((text: string) => {
     if (!selectedSceneId) return 0
@@ -549,7 +563,7 @@ export default function ShotCardEditor({
     if (bgNode && !bgIsShared) idsToDelete.add(bgNode.id)
 
     const remainingNodes = nodes.filter((n) => !idsToDelete.has(n.id))
-    let remainingEdges = edges.filter((e) => !idsToDelete.has(e.source) && !idsToDelete.has(e.target))
+    const remainingEdges = edges.filter((e) => !idsToDelete.has(e.source) && !idsToDelete.has(e.target))
 
     // 重连边
     const outgoingEdge = textNode
@@ -655,7 +669,7 @@ export default function ShotCardEditor({
     )
 
     // 移除涉及移动节点的所有普通边（保留 choice 边）
-    let newEdges = edges.filter((e) => {
+    const newEdges = edges.filter((e) => {
       if (e.sourceHandle?.startsWith('choice-')) return true
       if (!allMovedIds.has(e.source) && !allMovedIds.has(e.target)) return true
       return false
@@ -877,6 +891,7 @@ export default function ShotCardEditor({
               onCreateBranch={(choiceIndex, choiceText) => onCreateBranch(card.id, choiceIndex, choiceText)}
               onNavigateToScene={onNavigateToScene}
               onRequestAI={onRequestAI}
+              onOpenAssetPicker={(cardId, field) => onOpenAssetPicker({ cardId, field })}
             />
           ))}
         </div>

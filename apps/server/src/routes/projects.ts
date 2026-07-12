@@ -1,9 +1,20 @@
 import { Router, type Request, type Response, type Router as ExpressRouter } from 'express'
+import { rm } from 'node:fs/promises'
 import jwt from 'jsonwebtoken'
+import { resolveStoragePath, storagePathFromUrl } from '../assets/storagePaths.js'
 import { prisma } from '../lib/prisma.js'
 import { authenticateToken, type AuthRequest } from '../middleware/auth.js'
 
 const router: ExpressRouter = Router()
+
+export async function removeProjectUploadFiles(projectId: string, urls: string[], storageRoot = process.env.UPLOAD_DIR || './uploads'): Promise<void> {
+  for (const url of new Set(urls)) {
+    try { await rm(storagePathFromUrl(storageRoot, url), { force: true }) }
+    catch { /* Invalid legacy paths are deliberately ignored. */ }
+  }
+  try { await rm(resolveStoragePath(storageRoot, projectId), { recursive: true, force: true }) }
+  catch { /* A project without a dedicated directory needs no cleanup. */ }
+}
 
 /** 将阿拉伯数字转为中文数字（支持 1-99） */
 function toChineseNumber(n: number): string {
@@ -210,11 +221,13 @@ router.delete('/:id/chapters/:chapterId', async (req: AuthRequest, res: Response
 // 删除项目
 router.delete('/:id', async (req: AuthRequest, res: Response) => {
   const { id } = req.params
-  const project = await prisma.project.findUnique({ where: { id } })
+  const project = await prisma.project.findUnique({ where: { id }, include: { assets: { include: { variants: true } } } })
   if (!project) return res.status(404).json({ error: '项目不存在' })
   if (project.authorId !== req.userId) return res.status(403).json({ error: '无权删除此项目' })
 
   await prisma.project.delete({ where: { id } })
+  const urls = project.assets.flatMap((asset) => [asset.url, ...asset.variants.map((variant) => variant.url)])
+  await removeProjectUploadFiles(id, urls).catch((error) => console.error('清理项目素材文件失败', error))
   res.json({ success: true })
 })
 

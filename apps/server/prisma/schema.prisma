@@ -21,6 +21,7 @@ model User {
   comments      Comment[]
   agentConversations AgentConversation[]
   agentRuns     AgentRun[]
+  agentMemories AgentMemory[]
 
   @@map("users")
 }
@@ -47,6 +48,7 @@ model Project {
   agentConversations AgentConversation[]
   agentRuns     AgentRun[]
   storyPatches  StoryPatch[]
+  agentMemories AgentMemory[]
 
   @@index([authorId])
   @@map("projects")
@@ -142,9 +144,16 @@ model Asset {
   type          String    @default("OTHER")
   url           String
   createdAt     DateTime  @default(now()) @map("created_at")
+  mimeType      String?   @map("mime_type")
+  width         Int?
+  height        Int?
+  hasAlpha      Boolean?  @map("has_alpha")
+  status        String    @default("ready")
+  metadata      String    @default("{}")
 
   projectId     String    @map("project_id")
   project       Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  variants      AssetVariant[]
 
   @@index([projectId])
   @@map("assets")
@@ -183,6 +192,11 @@ model AgentConversation {
   id        String   @id @default(uuid())
   title     String
   scope     String
+  chapterId String?  @map("chapter_id")
+  isPinned  Boolean  @default(false) @map("is_pinned")
+  summary   String   @default("")
+  summaryThroughMessageId String? @map("summary_through_message_id")
+  deletedAt DateTime? @map("deleted_at")
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
@@ -193,6 +207,7 @@ model AgentConversation {
 
   messages AgentMessage[]
   runs     AgentRun[]
+  memories AgentMemory[]
 
   @@index([userId, projectId])
   @@map("agent_conversations")
@@ -285,4 +300,52 @@ model ChapterSnapshot {
 
   @@index([chapterId])
   @@map("chapter_snapshots")
+}
+
+model AssetVariant {
+  id        String   @id @default(uuid())
+  kind      String
+  status    String   @default("proposed")
+  url       String
+  mimeType  String   @map("mime_type")
+  width     Int
+  height    Int
+  metadata  String   @default("{}")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  assetId   String @map("asset_id")
+  asset     Asset  @relation(fields: [assetId], references: [id], onDelete: Cascade)
+
+  @@index([assetId, status])
+  @@map("asset_variants")
+}
+
+model AgentMemory {
+  id             String   @id @default(uuid())
+  kind           String
+  status         String   @default("suggested")
+  title          String
+  content        String
+  tags           String   @default("[]")
+  importance     Int      @default(50)
+  isPinned       Boolean  @default(false) @map("is_pinned")
+  sourceType     String   @default("assistant") @map("source_type")
+  sourceId       String?  @map("source_id")
+  forgottenAt    DateTime? @map("forgotten_at")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  userId         String   @map("user_id")
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  projectId      String   @map("project_id")
+  project        Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  conversationId String?  @map("conversation_id")
+  conversation   AgentConversation? @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  supersededById String?  @map("superseded_by_id")
+  supersededBy   AgentMemory? @relation("MemorySupersession", fields: [supersededById], references: [id], onDelete: SetNull)
+  supersedes     AgentMemory[] @relation("MemorySupersession")
+
+  @@index([userId, projectId, status])
+  @@index([conversationId, status])
+  @@map("agent_memories")
 }

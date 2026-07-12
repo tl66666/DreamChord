@@ -115,12 +115,12 @@ export function FeedbackProvider({ children }: { children: ReactNode }) {
   const handleConfirm = useCallback(() => {
     confirmState.resolver?.(true)
     setConfirmState({ open: false, message: '', resolver: null })
-  }, [confirmState.resolver])
+  }, [confirmState])
 
   const handleCancel = useCallback(() => {
     confirmState.resolver?.(false)
     setConfirmState({ open: false, message: '', resolver: null })
-  }, [confirmState.resolver])
+  }, [confirmState])
 
   return (
     <ToastContext.Provider value={toast}>

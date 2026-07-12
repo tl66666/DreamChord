@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { Archive, BookOpen, Edit3, Image as ImageIcon, Loader2, Plus, RotateCcw, Save, Trash2, Upload, Users, X } from 'lucide-react'
+import { Archive, BookOpen, Edit3, Image as ImageIcon, Loader2, Plus, RotateCcw, Save, SlidersHorizontal, Trash2, Upload, Users, X } from 'lucide-react'
 import { deleteAsset, getMyProjects, getProjectAssets, renameAsset, uploadAsset, type Asset, type ProjectDetail } from '../api/client'
 import {
   CHARACTER_KEY,
@@ -19,6 +19,7 @@ import {
 } from '../lib/libraryData'
 import { useAuthStore } from '../stores/authStore'
 import { useToast, useConfirm } from '../components/FeedbackProvider'
+import AssetProcessingSheet from '../assets/AssetProcessingSheet'
 
 function getApiError(err: unknown, fallback = '操作失败'): string {
   if (typeof err === 'object' && err !== null && 'response' in err) {
@@ -54,10 +55,11 @@ export default function LibraryPage() {
   const [projects, setProjects] = useState<ProjectDetail[]>([])
   const [selectedProjectId, setSelectedProjectId] = useState('')
   const [assets, setAssets] = useState<Asset[]>([])
-  const [assetType, setAssetType] = useState('character')
+  const [assetType, setAssetType] = useState('CG')
   const [assetLoading, setAssetLoading] = useState(false)
   const [renamingId, setRenamingId] = useState<string | null>(null)
   const [renameValue, setRenameValue] = useState('')
+  const [processingAsset, setProcessingAsset] = useState<Asset | null>(null)
 
   const selectedProject = useMemo(() => projects.find((project) => project.id === selectedProjectId), [projects, selectedProjectId])
 
@@ -139,7 +141,7 @@ export default function LibraryPage() {
     setAssets((prev) => prev.filter((item) => item.id !== asset.id))
   }
 
-  return (
+  return (<>
     <main className="min-h-screen bg-slate-50">
       <header className="border-b border-slate-200 bg-white/90 px-6 py-4 backdrop-blur">
         <div className="mx-auto flex max-w-7xl items-center justify-between">
@@ -259,12 +261,14 @@ export default function LibraryPage() {
                 })))
                 setActiveTab('characters')
               }}
+              onProcess={setProcessingAsset}
             />
           )}
         </section>
       </div>
     </main>
-  )
+    {processingAsset && <AssetProcessingSheet asset={processingAsset} onClose={() => setProcessingAsset(null)} onAccepted={() => selectedProjectId && getProjectAssets(selectedProjectId).then(setAssets)} />}
+  </>)
 }
 
 function CharacterLibrary(props: {
@@ -449,8 +453,8 @@ function StoryLibrary(props: { templates: StoryTemplate[]; editingTemplate: Stor
   )
 }
 
-function ProjectAssetLibrary(props: { user: unknown; projects: ProjectDetail[]; selectedProjectId: string; selectedProjectTitle?: string; assets: Asset[]; assetType: string; assetLoading: boolean; renamingId: string | null; renameValue: string; fileInputRef: React.RefObject<HTMLInputElement>; onSelectProject: (id: string) => void; onAssetTypeChange: (type: string) => void; onUpload: (file: File | undefined) => void; onStartRename: (asset: Asset) => void; onRenameValueChange: (value: string) => void; onConfirmRename: (asset: Asset) => void; onCancelRename: () => void; onDelete: (asset: Asset) => void; onRegisterScene: (asset: Asset) => void; onRegisterCharacter: (asset: Asset) => void }) {
-  const { user, projects, selectedProjectId, selectedProjectTitle, assets, assetType, assetLoading, renamingId, renameValue, fileInputRef, onSelectProject, onAssetTypeChange, onUpload, onStartRename, onRenameValueChange, onConfirmRename, onCancelRename, onDelete, onRegisterScene, onRegisterCharacter } = props
+function ProjectAssetLibrary(props: { user: unknown; projects: ProjectDetail[]; selectedProjectId: string; selectedProjectTitle?: string; assets: Asset[]; assetType: string; assetLoading: boolean; renamingId: string | null; renameValue: string; fileInputRef: React.RefObject<HTMLInputElement>; onSelectProject: (id: string) => void; onAssetTypeChange: (type: string) => void; onUpload: (file: File | undefined) => void; onStartRename: (asset: Asset) => void; onRenameValueChange: (value: string) => void; onConfirmRename: (asset: Asset) => void; onCancelRename: () => void; onDelete: (asset: Asset) => void; onRegisterScene: (asset: Asset) => void; onRegisterCharacter: (asset: Asset) => void; onProcess: (asset: Asset) => void }) {
+  const { user, projects, selectedProjectId, selectedProjectTitle, assets, assetType, assetLoading, renamingId, renameValue, fileInputRef, onSelectProject, onAssetTypeChange, onUpload, onStartRename, onRenameValueChange, onConfirmRename, onCancelRename, onDelete, onRegisterScene, onRegisterCharacter, onProcess } = props
   if (!user) {
     return (
       <div>
@@ -467,11 +471,10 @@ function ProjectAssetLibrary(props: { user: unknown; projects: ProjectDetail[]; 
           {projects.map((project) => <option key={project.id} value={project.id}>{project.title}</option>)}
         </select>
         <select value={assetType} onChange={(event) => onAssetTypeChange(event.target.value)} className="rounded-md border border-slate-200 bg-white px-3 py-2 text-sm">
-          <option value="character">角色立绘</option>
-          <option value="background">背景图</option>
-          <option value="music">音乐</option>
-          <option value="sound">音效</option>
-          <option value="other">其他</option>
+          <option value="CG">角色立绘 / CG</option>
+          <option value="BACKGROUND">背景图</option>
+          <option value="BGM">音乐</option>
+          <option value="OTHER">其他</option>
         </select>
         <label className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-md bg-dream-600 px-4 py-2 text-sm font-medium text-white hover:bg-dream-700">
           {assetLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
@@ -483,7 +486,7 @@ function ProjectAssetLibrary(props: { user: unknown; projects: ProjectDetail[]; 
       <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
         {assets.map((asset) => (
           <article key={asset.id} className="overflow-hidden rounded-lg border border-slate-200">
-            {asset.type === 'music' || asset.type === 'sound' ? <div className="flex h-40 items-center justify-center bg-slate-100 text-sm text-slate-500">{asset.type.toUpperCase()}</div> : <img src={asset.url} alt={asset.name} className="h-40 w-full object-contain bg-slate-100" />}
+            {asset.type === 'BGM' ? <div className="flex h-40 items-center justify-center bg-slate-100 text-sm text-slate-500">BGM</div> : <img src={asset.url} alt={asset.name} className="h-40 w-full object-contain bg-slate-100" />}
             <div className="p-3">
               {renamingId === asset.id ? (
                 <div className="flex gap-2">
@@ -500,8 +503,9 @@ function ProjectAssetLibrary(props: { user: unknown; projects: ProjectDetail[]; 
                     </div>
                     <RowActions onEdit={() => onStartRename(asset)} onDelete={() => onDelete(asset)} />
                   </div>
-                  {!['music', 'sound'].includes(asset.type) && (
+                  {asset.type !== 'BGM' && (
                     <div className="flex flex-wrap gap-2">
+                      <button onClick={() => onProcess(asset)} className="inline-flex items-center gap-1 rounded-md bg-cyan-700 px-2 py-1 text-xs font-medium text-white hover:bg-cyan-800"><SlidersHorizontal className="h-3 w-3" />处理图片</button>
                       <button onClick={() => onRegisterCharacter(asset)} className="rounded-md border border-dream-200 bg-dream-50 px-2 py-1 text-xs font-medium text-dream-700 hover:bg-dream-100">
                         登记为角色
                       </button>

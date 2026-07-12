@@ -1,6 +1,12 @@
+import { requestProviderJson } from './providerTransport.js'
+
 export interface LLMMessage {
   role: 'system' | 'user' | 'assistant'
   content: string
+}
+
+interface OpenAICompatibleResponse {
+  choices?: Array<{ message?: { content?: string } }>
 }
 
 export interface LLMOptions {
@@ -28,28 +34,17 @@ export abstract class LLMProvider {
 
   abstract chat(messages: LLMMessage[], options?: LLMOptions): Promise<string>
 
-  protected async post(path: string, body: unknown, externalSignal?: AbortSignal) {
+  protected async post(path: string, body: unknown, externalSignal?: AbortSignal): Promise<OpenAICompatibleResponse> {
     const controller = new AbortController()
     const timeout = setTimeout(() => controller.abort(), 60_000)
     const abort = () => controller.abort()
     externalSignal?.addEventListener('abort', abort, { once: true })
     try {
-      const response = await fetch(`${this.baseUrl}${path}`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${this.config.apiKey}`,
-      },
-      body: JSON.stringify(body),
-      signal: controller.signal,
+      return await requestProviderJson<OpenAICompatibleResponse>(`${this.baseUrl}${path}`, body, {
+        headers: { Authorization: `Bearer ${this.config.apiKey}` },
+        signal: controller.signal,
+        errorPrefix: this.name,
       })
-
-      if (!response.ok) {
-        const error = await response.text()
-        throw new Error(`${this.name} API error: ${response.status} ${error}`)
-      }
-
-      return response.json()
     } finally {
       clearTimeout(timeout)
       externalSignal?.removeEventListener('abort', abort)

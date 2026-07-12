@@ -1,6 +1,6 @@
 import axios from 'axios'
 import { useAuthStore } from '../stores/authStore'
-import type { AgentConversationDto, AgentProviderConfig, AgentRunDto, AppliedPatchDto, StartAgentRunInput } from '../agent/agentTypes'
+import type { AgentConversationDto, AgentMemoryDto, AgentMemoryInput, AgentMessagePageDto, AgentProviderConfig, AgentRunDto, AppliedPatchDto, StartAgentRunInput } from '../agent/agentTypes'
 
 export const api = axios.create({
   baseURL: '/api',
@@ -173,7 +173,27 @@ export interface Asset {
   type: string
   url: string
   createdAt: string
+  mimeType?: string | null
+  width?: number | null
+  height?: number | null
+  hasAlpha?: boolean | null
+  status?: string
+  metadata?: string
+  variants?: AssetVariant[]
 }
+
+export async function exportProjectBackup(projectId: string): Promise<unknown> {
+  const { data } = await api.get(`/projects/${projectId}/export`)
+  return data
+}
+
+export async function importProjectBackup(manifest: unknown): Promise<{ id: string; title: string }> {
+  const { data } = await api.post('/projects/import', manifest)
+  return data
+}
+
+export interface AssetVariant { id: string; assetId: string; kind: 'sprite' | 'cg' | 'background'; status: string; url: string; mimeType: string; width: number; height: number; metadata: string; createdAt: string }
+export interface AcceptedAssetVariant { variant: AssetVariant; asset?: Asset; character: Pick<Character, 'id' | 'name'> | null }
 
 export async function getProjectAssets(projectId: string): Promise<Asset[]> {
   const { data } = await api.get(`/assets/${projectId}`)
@@ -243,7 +263,8 @@ export interface SaveChapterPayload {
 }
 
 export async function saveChapter(projectId: string, payload: SaveChapterPayload): Promise<{ version: number }> {
-  const { data } = await api.put(`/projects/${projectId}/chapters/${payload.chapterId}`, payload)
+  const { chapterId, ...body } = payload
+  const { data } = await api.put(`/projects/${projectId}/chapters/${chapterId}`, body)
   return data
 }
 
@@ -360,9 +381,61 @@ export async function getAgentConversations(projectId: string): Promise<AgentCon
   return data
 }
 
-export async function createAgentConversation(projectId: string, payload: { title: string; scope: string }): Promise<AgentConversationDto> {
+export async function createAgentConversation(projectId: string, payload: { title: string; scope: string; chapterId?: string }): Promise<AgentConversationDto> {
   const { data } = await api.post(`/projects/${projectId}/agent/conversations`, payload)
   return data
+}
+
+export async function processAsset(assetId: string, recipe: { purpose: 'sprite' | 'cg' | 'background'; removeWhite?: boolean; whiteThreshold?: number; feather?: number; trim?: boolean }): Promise<AssetVariant> {
+  const { data } = await api.post(`/assets/${assetId}/process`, recipe)
+  return data
+}
+
+export async function acceptAssetVariant(variantId: string, payload: { purpose: 'sprite' | 'cg' | 'background'; characterId?: string; characterName?: string; expressionName?: string }): Promise<AcceptedAssetVariant> {
+  const { data } = await api.post(`/assets/variants/${variantId}/accept`, payload)
+  return data
+}
+
+export async function rejectAssetVariant(variantId: string): Promise<void> {
+  await api.post(`/assets/variants/${variantId}/reject`)
+}
+
+export async function getAgentConversation(conversationId: string): Promise<AgentConversationDto> {
+  const { data } = await api.get(`/agent/conversations/${conversationId}`)
+  return data
+}
+
+export async function updateAgentConversation(conversationId: string, payload: { title?: string; scope?: string; chapterId?: string | null; isPinned?: boolean }): Promise<AgentConversationDto> {
+  const { data } = await api.patch(`/agent/conversations/${conversationId}`, payload)
+  return data
+}
+
+export async function deleteAgentConversation(conversationId: string): Promise<void> {
+  await api.delete(`/agent/conversations/${conversationId}`)
+}
+
+export async function getAgentMessages(conversationId: string, cursor?: string, limit = 30): Promise<AgentMessagePageDto> {
+  const { data } = await api.get(`/agent/conversations/${conversationId}/messages`, { params: { cursor, limit } })
+  return data
+}
+
+export async function getAgentMemories(projectId: string, conversationId?: string): Promise<AgentMemoryDto[]> {
+  const { data } = await api.get(`/projects/${projectId}/agent/memories`, { params: { conversationId } })
+  return data
+}
+
+export async function createAgentMemory(projectId: string, payload: AgentMemoryInput): Promise<AgentMemoryDto> {
+  const { data } = await api.post(`/projects/${projectId}/agent/memories`, payload)
+  return data
+}
+
+export async function updateAgentMemory(memoryId: string, payload: Partial<Omit<AgentMemoryInput, 'conversationId'>>): Promise<AgentMemoryDto> {
+  const { data } = await api.patch(`/agent/memories/${memoryId}`, payload)
+  return data
+}
+
+export async function forgetAgentMemory(memoryId: string): Promise<void> {
+  await api.delete(`/agent/memories/${memoryId}`)
 }
 
 export async function createAgentRun(input: StartAgentRunInput): Promise<AgentRunDto> {

@@ -20,6 +20,8 @@ export interface AgentExecutionResult {
   plan: string[]
   patch?: StoryPatch
   suggestions: string[]
+  memorySuggestions: Array<{ kind: 'canon' | 'character' | 'preference' | 'plot' | 'decision' | 'artifact'; title: string; content: string; tags?: string[]; importance?: number }>
+  artifactRefs: Array<{ type: 'story-patch' | 'asset-variant'; id: string }>
   toolSteps: number
 }
 
@@ -67,6 +69,8 @@ export async function executeCreativeAgent(input: {
         plan: response.plan,
         patch: response.patch,
         suggestions: response.suggestions ?? [],
+        memorySuggestions: response.memorySuggestions ?? [],
+        artifactRefs: response.artifactRefs ?? [],
         toolSteps,
       }
     }

@@ -9,6 +9,7 @@ const nodes = Array.from({ length: 12 }, (_, index) => ({
 }))
 
 const snapshot: AgentProjectSnapshot = {
+  assets: [],
   projectId: 'project',
   title: '梦弦',
   description: '节点视觉小说',
