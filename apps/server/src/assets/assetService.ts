@@ -4,6 +4,7 @@ import path from 'node:path'
 import type { Prisma, PrismaClient } from '@prisma/client'
 import { prisma } from '../lib/prisma.js'
 import { processImage, type ImageRecipe } from './imageProcessor.js'
+import { inspectImage } from './imageInspector.js'
 
 export interface AcceptAssetInput {
   purpose: ImageRecipe['purpose']
@@ -30,6 +31,14 @@ function safePath(root: string, relative: string): string {
 export class PrismaAssetService {
   constructor(private readonly client: PrismaClient = prisma, private readonly storageRoot = process.env.UPLOAD_DIR || './uploads') {}
 
+  async inspect(assetId: string, userId: string) {
+    const asset = await this.requireOwnedAsset(assetId, userId)
+    const source = await readFile(this.pathFromUrl(asset.url)).catch(() => { throw new Error('原始素材文件不存在') })
+    const inspection = await inspectImage(source)
+    const { project: _project, ...publicAsset } = asset
+    return { asset: publicAsset, ...inspection }
+  }
+
   async process(assetId: string, userId: string, recipe: ImageRecipe) {
     const asset = await this.requireOwnedAsset(assetId, userId)
     const sourcePath = this.pathFromUrl(asset.url)
@@ -43,7 +52,7 @@ export class PrismaAssetService {
     return this.client.assetVariant.create({ data: {
       assetId: asset.id, kind: recipe.purpose, status: 'proposed', url: `/uploads/${relative.replaceAll('\\', '/')}`,
       mimeType: processed.inspection.mimeType, width: processed.inspection.width, height: processed.inspection.height,
-      metadata: JSON.stringify({ recipe }),
+      metadata: JSON.stringify({ recipe, sourceAnalysis: (await inspectImage(source)).analysis, outputAnalysis: processed.inspection.analysis }),
     } })
   }
 

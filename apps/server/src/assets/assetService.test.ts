@@ -39,6 +39,13 @@ describe('asset service', () => {
     expect((await client.asset.findUnique({ where: { id: 'original' } }))?.url).toBe('/uploads/source.png')
   })
 
+  it('inspects the owned source pixels and returns a preparation recommendation', async () => {
+    const inspection = await service.inspect('original', 'owner')
+    expect(inspection.asset).toMatchObject({ id: 'original', url: '/uploads/source.png' })
+    expect(inspection.analysis).toMatchObject({ background: 'flat-light', recommendedPurpose: 'sprite' })
+    await expect(service.inspect('original', 'someone-else')).rejects.toThrow()
+  })
+
   it('rejects a derivative without deleting its original', async () => {
     const variant = await service.process('original', 'owner', { purpose: 'cg', trim: false })
     await service.reject(variant.id, 'owner')

@@ -93,7 +93,7 @@ export function createAssetRouter(client: PrismaClient = prisma, storageRoot = u
     try {
       const asset = await client.asset.create({ data: {
         projectId, name: name || req.file.originalname, type, url: finalized.url, mimeType: finalized.mimeType,
-        ...(finalized.image ? { width: finalized.image.width, height: finalized.image.height, hasAlpha: finalized.image.hasAlpha, metadata: JSON.stringify({ format: finalized.image.format, animated: finalized.image.animated, pages: finalized.image.pages }) } : {}),
+        ...(finalized.image ? { width: finalized.image.width, height: finalized.image.height, hasAlpha: finalized.image.hasAlpha, metadata: JSON.stringify({ format: finalized.image.format, animated: finalized.image.animated, pages: finalized.image.pages, analysis: finalized.image.analysis }) } : {}),
       } })
       res.json(asset)
     } catch (error) {
@@ -121,7 +121,7 @@ export function createAssetRouter(client: PrismaClient = prisma, storageRoot = u
     try {
       updated = await client.asset.update({ where: { id: asset.id }, data: {
         name: req.body.name || asset.name, type: nextType, url: finalized.url, mimeType: finalized.mimeType,
-        ...(finalized.image ? { width: finalized.image.width, height: finalized.image.height, hasAlpha: finalized.image.hasAlpha, metadata: JSON.stringify({ format: finalized.image.format, animated: finalized.image.animated, pages: finalized.image.pages }) } : { width: null, height: null, hasAlpha: null, metadata: '{}' }),
+        ...(finalized.image ? { width: finalized.image.width, height: finalized.image.height, hasAlpha: finalized.image.hasAlpha, metadata: JSON.stringify({ format: finalized.image.format, animated: finalized.image.animated, pages: finalized.image.pages, analysis: finalized.image.analysis }) } : { width: null, height: null, hasAlpha: null, metadata: '{}' }),
       } })
     } catch (error) {
       removeUploadFile(finalized.url, storageRoot)
@@ -138,6 +138,10 @@ export function createAssetRouter(client: PrismaClient = prisma, storageRoot = u
     if (!asset) return res.status(404).json({ error: '素材不存在' })
     if (!(await assertProjectOwner(client, asset.projectId, req.userId))) return res.status(403).json({ error: '无权修改此素材' })
     res.json(await client.asset.update({ where: { id: asset.id }, data: { name: body.data.name } }))
+  })
+
+  router.get('/:assetId/inspection', async (req: AuthRequest, res: Response) => {
+    try { res.json(await processing.inspect(req.params.assetId, req.userId!)) } catch (error) { processingError(res, error) }
   })
 
   router.post('/:assetId/process', async (req: AuthRequest, res: Response) => {

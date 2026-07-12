@@ -182,6 +182,29 @@ export interface Asset {
   variants?: AssetVariant[]
 }
 
+export interface ImageAnalysis {
+  alphaCoverage: number
+  borderLuminance: number
+  borderVariance: number
+  background: 'transparent' | 'flat-light' | 'flat-color' | 'complex'
+  foregroundBounds: { x: number; y: number; width: number; height: number } | null
+  recommendedPurpose: 'sprite' | 'cg' | 'background'
+  recommendedRecipe: { removeWhite: boolean; trim: boolean; whiteThreshold: number; feather: number }
+  confidence: number
+  reasons: string[]
+  warnings: string[]
+}
+
+export interface AssetInspection {
+  asset: Asset
+  format: string
+  mimeType: string
+  width: number
+  height: number
+  hasAlpha: boolean
+  analysis: ImageAnalysis
+}
+
 export async function exportProjectBackup(projectId: string): Promise<unknown> {
   const { data } = await api.get(`/projects/${projectId}/export`)
   return data
@@ -197,6 +220,11 @@ export interface AcceptedAssetVariant { variant: AssetVariant; asset?: Asset; ch
 
 export async function getProjectAssets(projectId: string): Promise<Asset[]> {
   const { data } = await api.get(`/assets/${projectId}`)
+  return data
+}
+
+export async function inspectAsset(assetId: string): Promise<AssetInspection> {
+  const { data } = await api.get(`/assets/${assetId}/inspection`)
   return data
 }
 

@@ -189,6 +189,7 @@ export class PrismaAgentRunService implements AgentRunService {
     const rawTools = createAgentToolRegistry({
       snapshot, chapterId: run.chapterId, conversationContext: initialContext.filter((source) => source.kind === 'conversation-history' || source.kind === 'conversation-summary'),
       memories: initialContext.filter((source) => source.kind === 'memory').map((source) => ({ id: source.id, title: source.title, content: source.content })),
+      inspectAsset: (assetId) => new PrismaAssetService(this.client).inspect(assetId, run.userId),
       prepareAsset: (assetId, purpose, recipe) => new PrismaAssetService(this.client).process(assetId, run.userId, { purpose, ...recipe }),
     })
     const provider = this.dependencies.createProvider(job.secretConfig.provider, job.secretConfig)

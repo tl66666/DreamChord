@@ -19,6 +19,7 @@ export function createAgentToolRegistry(context: {
   chapterId: string
   conversationContext?: unknown[]
   memories?: Array<{ id: string; title: string; content: string }>
+  inspectAsset?: (assetId: string) => Promise<unknown>
   prepareAsset?: (assetId: string, purpose: 'sprite' | 'cg' | 'background', recipe: { removeWhite?: boolean; trim?: boolean; whiteThreshold?: number; feather?: number }) => Promise<unknown>
 }) {
   const chapter = context.snapshot.chapters.find((item) => item.id === context.chapterId)
@@ -62,7 +63,10 @@ export function createAgentToolRegistry(context: {
     },
     inspect_asset: {
       inputSchema: z.object({ assetId: z.string().min(1) }).strict(),
-      async execute(input: { assetId: string }) { return context.snapshot.assets.find((asset) => asset.id === input.assetId) ?? { error: '素材不存在' } },
+      async execute(input: { assetId: string }) {
+        if (context.inspectAsset) return context.inspectAsset(input.assetId)
+        return context.snapshot.assets.find((asset) => asset.id === input.assetId) ?? { error: '素材不存在' }
+      },
     },
     read_character_profile: {
       inputSchema: z.object({ characterId: z.string().min(1) }).strict(),

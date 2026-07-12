@@ -36,4 +36,15 @@ describe('creative agent tools', () => {
     await registry.prepare_character_asset.execute({ assetId: 'asset', removeWhite: true, trim: true })
     expect(proposed).toEqual(['asset:sprite'])
   })
+
+  it('uses the owned pixel inspector instead of guessing from snapshot metadata', async () => {
+    const registry = createAgentToolRegistry({
+      snapshot: { projectId: 'p', title: '故事', description: '', bible: null, characters: [], assets: [{ id: 'asset', name: '原图', type: 'CG', url: '/uploads/a.png', width: 100, height: 200 }], chapters: [{ id: 'c', title: '第一章', version: 1, graph: { nodes: [], edges: [] } }] },
+      chapterId: 'c',
+      inspectAsset: async (assetId) => ({ asset: { id: assetId }, analysis: { background: 'flat-light', recommendedPurpose: 'sprite', confidence: 0.92 } }),
+    })
+    await expect(registry.inspect_asset.execute({ assetId: 'asset' })).resolves.toMatchObject({
+      analysis: { background: 'flat-light', recommendedPurpose: 'sprite' },
+    })
+  })
 })
