@@ -1255,10 +1255,7 @@ body {
   <div class="start-steps">
     <div class="start-step reveal"><div class="step-num">01</div><div class="step-content"><h4>安装依赖</h4><p>克隆仓库后安装前后端依赖（pnpm workspace 会自动处理共享依赖）</p><code>git clone https://github.com/tl66666/DreamChord.git
 cd DreamChord && pnpm install --frozen-lockfile</code></div></div>
-    <div class="start-step reveal"><div class="step-num">02</div><div class="step-content"><h4>初始化数据库</h4><p>配置 .env 环境变量，运行 Prisma 迁移创建表结构，执行种子数据初始化</p><code>cd apps/server
-cp .env.example .env
-pnpm --filter dreamchord-server prisma migrate deploy
-pnpm --filter dreamchord-server prisma db seed</code></div></div>
+    <div class="start-step reveal"><div class="step-num">02</div><div class="step-content"><h4>初始化数据库</h4><p>补齐本地配置，校验并备份已有 SQLite，再同步表结构和演示数据</p><code>powershell -ExecutionPolicy Bypass -File .\start-dreamchord.ps1 -SetupOnly</code></div></div>
     <div class="start-step reveal"><div class="step-num">03</div><div class="step-content"><h4>启动开发服务器</h4><p>双击 start-dreamchord.bat 一键启动，或在仓库根目录启动整个工作区</p><code>pnpm dev</code></div></div>
   </div>
 </section>
@@ -1275,7 +1272,7 @@ pnpm --filter dreamchord-server prisma db seed</code></div></div>
     </div>
     <div class="faq-item reveal">
       <div class="faq-q">项目需要安装数据库吗？<span class="faq-icon">+</span></div>
-      <div class="faq-a"><div class="faq-a-inner">不需要额外安装。后端使用 SQLite 文件数据库（dev.db），Prisma ORM 自动管理。运行 npx prisma migrate dev 会自动创建表结构，npx prisma db seed 会插入演示账号和官方剧情数据。整个数据库就是一个文件，不需要 MySQL / PostgreSQL 等独立数据库服务。</div></div>
+      <div class="faq-a"><div class="faq-a-inner">不需要额外安装。后端使用 SQLite 文件数据库（dev.db），Prisma ORM 自动管理。一键启动器会先保留升级前快照，再同步表结构并初始化演示数据。整个数据库就是一个文件，不需要 MySQL / PostgreSQL 等独立数据库服务。</div></div>
     </div>
     <div class="faq-item reveal">
       <div class="faq-q">AI 功能是必须的吗？不配置 AI 能用吗？<span class="faq-icon">+</span></div>

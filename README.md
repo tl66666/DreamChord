@@ -106,9 +106,9 @@ The launcher:
 - runs from its own directory, so the repository may be placed anywhere;
 - checks Node.js and enables the pinned pnpm version through Corepack;
 - installs the frozen workspace lockfile;
-- creates a local `.env` only when missing and preserves existing secrets;
+- creates or repairs the local `.env` while preserving existing secrets and data paths;
 - chooses free backend and frontend ports;
-- applies Prisma migrations and idempotent demo seeding;
+- keeps one verified pre-sync SQLite snapshot for each of the latest five schema versions, synchronizes the Prisma schema, and runs idempotent demo seeding;
 - waits for both services before opening the browser.
 
 Setup-only verification:
@@ -124,9 +124,15 @@ corepack enable
 corepack prepare pnpm@9.1.0 --activate
 pnpm install --frozen-lockfile
 pnpm --filter dreamchord-server prisma generate
-pnpm --filter dreamchord-server prisma migrate deploy
+pnpm --filter dreamchord-server prisma db push --accept-data-loss
 pnpm --filter dreamchord-server prisma db seed
 pnpm dev
+```
+
+The one-click launcher backs up any non-empty local SQLite database before schema synchronization. For manual upgrades, run:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\backup-local-database.ps1 -EnvPath .\apps\server\.env -SchemaPath .\apps\server\prisma\schema.prisma
 ```
 
 Default addresses:

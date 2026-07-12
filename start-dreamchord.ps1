@@ -10,6 +10,7 @@ chcp 65001 > $null 2>&1
 
 $ProjectRoot = Split-Path -Parent $MyInvocation.MyCommand.Path
 $ServerDir = Join-Path $ProjectRoot 'apps\server'
+$RequiredPnpmVersion = '9.1.0'
 $ServerPorts = 3001..3010
 $WebPorts = 5173..5183
 
@@ -67,54 +68,38 @@ function Assert-Node20 {
 
 function Ensure-Pnpm {
   if (Get-Command pnpm -ErrorAction SilentlyContinue) {
-    Write-Ok "pnpm $(pnpm --version)"
-    return
+    $pnpmVersion = pnpm --version
+    if ($pnpmVersion -eq $RequiredPnpmVersion) {
+      Write-Ok "pnpm $pnpmVersion"
+      return
+    }
+    Write-Warn "pnpm $pnpmVersion 与项目要求 $RequiredPnpmVersion 不一致，正在切换"
   }
   if (-not (Get-Command corepack -ErrorAction SilentlyContinue)) {
-    throw '未找到 pnpm 或 Corepack。请重新安装 Node.js 20 LTS。'
+    throw "未找到可用的 pnpm $RequiredPnpmVersion 或 Corepack。请重新安装 Node.js 20 LTS。"
   }
-  Write-Step '启用项目固定的 pnpm 9.1.0'
+  Write-Step "启用项目固定的 pnpm $RequiredPnpmVersion"
   Invoke-Checked { corepack enable } 'Corepack 启用失败'
-  Invoke-Checked { corepack prepare pnpm@9.1.0 --activate } 'pnpm 9.1.0 安装失败'
+  Invoke-Checked { corepack prepare "pnpm@$RequiredPnpmVersion" --activate } "pnpm $RequiredPnpmVersion 安装失败"
   if (-not (Get-Command pnpm -ErrorAction SilentlyContinue)) { throw 'pnpm 启用后仍不可用，请重新打开终端再试' }
-  Write-Ok "pnpm $(pnpm --version)"
+  $pnpmVersion = pnpm --version
+  if ($pnpmVersion -ne $RequiredPnpmVersion) { throw "pnpm 版本仍为 $pnpmVersion，需要 $RequiredPnpmVersion" }
+  Write-Ok "pnpm $pnpmVersion"
 }
 
 function Ensure-Environment([int]$ServerPort, [int]$WebPort) {
   $envPath = Join-Path $ServerDir '.env'
-  if (-not (Test-Path $envPath)) {
-    $secret = "dreamchord-local-$([Guid]::NewGuid().ToString('N'))"
-    $content = @"
-DATABASE_URL="file:./dev.db"
-JWT_SECRET="$secret"
-PORT=$ServerPort
-CORS_ORIGIN="http://127.0.0.1:$WebPort,http://localhost:$WebPort"
-UPLOAD_DIR="./uploads"
-"@
-    Set-Content -LiteralPath $envPath -Value $content -Encoding utf8
-    Write-Ok '已创建本地 apps\server\.env'
-    return
-  }
-
-  $content = Get-Content -Raw -LiteralPath $envPath
-  $cors = "http://127.0.0.1:$WebPort,http://localhost:$WebPort"
-  if ($content -match '(?m)^PORT=.*$') { $content = $content -replace '(?m)^PORT=.*$', "PORT=$ServerPort" }
-  else { $content += "`nPORT=$ServerPort" }
-  if ($content -match '(?m)^CORS_ORIGIN=.*$') { $content = $content -replace '(?m)^CORS_ORIGIN=.*$', "CORS_ORIGIN=`"$cors`"" }
-  else { $content += "`nCORS_ORIGIN=`"$cors`"" }
-  Set-Content -LiteralPath $envPath -Value $content -Encoding utf8 -NoNewline
-  Write-Ok '保留现有密钥并更新本地端口配置'
+  $environmentScript = Join-Path $ProjectRoot 'scripts\ensure-environment.ps1'
+  & $environmentScript -EnvPath $envPath -ServerPort $ServerPort -WebPort $WebPort
+  Write-Ok '已补齐本地配置，并保留现有密钥与数据路径'
 }
 
-function Ensure-LocalSqliteFile {
+function Backup-LocalSqlite {
   $envPath = Join-Path $ServerDir '.env'
-  $content = Get-Content -Raw -LiteralPath $envPath
-  if ($content -notmatch '(?m)^DATABASE_URL="?file:\./dev\.db"?\s*$') { return }
-  $databasePath = Join-Path $ServerDir 'prisma\dev.db'
-  if (-not (Test-Path $databasePath)) {
-    New-Item -ItemType File -Path $databasePath | Out-Null
-    Write-Ok '已创建本地 SQLite 数据库文件'
-  }
+  $schemaPath = Join-Path $ServerDir 'prisma\schema.prisma'
+  $backupScript = Join-Path $ProjectRoot 'scripts\backup-local-database.ps1'
+  $backupPath = & $backupScript -EnvPath $envPath -SchemaPath $schemaPath
+  if ($backupPath) { Write-Ok "升级前数据备份: $backupPath" }
 }
 
 function Wait-HttpReady([string]$Url, [string]$Name, [int]$TimeoutSeconds = 90) {
@@ -157,10 +142,10 @@ try {
   Push-Location $ProjectRoot
   Invoke-Checked { pnpm install --frozen-lockfile } '依赖安装失败，请检查网络后重试'
 
-  Write-Step '生成客户端并应用数据库迁移'
-  Ensure-LocalSqliteFile
+  Write-Step '备份本地数据并同步数据库结构'
+  Backup-LocalSqlite
   Invoke-Checked { pnpm --filter dreamchord-server prisma generate } 'Prisma Client 生成失败'
-  Invoke-Checked { pnpm --filter dreamchord-server prisma migrate deploy } '数据库迁移失败'
+  Invoke-Checked { pnpm --filter dreamchord-server prisma db push --accept-data-loss } '数据库结构同步失败'
 
   # Seed uses fixed IDs and upserts, so rerunning it never overwrites user projects.
   Invoke-Checked { pnpm --filter dreamchord-server prisma db seed } '演示数据初始化失败'
@@ -174,7 +159,7 @@ try {
 
   Write-Step '启动后端和前端'
   Start-ServiceWindow "DreamChord Backend ($ServerPort)" "set PORT=$ServerPort&& pnpm --filter dreamchord-server dev"
-  Start-ServiceWindow "DreamChord Frontend ($WebPort)" "set VITE_API_TARGET=http://127.0.0.1:$ServerPort&& pnpm --filter dreamchord-web dev -- --host 127.0.0.1 --port $WebPort --strictPort"
+  Start-ServiceWindow "DreamChord Frontend ($WebPort)" "set VITE_API_TARGET=http://127.0.0.1:$ServerPort&& pnpm --filter dreamchord-web dev --host 127.0.0.1 --port $WebPort --strictPort"
 
   $HomeUrl = "http://127.0.0.1:$WebPort"
   Wait-HttpReady "http://127.0.0.1:$ServerPort/api/health" '后端'

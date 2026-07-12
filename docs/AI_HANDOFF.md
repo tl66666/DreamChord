@@ -292,10 +292,9 @@ The PowerShell launcher:
 - requires Node.js 20+;
 - enables pnpm 9.1.0 via Corepack when needed;
 - selects free API/web ports;
-- creates `.env` only if missing;
-- preserves secrets while updating local port/CORS values;
+- creates or repairs `.env`, filling required local values without replacing existing secrets or data paths;
 - installs with `--frozen-lockfile`;
-- generates Prisma client, deploys migrations, and runs idempotent seed;
+- retains one verified pre-sync SQLite backup for each of the latest five schema versions, synchronizes the Prisma schema, and runs idempotent seed;
 - starts API/web windows and waits for readiness;
 - opens the browser only after both services respond.
 
