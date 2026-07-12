@@ -11,7 +11,7 @@ export interface UniformAgentTool {
 export type UniformAgentToolRegistry = Partial<Record<AgentToolName, UniformAgentTool>>
 
 export interface AgentExecutionEvent {
-  type: 'tool_started' | 'tool_completed' | 'format_repair'
+  type: 'tool_started' | 'tool_completed' | 'format_repair' | 'tool_input_repair'
   tool?: AgentToolName
 }
 
@@ -33,8 +33,31 @@ export class StepLimitExceededError extends Error {
 const SYSTEM_PROMPT = `你是 DreamChord 创作 Agent。你只能返回 JSON，不能返回解释或 markdown。
 需要读取信息时返回 {"type":"tool_call","tool":"允许的工具名","input":{}}。
 完成时返回 {"type":"final","summary":"结论","plan":["步骤"],"patch":{"operations":[]},"suggestions":[]}。
+单素材工具每次只能处理一个素材，参数示例：inspect_asset 使用 {"assetId":"素材ID"}；prepare_character_asset 使用 {"assetId":"素材ID","removeWhite":true,"trim":true}；prepare_cg_asset 使用 {"assetId":"素材ID","trim":true}；prepare_background_asset 使用 {"assetId":"素材ID"}。
 不得编造工具，不得要求直接访问数据库或文件系统。
 处理图片前必须先调用 inspect_asset。透明 PNG 不要去白底；只有 flat-light 才可使用边缘连通去白底；complex 复杂背景必须说明本地工具不能可靠语义抠图，建议透明 PNG 或纯色底原图。所有 prepare 工具只生成待用户确认的候选产物。`
+
+const SINGLE_ASSET_TOOLS = new Set<AgentToolName>([
+  'inspect_asset',
+  'prepare_character_asset',
+  'prepare_cg_asset',
+  'prepare_background_asset',
+])
+
+function normalizeToolInput(tool: AgentToolName, value: unknown): unknown {
+  if (!SINGLE_ASSET_TOOLS.has(tool) || !value || typeof value !== 'object' || Array.isArray(value)) return value
+  const record = value as Record<string, unknown>
+  if (typeof record.assetId === 'string' || !Array.isArray(record.ids) || record.ids.length !== 1 || typeof record.ids[0] !== 'string') return value
+  const { ids: _ids, ...rest } = record
+  return { ...rest, assetId: record.ids[0] }
+}
+
+function toolInputHint(tool: AgentToolName): string {
+  if (tool === 'inspect_asset' || tool === 'prepare_background_asset') return '{"assetId":"素材ID"}'
+  if (tool === 'prepare_character_asset') return '{"assetId":"素材ID","removeWhite":true,"trim":true}'
+  if (tool === 'prepare_cg_asset') return '{"assetId":"素材ID","trim":true}'
+  return '请严格使用该工具定义的字段和类型，不要增加其他字段'
+}
 
 export async function executeCreativeAgent(input: {
   prompt: string
@@ -49,6 +72,7 @@ export async function executeCreativeAgent(input: {
   ]
   let toolSteps = 0
   let formatRepairs = 0
+  let toolInputRepairs = 0
 
   while (toolSteps < 8) {
     const raw = await input.chat(messages)
@@ -78,7 +102,20 @@ export async function executeCreativeAgent(input: {
 
     const tool = input.tools[response.tool]
     if (!tool) throw new Error(`工具未注册: ${response.tool}`)
-    const parsedInput = tool.parseInput(response.input)
+    let parsedInput: unknown
+    try {
+      parsedInput = tool.parseInput(normalizeToolInput(response.tool, response.input))
+    } catch {
+      if (toolInputRepairs >= 2) throw new Error(`工具 ${response.tool} 的参数连续无效，请检查参数后重试`)
+      toolInputRepairs += 1
+      await input.onEvent?.({ type: 'tool_input_repair', tool: response.tool })
+      messages.push({ role: 'assistant', content: JSON.stringify(response).slice(0, 2_000) })
+      messages.push({
+        role: 'user',
+        content: `工具 ${response.tool} 的参数不正确。正确示例：${toolInputHint(response.tool)}。单素材工具一次只能传一个 assetId，请修正后重新调用。`,
+      })
+      continue
+    }
     await input.onEvent?.({ type: 'tool_started', tool: response.tool })
     const result = await tool.execute(parsedInput)
     await input.onEvent?.({ type: 'tool_completed', tool: response.tool })
