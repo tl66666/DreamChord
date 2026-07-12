@@ -3,7 +3,7 @@ import { ArrowDown, ArrowUp, Image as ImageIcon, Trash2 } from 'lucide-react'
 import { loadLibraryCharacters, loadLibraryScenes } from '../../lib/libraryData'
 import { getNodeData } from '../sceneGraph'
 import { BRANCH_TYPES, LENS_LABEL, NODE_LABEL } from './workbenchConstants'
-import type { BranchInfo, LensType } from './workbenchTypes'
+import type { BranchInfo, LensType, StageState } from './workbenchTypes'
 import { draftFromSceneNodes, getChoices, getNodeDisplayLabel, getSceneOptions, positionLabel } from './storyEditorGraph'
 
 export function GuidePill({ title, text }: { title: string; text: string }) {
@@ -394,11 +394,13 @@ export function MiniBeatCard({
 
 export function SceneCard({
   sceneNodes,
+  stage,
   index,
   onEdit,
   onDelete,
 }: {
   sceneNodes: Node[]
+  stage: StageState
   index: number
   onEdit: () => void
   onDelete: () => void
@@ -406,7 +408,7 @@ export function SceneCard({
   const draft = draftFromSceneNodes(sceneNodes)
   const scenes = loadLibraryScenes()
   const characters = loadLibraryCharacters()
-  const scene = scenes.find((item) => item.url === draft.backgroundId || item.id === draft.backgroundId)
+  const scene = scenes.find((item) => item.url === stage.backgroundId || item.id === stage.backgroundId)
   const speaker = draft.speakerRole === '旁白'
     ? '旁白'
     : characters.find((character) => character.id === draft.speakerRole)?.name || draft.speakerRole
@@ -422,19 +424,20 @@ export function SceneCard({
             <span className="rounded-full bg-cyan-50 px-2 py-0.5 text-xs font-medium text-cyan-700">场景 {draft.sceneCode}</span>
             <span className="rounded-full bg-dream-50 px-2 py-0.5 text-xs font-medium text-dream-700">{LENS_LABEL[draft.lensType]}</span>
             <span className="text-xs text-cyan-600">{scene?.name || '未命名背景'}</span>
-            <span className="text-xs text-cyan-500">{draft.characters.length} 个角色</span>
+            <span className="text-xs text-cyan-500">舞台 {stage.characters.length} 个角色</span>
           </div>
           <div className="grid gap-3 md:grid-cols-[140px_1fr]">
             <div className="overflow-hidden rounded-lg border border-cyan-100 bg-slate-50">
-              <img src={draft.backgroundId} alt={scene?.name || '场景背景'} className="h-20 w-full object-cover" />
+              <img src={stage.backgroundId} alt={scene?.name || '场景背景'} className="h-20 w-full object-cover" />
             </div>
             <div className="min-w-0">
               <p className="mb-1 text-xs text-cyan-600">
-                角色：{draft.characters.map((item) => {
+                舞台结果：{stage.characters.map((item) => {
                   const character = characters.find((candidate) => candidate.id === item.characterId)
                   return `${character?.name || item.characterId}/${item.expression}/${positionLabel(item.position)}`
                 }).join('、') || '无'}
               </p>
+              {stage.ambiguous && <p className="mb-1 text-[11px] leading-4 text-amber-700">分支汇合后的舞台不一致，请在此处明确重置背景和角色。</p>}
               <p className="rounded-lg border border-cyan-100 bg-cyan-50/40 px-3 py-2 text-sm leading-6 text-slate-700">
                 <span className="font-semibold text-cyan-800">{draft.lensType === 'narration' || draft.lensType === 'memory' || draft.lensType === 'system' ? LENS_LABEL[draft.lensType] : speaker}：</span>
                 {draft.text || '暂无文本'}

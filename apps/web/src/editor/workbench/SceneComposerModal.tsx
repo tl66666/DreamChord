@@ -1,18 +1,20 @@
 import { useState } from 'react'
-import { Plus, Trash2, X } from 'lucide-react'
+import { History, LogOut, Plus, Trash2, TriangleAlert, X } from 'lucide-react'
 import { loadLibraryCharacters, loadLibraryScenes } from '../../lib/libraryData'
 import { LENS_LABEL, LENS_TYPES } from './workbenchConstants'
-import type { SceneCharacterDraft, SceneDraft } from './workbenchTypes'
+import type { SceneCharacterDraft, SceneDraft, StageState } from './workbenchTypes'
 import { normalizedSceneDraft } from './storyEditorGraph'
 
 export default function SceneComposerModal({
   title,
   initialDraft,
+  inheritedStage,
   onCancel,
   onConfirm,
 }: {
   title: string
   initialDraft?: SceneDraft
+  inheritedStage?: StageState
   onCancel: () => void
   onConfirm: (draft: SceneDraft) => void
 }) {
@@ -50,7 +52,8 @@ export default function SceneComposerModal({
   }
 
   const addCharacter = () => {
-    if (!firstCharacter) return
+    const availableCharacter = characters.find((item) => !draft.characters.some((existing) => existing.characterId === item.id)) || firstCharacter
+    if (!availableCharacter) return
     const usedPositions = new Set(draft.characters.map((character) => character.position))
     const position = (['left', 'center', 'right'].find((item) => !usedPositions.has(item as SceneCharacterDraft['position'])) || 'center') as SceneCharacterDraft['position']
     setDraft((current) => ({
@@ -58,9 +61,10 @@ export default function SceneComposerModal({
       characters: [
         ...current.characters,
         {
-          characterId: firstCharacter.id,
-          expression: firstCharacter.defaultExpression,
+          characterId: availableCharacter.id,
+          expression: availableCharacter.defaultExpression,
           position,
+          action: 'show',
         },
       ],
     }))
@@ -69,7 +73,9 @@ export default function SceneComposerModal({
   const removeCharacter = (index: number) => {
     setDraft((current) => ({
       ...current,
-      characters: current.characters.filter((_, itemIndex) => itemIndex !== index),
+      characters: current.characters[index]?.action === 'keep'
+        ? current.characters.map((character, itemIndex) => itemIndex === index ? { ...character, action: 'hide' } : character)
+        : current.characters.filter((_, itemIndex) => itemIndex !== index),
     }))
   }
 
@@ -93,6 +99,17 @@ export default function SceneComposerModal({
 
         <div className="grid max-h-[calc(88vh-140px)] gap-5 overflow-y-auto p-5 md:grid-cols-[1fr_230px]">
           <div className="space-y-5">
+            {inheritedStage && <section className={`rounded-lg border px-3 py-2.5 ${inheritedStage.ambiguous ? 'border-amber-200 bg-amber-50' : 'border-cyan-100 bg-cyan-50/60'}`}>
+              <div className="flex items-start gap-2">
+                {inheritedStage.ambiguous ? <TriangleAlert className="mt-0.5 h-4 w-4 shrink-0 text-amber-700" /> : <History className="mt-0.5 h-4 w-4 shrink-0 text-cyan-700" />}
+                <div>
+                  <p className={`text-xs font-semibold ${inheritedStage.ambiguous ? 'text-amber-900' : 'text-cyan-900'}`}>{inheritedStage.ambiguous ? '分支舞台需要确认' : '已继承上一镜头舞台'}</p>
+                  <p className={`mt-1 text-xs leading-5 ${inheritedStage.ambiguous ? 'text-amber-800' : 'text-cyan-700'}`}>{inheritedStage.ambiguous
+                    ? `${inheritedStage.conflicts.join('；')}。请在这一镜头明确背景和角色登退场。`
+                    : `背景和 ${inheritedStage.characters.length} 个在场角色会继续保留；只需要添加新登场、退场或变化。`}</p>
+                </div>
+              </div>
+            </section>}
             <section>
               <p className="mb-2 text-xs font-medium text-dream-700">镜头类型</p>
               <div className="grid gap-2 md:grid-cols-5">
@@ -185,12 +202,12 @@ export default function SceneComposerModal({
                         onChange={(event) => updateCharacter(index, { action: event.target.value as SceneCharacterDraft['action'] })}
                         className={sceneControlClass}
                       >
-                        <option value="show">显示</option>
-                        <option value="keep">保持</option>
-                        <option value="hide">隐藏</option>
+                        <option value="show">登场 / 更新</option>
+                        <option value="keep">保持在场</option>
+                        <option value="hide">退场</option>
                       </select>
-                      <button onClick={() => removeCharacter(index)} className="rounded-lg text-red-500 hover:bg-red-50" title="删除角色">
-                        <Trash2 className="mx-auto h-4 w-4" />
+                      <button onClick={() => removeCharacter(index)} className="rounded-lg text-red-500 hover:bg-red-50" title={character.action === 'keep' ? '让角色退场' : '移除这项舞台变化'}>
+                        {character.action === 'keep' ? <LogOut className="mx-auto h-4 w-4" /> : <Trash2 className="mx-auto h-4 w-4" />}
                       </button>
                     </div>
                   )
@@ -283,20 +300,20 @@ export default function SceneComposerModal({
               <div className="p-3">
                 <p className="text-xs font-semibold text-dream-800">生成节点</p>
                 <p className="mt-1 text-xs leading-5 text-dream-500">
-                  1 个背景节点，{normalizedSceneDraft(draft).characters.length} 个角色节点，1 个{LENS_LABEL[draft.lensType]}文本节点。
+                  1 个背景节点，{normalizedSceneDraft(draft).characters.filter((character) => character.action !== 'keep').length} 个角色变化节点，1 个{LENS_LABEL[draft.lensType]}文本节点。
                 </p>
               </div>
             </div>
             <div className="rounded-lg border border-dream-100 bg-white p-3">
               <p className="mb-2 text-xs font-semibold text-dream-800">角色预览</p>
               <div className="flex flex-wrap gap-2">
-                {draft.characters.map((character, index) => {
+                {draft.characters.filter((character) => character.action !== 'hide').map((character, index) => {
                   const activeCharacter = characters.find((item) => item.id === character.characterId)
                   const expression = activeCharacter?.expressions.find((item) => item.id === character.expression)
                   return (
                     <div key={`${character.characterId}-preview-${index}`} className="w-[64px] rounded-md bg-dream-50 p-1 text-center">
                       {expression && <img src={expression.url} alt={activeCharacter?.name || character.characterId} className="mx-auto h-16 object-contain" />}
-                      <p className="truncate text-[10px] text-dream-600">{activeCharacter?.name}</p>
+                      <p className="truncate text-[10px] text-dream-600">{activeCharacter?.name} · {character.action === 'keep' ? '保持' : '登场'}</p>
                     </div>
                   )
                 })}

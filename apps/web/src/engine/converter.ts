@@ -2,6 +2,7 @@ import type { Node, Edge } from '@xyflow/react'
 import type { RuntimeStory, RuntimeScene, RuntimeEvent, CharacterOnStage, CharacterId, CharacterState } from './types'
 import { CHARACTER_REGISTRY, resolveCharacterUrl } from './characters'
 import { loadLibraryCharacters } from '../lib/libraryData'
+import { resolveStageStateAfterNode } from '../editor/workbench/storyEditorGraph'
 
 export function inferEvent(node: Node): RuntimeEvent {
   switch (node.type) {
@@ -146,35 +147,33 @@ export function convertFlowToRuntime(
   }
 
   const scenes: RuntimeScene[] = []
-  let currentBackground = 'bg-classroom'
-  const onStage = new Map<CharacterId, CharacterOnStage>()
 
   for (const node of ordered) {
     const data = node.data as Record<string, unknown>
 
-    if (node.type === 'background') {
-      currentBackground = (data.backgroundId as string) || currentBackground
-      continue
-    }
+    if (node.type === 'background' || node.type === 'character') continue
 
-    if (node.type === 'character') {
-      const ch = parseCharacterOnStage(node)
-      if (ch) {
-        const action = (data.action as string) || 'show'
-        if (action === 'hide') {
-          onStage.delete(ch.id)
-        } else {
-          onStage.set(ch.id, ch)
-        }
-      }
-      continue
-    }
+    const stage = resolveStageStateAfterNode(nodes, edges, node.id)
+    const stageCharacters = stage.characters.flatMap((character) => {
+      const parsed = parseCharacterOnStage({
+        id: `runtime-${node.id}-${character.characterId}`,
+        type: 'character',
+        position: { x: 0, y: 0 },
+        data: {
+          characterId: character.characterId,
+          expression: character.expression,
+          position: character.position,
+          action: 'show',
+        },
+      })
+      return parsed ? [parsed] : []
+    })
 
     const scene: RuntimeScene = {
       id: node.id,
       event: inferEvent(node),
-      background: currentBackground,
-      characters: Array.from(onStage.values()),
+      background: stage.backgroundId,
+      characters: stageCharacters,
     }
     const outEdges = edges
       .filter((edge) => edge.source === node.id)

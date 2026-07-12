@@ -13,7 +13,7 @@ export {
   getSceneGroupNodes, layoutNodes, normalEdge, storyItemHasChapter, storyItemHasSceneGroup,
 }
 import { LENS_LABEL } from './workbenchConstants'
-import type { LensType, SceneCharacterDraft, SceneDraft, StoryItem } from './workbenchTypes'
+import type { LensType, SceneCharacterDraft, SceneDraft, StageState, StoryItem } from './workbenchTypes'
 
 
 
@@ -31,6 +31,76 @@ export function getChoices(node: Node) {
 
 export function getSceneCode(nodes: Node[]) {
   return nodes[0] ? getNodeSceneCode(nodes[0]) : '1-1'
+}
+
+const DEFAULT_STAGE_BACKGROUND = '/assets/backgrounds/bg-classroom.png'
+
+function applyStageNode(state: { backgroundId: string; characters: Map<string, SceneCharacterDraft> }, node: Node) {
+  const data = getNodeData(node)
+  if (node.type === 'background') {
+    state.backgroundId = String(data.backgroundId || state.backgroundId)
+    return
+  }
+  if (node.type !== 'character') return
+  const characterId = String(data.characterId || '')
+  if (!characterId) return
+  if (String(data.action || 'show') === 'hide') {
+    state.characters.delete(characterId)
+    return
+  }
+  state.characters.set(characterId, {
+    characterId,
+    expression: String(data.expression || 'normal'),
+    position: String(data.position || 'center') as SceneCharacterDraft['position'],
+    action: 'keep',
+  })
+}
+
+function pathsToNode(nodes: Node[], edges: Edge[], targetId: string, visited = new Set<string>()): Node[][] {
+  if (visited.has(targetId)) return []
+  const target = nodes.find((node) => node.id === targetId)
+  if (!target) return []
+  const nextVisited = new Set(visited).add(targetId)
+  const incoming = edges.filter((edge) => edge.target === targetId && nodes.some((node) => node.id === edge.source))
+  if (incoming.length === 0) return [[target]]
+  return incoming.flatMap((edge) => pathsToNode(nodes, edges, edge.source, nextVisited).map((path) => [...path, target])).slice(0, 32)
+}
+
+export function resolveStageStateAfterNode(nodes: Node[], edges: Edge[], nodeId?: string): StageState {
+  if (!nodeId) return { backgroundId: DEFAULT_STAGE_BACKGROUND, characters: [], ambiguous: false, conflicts: [] }
+  const paths = pathsToNode(nodes, edges, nodeId)
+  if (paths.length === 0) return { backgroundId: DEFAULT_STAGE_BACKGROUND, characters: [], ambiguous: false, conflicts: [] }
+  const states = paths.map((path) => {
+    const state = { backgroundId: DEFAULT_STAGE_BACKGROUND, characters: new Map<string, SceneCharacterDraft>() }
+    path.forEach((node) => applyStageNode(state, node))
+    return state
+  })
+  const conflicts: string[] = []
+  if (new Set(states.map((state) => state.backgroundId)).size > 1) conflicts.push('不同分支使用了不同背景')
+  const characters: SceneCharacterDraft[] = []
+  const characterIds = new Set(states.flatMap((state) => Array.from(state.characters.keys())))
+  characterIds.forEach((characterId) => {
+    const values = states.map((state) => state.characters.get(characterId))
+    const signatures = new Set(values.map((value) => value ? JSON.stringify(value) : 'not-on-stage'))
+    if (signatures.size === 1 && values[0]) characters.push(values[0])
+    else conflicts.push(`角色 ${characterId} 在不同分支的舞台状态不一致`)
+  })
+  return { backgroundId: states[0].backgroundId, characters, ambiguous: conflicts.length > 0, conflicts }
+}
+
+export function createInheritedSceneDraft(stage: StageState): SceneDraft {
+  const firstCharacter = stage.characters[0]
+  return {
+    sceneCode: '',
+    lensType: firstCharacter ? 'dialogue' : 'narration',
+    backgroundId: stage.backgroundId,
+    characters: stage.characters.map((character) => ({ ...character, action: 'keep' })),
+    speakerRole: firstCharacter?.characterId || '旁白',
+    speakerExpression: firstCharacter?.expression || 'normal',
+    speakerPosition: firstCharacter?.position || 'left',
+    autoStageSpeaker: Boolean(firstCharacter),
+    text: '',
+  }
 }
 
 

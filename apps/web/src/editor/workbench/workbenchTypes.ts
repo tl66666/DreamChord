@@ -9,6 +9,12 @@ export type SceneCharacterDraft = {
   position: 'left' | 'center' | 'right'
   action?: 'show' | 'hide' | 'keep'
 }
+export type StageState = {
+  backgroundId: string
+  characters: SceneCharacterDraft[]
+  ambiguous: boolean
+  conflicts: string[]
+}
 export type SceneDraft = {
   sceneCode: string
   lensType: LensType

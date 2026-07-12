@@ -5,14 +5,14 @@ import { useConfirm } from '../../components/FeedbackProvider'
 import { useEditorStore } from '../../stores/editorStore'
 import { getNodeSceneGroupId } from '../sceneGraph'
 import { QUICK_TYPES } from './workbenchConstants'
-import type { BranchInfo, SceneComposerTarget, SceneDraft } from './workbenchTypes'
+import type { BranchInfo, SceneComposerTarget, SceneDraft, StageState } from './workbenchTypes'
 import { BeatCard, ChapterNavigator, ChoiceWorkbench, GuidePill, SceneCard, SceneOutline } from './StoryEditorParts'
 import SceneComposerModal from './SceneComposerModal'
 import {
-  buildStoryItems, chainEdges, choiceEdge, createNode, createOpeningTemplateGraph, createSceneNodes,
+  buildStoryItems, chainEdges, choiceEdge, createInheritedSceneDraft, createNode, createOpeningTemplateGraph, createSceneNodes,
   draftFromSceneNodes, ensureSceneCode, findCommonMerge, getChapterOptions, getChoiceBranches,
   getChoices, getMainTail, getSceneCode, getSceneGroupNodes, getSceneOutline, isBranchInternalEdge,
-  layoutNodes, normalEdge, removeChoiceBranchFromGraph, removeEdge, storyItemHasChapter,
+  layoutNodes, normalEdge, removeChoiceBranchFromGraph, removeEdge, resolveStageStateAfterNode, storyItemHasChapter,
   storyItemHasSceneGroup,
 } from './storyEditorGraph'
 
@@ -34,6 +34,16 @@ export default function StoryEditor({ onSave }: { onSave: () => void }) {
     [activeChapter, activeSceneGroupId, storyItems],
   )
   const flatMainNodes = storyItems.flatMap((item) => (item.kind === 'choice' ? [item.node, ...(item.merge ? [item.merge] : [])] : [item.node]))
+
+  const composerStage = useMemo<StageState | undefined>(() => {
+    if (!sceneComposerTarget || sceneComposerTarget.kind === 'edit') return undefined
+    if (sceneComposerTarget.kind === 'main') {
+      const tail = getMainTail(storyItems, nodes)
+      return resolveStageStateAfterNode(nodes, edges, tail?.id)
+    }
+    const branchTail = sceneComposerTarget.branch.chain.at(-1) || sceneComposerTarget.choiceNode
+    return resolveStageStateAfterNode(nodes, edges, branchTail.id)
+  }, [edges, nodes, sceneComposerTarget, storyItems])
 
   const updateGraph = (nextNodes: Node[], nextEdges: Edge[]) => {
     const layout = layoutNodes(nextNodes, nextEdges)
@@ -364,6 +374,7 @@ export default function StoryEditor({ onSave }: { onSave: () => void }) {
                   <SceneCard
                     key={sceneGroupId}
                     sceneNodes={sceneNodes}
+                    stage={resolveStageStateAfterNode(nodes, edges, sceneNodes.at(-1)?.id)}
                     index={index}
                     onEdit={() => setSceneComposerTarget({ kind: 'edit', sceneGroupId })}
                     onDelete={() => deleteSceneGroup(sceneGroupId)}
@@ -428,7 +439,10 @@ export default function StoryEditor({ onSave }: { onSave: () => void }) {
                 ? `添加“${sceneComposerTarget.branch.label}”分支场景`
                 : '编辑场景'
           }
-          initialDraft={sceneComposerTarget.kind === 'edit' ? draftFromSceneNodes(nodes.filter((node) => getNodeSceneGroupId(node) === sceneComposerTarget.sceneGroupId)) : undefined}
+          initialDraft={sceneComposerTarget.kind === 'edit'
+            ? draftFromSceneNodes(nodes.filter((node) => getNodeSceneGroupId(node) === sceneComposerTarget.sceneGroupId))
+            : composerStage ? createInheritedSceneDraft(composerStage) : undefined}
+          inheritedStage={sceneComposerTarget.kind === 'edit' ? undefined : composerStage}
           onCancel={() => setSceneComposerTarget(null)}
           onConfirm={handleInsertScene}
         />
