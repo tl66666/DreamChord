@@ -994,7 +994,7 @@ body {
           <span class="showcase-img-dot g"></span>
           <span class="showcase-img-url">localhost:5173/agent</span>
         </div>
-        <img src="screenshots/agent-capabilities-1440.png" alt="DreamChord Agent 自然对话、项目上下文与快捷能力入口" loading="lazy">
+        <img src="screenshots/agent-workspace-1440.png" alt="DreamChord Agent 多对话工作台真实界面" loading="lazy">
       </div>
       <div class="showcase-text">
         <div class="showcase-num">04 / Creative Agent</div>
@@ -1013,7 +1013,31 @@ body {
       </div>
     </div>
 
-    <!-- 5. 素材库 -->
+    <!-- 5. Agent 自然对话 -->
+    <div class="showcase-block reveal">
+      <div class="showcase-img-wrap">
+        <div class="showcase-img-bar">
+          <span class="showcase-img-dot r"></span>
+          <span class="showcase-img-dot y"></span>
+          <span class="showcase-img-dot g"></span>
+          <span class="showcase-img-url">localhost:5173/agent → 项目对话</span>
+        </div>
+        <img src="screenshots/agent-capabilities-1440.png" alt="DreamChord Agent 自然对话、项目上下文与快捷能力入口" loading="lazy">
+      </div>
+      <div class="showcase-text">
+        <div class="showcase-num">05 / Resilient Conversation</div>
+        <h3 class="showcase-title">简单问题，立即答；复杂任务，稳妥做</h3>
+        <p class="showcase-desc">“你好”、能力询问和下一步建议由本地会话层结合当前项目即时回答，不依赖外部模型，也不会因为模型 JSON 格式差异而失败。需要分析或创作时再进入模型、记忆与工具链，响应异常则降级为安全的只读答复。</p>
+        <ul class="showcase-features">
+          <li>常见问候和轻量问题零配置、低延迟可用</li>
+          <li>自然文本、Markdown 代码块和常见空字段均可兼容</li>
+          <li>异常降级只返回文字，不会暗中修改故事或记忆</li>
+          <li>失败原因使用中文说明，并保留继续对话与重试入口</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- 6. 素材库 -->
     <div class="showcase-block reveal">
       <div class="showcase-img-wrap">
         <div class="showcase-img-bar">
@@ -1025,7 +1049,7 @@ body {
         <img src="screenshots/asset-processing-1440.png" alt="素材处理工作室" loading="lazy">
       </div>
       <div class="showcase-text">
-        <div class="showcase-num">05 / Assets</div>
+        <div class="showcase-num">06 / Assets</div>
         <h3 class="showcase-title">全局素材库与图片处理</h3>
         <p class="showcase-desc">截图来自一次真实的白底人物验收：系统解码 1024×1536 JPEG，判断为浅色平底角色图并给出 90% 置信度，再通过边缘连通去底生成透明立绘候选。作者可先接受到全局素材库，进入具体故事后再绑定角色。</p>
         <ul class="showcase-features">
@@ -1039,7 +1063,7 @@ body {
       </div>
     </div>
 
-    <!-- 6. 项目首页 -->
+    <!-- 7. 项目首页 -->
     <div class="showcase-block reverse reveal">
       <div class="showcase-img-wrap">
         <div class="showcase-img-bar">
@@ -1051,7 +1075,7 @@ body {
         <img src="screenshots/home-1440.png" alt="首页项目工作区" loading="lazy">
       </div>
       <div class="showcase-text">
-        <div class="showcase-num">06 / Projects</div>
+        <div class="showcase-num">07 / Projects</div>
         <h3 class="showcase-title">项目首页与备份恢复</h3>
         <p class="showcase-desc">首页集中管理故事项目、发布状态和创作入口。项目可导出为版本化 DreamChord 备份，再通过严格校验和 ID 重映射恢复为新项目；移动端导航收敛为可访问菜单，不再挤压品牌和页面内容。</p>
         <ul class="showcase-features">
