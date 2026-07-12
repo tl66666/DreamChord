@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Bot, ChevronRight, Library, Loader2, Settings } from 'lucide-react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import type { StoryGraph, StoryNodeType } from '@dreamchord/story-domain'
@@ -80,7 +80,7 @@ export default function AIWriterPage() {
     } : project)
   }
 
-  const updateConversation = (conversationId: string) => {
+  const updateConversation = useCallback((conversationId: string) => {
     setSearchParams((current) => {
       const next = new URLSearchParams(current)
       if (selectedProjectId) next.set('project', selectedProjectId)
@@ -89,7 +89,7 @@ export default function AIWriterPage() {
       next.set('conversation', conversationId)
       return next
     }, { replace: true })
-  }
+  }, [selectedChapterId, selectedProjectId, setSearchParams])
 
   return (
     <main className="flex min-h-screen flex-col bg-slate-100 text-slate-950">

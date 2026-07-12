@@ -175,11 +175,9 @@ assert.match(batchLauncher, /powershell\.exe[^\r\n]*-File "%~dp0start-dreamchord
 const showcase = readFileSync(new URL('../docs/showcase.html', import.meta.url), 'utf8')
 for (const screenshot of [
   'editor-1440.png',
-  'editor-stage-continuity-1440.png',
   'flowchart-1440.png',
-  'editor-assets-1440.png',
   'agent-workspace-1440.png',
-  'agent-conversation-routing-1440.png',
+  'agent-zero-config-1440.png',
   'asset-processing-1440.png',
   'home-1440.png',
 ]) {
@@ -187,6 +185,7 @@ for (const screenshot of [
   assert.ok(existsSync(fileURLToPath(new URL(`../docs/screenshots/${screenshot}`, import.meta.url))), `${screenshot} must exist`)
 }
 assert.doesNotMatch(showcase, /screenshots\/flowchart\.jpg/, 'showcase must not use the stale flowchart placeholder')
+assert.doesNotMatch(showcase, /screenshots\/(?:agent|editor|home)-(?:390|430)\.png/, 'showcase must use desktop captures for its primary feature evidence')
 
 const repositoryRoot = fileURLToPath(new URL('..', import.meta.url))
 const publicDocuments = [

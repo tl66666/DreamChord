@@ -198,7 +198,12 @@ export class PrismaAgentRunService implements AgentRunService {
     })
     let result
     if (job.secretConfig.provider === 'local' || isImmediateLocalPrompt(run.prompt)) {
-      result = runLocalAssistant({ prompt: run.prompt, snapshot, chapterId: run.chapterId ?? undefined })
+      result = await runLocalAssistant({
+        prompt: run.prompt,
+        snapshot,
+        chapterId: run.chapterId ?? undefined,
+        contextSources: initialContext.filter((source) => source.kind === 'conversation-history' || source.kind === 'conversation-summary' || source.kind === 'memory'),
+      })
     } else {
       const provider = this.dependencies.createProvider(job.secretConfig.provider, job.secretConfig)
       const execute = shouldUseActionAgent(run.prompt, Boolean(run.chapterId)) ? executeCreativeAgent : executeConversationalAgent
