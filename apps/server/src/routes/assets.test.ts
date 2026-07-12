@@ -37,8 +37,40 @@ describe('asset routes', () => {
     expect((await request(appFor(client)).get('/api/assets/project').set('Authorization', `Bearer ${token('other')}`)).status).toBe(403)
   })
 
+  it('lists the authenticated user global library without selecting a project', async () => {
+    const findMany = vi.fn().mockResolvedValue([
+      { id: 'from-a', ownerId: 'owner', projectId: 'project-a', type: 'BACKGROUND' },
+      { id: 'from-b', ownerId: 'owner', projectId: 'project-b', type: 'CG' },
+    ])
+    const client = { asset: { findMany } } as unknown as PrismaClient
+
+    const response = await request(appFor(client)).get('/api/assets').set('Authorization', `Bearer ${token('owner')}`)
+
+    expect(response.status).toBe(200)
+    expect(response.body).toHaveLength(2)
+    expect(findMany).toHaveBeenCalledWith(expect.objectContaining({ where: { ownerId: 'owner' } }))
+  })
+
+  it('uploads directly into the user library without a project', async () => {
+    const root = temporaryRoot()
+    const create = vi.fn().mockImplementation(async ({ data }) => ({ id: 'asset', ...data }))
+    const client = { asset: { create } } as unknown as PrismaClient
+    const image = await sharp({ create: { width: 8, height: 8, channels: 3, background: 'white' } }).png().toBuffer()
+
+    const response = await request(appFor(client, root))
+      .post('/api/assets/upload')
+      .set('Authorization', `Bearer ${token('owner')}`)
+      .field('type', 'CG')
+      .attach('file', image, { filename: 'portrait.png', contentType: 'image/png' })
+
+    expect(response.status).toBe(200)
+    expect(create).toHaveBeenCalledWith({ data: expect.objectContaining({ ownerId: 'owner', name: 'portrait.png', type: 'CG' }) })
+    expect(create.mock.calls[0]?.[0].data.projectId).toBeUndefined()
+    expect(create.mock.calls[0]?.[0].data.url).toMatch(/^\/uploads\/library\/owner\//)
+  })
+
   it('rejects unknown asset types and unexpected rename fields', async () => {
-    const client = { project: { findUnique: vi.fn().mockResolvedValue({ id: 'project', authorId: 'owner' }) }, asset: { findUnique: vi.fn().mockResolvedValue({ id: 'asset', projectId: 'project', name: '旧名', type: 'CG' }), update: vi.fn() } } as unknown as PrismaClient
+    const client = { project: { findUnique: vi.fn().mockResolvedValue({ id: 'project', authorId: 'owner' }) }, asset: { findUnique: vi.fn().mockResolvedValue({ id: 'asset', ownerId: 'owner', projectId: 'project', name: '旧名', type: 'CG' }), update: vi.fn() } } as unknown as PrismaClient
     const response = await request(appFor(client)).patch('/api/assets/asset').set('Authorization', `Bearer ${token('owner')}`).send({ name: '新名', projectId: 'other' })
     expect(response.status).toBe(400)
   })
@@ -95,7 +127,7 @@ describe('asset routes', () => {
 
     expect(response.status).toBe(200)
     const storedUrl = create.mock.calls[0]?.[0].data.url as string
-    expect(storedUrl).toMatch(/^\/uploads\/[0-9a-f-]+\.mp3$/)
+    expect(storedUrl).toMatch(/^\/uploads\/library\/owner\/[0-9a-f-]+\.mp3$/)
     expect(existsSync(path.join(root, storedUrl.slice('/uploads/'.length)))).toBe(true)
   })
 
@@ -115,8 +147,8 @@ describe('asset routes', () => {
     const client = {
       project: { findUnique: vi.fn().mockResolvedValue({ id: 'project', authorId: 'owner' }) },
       asset: {
-        findUnique: vi.fn().mockResolvedValue({ id: 'asset', projectId: 'project', name: 'shared', type: 'CG', url: oldUrl, project: { authorId: 'owner' } }),
-        update: vi.fn().mockImplementation(async ({ data }) => ({ id: 'asset', projectId: 'project', ...data })),
+        findUnique: vi.fn().mockResolvedValue({ id: 'asset', ownerId: 'owner', projectId: 'project', name: 'shared', type: 'CG', url: oldUrl }),
+        update: vi.fn().mockImplementation(async ({ data }) => ({ id: 'asset', ownerId: 'owner', projectId: 'project', ...data })),
       },
       $transaction: vi.fn(async (operation) => operation(tx)),
     } as unknown as PrismaClient
@@ -139,7 +171,7 @@ describe('asset routes', () => {
     const remove = vi.fn().mockResolvedValue({ id: 'asset' })
     const tx = {
       asset: {
-        findUnique: vi.fn().mockResolvedValue({ id: 'asset', projectId: 'project', url: `/uploads/../${path.basename(outside)}`, variants: [], project: { authorId: 'owner' } }),
+        findUnique: vi.fn().mockResolvedValue({ id: 'asset', ownerId: 'owner', projectId: 'project', url: `/uploads/../${path.basename(outside)}`, variants: [] }),
         delete: remove,
         count: vi.fn().mockResolvedValue(0),
       },

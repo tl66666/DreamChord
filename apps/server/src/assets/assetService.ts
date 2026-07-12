@@ -8,6 +8,7 @@ import { inspectImage } from './imageInspector.js'
 
 export interface AcceptAssetInput {
   purpose: ImageRecipe['purpose']
+  projectId?: string
   characterId?: string
   characterName?: string
   expressionName?: string
@@ -37,6 +38,7 @@ export class PrismaAssetService {
     const inspection = await inspectImage(source)
     const publicAsset: Partial<typeof asset> = { ...asset }
     delete publicAsset.project
+    delete publicAsset.owner
     return { asset: publicAsset, ...inspection }
   }
 
@@ -46,7 +48,7 @@ export class PrismaAssetService {
     const source = await readFile(sourcePath).catch(() => { throw new Error('原始素材文件不存在') })
     const processed = await processImage(source, recipe)
     const filename = `${randomUUID()}.${processed.extension}`
-    const relative = path.join(asset.projectId, 'variants', filename)
+    const relative = path.join('library', asset.ownerId, 'variants', filename)
     const outputPath = safePath(this.storageRoot, relative)
     await mkdir(path.dirname(outputPath), { recursive: true })
     await writeFile(outputPath, processed.buffer)
@@ -65,18 +67,20 @@ export class PrismaAssetService {
     const accepted = await this.client.$transaction(async (tx) => {
       let character: { id: string; name: string } | null = null
       const derived = await tx.asset.create({ data: {
-        projectId: original.projectId, name: `${original.name}-${input.purpose}`, type: input.purpose === 'background' ? 'BACKGROUND' : 'CG',
+        ownerId: original.ownerId, projectId: original.projectId, name: `${original.name}-${input.purpose}`, type: input.purpose === 'background' ? 'BACKGROUND' : 'CG',
         url: variant.url, mimeType: variant.mimeType, width: variant.width, height: variant.height, hasAlpha: input.purpose === 'sprite',
         status: 'ready', metadata: JSON.stringify({ sourceAssetId: original.id, variantId: variant.id }),
       } })
-      if (input.purpose === 'sprite') {
+      if (input.purpose === 'sprite' && input.projectId) {
+        const project = await tx.project.findFirst({ where: { id: input.projectId, authorId: userId }, select: { id: true } })
+        if (!project) throw new Error('目标项目不存在或无权访问')
         if (input.characterId) {
-          character = await tx.character.findFirst({ where: { id: input.characterId, projectId: original.projectId }, select: { id: true, name: true } })
+          character = await tx.character.findFirst({ where: { id: input.characterId, projectId: project.id }, select: { id: true, name: true } })
           if (!character) throw new Error('角色不存在')
         } else {
           const name = input.characterName?.trim()
           if (!name) throw new Error('需要角色名称')
-          character = await tx.character.upsert({ where: { projectId_name: { projectId: original.projectId, name } }, update: {}, create: { projectId: original.projectId, name, defaultSprite: variant.url }, select: { id: true, name: true } })
+          character = await tx.character.upsert({ where: { projectId_name: { projectId: project.id, name } }, update: {}, create: { projectId: project.id, name, defaultSprite: variant.url }, select: { id: true, name: true } })
         }
         await tx.sprite.create({ data: { characterId: character.id, name: input.expressionName?.trim() || 'default', url: variant.url } })
         await tx.character.update({ where: { id: character.id }, data: { defaultSprite: variant.url } })
@@ -101,10 +105,10 @@ export class PrismaAssetService {
     const removableUrls = await this.client.$transaction(async (tx) => {
       const asset = await tx.asset.findUnique({
         where: { id: assetId },
-        include: { variants: { select: { url: true } }, project: { select: { authorId: true } } },
+        include: { variants: { select: { url: true } } },
       })
       if (!asset) throw new Error('素材不存在')
-      if (asset.project.authorId !== userId) throw new Error('无权访问此素材')
+      if (asset.ownerId !== userId) throw new Error('无权访问此素材')
 
       if (await this.countContentReferences(tx, asset.url) > 0) throw new AssetInUseError()
 
@@ -164,16 +168,16 @@ export class PrismaAssetService {
   }
 
   private async requireOwnedAsset(assetId: string, userId: string) {
-    const asset = await this.client.asset.findUnique({ where: { id: assetId }, include: { project: { select: { authorId: true } } } })
+    const asset = await this.client.asset.findUnique({ where: { id: assetId }, include: { project: { select: { authorId: true } }, owner: { select: { id: true } } } })
     if (!asset) throw new Error('素材不存在')
-    if (asset.project.authorId !== userId) throw new Error('无权访问此素材')
+    if (asset.ownerId !== userId) throw new Error('无权访问此素材')
     return asset
   }
 
   private async requireOwnedVariant(variantId: string, userId: string) {
-    const variant = await this.client.assetVariant.findUnique({ where: { id: variantId }, include: { asset: { include: { project: { select: { authorId: true } } } } } })
+    const variant = await this.client.assetVariant.findUnique({ where: { id: variantId }, include: { asset: true } })
     if (!variant) throw new Error('素材产物不存在')
-    if (variant.asset.project.authorId !== userId) throw new Error('无权访问此素材产物')
+    if (variant.asset.ownerId !== userId) throw new Error('无权访问此素材产物')
     return variant
   }
 }

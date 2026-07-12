@@ -16,7 +16,7 @@ const sourceImagePath = path.join(databaseProjectRoot, 'snow.png')
 const databaseAssetUrl = '/uploads/project/snow.png'
 const prismaCli = path.resolve('node_modules/prisma/build/index.js')
 const schemaPath = path.resolve('prisma/schema.prisma')
-const migrations = ['20260629065808_init', '20260629104058_add_source_handle', '20260711000000_add_creative_agent', '20260712010000_expand_agent_conversations', '20260712020000_add_agent_memory', '20260712030000_add_asset_variants']
+const migrations = ['20260629065808_init', '20260629104058_add_source_handle', '20260711000000_add_creative_agent', '20260712010000_expand_agent_conversations', '20260712020000_add_agent_memory', '20260712030000_add_asset_variants', '20260712040000_global_asset_library']
 const client = new PrismaClient({ datasources: { db: { url: databaseUrl } } })
 let sourceImage: Buffer
 
@@ -37,7 +37,7 @@ describe('project transfer', () => {
         { nodeId: 'node-b', type: 'dialogue', positionX: 3, positionY: 4, data: JSON.stringify({ text: '雪' }) },
       ] }, edges: { create: { edgeId: 'edge-a-b', source: 'node-a', target: 'node-b', animated: true } } } },
       characters: { create: { id: 'character', name: '雪', defaultSprite: databaseAssetUrl, sprites: { create: { id: 'sprite', name: 'normal', url: databaseAssetUrl } } } },
-      assets: { create: { id: 'asset', name: '雪立绘', type: 'CG', url: databaseAssetUrl, mimeType: 'image/png', width: 2, height: 2, hasAlpha: true } },
+      assets: { create: { id: 'asset', ownerId: 'owner', name: '雪立绘', type: 'CG', url: databaseAssetUrl, mimeType: 'image/png', width: 2, height: 2, hasAlpha: true } },
       storyBible: { create: { content: JSON.stringify({ characterNotes: { character: { portrait: databaseAssetUrl, assetId: 'asset' } } }) } },
     } })
     await client.agentMemory.createMany({ data: [
@@ -81,7 +81,7 @@ describe('project transfer', () => {
   })
 
   it('rejects unsafe or out-of-root source URLs during export', async () => {
-    const unsafe = await client.asset.create({ data: { projectId: 'project', name: 'unsafe', type: 'CG', url: '/uploads/../outside.png', mimeType: 'image/png' } })
+    const unsafe = await client.asset.create({ data: { ownerId: 'owner', projectId: 'project', name: 'unsafe', type: 'CG', url: '/uploads/../outside.png', mimeType: 'image/png' } })
     await expect(exportProject('project', 'owner', client, storageRoot)).rejects.toThrow(/安全|路径/)
     await client.asset.delete({ where: { id: unsafe.id } })
     const manifest = await exportProject('project', 'owner', client, storageRoot)
@@ -96,8 +96,8 @@ describe('project transfer', () => {
     const shared = await client.project.create({ data: {
       title: '共享素材', authorId: 'owner', cover: '/assets/covers/default-cover.png',
       assets: { create: [
-        { name: '共享一', type: 'CG', url: databaseAssetUrl, mimeType: 'image/png' },
-        { name: '共享二', type: 'BACKGROUND', url: databaseAssetUrl, mimeType: 'image/png' },
+        { ownerId: 'owner', name: '共享一', type: 'CG', url: databaseAssetUrl, mimeType: 'image/png' },
+        { ownerId: 'owner', name: '共享二', type: 'BACKGROUND', url: databaseAssetUrl, mimeType: 'image/png' },
       ] },
     } })
     try {
