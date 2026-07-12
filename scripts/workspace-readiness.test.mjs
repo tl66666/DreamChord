@@ -28,6 +28,18 @@ assert.match(launcher, /RequiredPnpmVersion\s*=\s*'9\.1\.0'/, 'launcher must pin
 assert.match(launcher, /pnpmVersion\s*-eq\s*\$RequiredPnpmVersion/, 'launcher must reject other pnpm versions')
 assert.match(launcher, /pnpm install --frozen-lockfile/, 'launcher must install from the workspace lockfile')
 assert.match(launcher, /prisma db push --accept-data-loss/, 'launcher must synchronize legacy local databases')
+assert.match(launcher, /function Find-DreamChordServer/, 'launcher must identify a running DreamChord API')
+assert.match(launcher, /\.service\s+-eq\s+'dreamchord-server'/, 'launcher must verify the API service identity')
+assert.match(launcher, /localhost/, 'launcher must detect a frontend bound to the IPv6 localhost interface')
+const runningServerProbeIndex = launcher.indexOf('$RunningServerPort = Find-DreamChordServer')
+const prismaGenerateIndex = launcher.indexOf('prisma generate')
+assert.ok(runningServerProbeIndex >= 0, 'launcher must probe for a running DreamChord API')
+assert.ok(
+  runningServerProbeIndex < prismaGenerateIndex,
+  'launcher must probe for a running DreamChord API before Prisma generation',
+)
+assert.match(launcher, /DreamChord 已在运行/, 'launcher must explain when it reuses a running instance')
+assert.match(launcher, /SetupOnly[\s\S]*正在运行的 DreamChord/, 'setup mode must refuse to replace an active Prisma Client')
 const backupIndex = launcher.indexOf('backup-local-database.ps1')
 const schemaSyncIndex = launcher.indexOf('prisma db push --accept-data-loss')
 assert.ok(backupIndex >= 0, 'launcher must invoke the database backup helper')

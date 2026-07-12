@@ -94,6 +94,50 @@ function Ensure-Environment([int]$ServerPort, [int]$WebPort) {
   Write-Ok '已补齐本地配置，并保留现有密钥与数据路径'
 }
 
+function Test-TcpEndpoint([string]$HostName, [int]$Port, [int]$TimeoutMilliseconds = 250) {
+  $addressFamily = if ($HostName -eq '::1') {
+    [System.Net.Sockets.AddressFamily]::InterNetworkV6
+  } else {
+    [System.Net.Sockets.AddressFamily]::InterNetwork
+  }
+  $client = [System.Net.Sockets.TcpClient]::new($addressFamily)
+  try {
+    $connect = $client.ConnectAsync($HostName, $Port)
+    if (-not $connect.Wait($TimeoutMilliseconds)) { return $false }
+    return $client.Connected
+  } catch {
+    return $false
+  } finally {
+    $client.Dispose()
+  }
+}
+
+function Find-DreamChordServer([int[]]$Candidates) {
+  foreach ($port in $Candidates) {
+    if (-not (Test-TcpEndpoint '127.0.0.1' $port)) { continue }
+    try {
+      $health = Invoke-RestMethod -Uri "http://127.0.0.1:$port/api/health" -TimeoutSec 2
+      if ($health.service -eq 'dreamchord-server') { return $port }
+    } catch { }
+  }
+  return $null
+}
+
+function Find-DreamChordFrontend([int[]]$Candidates) {
+  foreach ($port in $Candidates) {
+    foreach ($hostName in @('127.0.0.1', '::1', 'localhost')) {
+      if (-not (Test-TcpEndpoint $hostName $port)) { continue }
+      try {
+        $urlHost = if ($hostName -eq '::1') { '[::1]' } else { $hostName }
+        $url = "http://${urlHost}:$port"
+        $response = Invoke-WebRequest -Uri $url -UseBasicParsing -TimeoutSec 2
+        if ($response.StatusCode -eq 200 -and $response.Content -match 'DreamChord') { return $url }
+      } catch { }
+    }
+  }
+  return $null
+}
+
 function Backup-LocalSqlite {
   $envPath = Join-Path $ServerDir '.env'
   $schemaPath = Join-Path $ServerDir 'prisma\schema.prisma'
@@ -129,6 +173,24 @@ try {
 
   Write-Step '检查项目与运行环境'
   Assert-ProjectFiles
+
+  $RunningServerPort = Find-DreamChordServer $ServerPorts
+  $RunningWebUrl = Find-DreamChordFrontend $WebPorts
+  if ($RunningServerPort) {
+    if ($SetupOnly) {
+      throw '检测到正在运行的 DreamChord。安装检查需要更新 Prisma Client，请先关闭旧的 DreamChord 后端和前端窗口，再重新运行。'
+    }
+    if (-not $RunningWebUrl) {
+      throw "DreamChord 后端正在端口 $RunningServerPort 运行，但没有找到可复用的前端。请先关闭旧的 DreamChord 服务窗口，再重新运行。"
+    }
+
+    Write-Host "`n[OK] DreamChord 已在运行，无需重复安装或生成 Prisma Client。" -ForegroundColor Green
+    Write-Host "  前端: $RunningWebUrl"
+    Write-Host "  后端: http://127.0.0.1:$RunningServerPort"
+    if (-not $NoBrowser) { Start-Process $RunningWebUrl }
+    exit 0
+  }
+
   Assert-Node20
   Ensure-Pnpm
 
