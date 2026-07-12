@@ -4,13 +4,13 @@ import { prisma } from '../lib/prisma.js'
 import { createProvider, type LLMMessage, type LLMOptions } from '../llm/providers.js'
 import { applyPersistedStoryPatch, undoPersistedStoryPatch } from '../story/patchService.js'
 import { buildInitialContext, loadAgentProjectSnapshot, type AgentScope } from './context.js'
-import { executeCreativeAgent } from './executor.js'
+import { executeConversationalAgent, executeCreativeAgent } from './executor.js'
 import { InProcessAgentQueue } from './queue.js'
 import { createAgentToolRegistry, toUniformAgentToolRegistry } from './tools.js'
 import { buildRollingSummary, createConversationSources, type ConversationMessage } from './conversationMemory.js'
 import type { RankableMemory } from './memoryService.js'
 import { PrismaAssetService } from '../assets/assetService.js'
-import { isImmediateLocalPrompt, runLocalAssistant } from './localAssistant.js'
+import { isImmediateLocalPrompt, runLocalAssistant, shouldUseActionAgent } from './localAssistant.js'
 
 export type AgentRunStatus = 'queued' | 'planning' | 'gathering_context' | 'drafting' | 'validating' | 'awaiting_approval' | 'applying' | 'completed' | 'failed' | 'cancelled'
 export interface ProviderSecretConfig { provider: string; model: string; apiKey: string; baseUrl?: string }
@@ -201,7 +201,8 @@ export class PrismaAgentRunService implements AgentRunService {
       result = runLocalAssistant({ prompt: run.prompt, snapshot, chapterId: run.chapterId ?? undefined })
     } else {
       const provider = this.dependencies.createProvider(job.secretConfig.provider, job.secretConfig)
-      result = await executeCreativeAgent({
+      const execute = shouldUseActionAgent(run.prompt, Boolean(run.chapterId)) ? executeCreativeAgent : executeConversationalAgent
+      result = await execute({
         prompt: run.prompt, initialContext, tools: toUniformAgentToolRegistry(rawTools),
         chat: (messages) => provider.chat(messages, { temperature: 0.7, maxTokens: 4096, signal }),
         onEvent: (event) => this.appendTimeline(run.id, event),
@@ -255,9 +256,22 @@ export class PrismaAgentRunService implements AgentRunService {
     await this.client.agentConversation.update({ where: { id: conversationId }, data: { summary: rolling.summary, summaryThroughMessageId: rolling.throughMessageId } })
   }
   private async failRun(runId: string, error: unknown): Promise<void> {
-    const current = await this.client.agentRun.findUnique({ where: { id: runId }, select: { status: true } }).catch(() => null)
+    const current = await this.client.agentRun.findUnique({ where: { id: runId }, select: { status: true, conversationId: true } }).catch(() => null)
     if (current?.status === 'cancelled') return
-    await this.client.agentRun.update({ where: { id: runId }, data: { status: 'failed', errorCode: error instanceof Error && 'code' in error ? String(error.code) : 'agent-failed', errorMessage: error instanceof Error ? error.message : 'Agent 执行失败', completedAt: new Date() } }).catch(() => undefined)
+    const message = (error instanceof Error ? error.message : 'Agent 执行失败').slice(0, 1_000)
+    if (current?.conversationId) {
+      await this.client.$transaction([
+        this.client.agentRun.update({ where: { id: runId }, data: { status: 'failed', errorCode: error instanceof Error && 'code' in error ? String(error.code) : 'agent-failed', errorMessage: message, completedAt: new Date() } }),
+        this.client.agentMessage.create({ data: {
+          conversationId: current.conversationId,
+          role: 'assistant',
+          content: `这次没有完成：${message}\n\n项目内容没有被修改。你可以直接换一种说法重试，或检查模型设置后继续。`,
+          metadata: JSON.stringify({ runId, error: true, artifactRefs: [] }),
+        } }),
+      ]).catch(() => undefined)
+      return
+    }
+    await this.client.agentRun.update({ where: { id: runId }, data: { status: 'failed', errorCode: error instanceof Error && 'code' in error ? String(error.code) : 'agent-failed', errorMessage: message, completedAt: new Date() } }).catch(() => undefined)
   }
 }
 

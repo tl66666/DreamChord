@@ -10,10 +10,20 @@ const GREETING_INTENT = /^(你好|您好|嗨|哈喽|hello|hi)[!！。.？?]*$/i
 const THANKS_INTENT = /谢谢|感谢|辛苦了|thanks?/i
 const CAPABILITY_INTENT = /你是谁|你能做什么|会做什么|怎么用|如何使用|有什么能力|agent.*能力/i
 const NEXT_STEP_INTENT = /下一步|接下来|从哪开始|该做什么|建议做什么/i
+const TIME_INTENT = /^(现在|当前)?(是)?几点(了)?[?？。！!]*$|^(现在|当前)?时间[?？。！!]*$/i
+const DATE_INTENT = /^(今天|现在|当前)(是)?(几号|什么日期|星期几|周几)[?？。！!]*$/i
+const PROJECT_SUMMARY_INTENT = /概括.*项目|整个项目|项目.*(概况|简介|结构|情况)|讲讲.*项目/i
+const STORY_ACTION_INTENT = /续写|润色|改写|扩写|重写|补充.*分支|(新增|增加|添加).*(剧情|镜头|场景|分支|节点|走向)|删除.*(剧情|镜头|场景|分支)|修改.*(剧情|镜头|场景|台词)|写.*剧情|write|rewrite|continue/i
+const ASSET_ACTION_INTENT = /抠图|去白底|移除白底|处理.*(图片|素材|立绘|CG|背景)|转(成|为).*(立绘|CG|背景)|生成.*(立绘|CG|背景素材)/i
 
 export function isImmediateLocalPrompt(prompt: string): boolean {
   const value = prompt.trim()
-  return GREETING_INTENT.test(value) || THANKS_INTENT.test(value) || CAPABILITY_INTENT.test(value) || NEXT_STEP_INTENT.test(value)
+  return GREETING_INTENT.test(value) || THANKS_INTENT.test(value) || CAPABILITY_INTENT.test(value) || NEXT_STEP_INTENT.test(value) || TIME_INTENT.test(value) || DATE_INTENT.test(value)
+}
+
+export function shouldUseActionAgent(prompt: string, hasChapter: boolean): boolean {
+  const value = prompt.trim()
+  return ASSET_ACTION_INTENT.test(value) || (hasChapter && STORY_ACTION_INTENT.test(value))
 }
 
 function result(summary: string, plan: string[], suggestions: string[] = []): AgentExecutionResult {
@@ -93,12 +103,34 @@ function nextSteps(snapshot: AgentProjectSnapshot): AgentExecutionResult {
   )
 }
 
-export function runLocalAssistant(input: { prompt: string; snapshot: AgentProjectSnapshot; chapterId?: string }): AgentExecutionResult {
+function currentDateTime(now: Date, dateOnly: boolean): AgentExecutionResult {
+  const formatted = new Intl.DateTimeFormat('zh-CN', {
+    timeZone: 'Asia/Shanghai',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    ...(dateOnly ? { weekday: 'long' as const } : { hour: '2-digit' as const, minute: '2-digit' as const, hour12: false }),
+  }).format(now)
+  return result(`当前北京时间是 ${formatted}。`, ['读取当前系统时间'])
+}
+
+function offlineBoundary(snapshot: AgentProjectSnapshot): AgentExecutionResult {
+  return result(
+    `当前没有可用的外部模型，因此我不能可靠回答这个开放问题。我仍可以直接读取《${snapshot.title}》的项目资料，概括章节、盘点角色和素材、检查剧情结构，或说明下一步该完善什么。配置模型后，我也能回答一般问题并参与开放式创作。`,
+    ['识别为开放式问题', '保留项目数据不变'],
+    ['换成项目、角色、素材或剧情结构问题', '前往“模型设置”配置外部模型'],
+  )
+}
+
+export function runLocalAssistant(input: { prompt: string; snapshot: AgentProjectSnapshot; chapterId?: string; now?: Date }): AgentExecutionResult {
   const prompt = input.prompt.trim()
   if (GREETING_INTENT.test(prompt)) return greeting(input.snapshot)
   if (THANKS_INTENT.test(prompt)) return result(`不客气。关于《${input.snapshot.title}》，你可以继续直接说想完善哪一部分，我会沿用当前对话上下文。`, ['延续当前对话'])
   if (CAPABILITY_INTENT.test(prompt)) return capabilities(input.snapshot)
   if (NEXT_STEP_INTENT.test(prompt)) return nextSteps(input.snapshot)
+  if (TIME_INTENT.test(prompt)) return currentDateTime(input.now ?? new Date(), false)
+  if (DATE_INTENT.test(prompt)) return currentDateTime(input.now ?? new Date(), true)
+  if (PROJECT_SUMMARY_INTENT.test(prompt)) return projectSummary(input.snapshot)
   if (WRITING_INTENT.test(prompt)) {
     return result(
       '这项任务需要配置外部模型后才能进行续写、润色或剧情生成。本地助手不会伪造生成结果，也不会把这次对话标记为失败。',
@@ -109,5 +141,5 @@ export function runLocalAssistant(input: { prompt: string; snapshot: AgentProjec
   if (ASSET_INTENT.test(prompt)) return assetSummary(input.snapshot)
   if (CHARACTER_INTENT.test(prompt)) return characterSummary(input.snapshot)
   if (HEALTH_INTENT.test(prompt)) return healthSummary(input.snapshot, input.chapterId)
-  return projectSummary(input.snapshot)
+  return offlineBoundary(input.snapshot)
 }

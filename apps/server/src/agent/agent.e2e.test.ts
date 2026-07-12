@@ -136,7 +136,7 @@ describe('creative agent end-to-end workflow', () => {
     })
   })
 
-  it('fails safely when a project conversation returns a story patch without a chapter', async () => {
+  it('keeps a project conversation read-only when the model returns a story patch without a chapter', async () => {
     const service = new PrismaAgentRunService(client, {
       loadSnapshot: (projectId) => loadAgentProjectSnapshot(projectId, client),
       createProvider: () => ({ chat: async () => JSON.stringify({
@@ -149,10 +149,14 @@ describe('creative agent end-to-end workflow', () => {
       projectId: 'project', conversationId: conversation.id, prompt: '直接修改剧情', scope: 'project',
       providerConfig: { provider: 'fake', model: 'controlled', apiKey: 'memory-only' },
     }, 'owner')
-    const failed = await waitForCompletion(service, queued.id)
+    const completed = await waitForCompletion(service, queued.id)
 
-    expect(failed.status).toBe('failed')
-    expect(failed.errorMessage).toBe('请选择章节后再修改剧情')
+    expect(completed.status).toBe('completed')
+    expect(completed.errorMessage).toBeNull()
+    expect(completed.patch).toBeNull()
+    expect(await client.agentMessage.findFirst({ where: { conversationId: conversation.id, role: 'assistant' } })).toMatchObject({
+      content: '尝试修改剧情',
+    })
   })
 
   it('runs the local assistant without an API key or external provider call', async () => {
@@ -193,6 +197,64 @@ describe('creative agent end-to-end workflow', () => {
     expect(createProvider).not.toHaveBeenCalled()
     expect(await client.agentMessage.findFirst({ where: { conversationId: conversation.id, role: 'assistant' } })).toMatchObject({
       content: expect.stringContaining('DreamChord 创作 Agent'),
+    })
+  })
+
+  it('answers a time question locally even when an external provider is configured', async () => {
+    const createProvider = vi.fn(() => { throw new Error('time questions must not call the external provider') })
+    const service = new PrismaAgentRunService(client, {
+      loadSnapshot: (projectId) => loadAgentProjectSnapshot(projectId, client),
+      createProvider,
+    })
+    const conversation = await service.createConversation('project', 'owner', { title: '时间问题', scope: 'project' })
+    const queued = await service.createRun({
+      projectId: 'project', conversationId: conversation.id, prompt: '现在几点', scope: 'project',
+      providerConfig: { provider: 'glm', model: 'glm-4.7-flash', apiKey: 'memory-only' },
+    }, 'owner')
+    const completed = await waitForCompletion(service, queued.id)
+
+    expect(completed.status).toBe('completed')
+    expect(createProvider).not.toHaveBeenCalled()
+    expect(await client.agentMessage.findFirst({ where: { conversationId: conversation.id, role: 'assistant' } })).toMatchObject({
+      content: expect.stringContaining('北京时间'),
+    })
+  })
+
+  it('accepts a general natural-language answer in one provider call', async () => {
+    const chat = vi.fn(async () => '主题是人在遗忘中仍然选择彼此。')
+    const service = new PrismaAgentRunService(client, {
+      loadSnapshot: (projectId) => loadAgentProjectSnapshot(projectId, client),
+      createProvider: () => ({ chat }),
+    })
+    const conversation = await service.createConversation('project', 'owner', { title: '主题讨论', scope: 'project' })
+    const queued = await service.createRun({
+      projectId: 'project', conversationId: conversation.id, prompt: '你觉得这个故事的主题是什么？', scope: 'project',
+      providerConfig: { provider: 'fake', model: 'controlled', apiKey: 'memory-only' },
+    }, 'owner')
+    const completed = await waitForCompletion(service, queued.id)
+
+    expect(completed.status).toBe('completed')
+    expect(chat).toHaveBeenCalledOnce()
+    expect(await client.agentMessage.findFirst({ where: { conversationId: conversation.id, role: 'assistant' } })).toMatchObject({
+      content: '主题是人在遗忘中仍然选择彼此。',
+    })
+  })
+
+  it('persists a visible assistant message when the provider fails', async () => {
+    const service = new PrismaAgentRunService(client, {
+      loadSnapshot: (projectId) => loadAgentProjectSnapshot(projectId, client),
+      createProvider: () => ({ chat: async () => { throw new Error('模型暂时不可用') } }),
+    })
+    const conversation = await service.createConversation('project', 'owner', { title: '故障可见性', scope: 'project' })
+    const queued = await service.createRun({
+      projectId: 'project', conversationId: conversation.id, prompt: '解释一下蒙太奇', scope: 'project',
+      providerConfig: { provider: 'fake', model: 'controlled', apiKey: 'memory-only' },
+    }, 'owner')
+    const failed = await waitForCompletion(service, queued.id)
+
+    expect(failed.status).toBe('failed')
+    expect(await client.agentMessage.findFirst({ where: { conversationId: conversation.id, role: 'assistant' } })).toMatchObject({
+      content: expect.stringContaining('模型暂时不可用'),
     })
   })
 

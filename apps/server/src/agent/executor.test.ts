@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest'
 import { z } from 'zod'
-import { executeCreativeAgent, StepLimitExceededError, type UniformAgentToolRegistry } from './executor.js'
+import { executeConversationalAgent, executeCreativeAgent, StepLimitExceededError, type UniformAgentToolRegistry } from './executor.js'
 
 function registry(execute = vi.fn(async () => ({ issues: [] }))): UniformAgentToolRegistry {
   return {
@@ -9,6 +9,35 @@ function registry(execute = vi.fn(async () => ({ issues: [] }))): UniformAgentTo
 }
 
 describe('creative agent executor', () => {
+  it('accepts a natural-language conversational answer on the first response', async () => {
+    const chat = vi.fn().mockResolvedValue('现在是北京时间 18:47。')
+
+    const result = await executeConversationalAgent({ prompt: '现在几点', initialContext: [], chat, tools: registry() })
+
+    expect(result.summary).toBe('现在是北京时间 18:47。')
+    expect(result.patch).toBeUndefined()
+    expect(chat).toHaveBeenCalledOnce()
+  })
+
+  it('allows read tools in conversation mode and suppresses an accidental story patch', async () => {
+    const read = vi.fn(async () => ({ title: '雾港来信' }))
+    const chat = vi.fn()
+      .mockResolvedValueOnce(JSON.stringify({ type: 'tool_call', tool: 'read_project_brief', input: {} }))
+      .mockResolvedValueOnce(JSON.stringify({
+        type: 'final', summary: '这是一个追查失踪邮差的故事。', plan: ['读取项目'],
+        patch: { operations: [{ kind: 'addNode', tempId: 'bad', node: { type: 'subtitle', data: { text: '不应写入' } } }] },
+      }))
+    const tools: UniformAgentToolRegistry = {
+      read_project_brief: { parseInput: (value) => z.object({}).strict().parse(value), execute: read },
+    }
+
+    const result = await executeConversationalAgent({ prompt: '这个故事讲什么？', initialContext: [], chat, tools })
+
+    expect(read).toHaveBeenCalledOnce()
+    expect(result.summary).toContain('追查失踪邮差')
+    expect(result.patch).toBeUndefined()
+  })
+
   it('executes a requested tool and returns a structured final result', async () => {
     const responses = [
       JSON.stringify({ type: 'tool_call', tool: 'analyze_story_graph', input: {} }),

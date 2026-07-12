@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { AgentProjectSnapshot } from './context.js'
-import { runLocalAssistant } from './localAssistant.js'
+import { isImmediateLocalPrompt, runLocalAssistant } from './localAssistant.js'
 
 const snapshot: AgentProjectSnapshot = {
   projectId: 'project',
@@ -90,5 +90,26 @@ describe('local agent assistant', () => {
     expect(result.summary).toContain('剧情结构')
     expect(result.suggestions.length).toBeGreaterThan(0)
     expect(result.suggestions.length).toBeLessThanOrEqual(3)
+  })
+
+  it('answers the current time locally without calling a model', () => {
+    const result = runLocalAssistant({
+      prompt: '现在几点',
+      snapshot,
+      now: new Date('2026-07-12T10:47:00.000Z'),
+    })
+
+    expect(isImmediateLocalPrompt('现在几点')).toBe(true)
+    expect(result.summary).toContain('18:47')
+    expect(result.summary).toContain('北京时间')
+    expect(result.patch).toBeUndefined()
+  })
+
+  it('states the offline boundary for unrelated open questions instead of repeating inventory', () => {
+    const result = runLocalAssistant({ prompt: '量子纠缠是什么意思？', snapshot })
+
+    expect(result.summary).toContain('模型')
+    expect(result.summary).toContain('项目')
+    expect(result.summary).not.toContain('当前共有 1 个章节')
   })
 })
