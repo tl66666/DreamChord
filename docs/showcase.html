@@ -814,7 +814,7 @@ body {
         </div>
         <div class="pain-row reveal">
           <div class="pain-point">AI 辅助缺失</div>
-          <div class="pain-solution"><strong>传统引擎痛点：</strong>普通聊天工具不了解项目结构，不记得不同创作任务，也无法安全修改分支图。<strong>DreamChord 方案：</strong>多对话创作 Agent 读取故事圣经、章节图、历史和分层记忆，调用受限工具生成结构化提案；作者可以查看差异、应用、拒绝或撤销，模型没有直接写库权限。</div>
+          <div class="pain-solution"><strong>传统引擎痛点：</strong>普通聊天工具不了解项目结构，不记得不同创作任务，也无法安全修改分支图。<strong>DreamChord 方案：</strong>多对话创作 Agent 可先讨论整个项目，也可绑定章节后续写。它读取故事圣经、章节图、历史和分层记忆，调用受限工具生成结构化提案；作者可以查看差异、应用、拒绝或撤销，模型没有直接写库权限。</div>
         </div>
         <div class="pain-row reveal">
           <div class="pain-point">无法即时分享</div>
@@ -826,7 +826,7 @@ body {
         </div>
         <div class="pain-row reveal">
           <div class="pain-point">素材管理割裂</div>
-          <div class="pain-solution"><strong>传统引擎痛点：</strong>角色立绘、背景图、音乐文件散落在各处，白底图片还需要切换外部软件处理。<strong>DreamChord 方案：</strong>项目素材库直接连接镜头卡目标，上传图片可在内置工作室去白底、羽化、裁边并生成规范尺寸；衍生图先审查再绑定，原图始终保留。</div>
+          <div class="pain-solution"><strong>传统引擎痛点：</strong>角色立绘、背景图、音乐文件散落在各处，白底图片还需要切换外部软件处理。<strong>DreamChord 方案：</strong>全局素材库让一次上传的图片可用于所有故事。内置工作室可处理白色或浅色平底、羽化和裁边；衍生图先审查，再按需绑定到故事角色，原图始终保留。</div>
         </div>
       </div>
     </div>
@@ -974,10 +974,10 @@ body {
       <div class="showcase-text">
         <div class="showcase-num">03 / Asset to Story</div>
         <h3 class="showcase-title">处理完，直接放进故事</h3>
-        <p class="showcase-desc">镜头卡里的项目素材入口会合并展示背景与 CG，两类图片都能作为全屏故事画面。接受并绑定的透明立绘则立即进入角色舞台、发言人和表情选择器，不需要刷新页面或手工填写文件地址。</p>
+        <p class="showcase-desc">镜头卡里的全局素材入口会合并展示背景与 CG，两类图片都能作为全屏故事画面。作者上传一次即可在名下所有故事复用；透明立绘在目标故事绑定角色和表情后，会立即进入舞台、发言人和表情选择器。</p>
         <ul class="showcase-features">
           <li>背景与 CG 合并选择，音乐和其他文件不会混入</li>
-          <li>内置背景与项目上传素材在同一面板完成选择</li>
+          <li>内置背景与账号全局素材在同一面板完成选择</li>
           <li>接受立绘后立即加入当前镜头的角色选择器</li>
           <li>选择结果沿用章节图、自动保存和播放器渲染路径</li>
           <li>新建场景自带有效默认背景，不出现空白破图</li>
@@ -999,9 +999,10 @@ body {
       <div class="showcase-text">
         <div class="showcase-num">04 / Creative Agent</div>
         <h3 class="showcase-title">多对话创作 Agent</h3>
-        <p class="showcase-desc">每个对话可以处理不同任务：续写当前场景、修补分支、检查人物动机或准备图片素材。Agent 会读取对话历史、滚动摘要、故事圣经、章节图和分层记忆，先计划并调用受限工具，再提交结构化补丁供作者预览、应用、拒绝或撤销。</p>
+        <p class="showcase-desc">每个对话可以处理不同任务：讨论整部作品、续写当前场景、修补分支、检查人物动机或准备图片素材。对话默认不绑定章节，需要改剧情时再选择章节。未配置 API Key 也能用本地助手概括项目、盘点素材和检查剧情结构。</p>
         <ul class="showcase-features">
           <li>新建、搜索、重命名、置顶和删除独立对话</li>
+          <li>项目对话无需章节；续写和改图时再绑定目标章节</li>
           <li>设定、人物、剧情、决策、偏好、产物六层记忆</li>
           <li>读取上下文、搜索记忆、检查图谱、查询角色与素材</li>
           <li>模型不能直接写数据库，所有变更先成为可审查提案</li>
@@ -1024,8 +1025,8 @@ body {
       </div>
       <div class="showcase-text">
         <div class="showcase-num">05 / Assets</div>
-        <h3 class="showcase-title">素材库与图片处理</h3>
-        <p class="showcase-desc">截图来自一次真实的白底人物验收：系统解码 1024×1536 JPEG，判断为浅色平底角色图并给出 90% 置信度，再通过边缘连通去底生成透明立绘候选。左侧原图、右侧处理结果并排展示，作者确认后才能绑定角色。</p>
+        <h3 class="showcase-title">全局素材库与图片处理</h3>
+        <p class="showcase-desc">截图来自一次真实的白底人物验收：系统解码 1024×1536 JPEG，判断为浅色平底角色图并给出 90% 置信度，再通过边缘连通去底生成透明立绘候选。作者可先接受到全局素材库，进入具体故事后再绑定角色。</p>
         <ul class="showcase-features">
           <li>透明、浅色纯底、复杂背景分级分析与用途推荐</li>
           <li>边缘连通去白底，避免整块删除封闭的白色衣物和高光</li>
@@ -1301,11 +1302,11 @@ cd DreamChord && pnpm install --frozen-lockfile</code></div></div>
     </div>
     <div class="faq-item reveal">
       <div class="faq-q">AI 功能是必须的吗？不配置 AI 能用吗？<span class="faq-icon">+</span></div>
-      <div class="faq-a"><div class="faq-a-inner">基础编辑、自动保存、剧情体检、素材处理、备份恢复和播放器都不依赖模型。未配置 API Key 时仍可使用这些确定性功能；只有 Agent 的模型生成需要配置 GLM、DeepSeek、Kimi、OpenAI 或其他兼容接口。</div></div>
+      <div class="faq-a"><div class="faq-a-inner">基础编辑、自动保存、剧情体检、素材处理、备份恢复和播放器都不依赖模型。未配置 API Key 时，Agent 会使用本地助手概括项目、盘点角色与素材、检查剧情结构；续写和改写等开放式生成再配置 GLM、DeepSeek、Kimi、OpenAI 或其他兼容接口。</div></div>
     </div>
     <div class="faq-item reveal">
       <div class="faq-q">角色立绘为什么有白底？怎么处理？<span class="faq-icon">+</span></div>
-      <div class="faq-a"><div class="faq-a-inner">直接把图片上传到项目素材库并打开“处理图片”。立绘预设支持白底阈值、边缘羽化和透明边缘裁切，生成 1024×1536 透明 PNG；CG 和背景会生成 1920×1080 WebP。处理结果需要确认后才会绑定，原图始终保留。</div></div>
+      <div class="faq-a"><div class="faq-a-inner">把图片上传到全局素材库并打开“处理图片”。透明 PNG 效果最稳；白色或浅色平底可用边缘连通去底、羽化和裁边生成 1024×1536 透明 PNG。复杂真实背景建议先用专业分割工具处理。候选图需要确认，原图始终保留。</div></div>
     </div>
     <div class="faq-item reveal">
       <div class="faq-q">新建场景后无法编辑背景、角色、台词怎么办？<span class="faq-icon">+</span></div>
