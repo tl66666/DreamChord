@@ -186,6 +186,10 @@ for (const screenshot of [
 }
 assert.doesNotMatch(showcase, /screenshots\/flowchart\.jpg/, 'showcase must not use the stale flowchart placeholder')
 assert.doesNotMatch(showcase, /screenshots\/(?:agent|editor|home)-(?:390|430)\.png/, 'showcase must use desktop captures for its primary feature evidence')
+assert.match(showcase, /id="agent-core"/, 'showcase must include a dedicated Agent core section')
+for (const keyword of ['本地意图路由', '分层记忆', '白名单工具', '提案审批', '无 API Key']) {
+  assert.ok(showcase.includes(keyword), `showcase Agent core must explain ${keyword}`)
+}
 
 const repositoryRoot = fileURLToPath(new URL('..', import.meta.url))
 const publicDocuments = [

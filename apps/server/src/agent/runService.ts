@@ -222,9 +222,9 @@ export class PrismaAgentRunService implements AgentRunService {
     }
     await this.client.agentRun.update({ where: { id: run.id }, data: { status: 'validating', plan: JSON.stringify(result.plan) } })
     if (!result.patch) {
-      await this.client.agentRun.update({ where: { id: run.id }, data: { status: 'completed', completedAt: new Date() } })
       await this.client.agentMessage.create({ data: { conversationId: run.conversationId, role: 'assistant', content: result.summary, metadata: JSON.stringify({ runId: run.id, artifactRefs: result.artifactRefs }) } })
       await this.refreshConversationSummary(run.conversationId)
+      await this.client.agentRun.update({ where: { id: run.id }, data: { status: 'completed', completedAt: new Date() } })
       return
     }
     if (!run.chapterId) throw new Error('请选择章节后再修改剧情')

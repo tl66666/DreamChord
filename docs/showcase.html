@@ -298,6 +298,55 @@ body {
 .section-title .italic { font-family: 'Instrument Serif', serif; font-style: italic; font-weight: 400; color: var(--accent); }
 .section-desc { font-size: 1rem; color: var(--text-dim); max-width: 680px; line-height: 1.7; }
 
+/* ═══ AGENT CORE ═══ */
+.agent-core {
+  position: relative; padding: 7rem 1.5rem;
+  background: #171426; color: #f7f4ff; overflow: hidden;
+}
+.agent-core::before {
+  content: ''; position: absolute; inset: 0; pointer-events: none;
+  background:
+    linear-gradient(120deg, rgba(124, 58, 237, 0.24), transparent 42%),
+    radial-gradient(ellipse 45% 80% at 88% 20%, rgba(8, 145, 178, 0.18), transparent 70%);
+}
+.agent-core-inner { max-width: 1200px; margin: 0 auto; position: relative; z-index: 1; }
+.agent-core .section-label { color: #c4b5fd; }
+.agent-core .section-title { color: #fff; max-width: 720px; }
+.agent-core .section-title .italic { color: #c4b5fd; }
+.agent-core .section-desc { color: #c7c2d8; max-width: 760px; }
+.agent-core-grid {
+  display: grid; grid-template-columns: 1fr; gap: 2.5rem; align-items: start; margin-top: 3rem;
+}
+@media (min-width: 900px) { .agent-core-grid { grid-template-columns: 0.9fr 1.1fr; gap: 4rem; } }
+.agent-core-copy { display: flex; flex-direction: column; gap: 1.5rem; }
+.agent-core-lead { font-size: 1.1rem; line-height: 1.8; color: #ede9fe; max-width: 540px; }
+.agent-core-pipeline { display: grid; gap: 0.75rem; margin-top: 0.25rem; }
+.agent-core-step {
+  display: grid; grid-template-columns: 34px 1fr; gap: 0.85rem; align-items: start;
+  padding: 0.9rem 1rem; border: 1px solid rgba(196, 181, 253, 0.2); border-radius: 0.65rem;
+  background: rgba(255, 255, 255, 0.055); transition: transform 0.3s var(--ease), border-color 0.3s, background 0.3s;
+}
+.agent-core-step:hover { transform: translateX(6px); border-color: rgba(196, 181, 253, 0.55); background: rgba(255, 255, 255, 0.1); }
+.agent-core-step-num {
+  width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center;
+  background: rgba(196, 181, 253, 0.16); color: #ddd6fe; font: 500 0.75rem 'JetBrains Mono', monospace;
+}
+.agent-core-step-title { font-size: 0.9rem; font-weight: 700; color: #fff; }
+.agent-core-step-desc { font-size: 0.78rem; line-height: 1.55; color: #b8b1cb; margin-top: 0.2rem; }
+.agent-core-modes { display: grid; grid-template-columns: 1fr; gap: 0.75rem; margin-top: 0.25rem; }
+@media (min-width: 560px) { .agent-core-modes { grid-template-columns: repeat(3, 1fr); } }
+.agent-core-mode { padding: 1rem; border-top: 2px solid #a78bfa; background: rgba(255, 255, 255, 0.06); }
+.agent-core-mode:nth-child(2) { border-top-color: #22d3ee; }
+.agent-core-mode:nth-child(3) { border-top-color: #fbbf24; }
+.agent-core-mode strong { display: block; font-size: 0.78rem; color: #fff; margin-bottom: 0.35rem; }
+.agent-core-mode span { display: block; font-size: 0.72rem; line-height: 1.5; color: #b8b1cb; }
+.agent-core-proof { position: relative; }
+.agent-core-proof .showcase-img-wrap { border-color: rgba(196, 181, 253, 0.32); box-shadow: 0 24px 70px rgba(0, 0, 0, 0.32); }
+.agent-core-proof-caption { display: flex; justify-content: space-between; gap: 1rem; flex-wrap: wrap; margin-top: 0.8rem; font-size: 0.72rem; color: #b8b1cb; }
+.agent-core-proof-caption strong { color: #ddd6fe; }
+.agent-core-tags { display: flex; flex-wrap: wrap; gap: 0.45rem; margin-top: 0.2rem; }
+.agent-core-tag { padding: 0.3rem 0.6rem; border: 1px solid rgba(196, 181, 253, 0.25); border-radius: 9999px; color: #d8d1e8; font-size: 0.68rem; }
+
 /* ═══ ABOUT ═══ */
 .about { padding: 6rem 1.5rem; position: relative; overflow: hidden;
   background: linear-gradient(180deg, #f8f6fd 0%, #f0ebfa 50%, #f8f6fd 100%);
@@ -681,6 +730,7 @@ body {
     <a href="#philosophy" class="nav-link">理念</a>
     <a href="#about" class="nav-link">定位</a>
     <a href="#compare" class="nav-link">对比</a>
+    <a href="#agent-core" class="nav-link">Agent 核心</a>
     <a href="#showcase" class="nav-link">界面</a>
     <a href="#characters" class="nav-link">角色</a>
     <a href="#scenes" class="nav-link">场景</a>
@@ -749,6 +799,41 @@ body {
     <div class="stat-item reveal"><div class="stat-num">5</div><div class="stat-label">角色立绘系统</div></div>
     <div class="stat-item reveal"><div class="stat-num">1<span class="stat-suffix">键</span></div><div class="stat-label">Windows 启动</div></div>
     <div class="stat-item reveal"><div class="stat-num">100<span class="stat-suffix">%</span></div><div class="stat-label">浏览器运行</div></div>
+  </div>
+</section>
+
+<!-- ═══════════════ AGENT CORE ═══════════════ -->
+<section class="agent-core" id="agent-core">
+  <div class="agent-core-inner">
+    <div class="section-label reveal">Agent Core · 项目感知智能体</div>
+    <h2 class="section-title reveal">不是聊天框，<span class="italic">而是一条可控的创作工作流</span></h2>
+    <p class="section-desc reveal">DreamChord Agent 为什么更智能？因为它先理解你的项目，再决定要不要调用工具；它能记住设定，但不会越过作者直接改稿。</p>
+    <div class="agent-core-grid">
+      <div class="agent-core-copy">
+        <p class="agent-core-lead reveal">这是一套自研 TypeScript Agent 编排层：本地路由负责判断问题，项目上下文负责提供事实，分层记忆负责保持连续性，白名单工具负责执行，提案审批负责把决定权留在作者手里。</p>
+        <div class="agent-core-pipeline reveal">
+          <div class="agent-core-step"><div class="agent-core-step-num">01</div><div><div class="agent-core-step-title">本地意图路由</div><div class="agent-core-step-desc">先识别“查项目、续写、查素材、体检、回顾对话”等任务，零 Key 也能回答常见问题。</div></div></div>
+          <div class="agent-core-step"><div class="agent-core-step-num">02</div><div><div class="agent-core-step-title">项目上下文 + 分层记忆</div><div class="agent-core-step-desc">按项目、故事圣经、章节、角色、对话摘要和记忆优先级组装上下文，减少答非所问和设定冲突。</div></div></div>
+          <div class="agent-core-step"><div class="agent-core-step-num">03</div><div><div class="agent-core-step-title">白名单工具 + 提案审批</div><div class="agent-core-step-desc">只允许读取、体检、素材检查等受控工具；剧情补丁先预览差异，作者确认后才应用，支持撤销。</div></div></div>
+        </div>
+        <div class="agent-core-modes reveal">
+          <div class="agent-core-mode"><strong>无 API Key</strong><span>项目检索、创作知识、结构草案、只读公共知识查询。</span></div>
+          <div class="agent-core-mode"><strong>配置模型后</strong><span>续写、润色、长文本扩展与结构化补丁建议。</span></div>
+          <div class="agent-core-mode"><strong>始终可控</strong><span>工具白名单、版本保护、审批、拒绝与撤销。</span></div>
+        </div>
+        <div class="agent-core-tags reveal"><span class="agent-core-tag">TypeScript 编排层</span><span class="agent-core-tag">Express API</span><span class="agent-core-tag">OpenAI 兼容 Provider</span><span class="agent-core-tag">Prisma 记忆存储</span></div>
+      </div>
+      <div class="agent-core-proof reveal">
+        <div class="showcase-img-wrap">
+          <div class="showcase-img-bar">
+            <span class="showcase-img-dot r"></span><span class="showcase-img-dot y"></span><span class="showcase-img-dot g"></span>
+            <span class="showcase-img-url">localhost:5173/agent · zero-config</span>
+          </div>
+          <img src="screenshots/agent-zero-config-1440.png" alt="DreamChord Agent 无 API Key 时读取项目上下文并回答创作问题的桌面 Web 截图" loading="lazy">
+        </div>
+        <div class="agent-core-proof-caption"><span><strong>真实桌面 Web 验收截图</strong> · 1440 × 900</span><span>同一套 Agent 可绑定或不绑定章节</span></div>
+      </div>
+    </div>
   </div>
 </section>
 
