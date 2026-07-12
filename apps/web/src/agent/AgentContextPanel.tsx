@@ -6,8 +6,8 @@ export default function AgentContextPanel({ projectId, conversationId, projectTi
   projectId: string
   conversationId?: string
   projectTitle: string
-  chapterTitle: string
-  chapterVersion: number
+  chapterTitle: string | null
+  chapterVersion: number | null
   nodeCount: number
   edgeCount: number
 }) {
@@ -17,7 +17,7 @@ export default function AgentContextPanel({ projectId, conversationId, projectTi
       <header className="border-b border-slate-200 px-4 py-4">
         <p className="text-[10px] font-semibold uppercase text-cyan-700">Active context</p>
         <h2 className="mt-1 truncate text-sm font-semibold text-slate-950">{projectTitle}</h2>
-        <p className="mt-1 truncate text-xs text-slate-500">{chapterTitle} · 版本 {chapterVersion}</p>
+        <p className="mt-1 truncate text-xs text-slate-500">{chapterTitle ? `${chapterTitle} · 版本 ${chapterVersion}` : '项目对话 · 未绑定章节'}</p>
       </header>
       <div className="grid grid-cols-2 border-b border-slate-200 bg-white p-1">
         <button type="button" onClick={() => setView('context')} className={`flex h-8 items-center justify-center gap-1.5 text-xs ${view === 'context' ? 'bg-slate-900 text-white' : 'text-slate-500'}`}><BookOpen className="h-3.5 w-3.5" />上下文</button>
@@ -25,10 +25,10 @@ export default function AgentContextPanel({ projectId, conversationId, projectTi
       </div>
       {view === 'memory' ? <MemoryCenter projectId={projectId} conversationId={conversationId} /> : <div className="min-h-0 flex-1 overflow-y-auto p-4">
         <section>
-          <h3 className="flex items-center gap-2 text-xs font-semibold text-slate-800"><Boxes className="h-3.5 w-3.5 text-cyan-700" />章节结构</h3>
+          <h3 className="flex items-center gap-2 text-xs font-semibold text-slate-800"><Boxes className="h-3.5 w-3.5 text-cyan-700" />{chapterTitle ? '章节结构' : '项目上下文'}</h3>
           <dl className="mt-3 grid grid-cols-2 border border-slate-200 bg-white">
-            <div className="border-r border-slate-200 p-3"><dt className="text-[10px] text-slate-500">节点</dt><dd className="mt-1 font-mono text-lg font-semibold text-slate-900">{nodeCount}</dd></div>
-            <div className="p-3"><dt className="text-[10px] text-slate-500">连线</dt><dd className="mt-1 font-mono text-lg font-semibold text-slate-900">{edgeCount}</dd></div>
+            <div className="border-r border-slate-200 p-3"><dt className="text-[10px] text-slate-500">{chapterTitle ? '节点' : '范围'}</dt><dd className="mt-1 font-mono text-lg font-semibold text-slate-900">{chapterTitle ? nodeCount : '全局'}</dd></div>
+            <div className="p-3"><dt className="text-[10px] text-slate-500">{chapterTitle ? '连线' : '写入'}</dt><dd className="mt-1 font-mono text-lg font-semibold text-slate-900">{chapterTitle ? edgeCount : '只读'}</dd></div>
           </dl>
         </section>
         <section className="mt-6 border-t border-slate-200 pt-5">

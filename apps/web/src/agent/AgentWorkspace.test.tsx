@@ -18,9 +18,9 @@ vi.mock('../api/client', () => ({
 }))
 vi.mock('./AgentPanel', () => ({ default: () => <div>Agent composer</div> }))
 
-function renderWorkspace() {
+function renderWorkspace(chapterId: string | null = 'chapter') {
   return render(<FeedbackProvider><AgentWorkspace
-    projectId="project" projectTitle="测试故事" chapterId="chapter" chapterTitle="第一章" chapterVersion={1}
+    projectId="project" projectTitle="测试故事" chapterId={chapterId} chapterTitle={chapterId ? '第一章' : null} chapterVersion={chapterId ? 1 : null}
     graph={{ nodes: [], edges: [] }} selectedNodeId={null} onConversationChange={vi.fn()} onApplyGraph={vi.fn()} onSelectNode={vi.fn()}
   /></FeedbackProvider>)
 }
@@ -58,5 +58,16 @@ describe('agent workspace', () => {
     fireEvent.click(screen.getByRole('button', { name: '删除对话' }))
     fireEvent.click(await screen.findByRole('button', { name: '删除' }))
     await waitFor(() => expect(api.remove).toHaveBeenCalledWith('conversation'))
+  })
+
+  it('creates a project-scoped conversation without chapter context', async () => {
+    api.getConversations.mockResolvedValue([])
+    api.getMessages.mockResolvedValue({ items: [], nextCursor: null })
+    api.create.mockResolvedValue({ ...api.conversations[0], id: 'project-conversation', title: '新对话', scope: 'project', chapterId: null })
+    renderWorkspace(null)
+
+    const createButtons = await screen.findAllByRole('button', { name: '新建对话' })
+    fireEvent.click(createButtons[0])
+    await waitFor(() => expect(api.create).toHaveBeenCalledWith('project', { title: '新对话', scope: 'project' }))
   })
 })

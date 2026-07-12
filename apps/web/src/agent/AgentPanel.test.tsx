@@ -98,7 +98,8 @@ describe('AgentPanel', () => {
     state.controller = controller(null)
     render(<AgentPanel {...props} />)
     expect(screen.getByRole('button', { name: '运行剧情体检' })).toBeTruthy()
-    expect(screen.getByText('配置模型后可使用创作任务')).toBeTruthy()
+    expect(screen.getByRole('button', { name: '运行本地助手' })).toBeTruthy()
+    expect(screen.getByRole('button', { name: '前往模型设置' })).toBeTruthy()
   })
 
   it('reuses and reports the full-screen conversation id', async () => {

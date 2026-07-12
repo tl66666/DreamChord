@@ -31,4 +31,16 @@ describe('AgentComposer local mode', () => {
     expect(onOpenSettings).toHaveBeenCalledOnce()
     expect(screen.getByRole('button', { name: '前往模型设置' })).toBeInTheDocument()
   })
+
+  it('keeps only project scope available without a bound chapter', () => {
+    render(<AgentComposer
+      prompt="检查项目" scope="project" disabled={false} hasProvider hasChapter={false}
+      onPromptChange={vi.fn()} onScopeChange={vi.fn()} onRun={vi.fn()} onHealth={vi.fn()} onOpenSettings={vi.fn()}
+    />)
+
+    expect(screen.getByRole('button', { name: '当前镜头' })).toBeDisabled()
+    expect(screen.getByRole('button', { name: '当前场景' })).toBeDisabled()
+    expect(screen.getByRole('button', { name: '当前章节' })).toBeDisabled()
+    expect(screen.getByRole('button', { name: '全项目' })).toBeEnabled()
+  })
 })

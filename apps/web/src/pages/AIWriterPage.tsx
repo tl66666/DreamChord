@@ -31,7 +31,9 @@ export default function AIWriterPage() {
         if (!summary) return
         const project = await getProject(summary.id)
         if (!active) return
-        const chapter = project.chapters.find((item) => item.id === initialSelection.current.chapterId) ?? project.chapters[0]
+        const chapter = initialSelection.current.chapterId
+          ? project.chapters.find((item) => item.id === initialSelection.current.chapterId)
+          : undefined
         setSelectedProject(project)
         setSelectedProjectId(project.id)
         setSelectedChapterId(chapter?.id ?? '')
@@ -61,10 +63,9 @@ export default function AIWriterPage() {
     setError('')
     try {
       const project = await getProject(projectId)
-      const chapterId = project.chapters[0]?.id ?? ''
       setSelectedProject(project)
-      setSelectedChapterId(chapterId)
-      setSearchParams({ project: projectId, ...(chapterId ? { chapter: chapterId } : {}) })
+      setSelectedChapterId('')
+      setSearchParams({ project: projectId })
     } catch {
       setError('项目加载失败，请稍后重试。')
     } finally {
@@ -84,6 +85,7 @@ export default function AIWriterPage() {
       const next = new URLSearchParams(current)
       if (selectedProjectId) next.set('project', selectedProjectId)
       if (selectedChapterId) next.set('chapter', selectedChapterId)
+      else next.delete('chapter')
       next.set('conversation', conversationId)
       return next
     }, { replace: true })
@@ -120,8 +122,8 @@ export default function AIWriterPage() {
             <ChevronRight className="hidden h-4 w-4 text-slate-300 sm:block" />
             <label className="flex min-w-0 items-center gap-2 text-xs font-medium text-slate-500">
               <span className="w-12 shrink-0">章节</span>
-              <select aria-label="选择章节" value={selectedChapterId} onChange={(event) => { setSelectedChapterId(event.target.value); setSelectedNodeId(null) }} disabled={!selectedProject?.chapters.length} className="h-10 min-w-0 flex-1 rounded-md border border-slate-300 bg-white px-3 text-sm text-slate-800 disabled:bg-slate-100 sm:w-64 sm:flex-none">
-                {!selectedProject?.chapters.length && <option value="">暂无章节</option>}
+              <select aria-label="选择章节" value={selectedChapterId} onChange={(event) => { setSelectedChapterId(event.target.value); setSelectedNodeId(null) }} disabled={!selectedProject} className="h-10 min-w-0 flex-1 rounded-md border border-slate-300 bg-white px-3 text-sm text-slate-800 disabled:bg-slate-100 sm:w-72 sm:flex-none">
+                <option value="">不绑定章节（项目对话）</option>
                 {selectedProject?.chapters.map((chapter) => <option key={chapter.id} value={chapter.id}>{chapter.order + 1}. {chapter.title}</option>)}
               </select>
             </label>
@@ -136,14 +138,14 @@ export default function AIWriterPage() {
             <div className="grid h-full min-h-[680px] place-items-center text-sm text-slate-500"><span className="flex items-center gap-2"><Loader2 className="h-4 w-4 animate-spin" />正在读取故事上下文</span></div>
           ) : error ? (
             <div className="grid h-full min-h-[680px] place-items-center px-6 text-sm text-red-700">{error}</div>
-          ) : selectedProject && selectedChapter ? (
+          ) : selectedProject ? (
             <AgentWorkspace
-              key={`${selectedProject.id}:${selectedChapter.id}`}
+              key={`${selectedProject.id}:${selectedChapter?.id ?? 'project'}`}
               projectId={selectedProject.id}
               projectTitle={selectedProject.title}
-              chapterId={selectedChapter.id}
-              chapterTitle={selectedChapter.title}
-              chapterVersion={selectedChapter.version}
+              chapterId={selectedChapter?.id ?? null}
+              chapterTitle={selectedChapter?.title ?? null}
+              chapterVersion={selectedChapter?.version ?? null}
               selectedNodeId={selectedNodeId}
               graph={graph}
               initialConversationId={searchParams.get('conversation') || ''}
@@ -153,7 +155,7 @@ export default function AIWriterPage() {
             />
           ) : (
             <div className="grid h-full min-h-[680px] place-items-center px-6 text-center">
-              <div><span className="mx-auto grid h-11 w-11 place-items-center rounded-lg bg-slate-950 text-white"><Bot className="h-5 w-5" /></span><h2 className="mt-4 text-base font-bold">先创建一个故事章节</h2><p className="mt-2 text-sm text-slate-500">Agent 需要真实项目上下文，才能规划、校验并生成可撤销的结构变更。</p><Link to="/" className="mt-4 inline-flex h-10 items-center rounded-md bg-slate-950 px-4 text-sm font-medium text-white">返回项目</Link></div>
+              <div><span className="mx-auto grid h-11 w-11 place-items-center rounded-lg bg-slate-950 text-white"><Bot className="h-5 w-5" /></span><h2 className="mt-4 text-base font-bold">先创建一个故事项目</h2><p className="mt-2 text-sm text-slate-500">创建项目后即可使用项目对话；绑定章节后还可生成可撤销的剧情变更。</p><Link to="/" className="mt-4 inline-flex h-10 items-center rounded-md bg-slate-950 px-4 text-sm font-medium text-white">返回项目</Link></div>
             </div>
           )}
         </section>

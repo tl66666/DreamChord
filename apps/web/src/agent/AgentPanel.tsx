@@ -3,7 +3,6 @@ import { analyzeStoryGraph, type StoryGraph } from '@dreamchord/story-domain'
 import { Bot, X } from 'lucide-react'
 import { createAgentConversation } from '../api/client'
 import { getDefaultProvider } from '../lib/aiConfig'
-import { useNavigate } from 'react-router-dom'
 import AgentApprovalBar from './AgentApprovalBar'
 import AgentComposer from './AgentComposer'
 import AgentTimeline from './AgentTimeline'
@@ -12,7 +11,7 @@ import type { AgentScope, AppliedPatchDto } from './agentTypes'
 import { useAgentRun } from './useAgentRun'
 
 export default function AgentPanel({ projectId, chapterId, chapterVersion, selectedNodeId, selectedSceneId, graph, taskRequest, initialConversationId = '', onConversationChange, onApplyGraph, onSelectNode, onClose, compact = false, getGraphMutationBlockedReason }: {
-  projectId: string; chapterId: string; chapterVersion: number; selectedNodeId: string | null; selectedSceneId: string | null; graph: StoryGraph
+  projectId: string; chapterId: string | null; chapterVersion: number | null; selectedNodeId: string | null; selectedSceneId: string | null; graph: StoryGraph
   onApplyGraph: (result: AppliedPatchDto) => void; onSelectNode: (nodeId: string) => void; onClose?: () => void
   taskRequest?: { id: number; prompt: string; scope: AgentScope }
   initialConversationId?: string; onConversationChange?: (conversationId: string) => void
@@ -20,10 +19,9 @@ export default function AgentPanel({ projectId, chapterId, chapterVersion, selec
   getGraphMutationBlockedReason?: () => string | undefined
 }) {
   const controller = useAgentRun()
-  const navigate = useNavigate()
   const provider = getDefaultProvider()
   const [prompt, setPrompt] = useState('')
-  const [scope, setScope] = useState<AgentScope>('chapter')
+  const [scope, setScope] = useState<AgentScope>(chapterId ? 'chapter' : 'project')
   const [conversationId, setConversationId] = useState(initialConversationId)
   const [localReport, setLocalReport] = useState<ReturnType<typeof analyzeStoryGraph> | null>(null)
   const [busy, setBusy] = useState(false)
@@ -35,23 +33,28 @@ export default function AgentPanel({ projectId, chapterId, chapterVersion, selec
   }, [taskRequest])
 
   useEffect(() => { setConversationId(initialConversationId) }, [initialConversationId])
+  useEffect(() => { if (!chapterId) setScope('project') }, [chapterId])
 
   const runAgent = async () => {
     if (!prompt.trim()) return
     let id = conversationId
     if (!id) {
-      const conversation = await createAgentConversation(projectId, { title: prompt.trim().slice(0, 40), scope })
+      const conversation = await createAgentConversation(projectId, {
+        title: prompt.trim().slice(0, 40),
+        scope: chapterId ? scope : 'project',
+        ...(chapterId ? { chapterId } : {}),
+      })
       id = conversation.id; setConversationId(id)
     }
     onConversationChange?.(id)
     const providerConfig = provider
       ? { provider: provider.provider, model: provider.model, apiKey: provider.apiKey, baseUrl: provider.baseUrl }
       : { provider: 'local', model: 'dreamchord-local', apiKey: '' }
-    await controller.start({ projectId, conversationId: id, chapterId, prompt: prompt.trim(), scope, targetId: scope === 'card' ? selectedNodeId ?? undefined : scope === 'scene' ? selectedSceneId ?? undefined : undefined, providerConfig })
+    await controller.start({ projectId, conversationId: id, ...(chapterId ? { chapterId } : {}), prompt: prompt.trim(), scope: chapterId ? scope : 'project', targetId: scope === 'card' ? selectedNodeId ?? undefined : scope === 'scene' ? selectedSceneId ?? undefined : undefined, providerConfig })
     setPrompt('')
   }
 
-  const versionBlockedReason = controller.run?.status === 'awaiting_approval' && controller.run.patch && controller.run.patch.baseVersion !== chapterVersion
+  const versionBlockedReason = chapterVersion !== null && controller.run?.status === 'awaiting_approval' && controller.run.patch && controller.run.patch.baseVersion !== chapterVersion
     ? '章节已在草稿生成后发生变化，请重新生成 Agent 草稿。'
     : undefined
   const mutationBlockedReason = getGraphMutationBlockedReason?.() || versionBlockedReason
@@ -71,7 +74,7 @@ export default function AgentPanel({ projectId, chapterId, chapterVersion, selec
         {onClose && <button title="关闭 Agent" onClick={onClose} className="grid h-10 w-10 place-items-center rounded-lg text-slate-500 hover:bg-slate-100"><X className="h-4 w-4" /></button>}
       </header>}
       <div className="flex-1 overflow-y-auto">
-        {canCompose && <AgentComposer prompt={prompt} scope={scope} disabled={controller.isSubmitting} hasProvider={Boolean(provider)} onPromptChange={setPrompt} onScopeChange={setScope} onRun={() => void runAgent()} onHealth={() => setLocalReport(analyzeStoryGraph(graph))} onOpenSettings={() => navigate('/settings')} />}
+        {canCompose && <AgentComposer prompt={prompt} scope={scope} disabled={controller.isSubmitting} hasProvider={Boolean(provider)} hasChapter={Boolean(chapterId)} onPromptChange={setPrompt} onScopeChange={setScope} onRun={() => void runAgent()} onHealth={() => setLocalReport(analyzeStoryGraph(graph))} onOpenSettings={() => window.location.assign('/settings')} />}
         {controller.error && <p className="m-4 rounded-lg bg-red-50 px-3 py-2 text-xs leading-5 text-red-700">{controller.error}</p>}
         {localReport && canCompose && <section className="p-4"><h4 className="text-sm font-semibold">规则体检 · {localReport.issues.length} 项</h4><div className="mt-2 space-y-2">{localReport.issues.slice(0, 8).map((issue) => <button key={`${issue.code}-${issue.nodeIds.join('-')}`} onClick={() => issue.nodeIds[0] && onSelectNode(issue.nodeIds[0])} className="block w-full border-l-2 border-amber-400 py-1 pl-3 text-left"><span className="block text-xs font-medium text-slate-800">{issue.title}</span><span className="mt-0.5 block text-[11px] leading-4 text-slate-500">{issue.detail}</span></button>)}</div></section>}
         {controller.run && <AgentTimeline run={controller.run} />}

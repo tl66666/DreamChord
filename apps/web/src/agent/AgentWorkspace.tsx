@@ -15,7 +15,7 @@ export default function AgentWorkspace({
   projectId, projectTitle, chapterId, chapterTitle, chapterVersion, graph, selectedNodeId, initialConversationId,
   onConversationChange, onApplyGraph, onSelectNode,
 }: {
-  projectId: string; projectTitle: string; chapterId: string; chapterTitle: string; chapterVersion: number; graph: StoryGraph
+  projectId: string; projectTitle: string; chapterId: string | null; chapterTitle: string | null; chapterVersion: number | null; graph: StoryGraph
   selectedNodeId: string | null; initialConversationId?: string
   onConversationChange: (conversationId: string) => void
   onApplyGraph: (result: AppliedPatchDto) => void; onSelectNode: (nodeId: string) => void
@@ -80,7 +80,9 @@ export default function AgentWorkspace({
   const createConversation = async () => {
     setBusy(true)
     try {
-      const created = await createAgentConversation(projectId, { title: '新对话', scope: 'chapter', chapterId })
+      const created = await createAgentConversation(projectId, chapterId
+        ? { title: '新对话', scope: 'chapter', chapterId }
+        : { title: '新对话', scope: 'project' })
       await loadConversations(created.id)
       selectConversation(created.id)
     } catch { toast.error('新建对话失败') } finally { setBusy(false) }

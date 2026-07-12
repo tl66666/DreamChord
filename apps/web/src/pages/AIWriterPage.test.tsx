@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { cleanup, render, screen, waitFor } from '@testing-library/react'
+import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { MemoryRouter, useLocation } from 'react-router-dom'
 import AIWriterPage from './AIWriterPage'
@@ -12,8 +12,8 @@ vi.mock('../api/client', () => ({
   getAgentMessages: vi.fn(async () => ({ items: [], nextCursor: null })),
 }))
 vi.mock('../agent/AgentPanel', () => ({
-  default: ({ projectId, chapterId }: { projectId: string; chapterId: string }) => (
-    <div>Agent 工作区 {projectId}/{chapterId}</div>
+  default: ({ projectId, chapterId }: { projectId: string; chapterId: string | null }) => (
+    <div>Agent 工作区 {projectId}/{chapterId ?? 'project'}</div>
   ),
 }))
 
@@ -23,17 +23,26 @@ function LocationProbe() {
 
 describe('full-screen creative agent', () => {
   afterEach(cleanup)
-  it('shows project and chapter selection before the agent workspace', async () => {
+  it('starts with project chat and lets the user bind or unbind a chapter', async () => {
     render(<MemoryRouter initialEntries={['/agent']} future={{ v7_startTransition: true, v7_relativeSplatPath: true }}><FeedbackProvider><AIWriterPage /><LocationProbe /></FeedbackProvider></MemoryRouter>)
     expect(screen.getByRole('heading', { name: '创作 Agent' })).toBeTruthy()
     await waitFor(() => expect(screen.getByLabelText('选择项目')).toBeTruthy())
-    expect(screen.getByLabelText('选择章节')).toBeTruthy()
-    await waitFor(() => expect(screen.getByText('Agent 工作区 project/chapter')).toBeTruthy())
+    const chapterSelect = screen.getByLabelText('选择章节') as HTMLSelectElement
+    await waitFor(() => expect(screen.getByText('Agent 工作区 project/project')).toBeTruthy())
+    expect(chapterSelect.value).toBe('')
+    expect(screen.getByRole('option', { name: '不绑定章节（项目对话）' })).toBeTruthy()
     expect(screen.getByRole('button', { name: '新建对话' })).toBeTruthy()
     await waitFor(() => {
       expect(screen.getByLabelText('当前地址').textContent).toContain('project=project')
-      expect(screen.getByLabelText('当前地址').textContent).toContain('chapter=chapter')
+      expect(screen.getByLabelText('当前地址').textContent).not.toContain('chapter=')
     })
+    fireEvent.change(chapterSelect, { target: { value: 'chapter' } })
+    await waitFor(() => expect(screen.getByText('Agent 工作区 project/chapter')).toBeTruthy())
+    expect(screen.getByLabelText('当前地址').textContent).toContain('chapter=chapter')
+
+    fireEvent.change(chapterSelect, { target: { value: '' } })
+    await waitFor(() => expect(screen.getByText('Agent 工作区 project/project')).toBeTruthy())
+    expect(screen.getByLabelText('当前地址').textContent).not.toContain('chapter=')
     expect(screen.queryByText('本地 AI 草稿')).toBeNull()
   })
 })
