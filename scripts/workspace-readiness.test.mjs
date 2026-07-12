@@ -160,5 +160,12 @@ try {
 const doctor = readFileSync(new URL('./doctor.ps1', import.meta.url), 'utf8')
 assert.match(doctor, /\[PASS\]/, 'doctor must emit machine-readable pass results')
 assert.match(doctor, /\[FAIL\]/, 'doctor must emit machine-readable failure results')
+assert.match(doctor, /DreamChord 环境诊断/, 'doctor heading must be Chinese')
+assert.match(doctor, /项目文件完整/, 'doctor file checks must be Chinese')
+assert.match(doctor, /检测到 DreamChord/, 'doctor must identify a running DreamChord instance in Chinese')
+
+const batchLauncher = readFileSync(new URL('../start-dreamchord.bat', import.meta.url), 'utf8')
+assert.match(batchLauncher, /启动失败/, 'batch launcher failure guidance must be Chinese')
+assert.doesNotMatch(batchLauncher, /Start failed|Common causes/, 'batch launcher must not fall back to English guidance')
 
 console.log('workspace readiness scripts are configured')
