@@ -58,4 +58,37 @@ describe('local agent assistant', () => {
     expect(result.suggestions.join('')).toContain('模型设置')
     expect(result.patch).toBeUndefined()
   })
+
+  it('answers a greeting naturally in the current project', () => {
+    const result = runLocalAssistant({ prompt: '你好', snapshot })
+
+    expect(result.summary).toContain('DreamChord 创作 Agent')
+    expect(result.summary).toContain('《雾港来信》')
+    expect(result.summary).not.toContain('当前共有')
+  })
+
+  it('explains its project-aware capabilities and safety boundary', () => {
+    const result = runLocalAssistant({ prompt: '你能做什么？', snapshot })
+
+    expect(result.summary).toContain('项目上下文')
+    expect(result.summary).toContain('分层记忆')
+    expect(result.summary).toContain('工具')
+    expect(result.summary).toContain('确认')
+  })
+
+  it('responds to thanks without repeating the project inventory', () => {
+    const result = runLocalAssistant({ prompt: '谢谢，辛苦了', snapshot })
+
+    expect(result.summary).toContain('不客气')
+    expect(result.summary).not.toContain('当前共有')
+  })
+
+  it('recommends concrete next steps from project state', () => {
+    const result = runLocalAssistant({ prompt: '我下一步该做什么？', snapshot })
+
+    expect(result.summary).toContain('《雾港来信》')
+    expect(result.summary).toContain('剧情结构')
+    expect(result.suggestions.length).toBeGreaterThan(0)
+    expect(result.suggestions.length).toBeLessThanOrEqual(3)
+  })
 })
