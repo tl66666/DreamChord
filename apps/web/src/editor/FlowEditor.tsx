@@ -42,7 +42,7 @@ import {
   type AcceptedAssetVariant, type SaveChapterPayload,
   type Asset, type ProjectDetail,
 } from '../api/client'
-import { getApiError, convertServerNodes, convertServerEdges, ensureLegacySceneGroups } from './flowEditorUtils'
+import { DEFAULT_SCENE_BACKGROUND_ID, getApiError, convertServerNodes, convertServerEdges, ensureLegacySceneGroups } from './flowEditorUtils'
 import { ProjectHealthPanel } from './ProjectHealthPanel'
 import { editorPaneClasses } from './responsiveLayout'
 import { SaveCoordinator, type SaveState } from './saveCoordinator'
@@ -271,7 +271,7 @@ export default function FlowEditor() {
       sceneId: sceneGroupId,
       type: 'dialogue',
       lensType: prevCharacters.length > 0 ? 'narration' : 'dialogue',
-      background: '',
+      background: DEFAULT_SCENE_BACKGROUND_ID,
       characters: prevCharacters,
       speaker: '旁白',
       speakerExpression: 'normal',
@@ -804,6 +804,7 @@ export default function FlowEditor() {
             {showAssets ? (
               <AssetPanel
                 selectedType={assetTarget?.field === 'background' ? 'BACKGROUND' : 'CG'}
+                selectionTypes={assetTarget?.field === 'background' ? ['BACKGROUND', 'CG'] : undefined}
                 onSelect={handleSelectAsset}
                 onClose={() => setShowAssets(false)}
                 onProjectCharacterAccepted={handleProjectCharacterAccepted}

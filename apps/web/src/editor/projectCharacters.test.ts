@@ -50,4 +50,20 @@ describe('project editor characters', () => {
     expect(characters).toHaveLength(1)
     expect(characters[0]?.defaultSprite).toBe('/uploads/latest.png')
   })
+
+  it('makes a newly accepted sprite available to editor selectors immediately', () => {
+    const projectCharacters = upsertAcceptedProjectCharacter([], {
+      variant: {
+        id: 'new-variant', assetId: 'new-asset', kind: 'sprite', status: 'accepted', url: '/uploads/yun-normal.png',
+        mimeType: 'image/png', width: 1024, height: 1536, metadata: '{}', createdAt: '2026-07-12',
+      },
+      character: { id: 'server-yun', name: '云' },
+    })
+
+    const selectableCharacters = mergeProjectCharacters([localCharacter], projectCharacters)
+    expect(selectableCharacters.map((character) => character.name)).toEqual(['雪', '云'])
+    expect(selectableCharacters[1]?.expressions).toEqual([
+      { id: 'default', label: 'default', url: '/uploads/yun-normal.png' },
+    ])
+  })
 })

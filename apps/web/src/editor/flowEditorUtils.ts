@@ -3,6 +3,8 @@ import { type FlowNode, type FlowEdge } from '../api/client'
 import { safeJsonParse } from '../lib/safeJsonParse'
 import { getNodeSceneGroupId, getNodeData } from './sceneGraph'
 
+export const DEFAULT_SCENE_BACKGROUND_ID = 'bg-classroom'
+
 export function getApiError(err: unknown, fallback = '操作失败'): string {
   if (typeof err === 'object' && err !== null && 'response' in err) {
     const response = (err as { response?: { data?: { error?: string } } }).response

@@ -19,20 +19,28 @@ function getApiError(err: unknown, fallback = '操作失败'): string {
 
 const TYPE_TABS = [
   { key: 'BACKGROUND', label: '背景', icon: Image, accept: 'image/*' },
-  { key: 'CG', label: '角色/CG', icon: Image, accept: 'image/*' },
+  { key: 'CG', label: '人物 / CG', icon: Image, accept: 'image/*' },
   { key: 'BGM', label: '音乐', icon: Music, accept: 'audio/*' },
   { key: 'OTHER', label: '其他', icon: FileType, accept: '*' },
   { key: 'SETTING', label: '设定', icon: BookOpen, accept: '*' },
 ]
 
+export function filterAssetsForSelection<T extends { type: string }>(assets: T[], activeType: string, selectionTypes?: string[]): T[] {
+  return assets.filter((asset) => selectionTypes?.length
+    ? selectionTypes.includes(asset.type)
+    : asset.type === activeType)
+}
+
 export default function AssetPanel({
   onSelect,
   selectedType,
+  selectionTypes,
   onClose,
   onProjectCharacterAccepted,
 }: {
   onSelect?: (asset: Asset) => void
   selectedType?: string
+  selectionTypes?: string[]
   onClose?: () => void
   onProjectCharacterAccepted?: (accepted: AcceptedAssetVariant) => void
 }) {
@@ -52,6 +60,10 @@ export default function AssetPanel({
   const replaceInputRef = useRef<HTMLInputElement>(null)
 
   const activeTab = TYPE_TABS.find((tab) => tab.key === activeType) || TYPE_TABS[0]
+  const visibleTabs = selectionTypes?.length
+    ? TYPE_TABS.filter((tab) => selectionTypes.includes(tab.key))
+    : TYPE_TABS
+  const isSceneImageSelection = selectionTypes?.includes('BACKGROUND') && selectionTypes.includes('CG')
 
   useEffect(() => {
     if (selectedType) setActiveType(selectedType)
@@ -80,12 +92,10 @@ export default function AssetPanel({
   const [showLibrary, setShowLibrary] = useState(true)
 
   const filteredAssets = useMemo(() => {
-    return assets.filter((asset) => {
-      const typeOk = asset.type === activeType
-      const queryOk = !query.trim() || asset.name.toLowerCase().includes(query.trim().toLowerCase())
-      return typeOk && queryOk
-    })
-  }, [activeType, assets, query])
+    return filterAssetsForSelection(assets, activeType, selectionTypes).filter((asset) => (
+      !query.trim() || asset.name.toLowerCase().includes(query.trim().toLowerCase())
+    ))
+  }, [activeType, assets, query, selectionTypes])
 
   const filteredLibraryScenes = useMemo(() => {
     if (!query.trim()) return libraryScenes
@@ -157,8 +167,8 @@ export default function AssetPanel({
       <div className="border-b border-dream-100 p-4">
         <div className="mb-3 flex items-center justify-between">
           <div>
-            <h3 className="font-semibold text-dream-900">素材库</h3>
-            <p className="text-xs text-dream-500">上传、选择、重命名、替换、删除项目素材。</p>
+            <h3 className="font-semibold text-dream-900">{isSceneImageSelection ? '选择背景 / CG' : '素材库'}</h3>
+            <p className="text-xs text-dream-500">{isSceneImageSelection ? '两类全屏画面都可以直接用于当前镜头。' : '上传、选择、重命名、替换、删除项目素材。'}</p>
           </div>
           <div className="flex items-center gap-2">
             <button
@@ -193,8 +203,8 @@ export default function AssetPanel({
         <input ref={replaceInputRef} type="file" accept={activeTab.accept} className="hidden" onChange={handleReplace} />
       </div>
 
-      <div className="grid grid-cols-5 gap-1 border-b border-dream-100 p-3">
-        {TYPE_TABS.map((tab) => {
+      <div className={`grid gap-1 border-b border-dream-100 p-3 ${visibleTabs.length === 2 ? 'grid-cols-2' : 'grid-cols-5'}`}>
+        {visibleTabs.map((tab) => {
           const Icon = tab.icon
           const count = assets.filter((asset) => asset.type === tab.key).length
           return (
@@ -292,7 +302,7 @@ export default function AssetPanel({
             </div>
             {filteredAssets.length === 0 ? (
               <div className="rounded-xl border border-dashed border-dream-200 p-6 text-center">
-                <p className="text-sm text-dream-500">暂无上传的{activeTab.label}素材</p>
+                <p className="text-sm text-dream-500">暂无上传的{isSceneImageSelection ? '背景或 CG' : activeTab.label}素材</p>
                 <p className="mt-1 text-xs text-dream-400">点击右上角上传按钮添加</p>
               </div>
             ) : (
