@@ -79,7 +79,6 @@ export default function AgentPanel({ projectId, chapterId, chapterVersion, selec
         {localReport && canCompose && <section className="p-4"><h4 className="text-sm font-semibold">规则体检 · {localReport.issues.length} 项</h4><div className="mt-2 space-y-2">{localReport.issues.slice(0, 8).map((issue) => <button key={`${issue.code}-${issue.nodeIds.join('-')}`} onClick={() => issue.nodeIds[0] && onSelectNode(issue.nodeIds[0])} className="block w-full border-l-2 border-amber-400 py-1 pl-3 text-left"><span className="block text-xs font-medium text-slate-800">{issue.title}</span><span className="mt-0.5 block text-[11px] leading-4 text-slate-500">{issue.detail}</span></button>)}</div></section>}
         {controller.run && <AgentTimeline run={controller.run} />}
         {controller.run?.patch && <PatchPreview patch={controller.run.patch} onSelectNode={onSelectNode} />}
-        {controller.run?.errorMessage && <p className="m-4 rounded-lg bg-red-50 px-3 py-2 text-xs text-red-700">{controller.run.errorMessage}</p>}
       </div>
       {controller.run && <AgentApprovalBar status={controller.run.status} busy={busy} mutationBlockedReason={mutationBlockedReason} onCancel={() => void controller.cancel()} onReject={() => void controller.reject()} onApply={() => void applyAction(controller.apply)} onUndo={() => void applyAction(controller.undo)} />}
     </aside>

@@ -31,7 +31,11 @@ describe('AgentPanel', () => {
     render(<AgentPanel {...props} />)
     expect(screen.getByLabelText('创作任务')).toBeTruthy()
     expect(screen.getByText('当前章节')).toBeTruthy()
-    expect(screen.getByRole('button', { name: '运行 Agent' })).toBeTruthy()
+    expect(screen.getByRole('button', { name: '发送给 Agent' })).toBeTruthy()
+    expect(screen.getByRole('button', { name: '了解项目' })).toBeTruthy()
+    expect(screen.getByRole('button', { name: '检查剧情' })).toBeTruthy()
+    expect(screen.getByRole('button', { name: '梳理角色' })).toBeTruthy()
+    expect(screen.getByRole('button', { name: '素材建议' })).toBeTruthy()
   })
 
   it('shows progress and cancel while active', () => {
@@ -98,7 +102,7 @@ describe('AgentPanel', () => {
     state.controller = controller(null)
     render(<AgentPanel {...props} />)
     expect(screen.getByRole('button', { name: '运行剧情体检' })).toBeTruthy()
-    expect(screen.getByRole('button', { name: '运行本地助手' })).toBeTruthy()
+    expect(screen.getByRole('button', { name: '发送给 Agent' })).toBeTruthy()
     expect(screen.getByRole('button', { name: '前往模型设置' })).toBeTruthy()
   })
 
@@ -107,11 +111,21 @@ describe('AgentPanel', () => {
     state.controller = controller(null)
     render(<AgentPanel {...props} initialConversationId="conversation-existing" onConversationChange={onConversationChange} />)
     fireEvent.change(screen.getByLabelText('创作任务'), { target: { value: '检查第二章分支' } })
-    fireEvent.click(screen.getByRole('button', { name: '运行 Agent' }))
+    fireEvent.click(screen.getByRole('button', { name: '发送给 Agent' }))
 
     await waitFor(() => expect(state.controller.start).toHaveBeenCalled())
     expect(state.controller.start).toHaveBeenCalledWith(expect.objectContaining({ conversationId: 'conversation-existing' }))
     expect(createConversation).not.toHaveBeenCalled()
     expect(onConversationChange).toHaveBeenCalledWith('conversation-existing')
+  })
+
+  it('fills a project-aware starter without submitting it immediately', () => {
+    state.controller = controller(null)
+    render(<AgentPanel {...props} />)
+
+    fireEvent.click(screen.getByRole('button', { name: '了解项目' }))
+
+    expect(screen.getByLabelText('创作任务')).toHaveProperty('value', '概括整个项目，并告诉我现在最值得先完善什么。')
+    expect(state.controller.start).not.toHaveBeenCalled()
   })
 })
