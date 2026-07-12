@@ -26,7 +26,11 @@ const messageQuerySchema = z.object({ cursor: z.string().min(1).optional(), limi
 const runSchema = z.object({
   conversationId: z.string().min(1), chapterId: z.string().optional(), prompt: z.string().min(1).max(4_000),
   scope: scopeSchema, targetId: z.string().max(200).optional(), providerConfig: providerConfigSchema,
-}).strict()
+}).strict().superRefine((value, context) => {
+  if (value.scope !== 'project' && !value.chapterId) {
+    context.addIssue({ code: z.ZodIssueCode.custom, path: ['chapterId'], message: '请选择章节后再使用剧情范围' })
+  }
+})
 const retrySchema = z.object({ providerConfig: providerConfigSchema }).strict()
 
 function handleError(res: Response, error: unknown): void {

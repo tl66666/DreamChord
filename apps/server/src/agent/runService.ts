@@ -179,10 +179,13 @@ export class PrismaAgentRunService implements AgentRunService {
     if (run.status === 'cancelled') return
     await this.client.agentRun.update({ where: { id: run.id }, data: { status: 'planning' } })
     const snapshot = await this.dependencies.loadSnapshot(run.projectId)
-    if (!snapshot || !run.chapterId) throw new Error('项目或章节上下文不存在')
+    if (!snapshot) throw new Error('项目上下文不存在')
     await this.client.agentRun.update({ where: { id: run.id }, data: { status: 'gathering_context' } })
+    const contextRequest = run.chapterId
+      ? { scope: run.scope as AgentScope, chapterId: run.chapterId, targetId: run.targetId ?? undefined }
+      : { scope: 'project' as const }
     const initialContext = [
-      ...buildInitialContext(snapshot, { scope: run.scope as AgentScope, chapterId: run.chapterId, targetId: run.targetId ?? undefined }),
+      ...buildInitialContext(snapshot, contextRequest),
       ...await this.loadConversationSources(run.conversationId, run.projectId, run.prompt),
     ]
     await this.client.agentRun.update({ where: { id: run.id }, data: { sources: JSON.stringify(initialContext), status: 'drafting' } })
@@ -212,11 +215,13 @@ export class PrismaAgentRunService implements AgentRunService {
       await this.refreshConversationSummary(run.conversationId)
       return
     }
-    const chapter = snapshot.chapters.find((item) => item.id === run.chapterId)!
+    if (!run.chapterId) throw new Error('请选择章节后再修改剧情')
+    const chapter = snapshot.chapters.find((item) => item.id === run.chapterId)
+    if (!chapter) throw new Error('所选章节不存在')
     let sequence = 0
     const preview = applyStoryPatch(chapter.graph, result.patch, () => `preview-${sequence++}`)
     if (!preview.validation.valid) throw new Error('Agent 补丁未通过图结构校验')
-    await this.client.storyPatch.create({ data: { runId: run.id, projectId: run.projectId, chapterId: run.chapterId, baseVersion: chapter.version, payload: JSON.stringify(result.patch), validation: JSON.stringify(preview.validation), diff: JSON.stringify(createStoryPatchDiff(chapter.graph, preview.graph)) } })
+    await this.client.storyPatch.create({ data: { runId: run.id, projectId: run.projectId, chapterId: chapter.id, baseVersion: chapter.version, payload: JSON.stringify(result.patch), validation: JSON.stringify(preview.validation), diff: JSON.stringify(createStoryPatchDiff(chapter.graph, preview.graph)) } })
     await this.client.agentRun.update({ where: { id: run.id }, data: { status: 'awaiting_approval', validation: JSON.stringify(preview.validation) } })
     await this.client.agentMessage.create({ data: { conversationId: run.conversationId, role: 'assistant', content: result.summary, metadata: JSON.stringify({ runId: run.id, artifactRefs: result.artifactRefs }) } })
     await this.refreshConversationSummary(run.conversationId)

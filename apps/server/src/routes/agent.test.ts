@@ -12,6 +12,7 @@ vi.mock('node:dns/promises', () => ({ lookup: vi.fn() }))
 const lookupMock = vi.mocked(lookup)
 
 class MemoryAgentRunService implements AgentRunService {
+  lastInput: CreateAgentRunInput | null = null
   run: AgentRunDto = {
     id: 'run', status: 'queued', prompt: '检查第二章', scope: 'chapter', targetId: null,
     provider: 'custom', model: 'fake', plan: [], timeline: [], sources: [], validation: {},
@@ -19,7 +20,7 @@ class MemoryAgentRunService implements AgentRunService {
   }
   async listConversations() { return [] }
   async createConversation() { return { id: 'conversation', title: '新任务', scope: 'chapter', createdAt: this.run.createdAt, updatedAt: this.run.updatedAt } }
-  async createRun(_input: CreateAgentRunInput, _userId: string) { return this.run }
+  async createRun(input: CreateAgentRunInput, _userId: string) { this.lastInput = input; return this.run }
   async getRun() { return this.run }
   async cancelRun() { this.run = { ...this.run, status: 'cancelled' }; return this.run }
   async rejectRun() { this.run = { ...this.run, status: 'cancelled' }; return this.run }
@@ -66,6 +67,21 @@ describe('agent routes', () => {
     })
     expect(response.status).toBe(202)
     expect(JSON.stringify(response.body)).not.toContain('top-secret-key')
+  })
+
+  it('allows a project run without a chapter and requires one for story scopes', async () => {
+    const app = testApp()
+    const auth = { Authorization: `Bearer ${token()}` }
+    const projectRun = await request(app).post('/api/projects/project/agent/runs').set(auth).send({
+      conversationId: 'conversation', prompt: '聊聊整个项目', scope: 'project', providerConfig,
+    })
+    const chapterRun = await request(app).post('/api/projects/project/agent/runs').set(auth).send({
+      conversationId: 'conversation', prompt: '修改当前章节', scope: 'chapter', providerConfig,
+    })
+
+    expect(projectRun.status).toBe(202)
+    expect(chapterRun.status).toBe(400)
+    expect(chapterRun.body.error).toContain('章节')
   })
 
   it('polls, cancels, applies, and undoes a run', async () => {

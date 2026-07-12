@@ -47,4 +47,21 @@ describe('creative agent tools', () => {
       analysis: { background: 'flat-light', recommendedPurpose: 'sprite' },
     })
   })
+
+  it('supports project read tools without a chapter and blocks story mutation tools', async () => {
+    const snapshot = {
+      projectId: 'p', title: '全局故事', description: '项目简介', bible: null, characters: [],
+      assets: [{ id: 'asset', name: '共享背景', type: 'BACKGROUND', url: '/uploads/a.png', width: 1920, height: 1080 }],
+      chapters: [{ id: 'c', title: '第一章', version: 1, graph: { nodes: [], edges: [] } }],
+    }
+    const registry = createAgentToolRegistry({ snapshot } as Parameters<typeof createAgentToolRegistry>[0])
+
+    await expect(registry.read_project_brief.execute({})).resolves.toEqual(expect.arrayContaining([
+      expect.objectContaining({ kind: 'project', title: '全局故事' }),
+    ]))
+    await expect(registry.list_project_assets.execute({})).resolves.toEqual([
+      expect.objectContaining({ id: 'asset' }),
+    ])
+    await expect(registry.analyze_story_graph.execute({})).rejects.toThrow('请选择章节后再修改剧情')
+  })
 })

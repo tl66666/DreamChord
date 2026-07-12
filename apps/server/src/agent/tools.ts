@@ -16,15 +16,18 @@ export type AgentToolRegistry = { [K in AgentToolName]: AgentTool<never> }
 
 export function createAgentToolRegistry(context: {
   snapshot: AgentProjectSnapshot
-  chapterId: string
+  chapterId?: string
   conversationContext?: unknown[]
   memories?: Array<{ id: string; title: string; content: string }>
   inspectAsset?: (assetId: string) => Promise<unknown>
   prepareAsset?: (assetId: string, purpose: 'sprite' | 'cg' | 'background', recipe: { removeWhite?: boolean; trim?: boolean; whiteThreshold?: number; feather?: number }) => Promise<unknown>
 }) {
   const chapter = context.snapshot.chapters.find((item) => item.id === context.chapterId)
-  if (!chapter) throw new Error('Agent 章节不存在')
   let proposedPatch: StoryPatch | null = null
+  const requireChapter = () => {
+    if (!chapter) throw new Error('请选择章节后再修改剧情')
+    return chapter
+  }
 
   return {
     read_project_brief: {
@@ -33,17 +36,21 @@ export function createAgentToolRegistry(context: {
     },
     read_chapter_outline: {
       inputSchema: z.object({ chapterId: z.string().optional() }).strict(),
-      async execute(input: { chapterId?: string }) { return buildInitialContext(context.snapshot, { scope: 'chapter', chapterId: input.chapterId ?? context.chapterId }) },
+      async execute(input: { chapterId?: string }) {
+        const chapterId = input.chapterId ?? context.chapterId
+        if (!chapterId || !context.snapshot.chapters.some((item) => item.id === chapterId)) throw new Error('请选择章节后再修改剧情')
+        return buildInitialContext(context.snapshot, { scope: 'chapter', chapterId })
+      },
     },
     read_scene: {
       inputSchema: z.object({ sceneGroupId: z.string().min(1) }).strict(),
-      async execute(input: { sceneGroupId: string }) { return buildInitialContext(context.snapshot, { scope: 'scene', chapterId: context.chapterId, targetId: input.sceneGroupId }) },
+      async execute(input: { sceneGroupId: string }) { return buildInitialContext(context.snapshot, { scope: 'scene', chapterId: requireChapter().id, targetId: input.sceneGroupId }) },
     },
     search_story: {
       inputSchema: z.object({ query: z.string().min(1).max(200) }).strict(),
       async execute(input: { query: string }) {
         const query = input.query.toLocaleLowerCase()
-        return chapter.graph.nodes.filter((node) => JSON.stringify(node.data).toLocaleLowerCase().includes(query)).slice(0, 20)
+        return requireChapter().graph.nodes.filter((node) => JSON.stringify(node.data).toLocaleLowerCase().includes(query)).slice(0, 20)
       },
     },
     read_conversation_context: {
@@ -74,18 +81,19 @@ export function createAgentToolRegistry(context: {
     },
     analyze_story_graph: {
       inputSchema: z.object({}).strict(),
-      async execute(_input: Record<string, never>) { return analyzeStoryGraph(chapter.graph) },
+      async execute(_input: Record<string, never>) { return analyzeStoryGraph(requireChapter().graph) },
     },
     create_story_patch: {
       inputSchema: storyPatchSchema,
-      async execute(input: StoryPatch) { proposedPatch = storyPatchSchema.parse(input); return { accepted: true, operationCount: proposedPatch.operations.length } },
+      async execute(input: StoryPatch) { requireChapter(); proposedPatch = storyPatchSchema.parse(input); return { accepted: true, operationCount: proposedPatch.operations.length } },
     },
     validate_story_patch: {
       inputSchema: z.object({}).strict(),
       async execute(_input: Record<string, never>) {
+        const selectedChapter = requireChapter()
         if (!proposedPatch) return { valid: false, errors: [{ code: 'patch-missing', message: '尚未创建补丁' }] }
         let sequence = 0
-        return applyStoryPatch(chapter.graph, proposedPatch, () => `proposed-${sequence++}`).validation
+        return applyStoryPatch(selectedChapter.graph, proposedPatch, () => `proposed-${sequence++}`).validation
       },
     },
     prepare_character_asset: {

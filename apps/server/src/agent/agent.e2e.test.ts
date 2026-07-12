@@ -112,6 +112,49 @@ describe('creative agent end-to-end workflow', () => {
     expect(received).toContain('雪正在追查旧车站')
   })
 
+  it('completes a project conversation without selecting a chapter', async () => {
+    let received = ''
+    const service = new PrismaAgentRunService(client, {
+      loadSnapshot: (projectId) => loadAgentProjectSnapshot(projectId, client),
+      createProvider: () => ({ chat: async (messages) => {
+        received = JSON.stringify(messages)
+        return JSON.stringify({ type: 'final', summary: '项目结构清晰，共两章。', plan: ['读取项目概览'] })
+      } }),
+    })
+    const conversation = await service.createConversation('project', 'owner', { title: '项目规划', scope: 'project' })
+    const queued = await service.createRun({
+      projectId: 'project', conversationId: conversation.id, prompt: '概括整个项目', scope: 'project',
+      providerConfig: { provider: 'fake', model: 'controlled', apiKey: 'memory-only' },
+    }, 'owner')
+    const completed = await waitForCompletion(service, queued.id)
+
+    expect(completed.status).toBe('completed')
+    expect(completed.errorMessage).toBeNull()
+    expect(received).toContain('project:outline')
+    expect(await client.agentMessage.findFirst({ where: { conversationId: conversation.id, role: 'assistant' } })).toMatchObject({
+      content: '项目结构清晰，共两章。',
+    })
+  })
+
+  it('fails safely when a project conversation returns a story patch without a chapter', async () => {
+    const service = new PrismaAgentRunService(client, {
+      loadSnapshot: (projectId) => loadAgentProjectSnapshot(projectId, client),
+      createProvider: () => ({ chat: async () => JSON.stringify({
+        type: 'final', summary: '尝试修改剧情', plan: [],
+        patch: { operations: [{ kind: 'addNode', tempId: 'new', node: { type: 'subtitle', data: { text: '新剧情' } } }] },
+      }) }),
+    })
+    const conversation = await service.createConversation('project', 'owner', { title: '项目规划限制', scope: 'project' })
+    const queued = await service.createRun({
+      projectId: 'project', conversationId: conversation.id, prompt: '直接修改剧情', scope: 'project',
+      providerConfig: { provider: 'fake', model: 'controlled', apiKey: 'memory-only' },
+    }, 'owner')
+    const failed = await waitForCompletion(service, queued.id)
+
+    expect(failed.status).toBe('failed')
+    expect(failed.errorMessage).toBe('请选择章节后再修改剧情')
+  })
+
   it('returns a version-conflicted apply run to awaiting approval', async () => {
     const conversation = await client.agentConversation.create({ data: { title: '冲突测试', scope: 'chapter', userId: 'owner', projectId: 'project', chapterId: 'chapter-one' } })
     const run = await client.agentRun.create({ data: {
