@@ -176,6 +176,26 @@ describe('creative agent end-to-end workflow', () => {
     })
   })
 
+  it('answers an immediate greeting locally even when an external provider is configured', async () => {
+    const createProvider = vi.fn(() => { throw new Error('greetings must not call the external provider') })
+    const service = new PrismaAgentRunService(client, {
+      loadSnapshot: (projectId) => loadAgentProjectSnapshot(projectId, client),
+      createProvider,
+    })
+    const conversation = await service.createConversation('project', 'owner', { title: '自然问候', scope: 'project' })
+    const queued = await service.createRun({
+      projectId: 'project', conversationId: conversation.id, prompt: '你好', scope: 'project',
+      providerConfig: { provider: 'glm', model: 'glm-4.7-flash', apiKey: 'memory-only' },
+    }, 'owner')
+    const completed = await waitForCompletion(service, queued.id)
+
+    expect(completed.status).toBe('completed')
+    expect(createProvider).not.toHaveBeenCalled()
+    expect(await client.agentMessage.findFirst({ where: { conversationId: conversation.id, role: 'assistant' } })).toMatchObject({
+      content: expect.stringContaining('DreamChord 创作 Agent'),
+    })
+  })
+
   it('returns a version-conflicted apply run to awaiting approval', async () => {
     const conversation = await client.agentConversation.create({ data: { title: '冲突测试', scope: 'chapter', userId: 'owner', projectId: 'project', chapterId: 'chapter-one' } })
     const run = await client.agentRun.create({ data: {

@@ -11,6 +11,11 @@ const THANKS_INTENT = /谢谢|感谢|辛苦了|thanks?/i
 const CAPABILITY_INTENT = /你是谁|你能做什么|会做什么|怎么用|如何使用|有什么能力|agent.*能力/i
 const NEXT_STEP_INTENT = /下一步|接下来|从哪开始|该做什么|建议做什么/i
 
+export function isImmediateLocalPrompt(prompt: string): boolean {
+  const value = prompt.trim()
+  return GREETING_INTENT.test(value) || THANKS_INTENT.test(value) || CAPABILITY_INTENT.test(value) || NEXT_STEP_INTENT.test(value)
+}
+
 function result(summary: string, plan: string[], suggestions: string[] = []): AgentExecutionResult {
   return { summary, plan, suggestions, memorySuggestions: [], artifactRefs: [], toolSteps: 0 }
 }

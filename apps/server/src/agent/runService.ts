@@ -10,7 +10,7 @@ import { createAgentToolRegistry, toUniformAgentToolRegistry } from './tools.js'
 import { buildRollingSummary, createConversationSources, type ConversationMessage } from './conversationMemory.js'
 import type { RankableMemory } from './memoryService.js'
 import { PrismaAssetService } from '../assets/assetService.js'
-import { runLocalAssistant } from './localAssistant.js'
+import { isImmediateLocalPrompt, runLocalAssistant } from './localAssistant.js'
 
 export type AgentRunStatus = 'queued' | 'planning' | 'gathering_context' | 'drafting' | 'validating' | 'awaiting_approval' | 'applying' | 'completed' | 'failed' | 'cancelled'
 export interface ProviderSecretConfig { provider: string; model: string; apiKey: string; baseUrl?: string }
@@ -197,7 +197,7 @@ export class PrismaAgentRunService implements AgentRunService {
       prepareAsset: (assetId, purpose, recipe) => new PrismaAssetService(this.client).process(assetId, run.userId, { purpose, ...recipe }),
     })
     let result
-    if (job.secretConfig.provider === 'local') {
+    if (job.secretConfig.provider === 'local' || isImmediateLocalPrompt(run.prompt)) {
       result = runLocalAssistant({ prompt: run.prompt, snapshot, chapterId: run.chapterId ?? undefined })
     } else {
       const provider = this.dependencies.createProvider(job.secretConfig.provider, job.secretConfig)
