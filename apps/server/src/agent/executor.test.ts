@@ -75,4 +75,33 @@ describe('creative agent executor', () => {
     expect(repairMessage).toContain('assetId')
     expect(repairMessage).not.toContain('invalid_type')
   })
+
+  it('falls back to a safe read-only reply when a provider keeps returning natural text', async () => {
+    const onEvent = vi.fn()
+    const chat = vi.fn().mockResolvedValue('你好，我可以帮你一起完善这个故事。')
+
+    const result = await executeCreativeAgent({ prompt: '你好', initialContext: [], chat, tools: registry(), onEvent })
+
+    expect(result).toMatchObject({
+      summary: '你好，我可以帮你一起完善这个故事。',
+      plan: ['转为安全对话答复'],
+      suggestions: [],
+      memorySuggestions: [],
+      artifactRefs: [],
+      toolSteps: 0,
+    })
+    expect(result.patch).toBeUndefined()
+    expect(chat).toHaveBeenCalledTimes(3)
+    expect(onEvent).toHaveBeenCalledWith({ type: 'response_fallback' })
+  })
+
+  it('still rejects empty or broken JSON responses after format repairs', async () => {
+    const emptyChat = vi.fn().mockResolvedValue('')
+    const brokenJsonChat = vi.fn().mockResolvedValue('{"type":"final"')
+
+    await expect(executeCreativeAgent({ prompt: '你好', initialContext: [], chat: emptyChat, tools: registry() }))
+      .rejects.toThrow('模型响应格式不正确')
+    await expect(executeCreativeAgent({ prompt: '你好', initialContext: [], chat: brokenJsonChat, tools: registry() }))
+      .rejects.toThrow('模型响应格式不正确')
+  })
 })

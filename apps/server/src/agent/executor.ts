@@ -11,7 +11,7 @@ export interface UniformAgentTool {
 export type UniformAgentToolRegistry = Partial<Record<AgentToolName, UniformAgentTool>>
 
 export interface AgentExecutionEvent {
-  type: 'tool_started' | 'tool_completed' | 'format_repair' | 'tool_input_repair'
+  type: 'tool_started' | 'tool_completed' | 'format_repair' | 'tool_input_repair' | 'response_fallback'
   tool?: AgentToolName
 }
 
@@ -60,6 +60,12 @@ function toolInputHint(tool: AgentToolName): string {
   return '请严格使用该工具定义的字段和类型，不要增加其他字段'
 }
 
+function readableFallback(text: string): string | null {
+  const trimmed = text.trim()
+  if (!trimmed || /^[\[{]/.test(trimmed)) return null
+  return trimmed.slice(0, 10_000)
+}
+
 export async function executeCreativeAgent(input: {
   prompt: string
   initialContext: AgentContextSource[]
@@ -81,7 +87,19 @@ export async function executeCreativeAgent(input: {
     try {
       response = parseAgentModelResponse(raw)
     } catch (error) {
-      if (formatRepairs >= 2) throw error
+      if (formatRepairs >= 2) {
+        const fallback = readableFallback(raw)
+        if (!fallback) throw error
+        await input.onEvent?.({ type: 'response_fallback' })
+        return {
+          summary: fallback,
+          plan: ['转为安全对话答复'],
+          suggestions: [],
+          memorySuggestions: [],
+          artifactRefs: [],
+          toolSteps,
+        }
+      }
       formatRepairs += 1
       await input.onEvent?.({ type: 'format_repair' })
       messages.push({ role: 'assistant', content: raw.slice(0, 2_000) })
