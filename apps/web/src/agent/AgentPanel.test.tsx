@@ -135,4 +135,27 @@ describe('AgentPanel', () => {
     expect(screen.getByLabelText('创作任务')).toHaveProperty('value', '概括整个项目，并告诉我现在最值得先完善什么。')
     expect(state.controller.start).not.toHaveBeenCalled()
   })
+
+  it('lets the writer select the exact card before proposing a modification', () => {
+    state.controller = controller(null)
+    render(<AgentPanel {...props} selectedNodeId="dialogue-1" graph={{
+      nodes: [
+        { id: 'dialogue-1', type: 'dialogue', position: { x: 0, y: 0 }, data: { role: '雪', text: '不要靠近那扇门。', sceneGroupId: 'pier', sceneTitle: '雨夜码头' } },
+        { id: 'subtitle-1', type: 'subtitle', position: { x: 0, y: 120 }, data: { text: '雾从港口漫上来。', sceneGroupId: 'pier', sceneTitle: '雨夜码头' } },
+      ],
+      edges: [],
+    }} />)
+
+    fireEvent.click(screen.getByRole('button', { name: '当前镜头' }))
+    expect((screen.getByLabelText('修改目标') as HTMLSelectElement).value).toBe('dialogue-1')
+    expect(screen.getByText('雪：不要靠近那扇门。')).toBeTruthy()
+  })
+
+  it('does not create a second vertical scroll surface in compact transcript mode', () => {
+    state.controller = controller(null)
+    render(<AgentPanel {...props} compact />)
+
+    const panel = screen.getByLabelText('创作任务').closest('aside')
+    expect(panel?.querySelector('.overflow-y-auto')).toBeNull()
+  })
 })

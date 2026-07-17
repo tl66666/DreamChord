@@ -43,4 +43,19 @@ describe('AgentComposer local mode', () => {
     expect(screen.getByRole('button', { name: '当前章节' })).toBeDisabled()
     expect(screen.getByRole('button', { name: '全项目' })).toBeEnabled()
   })
+
+  it('sends on Enter while keeping Shift+Enter for a newline', () => {
+    const onRun = vi.fn()
+    render(<AgentComposer
+      prompt="润色这句台词" scope="card" disabled={false} hasProvider
+      onPromptChange={vi.fn()} onScopeChange={vi.fn()} onRun={onRun} onHealth={vi.fn()} onOpenSettings={vi.fn()}
+    />)
+
+    const textarea = screen.getByLabelText('创作任务')
+    fireEvent.keyDown(textarea, { key: 'Enter', code: 'Enter' })
+    expect(onRun).toHaveBeenCalledOnce()
+
+    fireEvent.keyDown(textarea, { key: 'Enter', code: 'Enter', shiftKey: true })
+    expect(onRun).toHaveBeenCalledOnce()
+  })
 })

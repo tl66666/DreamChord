@@ -59,6 +59,28 @@ describe('local agent assistant', () => {
     expect(result.patch).toBeUndefined()
   })
 
+  it('creates an approval-ready patch for an explicit replacement on a selected dialogue card', async () => {
+    const result = await runLocalAssistant({
+      prompt: '把这句台词改成：我已经知道答案了。',
+      snapshot: {
+        ...snapshot,
+        chapters: [{
+          ...snapshot.chapters[0],
+          graph: {
+            nodes: [{ id: 'dialogue', type: 'dialogue', position: { x: 0, y: 0 }, data: { role: '雪', text: '别再追问了。' } }],
+            edges: [],
+          },
+        }],
+      },
+      chapterId: 'chapter',
+      scope: 'card',
+      targetId: 'dialogue',
+    })
+
+    expect(result.patch).toEqual({ operations: [{ kind: 'updateNode', nodeId: 'dialogue', changes: { text: '我已经知道答案了。' } }] })
+    expect(result.summary).toContain('尚未写入')
+  })
+
   it('answers a greeting naturally in the current project', async () => {
     const result = await runLocalAssistant({ prompt: '你好', snapshot })
 

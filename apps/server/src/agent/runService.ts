@@ -202,6 +202,8 @@ export class PrismaAgentRunService implements AgentRunService {
         prompt: run.prompt,
         snapshot,
         chapterId: run.chapterId ?? undefined,
+        scope: run.scope as AgentScope,
+        targetId: run.targetId ?? undefined,
         contextSources: initialContext.filter((source) => source.kind === 'conversation-history' || source.kind === 'conversation-summary' || source.kind === 'memory'),
       })
     } else {

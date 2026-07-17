@@ -1,10 +1,11 @@
 import { analyzeStoryGraph } from '@dreamchord/story-domain'
-import type { AgentContextSource, AgentProjectSnapshot } from './context.js'
+import type { AgentContextSource, AgentProjectSnapshot, AgentScope } from './context.js'
 import type { AgentExecutionResult } from './executor.js'
 import { answerCreativeKnowledge } from './creativeKnowledge.js'
 import { lookupPublicKnowledge, type PublicKnowledgeResult } from './publicKnowledge.js'
 
 const WRITING_INTENT = /续写|润色|改写|扩写|生成|创作|补充.*分支|写.*剧情|write|rewrite|continue/i
+const EXPLICIT_REPLACEMENT_INTENT = /(?:改成|改为|替换(?:成|为)?|修改为|调整为)\s*[：:]\s*(.+)$/s
 const ASSET_INTENT = /素材|图片|立绘|CG|背景|白底|抠图|asset|image/i
 const CHARACTER_INTENT = /角色|人物|character/i
 const HEALTH_INTENT = /体检|检查.*(剧情|章节|结构|分支)|(剧情|章节|结构|分支).*(问题|健康)|health|analy[sz]e/i
@@ -34,6 +35,28 @@ export function shouldUseActionAgent(prompt: string, hasChapter: boolean): boole
 
 function result(summary: string, plan: string[], suggestions: string[] = []): AgentExecutionResult {
   return { summary, plan, suggestions, memorySuggestions: [], artifactRefs: [], toolSteps: 0 }
+}
+
+function localExplicitCardReplacement(input: {
+  prompt: string
+  snapshot: AgentProjectSnapshot
+  chapterId?: string
+  scope?: AgentScope
+  targetId?: string
+}): AgentExecutionResult | null {
+  if (input.scope !== 'card' || !input.chapterId || !input.targetId) return null
+  const replacement = input.prompt.trim().match(EXPLICIT_REPLACEMENT_INTENT)?.[1]?.trim()
+  if (!replacement) return null
+  const chapter = input.snapshot.chapters.find((item) => item.id === input.chapterId)
+  const node = chapter?.graph.nodes.find((item) => item.id === input.targetId)
+  if (!node || (node.type !== 'dialogue' && node.type !== 'subtitle') || typeof node.data.text !== 'string') return null
+  return {
+    ...result(
+      `已为选中的${node.type === 'dialogue' ? '台词' : '旁白'}生成精确替换草案，尚未写入故事。请先核对变更预览，再选择“应用变更”。`,
+      ['读取已选卡片', '提取明确替换文本', '生成可审批的结构化补丁'],
+    ),
+    patch: { operations: [{ kind: 'updateNode', nodeId: node.id, changes: { text: replacement } }] },
+  }
 }
 
 function projectSummary(snapshot: AgentProjectSnapshot): AgentExecutionResult {
@@ -177,6 +200,8 @@ export async function runLocalAssistant(input: {
   prompt: string
   snapshot: AgentProjectSnapshot
   chapterId?: string
+  scope?: AgentScope
+  targetId?: string
   now?: Date
   contextSources?: AgentContextSource[]
   lookupKnowledge?: (prompt: string) => Promise<PublicKnowledgeResult | null>
@@ -197,6 +222,8 @@ export async function runLocalAssistant(input: {
     if (histories.length === 0) return result('当前对话还没有足够的历史内容可以回顾。', ['读取当前对话历史'])
     return result(`最近对话回顾：\n${histories.slice(-6).map((source) => `- ${source.content.slice(0, 600)}`).join('\n')}`, ['读取当前对话历史与滚动摘要'])
   }
+  const exactReplacement = localExplicitCardReplacement({ ...input, prompt })
+  if (exactReplacement) return exactReplacement
   const creativeKnowledge = answerCreativeKnowledge(prompt)
   if (creativeKnowledge) return result(creativeKnowledge, ['检索本地视觉小说创作知识', '转换为 DreamChord 操作建议'])
   if (PROJECT_SUMMARY_INTENT.test(prompt)) return projectSummary(input.snapshot)

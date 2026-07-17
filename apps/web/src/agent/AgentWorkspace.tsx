@@ -107,7 +107,7 @@ export default function AgentWorkspace({
   const panelClass = (target: Pane, desktop: string) => `${pane === target ? 'flex' : 'hidden'} ${desktop} min-h-0 flex-col`
 
   return (
-    <div className="flex h-full min-h-[680px] flex-col bg-white">
+    <div className="flex h-full min-h-0 flex-col bg-white">
       <nav aria-label="Agent 工作区视图" className="grid grid-cols-3 border-b border-slate-200 bg-slate-50 p-1 xl:hidden">
         {([{ id: 'conversations', label: '对话', icon: MessagesSquare }, { id: 'chat', label: '工作区', icon: Rows3 }, { id: 'context', label: '上下文', icon: PanelRight }] as const).map(({ id, label, icon: Icon }) => (
           <button key={id} type="button" onClick={() => setPane(id)} className={`flex h-10 items-center justify-center gap-1.5 text-xs font-medium ${pane === id ? 'bg-white text-slate-950 shadow-sm' : 'text-slate-500'}`}><Icon className="h-3.5 w-3.5" />{label}</button>

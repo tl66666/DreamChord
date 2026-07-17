@@ -45,4 +45,10 @@ describe('full-screen creative agent', () => {
     expect(screen.getByLabelText('当前地址').textContent).not.toContain('chapter=')
     expect(screen.queryByText('本地 AI 草稿')).toBeNull()
   })
+
+  it('keeps the agent page bounded so the transcript can own vertical scrolling', async () => {
+    render(<MemoryRouter initialEntries={['/agent']} future={{ v7_startTransition: true, v7_relativeSplatPath: true }}><FeedbackProvider><AIWriterPage /></FeedbackProvider></MemoryRouter>)
+    await waitFor(() => expect(screen.getByRole('main').className).toContain('h-dvh'))
+    expect(screen.getByRole('main').className).toContain('overflow-hidden')
+  })
 })

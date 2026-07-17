@@ -92,7 +92,7 @@ export default function AIWriterPage() {
   }, [selectedChapterId, selectedProjectId, setSearchParams])
 
   return (
-    <main className="flex min-h-screen flex-col bg-slate-100 text-slate-950">
+    <main className="flex h-dvh min-h-0 flex-col overflow-hidden bg-slate-100 text-slate-950">
       <header className="border-b border-slate-200 bg-white px-4 py-3 sm:px-6">
         <div className="mx-auto flex max-w-[1500px] flex-wrap items-center justify-between gap-3">
           <Link to="/" className="flex min-w-0 items-center gap-3">
@@ -132,12 +132,12 @@ export default function AIWriterPage() {
         </div>
       </section>
 
-      <div className="mx-auto flex w-full max-w-[1500px] flex-1 p-3 sm:p-5">
-        <section className="min-h-[680px] w-full overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm">
+      <div className="mx-auto flex min-h-0 w-full max-w-[1500px] flex-1 p-3 sm:p-5">
+        <section className="min-h-0 w-full overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm">
           {loading ? (
-            <div className="grid h-full min-h-[680px] place-items-center text-sm text-slate-500"><span className="flex items-center gap-2"><Loader2 className="h-4 w-4 animate-spin" />正在读取故事上下文</span></div>
+            <div className="grid h-full min-h-0 place-items-center text-sm text-slate-500"><span className="flex items-center gap-2"><Loader2 className="h-4 w-4 animate-spin" />正在读取故事上下文</span></div>
           ) : error ? (
-            <div className="grid h-full min-h-[680px] place-items-center px-6 text-sm text-red-700">{error}</div>
+            <div className="grid h-full min-h-0 place-items-center px-6 text-sm text-red-700">{error}</div>
           ) : selectedProject ? (
             <AgentWorkspace
               key={`${selectedProject.id}:${selectedChapter?.id ?? 'project'}`}
@@ -154,7 +154,7 @@ export default function AIWriterPage() {
               onSelectNode={setSelectedNodeId}
             />
           ) : (
-            <div className="grid h-full min-h-[680px] place-items-center px-6 text-center">
+            <div className="grid h-full min-h-0 place-items-center px-6 text-center">
               <div><span className="mx-auto grid h-11 w-11 place-items-center rounded-lg bg-slate-950 text-white"><Bot className="h-5 w-5" /></span><h2 className="mt-4 text-base font-bold">先创建一个故事项目</h2><p className="mt-2 text-sm text-slate-500">创建项目后即可使用项目对话；绑定章节后还可生成可撤销的剧情变更。</p><Link to="/" className="mt-4 inline-flex h-10 items-center rounded-md bg-slate-950 px-4 text-sm font-medium text-white">返回项目</Link></div>
             </div>
           )}

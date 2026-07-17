@@ -39,7 +39,7 @@ export default function ConversationTranscript({ conversation, messages, loading
           })}
         </div>
       </div>
-      <div className="max-h-[52vh] shrink-0 overflow-y-auto border-t border-slate-200 bg-white">{children}</div>
+      <div className="shrink-0 border-t border-slate-200 bg-white">{children}</div>
     </section>
   )
 }
