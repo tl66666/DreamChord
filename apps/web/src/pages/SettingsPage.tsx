@@ -1,12 +1,16 @@
 import { useState, useEffect } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
 import { Save, ExternalLink, Check, AlertCircle, ArrowLeft } from 'lucide-react'
 import { loadAIConfigs, saveAIConfigs, PROVIDER_META, type AIProviderConfig } from '../lib/aiConfig'
 
 export default function SettingsPage() {
+  const location = useLocation()
   const [configs, setConfigs] = useState<AIProviderConfig[]>([])
   const [saved, setSaved] = useState(false)
   const [customModels, setCustomModels] = useState<Record<string, string>>({})
+  const requestedReturn = new URLSearchParams(location.search).get('returnTo')
+  const returnTo = requestedReturn?.startsWith('/') && !requestedReturn.startsWith('//') ? requestedReturn : '/'
+  const returnLabel = returnTo === '/' ? '返回首页' : '返回创作 Agent'
 
   useEffect(() => {
     const loaded = loadAIConfigs()
@@ -64,11 +68,11 @@ export default function SettingsPage() {
         <div>
           <div className="mb-2 flex items-center gap-3">
             <Link
-              to="/"
+              to={returnTo}
               className="inline-flex items-center gap-1.5 rounded-lg border border-dream-200 bg-white/70 px-3 py-1.5 text-sm font-medium text-dream-700 transition hover:bg-dream-50"
             >
               <ArrowLeft className="h-4 w-4" />
-              返回首页
+              {returnLabel}
             </Link>
             <h1 className="text-3xl font-bold text-dream-900">设置</h1>
           </div>
@@ -102,7 +106,7 @@ export default function SettingsPage() {
             >
               <div className="mb-4 flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <h2 className="text-lg font-semibold text-dream-900">{meta.name}</h2>
+                  <div><h2 className="text-lg font-semibold text-dream-900">{meta.name}</h2><p className={`mt-0.5 text-xs ${cfg.enabled && cfg.apiKey.trim() ? 'text-emerald-700' : 'text-dream-500'}`}>{cfg.enabled && cfg.apiKey.trim() ? '已启用 · 密钥已保存在本机' : cfg.enabled ? '已启用 · 请填写 API Key' : '未启用'}</p></div>
                   {meta.url && (
                     <a
                       href={meta.url}

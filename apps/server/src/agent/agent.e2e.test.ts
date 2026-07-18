@@ -93,7 +93,7 @@ describe('creative agent end-to-end workflow', () => {
     expect(undone.graph.edges).toEqual([])
   })
 
-  it('injects same-conversation history and ranked project memory into a run', async () => {
+  it('keeps a chapter continuation as a managed prose draft when the model only returns prose', async () => {
     const conversation = await client.agentConversation.create({ data: { title: '追查真相', scope: 'chapter', userId: 'owner', projectId: 'project', chapterId: 'chapter-one', summary: '雪正在追查旧车站。' } })
     await client.agentMessage.createMany({ data: [
       { conversationId: conversation.id, role: 'user', content: '上一轮问题：门后有什么？' },
@@ -106,10 +106,35 @@ describe('creative agent end-to-end workflow', () => {
       createProvider: () => ({ chat: async (messages) => { received = JSON.stringify(messages); return JSON.stringify({ type: 'final', summary: '已续写', plan: ['承接线索'] }) } }),
     })
     const queued = await service.createRun({ projectId: 'project', conversationId: conversation.id, chapterId: 'chapter-one', prompt: '继续写雪的调查', scope: 'chapter', providerConfig: { provider: 'fake', model: 'controlled', apiKey: 'memory-only' } }, 'owner')
-    expect((await waitForCompletion(service, queued.id)).status).toBe('completed')
+    const ready = await waitForCompletion(service, queued.id)
+    expect(ready.status).toBe('completed')
+    expect(ready.patch).toBeNull()
     expect(received).toContain('上一轮回答')
     expect(received).toContain('遗忘者的梦境')
     expect(received).toContain('雪正在追查旧车站')
+  })
+
+  it('keeps the selected draft text when its own wording mentions confirmation', async () => {
+    const conversation = await client.agentConversation.create({ data: { title: '指定草稿', scope: 'chapter', userId: 'owner', projectId: 'project', chapterId: 'chapter-one' } })
+    const selectedDraft = '林宇：\n“等雨停了，我们就出发。”\n\n林晚没有回答，只把车票攥得更紧。确认后写入工作台。'
+    const chat = vi.fn(async () => JSON.stringify({ type: 'final', summary: '不应参与草稿转换', plan: [], patch: { operations: [] } }))
+    const service = new PrismaAgentRunService(client, {
+      loadSnapshot: (projectId) => loadAgentProjectSnapshot(projectId, client),
+      createProvider: () => ({ chat }),
+    })
+    const queued = await service.createRun({
+      projectId: 'project', conversationId: conversation.id, chapterId: 'chapter-one', scope: 'chapter',
+      prompt: `根据用户选择的续写草稿创建工作台场景。\n\n【已选草稿】\n${selectedDraft}\n【草稿结束】`,
+      providerConfig: { provider: 'fake', model: 'controlled', apiKey: 'memory-only' },
+    }, 'owner')
+    const ready = await waitForApproval(service, queued.id)
+
+    expect(ready.status).toBe('awaiting_approval')
+    expect(ready.patch?.payload).toEqual(expect.objectContaining({ operations: expect.arrayContaining([
+      expect.objectContaining({ kind: 'addNode', node: expect.objectContaining({ type: 'dialogue', data: expect.objectContaining({ role: '林宇', text: expect.stringContaining('等雨停了') }) }) }),
+      expect.objectContaining({ kind: 'addNode', node: expect.objectContaining({ type: 'subtitle', data: expect.objectContaining({ text: expect.stringContaining('车票') }) }) }),
+    ]) }))
+    expect(chat).not.toHaveBeenCalled()
   })
 
   it('completes a project conversation without selecting a chapter', async () => {

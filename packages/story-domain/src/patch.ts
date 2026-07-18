@@ -97,6 +97,7 @@ export function applyStoryPatch(
   const patch = storyPatchSchema.parse(candidate)
   const graph = cloneGraph(original)
   const temporaryIds = new Map<string, string>()
+  const pendingEdges: Array<{ sourceRef: string; targetRef: string; sourceHandle?: string; label?: string }> = []
   let edgeSequence = 0
 
   for (const operation of patch.operations) {
@@ -126,20 +127,30 @@ export function applyStoryPatch(
       continue
     }
     if (operation.kind === 'addEdge') {
-      const source = temporaryIds.get(operation.sourceRef) ?? operation.sourceRef
-      const target = temporaryIds.get(operation.targetRef) ?? operation.targetRef
-      const edge: StoryEdge = {
-        id: `agent-edge-${source}-${target}-${edgeSequence++}`,
-        source,
-        target,
+      // A generated patch may declare its linking edge before the nodes it links.
+      // Resolve temporary IDs after all add-node operations have been processed.
+      pendingEdges.push({
+        sourceRef: operation.sourceRef,
+        targetRef: operation.targetRef,
         sourceHandle: operation.sourceHandle,
         label: operation.label,
-        animated: true,
-      }
-      graph.edges.push(edge)
+      })
       continue
     }
     graph.edges = graph.edges.filter((edge) => edge.id !== operation.edgeId)
+  }
+
+  for (const pending of pendingEdges) {
+    const source = temporaryIds.get(pending.sourceRef) ?? pending.sourceRef
+    const target = temporaryIds.get(pending.targetRef) ?? pending.targetRef
+    graph.edges.push({
+      id: `agent-edge-${source}-${target}-${edgeSequence++}`,
+      source,
+      target,
+      sourceHandle: pending.sourceHandle,
+      label: pending.label,
+      animated: true,
+    })
   }
 
   return { graph, validation: validateStoryGraph(graph) }

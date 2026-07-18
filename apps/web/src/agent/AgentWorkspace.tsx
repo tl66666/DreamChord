@@ -1,24 +1,26 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { MessagesSquare, PanelRight, Rows3 } from 'lucide-react'
+import { BookOpenCheck, MessagesSquare, PanelRight, Rows3, X } from 'lucide-react'
 import type { StoryGraph } from '@dreamchord/story-domain'
-import { createAgentConversation, deleteAgentConversation, getAgentConversations, getAgentMessages, updateAgentConversation } from '../api/client'
+import { createAgentConversation, deleteAgentConversation, getAgentConversations, getAgentMessages, updateAgentConversation, updateAgentMessage } from '../api/client'
 import { useConfirm, useToast } from '../components/FeedbackProvider'
 import AgentPanel from './AgentPanel'
 import AgentContextPanel from './AgentContextPanel'
 import ConversationSidebar from './ConversationSidebar'
 import ConversationTranscript from './ConversationTranscript'
-import type { AgentConversationDto, AgentMessageDto, AppliedPatchDto } from './agentTypes'
+import type { AgentConversationDto, AgentMessageDto, AgentScope, AppliedPatchDto } from './agentTypes'
 
 type Pane = 'conversations' | 'chat' | 'context'
 
 export default function AgentWorkspace({
-  projectId, projectTitle, chapterId, chapterTitle, chapterVersion, graph, selectedNodeId, initialConversationId,
-  onConversationChange, onApplyGraph, onSelectNode,
+  projectId, projectTitle, chapterId, chapterTitle, chapterVersion, graph, selectedNodeId, selectedSceneId, initialConversationId,
+  onConversationChange, onApplyGraph, onSelectNode, taskRequest, embeddedInEditor = false, onClose,
 }: {
   projectId: string; projectTitle: string; chapterId: string | null; chapterTitle: string | null; chapterVersion: number | null; graph: StoryGraph
-  selectedNodeId: string | null; initialConversationId?: string
+  selectedNodeId: string | null; selectedSceneId?: string | null; initialConversationId?: string
   onConversationChange: (conversationId: string) => void
   onApplyGraph: (result: AppliedPatchDto) => void; onSelectNode: (nodeId: string) => void
+  taskRequest?: { id: number; prompt: string; scope: import('./agentTypes').AgentScope }
+  embeddedInEditor?: boolean; onClose?: () => void
 }) {
   const confirm = useConfirm()
   const toast = useToast()
@@ -29,8 +31,10 @@ export default function AgentWorkspace({
   const [loading, setLoading] = useState(true)
   const [busy, setBusy] = useState(false)
   const [pane, setPane] = useState<Pane>('chat')
+  const [draftTask, setDraftTask] = useState<{ id: number; prompt: string; scope: AgentScope; draft: string; autoRun: boolean } | null>(null)
 
   const activeConversation = useMemo(() => conversations.find((item) => item.id === activeId) ?? null, [activeId, conversations])
+  const effectiveTaskRequest = draftTask ?? taskRequest
 
   const loadConversations = useCallback(async (preferredId?: string) => {
     const items = await getAgentConversations(projectId)
@@ -68,6 +72,13 @@ export default function AgentWorkspace({
     const timer = window.setInterval(() => { void loadMessages(activeId) }, 3000)
     return () => window.clearInterval(timer)
   }, [activeId, loadMessages])
+
+  useEffect(() => {
+    if (!embeddedInEditor || !onClose) return
+    const closeOnEscape = (event: KeyboardEvent) => { if (event.key === 'Escape') onClose() }
+    window.addEventListener('keydown', closeOnEscape)
+    return () => window.removeEventListener('keydown', closeOnEscape)
+  }, [embeddedInEditor, onClose])
 
   const selectConversation = (id: string) => {
     setActiveId(id)
@@ -108,6 +119,16 @@ export default function AgentWorkspace({
 
   return (
     <div className="flex h-full min-h-0 flex-col bg-white">
+      {embeddedInEditor && <header className="flex min-h-14 shrink-0 items-center justify-between border-b border-slate-200 bg-white px-4 sm:px-5">
+        <div className="flex min-w-0 items-center gap-2.5">
+          <span className="grid h-8 w-8 shrink-0 place-items-center rounded-md bg-slate-950 text-white"><BookOpenCheck className="h-4 w-4" /></span>
+          <div className="min-w-0">
+            <h1 className="truncate text-sm font-bold text-slate-950">创作 Agent</h1>
+            <p className="truncate text-[11px] text-slate-500">编辑器模式 · {chapterId ? `已绑定：${chapterTitle || '当前章节'}` : '项目对话'}</p>
+          </div>
+        </div>
+        {onClose && <button type="button" aria-label="关闭 Agent" title="关闭 Agent（Esc）" onClick={onClose} className="grid h-9 w-9 shrink-0 place-items-center rounded-md text-slate-500 hover:bg-slate-100 hover:text-slate-950"><X className="h-4 w-4" /></button>}
+      </header>}
       <nav aria-label="Agent 工作区视图" className="grid grid-cols-3 border-b border-slate-200 bg-slate-50 p-1 xl:hidden">
         {([{ id: 'conversations', label: '对话', icon: MessagesSquare }, { id: 'chat', label: '工作区', icon: Rows3 }, { id: 'context', label: '上下文', icon: PanelRight }] as const).map(({ id, label, icon: Icon }) => (
           <button key={id} type="button" onClick={() => setPane(id)} className={`flex h-10 items-center justify-center gap-1.5 text-xs font-medium ${pane === id ? 'bg-white text-slate-950 shadow-sm' : 'text-slate-500'}`}><Icon className="h-3.5 w-3.5" />{label}</button>
@@ -118,8 +139,8 @@ export default function AgentWorkspace({
           <ConversationSidebar conversations={conversations} activeId={activeId} busy={busy} onCreate={() => void createConversation()} onSelect={selectConversation} onRename={(id, title) => void renameConversation(id, title)} onPin={(item) => void pinConversation(item)} onDelete={(item) => void removeConversation(item)} />
         </div>
         <div className={panelClass('chat', 'xl:flex')}>
-          <ConversationTranscript conversation={activeConversation} messages={messages} loading={loading} hasMore={Boolean(nextCursor)} onLoadMore={() => nextCursor && void loadMessages(activeId, nextCursor)}>
-            {activeId ? <AgentPanel projectId={projectId} chapterId={chapterId} chapterVersion={chapterVersion} selectedNodeId={selectedNodeId} selectedSceneId={null} graph={graph} initialConversationId={activeId} onConversationChange={selectConversation} onApplyGraph={onApplyGraph} onSelectNode={onSelectNode} compact /> : <div className="p-4 text-center text-sm text-slate-500"><button type="button" aria-label="新建对话" onClick={() => void createConversation()} className="rounded-md bg-slate-950 px-4 py-2 text-white">新建对话</button></div>}
+          <ConversationTranscript conversation={activeConversation} messages={messages} loading={loading} hasMore={Boolean(nextCursor)} onLoadMore={() => nextCursor && void loadMessages(activeId, nextCursor)} onDraftAction={(request) => setDraftTask({ ...request, id: Date.now(), autoRun: true })} onDraftEdit={async (messageId, content) => { try { await updateAgentMessage(activeId, messageId, content); await loadMessages(activeId) } catch { toast.error('草稿保存失败') } }}>
+            {activeId ? <AgentPanel projectId={projectId} chapterId={chapterId} chapterVersion={chapterVersion} selectedNodeId={selectedNodeId} selectedSceneId={selectedSceneId ?? null} graph={graph} taskRequest={effectiveTaskRequest} initialConversationId={activeId} onConversationChange={selectConversation} onApplyGraph={onApplyGraph} onSelectNode={onSelectNode} compact /> : <div className="p-4 text-center text-sm text-slate-500"><button type="button" aria-label="新建对话" onClick={() => void createConversation()} className="rounded-md bg-slate-950 px-4 py-2 text-white">新建对话</button></div>}
           </ConversationTranscript>
         </div>
         <div className={panelClass('context', 'xl:flex')}>

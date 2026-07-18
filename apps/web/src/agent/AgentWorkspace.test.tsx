@@ -16,7 +16,7 @@ vi.mock('../api/client', () => ({
   updateAgentConversation: (...args: unknown[]) => api.update(...args),
   deleteAgentConversation: (...args: unknown[]) => api.remove(...args),
 }))
-vi.mock('./AgentPanel', () => ({ default: () => <div>Agent composer</div> }))
+vi.mock('./AgentPanel', () => ({ default: ({ taskRequest }: { taskRequest?: { prompt: string; draft?: string; autoRun?: boolean } }) => <div data-testid="agent-composer">{taskRequest?.autoRun ? `${taskRequest.prompt}\n${taskRequest.draft || ''}` : 'Agent composer'}</div> }))
 
 function renderWorkspace(chapterId: string | null = 'chapter') {
   return render(<FeedbackProvider><AgentWorkspace
@@ -69,5 +69,31 @@ describe('agent workspace', () => {
     const createButtons = await screen.findAllByRole('button', { name: '新建对话' })
     fireEvent.click(createButtons[0])
     await waitFor(() => expect(api.create).toHaveBeenCalledWith('project', { title: '新对话', scope: 'project' }))
+  })
+
+  it('shows the editor chapter binding and exposes a close command when embedded in the editor', async () => {
+    api.getConversations.mockResolvedValue(api.conversations)
+    api.getMessages.mockResolvedValue({ items: [], nextCursor: null })
+    const onClose = vi.fn()
+
+    render(<FeedbackProvider><AgentWorkspace
+      projectId="project" projectTitle="测试故事" chapterId="chapter" chapterTitle="第一章" chapterVersion={1}
+      graph={{ nodes: [], edges: [] }} selectedNodeId={null} onConversationChange={vi.fn()} onApplyGraph={vi.fn()} onSelectNode={vi.fn()}
+      embeddedInEditor onClose={onClose}
+    /></FeedbackProvider>)
+
+    expect(await screen.findByText((_, element) => element?.textContent === '编辑器模式 · 已绑定：第一章')).toBeTruthy()
+    fireEvent.click(screen.getByRole('button', { name: '关闭 Agent' }))
+    expect(onClose).toHaveBeenCalledTimes(1)
+  })
+
+  it('forwards a saved prose draft into an auto-running chapter task', async () => {
+    api.getConversations.mockResolvedValue(api.conversations)
+    api.getMessages.mockResolvedValue({ items: [{ id: 'draft', role: 'assistant', content: '林宇：\n“我一直在等你回来。”\n\n林晚握紧画册，没有立刻回答。', metadata: {}, createdAt: '2026-07-18T00:00:00.000Z' }], nextCursor: null })
+    renderWorkspace()
+
+    fireEvent.click(await screen.findByRole('button', { name: '生成工作台场景' }))
+
+    await waitFor(() => expect(screen.getByTestId('agent-composer').textContent).toContain('林宇：'))
   })
 })

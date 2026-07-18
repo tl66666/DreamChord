@@ -40,6 +40,7 @@ class MemoryConversationService implements ConversationService {
   async update(_id: string, _userId: string, patch: Partial<ConversationDto>) { this.conversation = { ...this.conversation, ...patch }; return this.conversation }
   async remove() { return undefined }
   async messages() { return { items: [{ id: 'message', role: 'user', content: '继续写', metadata: {}, createdAt: this.conversation.createdAt }], nextCursor: null } }
+  async updateMessage(_conversationId: string, messageId: string, _userId: string, content: string) { return { id: messageId, role: 'assistant', content, metadata: {}, createdAt: this.conversation.createdAt } }
 }
 
 function testApp() {

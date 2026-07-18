@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>梦弦 DreamChord — 视觉小说创作平台</title>
-<meta name="description" content="DreamChord Agent 0.2 是浏览器里的视觉小说创作平台：项目感知对话、分层记忆、受限工具、镜头卡编辑、分支播放、图片处理与项目备份。">
+<meta name="description" content="DreamChord 是浏览器里的视觉小说创作平台：以项目感知 Agent 为特色，支持分层记忆、受限工具、结构化剧本导入、镜头卡编辑、分支播放、图片处理与项目备份。">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&family=Noto+Serif+SC:wght@400;700;900&family=Instrument+Serif:ital@1&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -873,7 +873,7 @@ body {
       <div class="agent-core-copy">
         <p class="agent-core-lead reveal">这是一套自研 TypeScript Agent 编排层，不是把聊天框简单接到模型。它采用“ReAct 风格”的观察 → 推理 / 规划 → 工具执行 → 校验循环，但把工具权限、数据边界和最终写入控制在服务端。</p>
         <div class="agent-core-pipeline reveal">
-          <div class="agent-core-step"><div class="agent-core-step-num">01</div><div><div class="agent-core-step-title">本地意图路由</div><div class="agent-core-step-desc">先识别“查项目、续写、查素材、体检、回顾对话”等任务，零 Key 也能回答常见问题。</div></div></div>
+          <div class="agent-core-step"><div class="agent-core-step-num">01</div><div><div class="agent-core-step-title">本地意图路由</div><div class="agent-core-step-desc">先识别“查项目、续写、查素材、体检、回顾对话、导入正文”等任务，零 Key 也能完成确定性项目任务。</div></div></div>
           <div class="agent-core-step"><div class="agent-core-step-num">02</div><div><div class="agent-core-step-title">项目上下文 + 分层记忆</div><div class="agent-core-step-desc">按项目、故事圣经、章节、角色、对话摘要和记忆优先级组装上下文，减少答非所问和设定冲突。</div></div></div>
           <div class="agent-core-step"><div class="agent-core-step-num">03</div><div><div class="agent-core-step-title">白名单工具 + 提案审批</div><div class="agent-core-step-desc">只允许读取、体检、素材检查等受控工具；剧情补丁先预览差异，作者确认后才应用，支持撤销。</div></div></div>
         </div>
@@ -888,8 +888,8 @@ body {
           </div>
         </div>
         <div class="agent-core-modes reveal">
-          <div class="agent-core-mode"><strong>无 API Key</strong><span>项目检索、创作知识、结构草案、只读公共知识查询。</span></div>
-          <div class="agent-core-mode"><strong>配置模型后</strong><span>续写、润色、长文本扩展与结构化补丁建议。</span></div>
+          <div class="agent-core-mode"><strong>无 API Key</strong><span>项目检索、创作知识、确定性续写、正文结构化转换与只读公共知识查询。</span></div>
+          <div class="agent-core-mode"><strong>配置模型后</strong><span>更自然的续写、润色、长文本扩展与剧情规划。</span></div>
           <div class="agent-core-mode"><strong>始终可控</strong><span>工具白名单、版本保护、审批、拒绝与撤销。</span></div>
         </div>
         <div class="agent-core-tags reveal"><span class="agent-core-tag">自研 ReAct-style Executor</span><span class="agent-core-tag">TypeScript + Express</span><span class="agent-core-tag">Zod 工具 Schema</span><span class="agent-core-tag">Prisma + SQLite 记忆</span><span class="agent-core-tag">GLM / DeepSeek / Kimi / OpenAI 兼容</span></div>
@@ -900,9 +900,9 @@ body {
             <span class="showcase-img-dot r"></span><span class="showcase-img-dot y"></span><span class="showcase-img-dot g"></span>
             <span class="showcase-img-url">localhost:5173/agent · zero-config</span>
           </div>
-          <img src="screenshots/agent-zero-config-1440.png" alt="DreamChord Agent 无 API Key 时读取项目上下文并回答创作问题的桌面 Web 截图" loading="lazy">
+          <img src="screenshots/agent-structured-import-1440.png" alt="DreamChord Agent 将选中草稿清洗并转换为可审核工作台补丁的真实桌面 Web 截图" loading="lazy">
         </div>
-        <div class="agent-core-proof-caption"><span><strong>真实桌面 Web 验收截图</strong> · 1440 × 900</span><span>同一套 Agent 可绑定或不绑定章节</span></div>
+        <div class="agent-core-proof-caption"><span><strong>真实桌面 Web 验收截图</strong> · 1440 × 900</span><span>草稿解析、素材匹配与作者审批同屏可见</span></div>
       </div>
     </div>
   </div>
@@ -1032,7 +1032,7 @@ body {
           <td><div class="feat">AI 辅助<div class="feat-desc">内置 AI 写作功能</div></div></td>
           <td><span class="no">无</span></td>
           <td><span class="no">无</span></td>
-          <td class="highlight-col"><span class="yes">5 种模式 + 4 家供应商</span></td>
+          <td class="highlight-col"><span class="yes">项目感知 Agent + 审批写入</span></td>
         </tr>
         <tr>
           <td><div class="feat">运行环境<div class="feat-desc">读者如何游玩</div></div></td>
@@ -1061,7 +1061,7 @@ body {
 <section class="showcase" id="showcase">
   <div class="section-label reveal">Interface</div>
   <h2 class="section-title reveal">核心工作流<span class="italic">真实界面展示</span></h2>
-  <p class="section-desc reveal">以下均为 DreamChord 0.2 的实际浏览器验收截图。从故事编辑、Agent 协作到图片处理和备份恢复，每一步都保留预览、确认与回滚边界。</p>
+  <p class="section-desc reveal">以下均为当前版本的实际浏览器验收截图。从故事编辑、Agent 协作到图片处理和备份恢复，每一步都保留预览、确认与回滚边界。</p>
 
   <div class="showcase-blocks">
     <!-- 1. 镜头卡编辑器 -->
@@ -1129,11 +1129,12 @@ body {
       <div class="showcase-text">
         <div class="showcase-num">03 / Creative Agent</div>
         <h3 class="showcase-title">多对话创作 Agent</h3>
-        <p class="showcase-desc">每个对话可以处理不同任务：续写当前场景、修补分支、检查人物动机或准备图片素材。Agent 会读取对话历史、滚动摘要、故事圣经、章节图和分层记忆，先计划并调用受限工具，再提交结构化补丁供作者预览、应用、拒绝或撤销。没有 API Key 时仍可使用本地项目检索、创作知识和只读公共知识查询。</p>
+        <p class="showcase-desc">每个对话可以处理不同任务：续写当前场景、修补分支、检查人物动机、把正文转换为工作台场景或准备图片素材。Agent 会读取对话历史、滚动摘要、故事圣经、章节图和分层记忆，先计划并调用受限工具，再提交结构化补丁供作者预览、应用、拒绝或撤销。没有 API Key 时仍可完成项目检索、确定性草稿与正文转换。</p>
         <ul class="showcase-features">
           <li>新建、搜索、重命名、置顶和删除独立对话</li>
           <li>设定、人物、剧情、决策、偏好、产物六层记忆</li>
           <li>读取上下文、搜索记忆、检查图谱、查询角色与素材</li>
+          <li>导入正文时过滤草稿说明，分别生成场景、旁白、角色台词和选项卡</li>
           <li>模型不能直接写数据库，所有变更先成为可审查提案</li>
           <li>应用前校验，应用后保留快照并支持版本安全撤销</li>
           <li>支持 GLM、DeepSeek、Kimi 和 OpenAI 兼容接口</li>
@@ -1155,12 +1156,12 @@ body {
       <div class="showcase-text">
         <div class="showcase-num">04 / Zero-Config Agent</div>
         <h3 class="showcase-title">先能沟通，再决定是否调用模型</h3>
-        <p class="showcase-desc">Agent 不是把每句话都丢给模型。请求先经过本地路由：项目问题读取章节、角色、素材、剧情健康和当前记忆；蒙太奇、伏笔、节奏等创作术语由内置知识库解释；“X 是什么”类事实问题才调用严格白名单的中文 Wikipedia 只读接口。网络或模型不可用时，仍能给出项目相关回答和可继续编辑的剧情结构草案。</p>
+        <p class="showcase-desc">Agent 不是把每句话都丢给模型。请求先经过本地路由：项目问题读取章节、角色、素材、剧情健康和当前记忆；蒙太奇、伏笔、节奏等创作术语由内置知识库解释；“X 是什么”类事实问题才调用严格白名单的中文 Wikipedia 只读接口。网络或模型不可用时，仍能给出项目相关回答，将已有正文清洗并转换为可审核的场景、旁白、台词和选项。</p>
         <ul class="showcase-features">
           <li>无 API Key 也能概括项目、列章节、回顾对话和读取记忆</li>
           <li>内置视觉小说创作知识，解释概念并给出编辑器操作建议</li>
           <li>公共知识查询只发送问题关键词，不发送项目和密钥</li>
-          <li>续写先生成三步结构草案，不伪装成模型正文，也不直接改稿</li>
+          <li>本地续写与用户正文可转为结构化镜头卡；模型说明文字不会混入故事</li>
           <li>复杂任务仍进入模型、工具、校验、审批和撤销链路</li>
         </ul>
       </div>
@@ -1457,7 +1458,7 @@ cd DreamChord && pnpm install --frozen-lockfile</code></div></div>
     </div>
     <div class="faq-item reveal">
       <div class="faq-q">AI 功能是必须的吗？不配置 AI 能用吗？<span class="faq-icon">+</span></div>
-      <div class="faq-a"><div class="faq-a-inner">基础编辑、自动保存、剧情体检、素材处理、备份恢复和播放器都不依赖模型。未配置 API Key 时，Agent 仍能读取项目、章节、角色、素材、对话和记忆，解释蒙太奇、伏笔、节奏等创作方法，并对“X 是什么”类问题调用只读的中文 Wikipedia 摘要接口；开放式长文生成和可应用剧情补丁再配置 GLM、DeepSeek、Kimi、OpenAI 或其他兼容接口。</div></div>
+      <div class="faq-a"><div class="faq-a-inner">基础编辑、自动保存、剧情体检、素材处理、备份恢复和播放器都不依赖模型。未配置 API Key 时，Agent 仍能读取项目、章节、角色、素材、对话和记忆，解释创作方法，生成确定性续写草稿，并将用户或 Agent 正文转换为可审核的场景、旁白、台词和选项；“X 是什么”类问题可调用只读中文 Wikipedia 摘要接口。配置 GLM、DeepSeek、Kimi、OpenAI 或其他兼容接口后，才增强开放式长文生成、润色和复杂改写。无论是否配置模型，写入工作台都必须经过补丁预览与作者确认。</div></div>
     </div>
     <div class="faq-item reveal">
       <div class="faq-q">角色立绘为什么有白底？怎么处理？<span class="faq-icon">+</span></div>
@@ -1573,6 +1574,7 @@ cd DreamChord && pnpm install --frozen-lockfile</code></div></div>
       <a href="https://github.com/tl66666/DreamChord/blob/main/README.md" target="_blank">项目文档</a>
       <a href="https://github.com/tl66666/DreamChord/blob/main/CLAUDE.md" target="_blank">开发指南</a>
       <a href="https://github.com/tl66666/DreamChord/blob/main/docs/AI_HANDOFF.md" target="_blank">AI 交接</a>
+      <a href="https://github.com/tl66666/DreamChord/blob/main/docs/CURRENT_HANDOFF.md" target="_blank">当前交接</a>
       <a href="https://github.com/tl66666/DreamChord/blob/main/CHARACTERS.md" target="_blank">角色设定</a>
       <a href="https://github.com/tl66666/DreamChord/blob/main/ASSETS.md" target="_blank">素材规范</a>
     </div>

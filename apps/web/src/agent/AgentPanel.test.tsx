@@ -5,7 +5,11 @@ import AgentPanel from './AgentPanel'
 
 const state = vi.hoisted(() => ({ controller: {} as Record<string, unknown>, provider: null as null | { provider: string; model: string; apiKey: string } }))
 vi.mock('./useAgentRun', () => ({ useAgentRun: () => state.controller }))
-vi.mock('../lib/aiConfig', () => ({ getDefaultProvider: () => state.provider }))
+vi.mock('../lib/aiConfig', () => ({
+  getDefaultProvider: () => state.provider,
+  setActiveModel: vi.fn(),
+  PROVIDER_META: [{ provider: 'test', models: ['fake'] }],
+}))
 const createConversation = vi.hoisted(() => vi.fn(async () => ({ id: 'conversation-new' })))
 vi.mock('../api/client', () => ({ createAgentConversation: createConversation }))
 
@@ -25,7 +29,7 @@ const props = {
 
 describe('AgentPanel', () => {
   afterEach(cleanup)
-  beforeEach(() => { state.provider = { provider: 'test', model: 'fake', apiKey: 'key' }; state.controller = controller(null) })
+  beforeEach(() => { vi.clearAllMocks(); state.provider = { provider: 'test', model: 'fake', apiKey: 'key' }; state.controller = controller(null) })
 
   it('shows prompt, scope, shortcuts, and run command while idle', () => {
     render(<AgentPanel {...props} />)
@@ -111,6 +115,38 @@ describe('AgentPanel', () => {
     expect(screen.getByRole('button', { name: '运行剧情体检' })).toBeTruthy()
     expect(screen.getByRole('button', { name: '发送给 Agent' })).toBeTruthy()
     expect(screen.getByRole('button', { name: '前往模型设置' })).toBeTruthy()
+    expect(screen.getByText('本地创作模式')).toBeTruthy()
+  })
+
+  it('toggles the local health report closed when the health command is used again', () => {
+    state.controller = controller(null)
+    render(<AgentPanel {...props} />)
+
+    fireEvent.click(screen.getByRole('button', { name: '运行剧情体检' }))
+    expect(screen.getByRole('button', { name: '收起剧情体检' })).toBeTruthy()
+    fireEvent.click(screen.getByRole('button', { name: '收起剧情体检' }))
+
+    expect(screen.queryByText(/规则体检/)).toBeNull()
+  })
+
+  it('runs the selected-scene continuation shortcut instead of only filling the composer', async () => {
+    const start = vi.fn(async () => undefined)
+    state.controller = { ...controller(null), start }
+    render(<AgentPanel {...props} compact selectedSceneId="scene-1" graph={{
+      nodes: [{ id: 'line-1', type: 'dialogue', position: { x: 0, y: 0 }, data: { sceneGroupId: 'scene-1', role: '雪', text: '别走。' } }], edges: [],
+    }} />)
+
+    fireEvent.click(screen.getByRole('button', { name: '续写已选场景' }))
+
+    await waitFor(() => expect(start).toHaveBeenCalledWith(expect.objectContaining({ scope: 'scene', targetId: 'scene-1' })))
+  })
+
+  it('runs a conversation draft task immediately when the workspace requests it', async () => {
+    const start = vi.fn(async () => undefined)
+    state.controller = { ...controller(null), start }
+    render(<AgentPanel {...props} taskRequest={{ id: 1, prompt: '根据当前对话中最近一份续写草稿，创建可编辑的工作台场景。', scope: 'chapter', autoRun: true }} />)
+
+    await waitFor(() => expect(start).toHaveBeenCalledWith(expect.objectContaining({ scope: 'chapter', prompt: expect.stringContaining('最近一份续写草稿') })))
   })
 
   it('reuses and reports the full-screen conversation id', async () => {
@@ -124,6 +160,20 @@ describe('AgentPanel', () => {
     expect(state.controller.start).toHaveBeenCalledWith(expect.objectContaining({ conversationId: 'conversation-existing' }))
     expect(createConversation).not.toHaveBeenCalled()
     expect(onConversationChange).toHaveBeenCalledWith('conversation-existing')
+  })
+
+  it('keeps the selected material strategy out of the visible user message', async () => {
+    const start = vi.fn(async () => undefined)
+    state.controller = { ...controller(null), start }
+    render(<AgentPanel {...props} />)
+
+    fireEvent.change(screen.getByLabelText('素材策略'), { target: { value: 'prompts' } })
+    fireEvent.change(screen.getByLabelText('创作任务'), { target: { value: '为这一段生成可运行场景' } })
+    fireEvent.click(screen.getByRole('button', { name: '发送给 Agent' }))
+
+    await waitFor(() => expect(start).toHaveBeenCalledWith(expect.objectContaining({
+      prompt: '为这一段生成可运行场景', materialMode: 'prompts',
+    })))
   })
 
   it('fills a project-aware starter without submitting it immediately', () => {

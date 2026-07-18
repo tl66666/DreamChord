@@ -54,6 +54,12 @@ const SINGLE_ASSET_TOOLS = new Set<AgentToolName>([
   'prepare_cg_asset',
   'prepare_background_asset',
 ])
+const PLAYABLE_SCENE_REQUEST = /(?:根据|利用|使用)?.*(?:素材库|素材)?.*(?:创建|新建|搭建|生成|写一段).*(?:可运行|可播放|剧情场景|场景|剧情)/i
+
+function creativeTaskInstruction(prompt: string): string {
+  if (!PLAYABLE_SCENE_REQUEST.test(prompt)) return ''
+  return '\n\n这是“素材驱动的可播放场景”任务。必须先调用 list_project_assets，并根据需要读取角色或章节；只能引用工具返回的素材 URL、角色 ID 和设定。随后必须通过 create_story_patch 组织背景、角色登场、至少一段可播放文本及连线，再调用 validate_story_patch。最终只提交可审阅草案，绝不能声称已经写入章节。'
+}
 
 function normalizeToolInput(tool: AgentToolName, value: unknown): unknown {
   if (!SINGLE_ASSET_TOOLS.has(tool) || !value || typeof value !== 'object' || Array.isArray(value)) return value
@@ -73,7 +79,7 @@ function toolInputHint(tool: AgentToolName): string {
 
 function readableFallback(text: string): string | null {
   const trimmed = text.trim()
-  if (!trimmed || trimmed.startsWith('{') || trimmed.startsWith('[')) return null
+  if (!trimmed || trimmed.startsWith('{') || trimmed.startsWith('[') || /^```(?:json)?\b/i.test(trimmed)) return null
   return trimmed.slice(0, 10_000)
 }
 
@@ -152,7 +158,7 @@ export async function executeCreativeAgent(input: {
 }): Promise<AgentExecutionResult> {
   const messages: LLMMessage[] = [
     { role: 'system', content: SYSTEM_PROMPT },
-    { role: 'user', content: `${input.prompt}\n\n已提供上下文：\n${JSON.stringify(input.initialContext)}` },
+    { role: 'user', content: `${input.prompt}${creativeTaskInstruction(input.prompt)}\n\n已提供上下文：\n${JSON.stringify(input.initialContext)}` },
   ]
   let toolSteps = 0
   let formatRepairs = 0

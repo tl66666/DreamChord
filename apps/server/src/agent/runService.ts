@@ -22,7 +22,7 @@ export interface AgentRunDto {
 }
 export interface ConversationDto { id: string; title: string; scope: string; createdAt: string; updatedAt: string }
 export interface CreateAgentRunInput {
-  projectId: string; conversationId: string; chapterId?: string; prompt: string; scope: AgentScope; targetId?: string; providerConfig: ProviderSecretConfig
+  projectId: string; conversationId: string; chapterId?: string; prompt: string; scope: AgentScope; targetId?: string; materialMode?: 'reuse' | 'prompts'; providerConfig: ProviderSecretConfig
 }
 export interface AgentRunService {
   listConversations(projectId: string, userId: string): Promise<ConversationDto[]>
@@ -36,7 +36,7 @@ export interface AgentRunService {
   undoRun(runId: string, userId: string): Promise<{ chapterId: string; version: number; graph: StoryGraph }>
 }
 
-interface AgentQueueJob { id: string; secretConfig?: ProviderSecretConfig }
+interface AgentQueueJob { id: string; secretConfig?: ProviderSecretConfig; materialMode?: 'reuse' | 'prompts' }
 interface AgentRunDependencies {
   loadSnapshot: (projectId: string) => Promise<Awaited<ReturnType<typeof loadAgentProjectSnapshot>>>
   createProvider: (provider: string, config: ProviderSecretConfig) => { chat: (messages: LLMMessage[], options?: LLMOptions) => Promise<string> }
@@ -52,6 +52,7 @@ export class RunAbortRegistry {
 
 function parseJson(raw: string, fallback: unknown): unknown { try { return JSON.parse(raw) } catch { return fallback } }
 function iso(value: Date): string { return value.toISOString() }
+function hasSelectedDraft(prompt: string): boolean { return /【已选草稿】\s*[\s\S]*?\S[\s\S]*?【草稿结束】/.test(prompt) }
 
 export class PrismaAgentRunService implements AgentRunService {
   private readonly queue: InProcessAgentQueue<AgentQueueJob>
@@ -90,7 +91,7 @@ export class PrismaAgentRunService implements AgentRunService {
       chapterId: input.chapterId, conversationId: input.conversationId,
     } })
     await this.client.agentMessage.create({ data: { conversationId: input.conversationId, role: 'user', content: input.prompt } })
-    this.queue.enqueue({ id: run.id, secretConfig: input.providerConfig })
+    this.queue.enqueue({ id: run.id, secretConfig: input.providerConfig, materialMode: input.materialMode })
     return this.getRun(run.id, userId)
   }
 
@@ -111,7 +112,7 @@ export class PrismaAgentRunService implements AgentRunService {
   async retryRun(runId: string, userId: string, providerConfig: ProviderSecretConfig): Promise<AgentRunDto> {
     const old = await this.client.agentRun.findFirst({ where: { id: runId, userId } })
     if (!old) throw new Error('Agent 任务不存在')
-    return this.createRun({ projectId: old.projectId, conversationId: old.conversationId, chapterId: old.chapterId ?? undefined, prompt: old.prompt, scope: old.scope as AgentScope, targetId: old.targetId ?? undefined, providerConfig }, userId)
+    return this.createRun({ projectId: old.projectId, conversationId: old.conversationId, chapterId: old.chapterId ?? undefined, prompt: old.prompt, scope: old.scope as AgentScope, targetId: old.targetId ?? undefined, materialMode: 'reuse', providerConfig }, userId)
   }
   async applyRun(runId: string, userId: string) {
     const run = await this.client.agentRun.findFirst({ where: { id: runId, userId }, include: { patch: true } })
@@ -196,10 +197,15 @@ export class PrismaAgentRunService implements AgentRunService {
       inspectAsset: (assetId) => new PrismaAssetService(this.client).inspect(assetId, run.userId),
       prepareAsset: (assetId, purpose, recipe) => new PrismaAssetService(this.client).process(assetId, run.userId, { purpose, ...recipe }),
     })
+    const selectedDraftRequested = hasSelectedDraft(run.prompt)
+    const confirmationRequested = Boolean(run.chapterId) && !selectedDraftRequested && /确认.*(?:加入|写入|应用).*(?:工作台|章节|场景)|(?:加入|写入).*(?:工作台|章节|场景)/.test(run.prompt)
+    const actionRequested = selectedDraftRequested || confirmationRequested || shouldUseActionAgent(run.prompt, Boolean(run.chapterId))
+    const actionPrompt = confirmationRequested ? '续写当前章节，并生成可审批的可运行场景。' : run.prompt
+    const materialPromptsRequested = job.materialMode === 'prompts' && actionRequested
     let result
-    if (job.secretConfig.provider === 'local' || isImmediateLocalPrompt(run.prompt)) {
+    if (selectedDraftRequested || job.secretConfig.provider === 'local' || isImmediateLocalPrompt(run.prompt) || confirmationRequested || materialPromptsRequested) {
       result = await runLocalAssistant({
-        prompt: run.prompt,
+        prompt: materialPromptsRequested ? '为当前任务生成背景、角色立绘和 CG 素材提示词。' : actionPrompt,
         snapshot,
         chapterId: run.chapterId ?? undefined,
         scope: run.scope as AgentScope,
@@ -208,12 +214,38 @@ export class PrismaAgentRunService implements AgentRunService {
       })
     } else {
       const provider = this.dependencies.createProvider(job.secretConfig.provider, job.secretConfig)
-      const execute = shouldUseActionAgent(run.prompt, Boolean(run.chapterId)) ? executeCreativeAgent : executeConversationalAgent
-      result = await execute({
-        prompt: run.prompt, initialContext, tools: toUniformAgentToolRegistry(rawTools),
-        chat: (messages) => provider.chat(messages, { temperature: 0.7, maxTokens: 4096, signal }),
-        onEvent: (event) => this.appendTimeline(run.id, event),
+      const execute = actionRequested ? executeCreativeAgent : executeConversationalAgent
+      try {
+        result = await execute({
+          prompt: actionPrompt, initialContext, tools: toUniformAgentToolRegistry(rawTools),
+          chat: (messages) => provider.chat(messages, { temperature: 0.7, maxTokens: 4096, signal }),
+          onEvent: (event) => this.appendTimeline(run.id, event),
+        })
+      } catch (error) {
+        if (!actionRequested) throw error
+        await this.appendTimeline(run.id, { type: 'response_fallback' })
+        result = await runLocalAssistant({
+          prompt: actionPrompt, snapshot, chapterId: run.chapterId ?? undefined,
+          scope: run.scope as AgentScope, targetId: run.targetId ?? undefined,
+          contextSources: initialContext.filter((source) => source.kind === 'conversation-history' || source.kind === 'conversation-summary' || source.kind === 'memory'),
+        })
+      }
+    }
+    if (actionRequested && run.chapterId && !result.patch) {
+      const prose = result.summary
+      await this.appendTimeline(run.id, { type: 'response_fallback' })
+      const fallback = await runLocalAssistant({
+        prompt: '续写当前章节，并生成可审批的可运行场景。', snapshot, chapterId: run.chapterId,
+        scope: run.scope as AgentScope, targetId: run.targetId ?? undefined,
+        continuationText: prose,
+        contextSources: initialContext.filter((source) => source.kind === 'conversation-history' || source.kind === 'conversation-summary' || source.kind === 'memory'),
       })
+      if (fallback.patch) {
+        result = {
+          ...fallback,
+          summary: `${fallback.summary}\n\n以下保留模型生成的续写正文，应用变更后可继续在工作台逐卡编辑：\n\n${prose}`,
+        }
+      }
     }
     if (result.memorySuggestions.length > 0) {
       await this.client.agentMemory.createMany({ data: result.memorySuggestions.map((memory) => ({

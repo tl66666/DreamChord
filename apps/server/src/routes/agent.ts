@@ -27,9 +27,10 @@ const conversationUpdateSchema = z.object({
   isPinned: z.boolean().optional(),
 }).strict().refine((value) => Object.keys(value).length > 0, { message: '至少提供一个修改字段' })
 const messageQuerySchema = z.object({ cursor: z.string().min(1).optional(), limit: z.coerce.number().int().min(1).max(100).default(30) }).strict()
+const messageUpdateSchema = z.object({ content: z.string().trim().min(1).max(20_000) }).strict()
 const runSchema = z.object({
   conversationId: z.string().min(1), chapterId: z.string().optional(), prompt: z.string().min(1).max(4_000),
-  scope: scopeSchema, targetId: z.string().max(200).optional(), providerConfig: providerConfigSchema,
+  scope: scopeSchema, targetId: z.string().max(200).optional(), materialMode: z.enum(['reuse', 'prompts']).optional(), providerConfig: providerConfigSchema,
 }).strict().superRefine((value, context) => {
   if (value.scope !== 'project' && !value.chapterId) {
     context.addIssue({ code: z.ZodIssueCode.custom, path: ['chapterId'], message: '请选择章节后再使用剧情范围' })
@@ -73,6 +74,10 @@ export function createAgentRunRouter(service: AgentRunService = prismaAgentRunSe
     const query = messageQuerySchema.safeParse(req.query)
     if (!query.success) { res.status(400).json({ error: query.error.issues[0]?.message || '查询参数无效' }); return }
     try { res.json(await conversations.messages(req.params.conversationId, req.userId!, query.data.cursor, query.data.limit)) } catch (error) { handleError(res, error) }
+  })
+  router.patch('/conversations/:conversationId/messages/:messageId', async (req: AuthRequest, res) => {
+    const body = parseBody(messageUpdateSchema, req, res); if (!body) return
+    try { res.json(await conversations.updateMessage(req.params.conversationId, req.params.messageId, req.userId!, body.content)) } catch (error) { handleError(res, error) }
   })
   router.patch('/conversations/:conversationId', async (req: AuthRequest, res) => {
     const body = parseBody(conversationUpdateSchema, req, res); if (!body) return

@@ -17,7 +17,7 @@ export interface AgentConversationDto {
 export interface AgentMessageDto { id: string; role: string; content: string; metadata: unknown; createdAt: string }
 export interface AgentMessagePageDto { items: AgentMessageDto[]; nextCursor: string | null }
 export interface StartAgentRunInput {
-  projectId: string; conversationId: string; chapterId?: string; prompt: string; scope: AgentScope; targetId?: string; providerConfig: AgentProviderConfig
+  projectId: string; conversationId: string; chapterId?: string; prompt: string; scope: AgentScope; targetId?: string; materialMode?: 'reuse' | 'prompts'; providerConfig: AgentProviderConfig
 }
 export interface AppliedPatchDto { chapterId: string; version: number; graph: StoryGraph }
 export type AgentMemoryKind = 'canon' | 'character' | 'preference' | 'plot' | 'decision' | 'artifact'

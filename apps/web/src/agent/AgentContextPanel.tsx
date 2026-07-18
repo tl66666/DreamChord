@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { BookOpen, Boxes, Brain, FileClock, Wrench } from 'lucide-react'
+import { BookOpen, Boxes, Brain } from 'lucide-react'
 import MemoryCenter from './MemoryCenter'
 
 export default function AgentContextPanel({ projectId, conversationId, projectTitle, chapterTitle, chapterVersion, nodeCount, edgeCount }: {
@@ -15,13 +15,13 @@ export default function AgentContextPanel({ projectId, conversationId, projectTi
   return (
     <aside aria-label="Agent 上下文" className="flex min-h-0 flex-col border-l border-slate-200 bg-slate-50/80">
       <header className="border-b border-slate-200 px-4 py-4">
-        <p className="text-[10px] font-semibold uppercase text-cyan-700">Active context</p>
+        <p className="text-[10px] font-semibold text-cyan-700">创作参考</p>
         <h2 className="mt-1 truncate text-sm font-semibold text-slate-950">{projectTitle}</h2>
         <p className="mt-1 truncate text-xs text-slate-500">{chapterTitle ? `${chapterTitle} · 版本 ${chapterVersion}` : '项目对话 · 未绑定章节'}</p>
       </header>
       <div className="grid grid-cols-2 border-b border-slate-200 bg-white p-1">
-        <button type="button" onClick={() => setView('context')} className={`flex h-8 items-center justify-center gap-1.5 text-xs ${view === 'context' ? 'bg-slate-900 text-white' : 'text-slate-500'}`}><BookOpen className="h-3.5 w-3.5" />上下文</button>
-        <button type="button" onClick={() => setView('memory')} className={`flex h-8 items-center justify-center gap-1.5 text-xs ${view === 'memory' ? 'bg-slate-900 text-white' : 'text-slate-500'}`}><Brain className="h-3.5 w-3.5" />记忆</button>
+        <button type="button" onClick={() => setView('context')} className={`flex h-8 items-center justify-center gap-1.5 text-xs ${view === 'context' ? 'bg-slate-900 text-white' : 'text-slate-500'}`}><BookOpen className="h-3.5 w-3.5" />故事资料</button>
+        <button type="button" onClick={() => setView('memory')} className={`flex h-8 items-center justify-center gap-1.5 text-xs ${view === 'memory' ? 'bg-slate-900 text-white' : 'text-slate-500'}`}><Brain className="h-3.5 w-3.5" />长期设定</button>
       </div>
       {view === 'memory' ? <MemoryCenter projectId={projectId} conversationId={conversationId} /> : <div className="min-h-0 flex-1 overflow-y-auto p-4">
         <section>
@@ -32,18 +32,11 @@ export default function AgentContextPanel({ projectId, conversationId, projectTi
           </dl>
         </section>
         <section className="mt-6 border-t border-slate-200 pt-5">
-          <h3 className="flex items-center gap-2 text-xs font-semibold text-slate-800"><BookOpen className="h-3.5 w-3.5 text-cyan-700" />上下文优先级</h3>
-          <ol className="mt-3 space-y-2 text-xs leading-5 text-slate-600">
-            <li>1. 当前任务与选中范围</li><li>2. 故事圣经与固定约束</li><li>3. 当前对话最近消息</li><li>4. 相关项目记忆与产物</li>
-          </ol>
-        </section>
-        <section className="mt-6 border-t border-slate-200 pt-5">
-          <h3 className="flex items-center gap-2 text-xs font-semibold text-slate-800"><Wrench className="h-3.5 w-3.5 text-cyan-700" />工具策略</h3>
-          <p className="mt-2 text-xs leading-5 text-slate-600">最多 8 步。读取和体检可直接执行；剧情与素材变更必须生成产物并等待确认。</p>
-        </section>
-        <section className="mt-6 border-t border-slate-200 pt-5">
-          <h3 className="flex items-center gap-2 text-xs font-semibold text-slate-800"><FileClock className="h-3.5 w-3.5 text-cyan-700" />运行记录</h3>
-          <p className="mt-2 text-xs leading-5 text-slate-500">工具来源和变更产物会随消息显示。不会展示或保存隐藏推理。</p>
+          <h3 className="flex items-center gap-2 text-xs font-semibold text-slate-800"><BookOpen className="h-3.5 w-3.5 text-cyan-700" />Agent 会参考</h3>
+          <ul className="mt-3 space-y-2 text-xs leading-5 text-slate-600">
+            <li>当前章节、已选镜头与故事圣经</li><li>这段对话中的草稿和你的修改</li><li>你确认保存的角色、剧情和偏好设定</li>
+          </ul>
+          <p className="mt-4 text-[11px] leading-5 text-slate-500">涉及剧情、素材或工作台的修改，都会先生成草案，确认后才会写入。</p>
         </section>
       </div>}
     </aside>

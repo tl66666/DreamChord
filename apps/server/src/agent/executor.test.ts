@@ -54,6 +54,16 @@ describe('creative agent executor', () => {
     expect(chat).toHaveBeenCalledTimes(2)
   })
 
+  it('requires material inspection before a model creates a playable scene', async () => {
+    const chat = vi.fn(async (_messages: unknown[]) => JSON.stringify({ type: 'final', summary: '已生成草案', plan: [], patch: { operations: [] } }))
+
+    await executeCreativeAgent({ prompt: '根据素材库创建一个可运行的剧情场景', initialContext: [], chat, tools: registry() })
+
+    const initialMessages = chat.mock.calls[0]?.[0] as Array<{ content?: string }> | undefined
+    expect(initialMessages?.at(-1)?.content).toContain('list_project_assets')
+    expect(initialMessages?.at(-1)?.content).toContain('create_story_patch')
+  })
+
   it('stops before a ninth tool call', async () => {
     const chat = vi.fn(async () => JSON.stringify({ type: 'tool_call', tool: 'analyze_story_graph', input: {} }))
 
@@ -131,6 +141,13 @@ describe('creative agent executor', () => {
     await expect(executeCreativeAgent({ prompt: '你好', initialContext: [], chat: emptyChat, tools: registry() }))
       .rejects.toThrow('模型响应格式不正确')
     await expect(executeCreativeAgent({ prompt: '你好', initialContext: [], chat: brokenJsonChat, tools: registry() }))
+      .rejects.toThrow('模型响应格式不正确')
+  })
+
+  it('does not preserve malformed fenced JSON as a creative draft', async () => {
+    const chat = vi.fn().mockResolvedValue('```json\n{"suggestions":["这不是剧情正文"]}\n```')
+
+    await expect(executeCreativeAgent({ prompt: '续写当前章节', initialContext: [], chat, tools: registry() }))
       .rejects.toThrow('模型响应格式不正确')
   })
 })

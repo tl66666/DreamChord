@@ -10,6 +10,7 @@
 | 理解项目价值和完成度 | [项目概览](PROJECT_OVERVIEW.md) | 5 分钟 |
 | 完成一段可玩的故事 | [创作者工作流](CREATOR_WORKFLOW.md) | 15 分钟 |
 | 理解系统如何工作 | [系统架构](ARCHITECTURE.md) | 15 分钟 |
+| 接手本轮 Agent 与文档更新 | [当前迭代交接](CURRENT_HANDOFF.md) | 12 分钟 |
 | 接手维护或开发 | [贡献指南](../CONTRIBUTING.md) | 10 分钟 |
 
 ## 使用文档
@@ -30,6 +31,7 @@
 - [术语表](GLOSSARY.md)：章节、场景、镜头卡、记忆、补丁等词的统一定义。
 - [场景编辑器设计](scene-editor-design.md)：场景与镜头卡编辑模型的详细设计。
 - [AI 与架构交接](AI_HANDOFF.md)：给后续维护者和编码 Agent 的实现级说明。
+- [当前迭代交接](CURRENT_HANDOFF.md)：本轮无 Key 降级、结构化剧本导入、启动器和展示材料的变更、边界与后续方向。
 - [交互架构图](dreamchord-architecture/dreamchord-architecture.html)：可视化系统关系。
 
 ## 维护与版本文档

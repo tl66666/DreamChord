@@ -97,6 +97,14 @@ export function saveAIConfigs(configs: AIProviderConfig[]) {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(configs))
 }
 
+export function setActiveModel(provider: string, model: string): AIProviderConfig | null {
+  const nextModel = model.trim()
+  if (!nextModel) return getDefaultProvider()
+  const configs = loadAIConfigs().map((config) => config.provider === provider ? { ...config, model: nextModel } : config)
+  saveAIConfigs(configs)
+  return configs.find((config) => config.enabled && config.apiKey) ?? null
+}
+
 export function getDefaultProvider(): AIProviderConfig | null {
   const configs = loadAIConfigs()
   return configs.find((config) => config.enabled && config.apiKey) || null

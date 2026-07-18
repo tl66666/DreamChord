@@ -30,6 +30,19 @@ describe('story patches', () => {
     expect(result.graph.edges.some((edge) => edge.source === 'start' && edge.target === 'generated-node')).toBe(true)
   })
 
+  it('resolves an edge to a temporary node even when the edge appears before the node operation', () => {
+    let sequence = 0
+    const result = applyStoryPatch(baseGraph, {
+      operations: [
+        { kind: 'addEdge', sourceRef: 'start', targetRef: 'new-scene' },
+        { kind: 'addNode', tempId: 'new-scene', node: { type: 'background', data: { backgroundId: 'bg-sakura' } } },
+      ],
+    }, () => `generated-${sequence++}`)
+
+    expect(result.validation).toEqual({ valid: true, errors: [] })
+    expect(result.graph.edges).toContainEqual(expect.objectContaining({ source: 'start', target: 'generated-0' }))
+  })
+
   it('rejects a choice edge whose handle exceeds the choice count', () => {
     const result = validateStoryGraph({
       nodes: [{ id: 'choice', type: 'choice', position: { x: 0, y: 0 }, data: { choices: ['A'] } }],

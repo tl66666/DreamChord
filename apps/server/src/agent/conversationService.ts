@@ -33,6 +33,7 @@ export interface ConversationService {
   update(id: string, userId: string, patch: { title?: string; scope?: AgentScope; chapterId?: string | null; isPinned?: boolean }): Promise<ConversationDto>
   remove(id: string, userId: string): Promise<void>
   messages(id: string, userId: string, cursor?: string, limit?: number): Promise<MessagePageDto>
+  updateMessage(conversationId: string, messageId: string, userId: string, content: string): Promise<AgentMessageDto>
 }
 
 function iso(value: Date): string { return value.toISOString() }
@@ -119,6 +120,20 @@ export class PrismaConversationService implements ConversationService {
       items: page.reverse().map((row) => ({ id: row.id, role: row.role, content: row.content, metadata: parseMetadata(row.metadata), createdAt: iso(row.createdAt) })),
       nextCursor: hasMore ? page[0]?.id ?? null : null,
     }
+  }
+
+  async updateMessage(conversationId: string, messageId: string, userId: string, content: string): Promise<AgentMessageDto> {
+    await this.requireConversation(conversationId, userId)
+    const normalized = content.trim()
+    if (!normalized) throw new Error('草稿正文不能为空')
+    if (normalized.length > 20_000) throw new Error('草稿正文不能超过 20000 字符')
+    const message = await this.client.agentMessage.findFirst({ where: { id: messageId, conversationId } })
+    if (!message) throw new Error('草稿不存在')
+    const [updated] = await this.client.$transaction([
+      this.client.agentMessage.update({ where: { id: messageId }, data: { content: normalized } }),
+      this.client.agentConversation.update({ where: { id: conversationId }, data: { summary: '', summaryThroughMessageId: null } }),
+    ])
+    return { id: updated.id, role: updated.role, content: updated.content, metadata: parseMetadata(updated.metadata), createdAt: iso(updated.createdAt) }
   }
 
   private async requireProjectOwner(projectId: string, userId: string): Promise<void> {

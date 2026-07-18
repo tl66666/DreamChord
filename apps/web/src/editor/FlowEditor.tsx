@@ -16,7 +16,7 @@ import {
   Play, Save, Sparkles, Image, Settings, Eye, EyeOff, ArrowLeft,
   LayoutGrid, GitBranch, Copy, Check, ListChecks, Plus, Trash2, Undo2, Redo2,
 } from 'lucide-react'
-import AgentPanel from '../agent/AgentPanel'
+import AgentWorkspace from '../agent/AgentWorkspace'
 import type { AgentScope, AppliedPatchDto } from '../agent/agentTypes'
 import type { StoryNodeType } from '@dreamchord/story-domain'
 import AssetPanel from './AssetPanel'
@@ -164,7 +164,7 @@ export default function FlowEditor() {
   const handleRequestAI = (mode: 'polish' | 'continue' | 'choices' | 'branchReplies' | 'storyGraph') => {
     const tasks: Record<typeof mode, { prompt: string; scope: AgentScope }> = {
       polish: { prompt: '润色当前镜头，保持角色语言习惯和原意。', scope: 'card' },
-      continue: { prompt: '承接当前场景续写一组有推进作用的镜头。', scope: 'scene' },
+      continue: { prompt: '根据当前章节、故事设定和素材库，创建一个可运行的续写场景，并先生成可审批补丁。', scope: 'chapter' },
       choices: { prompt: '为当前冲突生成三个会导向不同后果的选择，并连接合理后续。', scope: 'scene' },
       branchReplies: { prompt: '为当前选项的每条分支补充符合人物动机的回应。', scope: 'scene' },
       storyGraph: { prompt: '根据当前章节与故事圣经，生成一段结构完整且可播放的节点草案。', scope: 'chapter' },
@@ -489,16 +489,6 @@ export default function FlowEditor() {
     autoSaveTimer.current = setTimeout(() => { void saveCoordinator.flush() }, 3000)
   }
 
-  const getAgentGraphMutationBlockedReason = () => {
-    switch (saveCoordinator.state) {
-      case 'dirty': return '当前编辑有未保存修改。请先保存，保存后重新生成 Agent 草稿。'
-      case 'saving': return '正在保存当前编辑。保存完成后请重新生成 Agent 草稿。'
-      case 'conflict': return '当前编辑存在版本冲突。请重新打开项目并处理冲突后再使用 Agent 草稿。'
-      case 'error': return '当前编辑保存失败。请先重试保存，成功后重新生成 Agent 草稿。'
-      default: return undefined
-    }
-  }
-
   const handlePreview = async () => {
     if (projectId && projectId !== 'new') {
       const saved = await handleSave()
@@ -809,40 +799,44 @@ export default function FlowEditor() {
                 onClose={() => setShowAssets(false)}
                 onProjectCharacterAccepted={handleProjectCharacterAccepted}
               />
-            ) : showAI ? (
-              <AgentPanel
-                projectId={projectId || ''}
-                chapterId={store.chapterId || ''}
-                chapterVersion={store.chapterVersion}
-                selectedNodeId={store.selectedNodeId}
-                selectedSceneId={selectedSceneId}
-                taskRequest={agentTask}
-                graph={{
-                  nodes: nodes.map((node) => ({ id: node.id, type: (node.type || 'dialogue') as StoryNodeType, position: node.position, data: { ...node.data } })),
-                  edges: edges.map((edge) => ({ id: edge.id, source: edge.source, target: edge.target, label: typeof edge.label === 'string' ? edge.label : undefined, sourceHandle: edge.sourceHandle || undefined, animated: edge.animated ?? true })),
-                }}
-                getGraphMutationBlockedReason={getAgentGraphMutationBlockedReason}
-                onApplyGraph={(result: AppliedPatchDto) => {
-                  store.commitGraph(result.graph.nodes, result.graph.edges)
-                  store.setChapterVersion(result.version)
-                  store.setLastSavedAt(new Date())
-                  saveCoordinator.reset()
-                  toast.success('章节图已更新，可以继续编辑。')
-                }}
-                onSelectNode={(nodeId) => {
-                  store.setSelectedNodeId(nodeId)
-                  const node = nodes.find((item) => item.id === nodeId)
-                  const sceneId = node && typeof node.data.sceneGroupId === 'string' ? node.data.sceneGroupId : null
-                  if (sceneId) handleSelectScene(sceneId)
-                }}
-                onClose={() => setShowAI(false)}
-              />
             ) : (
               <MiniPreview card={selectedCard} onFullScreen={handlePreview} />
             )}
           </div>
         </div>
       )}
+
+      {showAI && <div className="fixed inset-0 z-50 flex bg-slate-950/30 p-3 backdrop-blur-sm lg:p-6">
+        <section className="mx-auto flex h-full w-full max-w-[1500px] overflow-hidden rounded-lg border border-slate-200 bg-white shadow-2xl">
+          <AgentWorkspace
+            projectId={projectId || ''} projectTitle={project?.title || '当前项目'}
+            chapterId={store.chapterId || ''} chapterTitle={activeChapter?.title || '当前章节'} chapterVersion={store.chapterVersion}
+            selectedNodeId={store.selectedNodeId} selectedSceneId={selectedSceneId} taskRequest={agentTask}
+            embeddedInEditor onClose={() => setShowAI(false)}
+            graph={{ nodes: nodes.map((node) => ({ id: node.id, type: (node.type || 'dialogue') as StoryNodeType, position: node.position, data: { ...node.data } })), edges: edges.map((edge) => ({ id: edge.id, source: edge.source, target: edge.target, label: typeof edge.label === 'string' ? edge.label : undefined, sourceHandle: edge.sourceHandle || undefined, animated: edge.animated ?? true })) }}
+            initialConversationId="" onConversationChange={() => undefined}
+            onApplyGraph={(result: AppliedPatchDto) => {
+              const previousIds = new Set(nodes.map((node) => node.id))
+              const normalizedNodes = ensureLegacySceneGroups(result.graph.nodes)
+              const addedSceneId = normalizedNodes.find((node) => !previousIds.has(node.id) && typeof node.data.sceneGroupId === 'string')?.data.sceneGroupId
+              store.commitGraph(normalizedNodes, result.graph.edges)
+              store.setChapterVersion(result.version)
+              store.setLastSavedAt(new Date())
+              saveCoordinator.reset()
+              if (typeof addedSceneId === 'string') {
+                setSelectedSceneId(addedSceneId)
+                setSelectedCardId(null)
+                setViewMode('scene')
+                toast.success('续写已写入工作台，并已定位到左侧的新场景。')
+              } else {
+                toast.success('章节图已更新，可以直接预览运行。')
+              }
+              setShowAI(false)
+            }}
+            onSelectNode={(nodeId) => { store.setSelectedNodeId(nodeId); const node = nodes.find((item) => item.id === nodeId); const sceneId = node && typeof node.data.sceneGroupId === 'string' ? node.data.sceneGroupId : null; if (sceneId) handleSelectScene(sceneId) }}
+          />
+        </section>
+      </div>}
 
       {/* === 模态浮层（设置/体检） === */}
       {showSettings && (

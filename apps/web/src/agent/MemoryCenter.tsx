@@ -6,7 +6,7 @@ import type { AgentMemoryDto, AgentMemoryInput, AgentMemoryKind } from './agentT
 
 const kinds: Array<{ value: AgentMemoryKind; label: string }> = [
   { value: 'canon', label: '设定' }, { value: 'character', label: '人物' }, { value: 'plot', label: '剧情' },
-  { value: 'decision', label: '决策' }, { value: 'preference', label: '偏好' }, { value: 'artifact', label: '产物' },
+  { value: 'decision', label: '决策' }, { value: 'preference', label: '偏好' }, { value: 'artifact', label: '变更记录' },
 ]
 const sourceLabels: Record<string, string> = { assistant: 'Agent 建议', user: '用户录入', 'story-bible': '故事圣经', editor: '编辑器' }
 
@@ -28,6 +28,7 @@ export default function MemoryCenter({ projectId, conversationId }: { projectId:
   useEffect(() => { void load() }, [load])
 
   const visible = useMemo(() => items.filter((item) => {
+    if (item.kind === 'artifact') return false
     const matchesKind = kind === 'all' || item.kind === kind
     const needle = query.trim().toLocaleLowerCase()
     return matchesKind && (!needle || `${item.title} ${item.content} ${item.tags.join(' ')}`.toLocaleLowerCase().includes(needle))
@@ -77,7 +78,7 @@ export default function MemoryCenter({ projectId, conversationId }: { projectId:
             <button type="button" aria-label="遗忘记忆" title="遗忘记忆" onClick={() => void forget(item)} className="flex h-7 w-7 items-center justify-center text-slate-500 hover:bg-red-50 hover:text-red-700"><Trash2 className="h-3.5 w-3.5" /></button>
           </div>
         </article>)}
-        {visible.length === 0 && <div className="px-4 py-12 text-center"><Brain className="mx-auto h-6 w-6 text-slate-300" /><p className="mt-2 text-xs text-slate-500">暂无匹配记忆</p></div>}
+        {visible.length === 0 && <div className="px-4 py-12 text-center"><Brain className="mx-auto h-6 w-6 text-slate-300" /><p className="mt-2 text-xs text-slate-500">还没有保存长期设定</p><p className="mt-1 text-[11px] leading-5 text-slate-400">适合保存角色关系、世界观规则和创作偏好。</p></div>}
       </div>
     </section>
   )

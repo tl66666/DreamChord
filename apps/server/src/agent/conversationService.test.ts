@@ -75,4 +75,13 @@ describe('conversation service', () => {
     expect(await client.agentRun.count({ where: { id: run.id } })).toBe(1)
     expect(await client.storyPatch.count({ where: { id: 'conversation-patch' } })).toBe(1)
   })
+
+  it('persists an edited conversation draft for its owner', async () => {
+    const conversation = await service.create('project', 'owner', { title: '草稿编辑', scope: 'chapter', chapterId: 'chapter' })
+    const message = await client.agentMessage.create({ data: { conversationId: conversation.id, role: 'assistant', content: '林晚站在雨里。' } })
+
+    await service.updateMessage(conversation.id, message.id, 'owner', '林晚站在雨里，攥紧了旧车票。')
+
+    expect((await service.messages(conversation.id, 'owner')).items[0]?.content).toBe('林晚站在雨里，攥紧了旧车票。')
+  })
 })

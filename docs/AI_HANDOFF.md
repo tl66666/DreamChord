@@ -1,6 +1,8 @@
 # DreamChord 0.2 Architecture And AI Handoff
 
-Last updated: 2026-07-12
+Last updated: 2026-07-18
+
+For the current iteration, including no-Key behavior, screenplay import, external access boundaries, verification and the next-step list, read [CURRENT_HANDOFF.md](CURRENT_HANDOFF.md) first.
 
 This document describes the implemented system, its safety boundaries, and the correct extension points for future maintainers or coding agents.
 

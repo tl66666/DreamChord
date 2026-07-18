@@ -1,6 +1,6 @@
 import axios from 'axios'
 import { useAuthStore } from '../stores/authStore'
-import type { AgentConversationDto, AgentMemoryDto, AgentMemoryInput, AgentMessagePageDto, AgentProviderConfig, AgentRunDto, AppliedPatchDto, StartAgentRunInput } from '../agent/agentTypes'
+import type { AgentConversationDto, AgentMemoryDto, AgentMemoryInput, AgentMessageDto, AgentMessagePageDto, AgentProviderConfig, AgentRunDto, AppliedPatchDto, StartAgentRunInput } from '../agent/agentTypes'
 
 export const api = axios.create({
   baseURL: '/api',
@@ -451,6 +451,11 @@ export async function deleteAgentConversation(conversationId: string): Promise<v
 
 export async function getAgentMessages(conversationId: string, cursor?: string, limit = 30): Promise<AgentMessagePageDto> {
   const { data } = await api.get(`/agent/conversations/${conversationId}/messages`, { params: { cursor, limit } })
+  return data
+}
+
+export async function updateAgentMessage(conversationId: string, messageId: string, content: string): Promise<AgentMessageDto> {
+  const { data } = await api.patch(`/agent/conversations/${conversationId}/messages/${messageId}`, { content })
   return data
 }
 

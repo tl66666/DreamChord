@@ -162,7 +162,7 @@ function Wait-HttpReady([string]$Url, [string]$Name, [int]$TimeoutSeconds = 90) 
 
 function Start-ServiceWindow([string]$Title, [string]$Command) {
   $script = "title $Title && cd /d `"$ProjectRoot`" && $Command"
-  Start-Process -FilePath 'cmd.exe' -ArgumentList '/k', $script -WorkingDirectory $ProjectRoot | Out-Null
+  Start-Process -FilePath 'cmd.exe' -ArgumentList '/c', $script -WorkingDirectory $ProjectRoot -WindowStyle Hidden | Out-Null
 }
 
 try {
@@ -181,14 +181,17 @@ try {
       throw '检测到正在运行的 DreamChord。安装检查需要更新 Prisma Client，请先关闭旧的 DreamChord 后端和前端窗口，再重新运行。'
     }
     if (-not $RunningWebUrl) {
-      throw "DreamChord 后端正在端口 $RunningServerPort 运行，但没有找到可复用的前端。请先关闭旧的 DreamChord 服务窗口，再重新运行。"
+      Write-Warn "检测到未配对的 DreamChord 后端（端口 $RunningServerPort），将保留它并为本次启动选择其他可用端口"
+      $RunningServerPort = $null
     }
 
-    Write-Host "`n[OK] DreamChord 已在运行，无需重复安装或生成 Prisma Client。" -ForegroundColor Green
-    Write-Host "  前端: $RunningWebUrl"
-    Write-Host "  后端: http://127.0.0.1:$RunningServerPort"
-    if (-not $NoBrowser) { Start-Process $RunningWebUrl }
-    exit 0
+    if ($RunningServerPort) {
+      Write-Host "`n[OK] DreamChord 已在运行，无需重复安装或生成 Prisma Client。" -ForegroundColor Green
+      Write-Host "  前端: $RunningWebUrl"
+      Write-Host "  后端: http://127.0.0.1:$RunningServerPort"
+      if (-not $NoBrowser) { Start-Process $RunningWebUrl }
+      exit 0
+    }
   }
 
   Assert-Node20
