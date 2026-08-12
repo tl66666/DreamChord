@@ -23,6 +23,7 @@ jobs:
           node-version: 20
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @dreamchord/story-domain build
       - run: pnpm --filter dreamchord-server prisma generate
       - run: pnpm --filter dreamchord-server prisma migrate deploy
       - run: pnpm --filter dreamchord-server prisma db seed
