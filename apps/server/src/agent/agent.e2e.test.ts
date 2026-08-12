@@ -238,6 +238,29 @@ describe('creative agent end-to-end workflow', () => {
     })
   })
 
+  it('creates a material plan from the original creative request without mutating the workbench', async () => {
+    const createProvider = vi.fn(() => { throw new Error('material planning must not call the provider') })
+    const service = new PrismaAgentRunService(client, {
+      loadSnapshot: (projectId) => loadAgentProjectSnapshot(projectId, client),
+      createProvider,
+    })
+    const conversation = await service.createConversation('project', 'owner', { title: '素材规划', scope: 'chapter' })
+    const queued = await service.createRun({
+      projectId: 'project', conversationId: conversation.id, chapterId: 'chapter-one', scope: 'chapter',
+      prompt: '续写雨夜港口的重逢，让雪等待林宇出现，并准备一张关键 CG。',
+      materialMode: 'prompts',
+      providerConfig: { provider: 'glm', model: 'glm-4.7-flash', apiKey: 'memory-only' },
+    }, 'owner')
+    const completed = await waitForCompletion(service, queued.id)
+    const message = await client.agentMessage.findFirstOrThrow({ where: { conversationId: conversation.id, role: 'assistant' } })
+
+    expect(completed.patch).toBeNull()
+    expect(createProvider).not.toHaveBeenCalled()
+    expect(message.content).toContain('雨夜港口')
+    expect(message.content).toContain('缺少素材')
+    expect(message.content).toContain('林宇')
+  })
+
   it('answers an immediate greeting locally even when an external provider is configured', async () => {
     const createProvider = vi.fn(() => { throw new Error('greetings must not call the external provider') })
     const service = new PrismaAgentRunService(client, {

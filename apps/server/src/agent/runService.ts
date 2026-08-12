@@ -10,7 +10,8 @@ import { createAgentToolRegistry, toUniformAgentToolRegistry } from './tools.js'
 import { buildRollingSummary, createConversationSources, type ConversationMessage } from './conversationMemory.js'
 import type { RankableMemory } from './memoryService.js'
 import { PrismaAssetService } from '../assets/assetService.js'
-import { isImmediateLocalPrompt, runLocalAssistant, shouldUseActionAgent } from './localAssistant.js'
+import { runLocalAssistant } from './localAssistant.js'
+import { decideAgentPolicy } from './policy.js'
 
 export type AgentRunStatus = 'queued' | 'planning' | 'gathering_context' | 'drafting' | 'validating' | 'awaiting_approval' | 'applying' | 'completed' | 'failed' | 'cancelled'
 export interface ProviderSecretConfig { provider: string; model: string; apiKey: string; baseUrl?: string }
@@ -199,17 +200,26 @@ export class PrismaAgentRunService implements AgentRunService {
     })
     const selectedDraftRequested = hasSelectedDraft(run.prompt)
     const confirmationRequested = Boolean(run.chapterId) && !selectedDraftRequested && /确认.*(?:加入|写入|应用).*(?:工作台|章节|场景)|(?:加入|写入).*(?:工作台|章节|场景)/.test(run.prompt)
-    const actionRequested = selectedDraftRequested || confirmationRequested || shouldUseActionAgent(run.prompt, Boolean(run.chapterId))
+    const policy = confirmationRequested
+      ? { kind: 'creative-action' as const, requiresPatch: true }
+      : decideAgentPolicy({
+          prompt: run.prompt,
+          hasChapter: Boolean(run.chapterId),
+          hasSelectedDraft: selectedDraftRequested,
+          provider: job.secretConfig.provider,
+          materialMode: job.materialMode ?? 'reuse',
+        })
+    const actionRequested = policy.requiresPatch
     const actionPrompt = confirmationRequested ? '续写当前章节，并生成可审批的可运行场景。' : run.prompt
-    const materialPromptsRequested = job.materialMode === 'prompts' && actionRequested
     let result
-    if (selectedDraftRequested || job.secretConfig.provider === 'local' || isImmediateLocalPrompt(run.prompt) || confirmationRequested || materialPromptsRequested) {
+    if (policy.kind === 'local-import' || policy.kind === 'local-immediate' || policy.kind === 'material-plan') {
       result = await runLocalAssistant({
-        prompt: materialPromptsRequested ? '为当前任务生成背景、角色立绘和 CG 素材提示词。' : actionPrompt,
+        prompt: actionPrompt,
         snapshot,
         chapterId: run.chapterId ?? undefined,
         scope: run.scope as AgentScope,
         targetId: run.targetId ?? undefined,
+        materialPlanOnly: policy.kind === 'material-plan',
         contextSources: initialContext.filter((source) => source.kind === 'conversation-history' || source.kind === 'conversation-summary' || source.kind === 'memory'),
       })
     } else {

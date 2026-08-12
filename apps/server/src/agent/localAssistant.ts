@@ -3,6 +3,7 @@ import type { AgentContextSource, AgentProjectSnapshot, AgentScope } from './con
 import type { AgentExecutionResult } from './executor.js'
 import { answerCreativeKnowledge } from './creativeKnowledge.js'
 import { lookupPublicKnowledge, type PublicKnowledgeResult } from './publicKnowledge.js'
+import { buildCreativeBrief, formatCreativeMaterialPlan } from './creativeBrief.js'
 
 const WRITING_INTENT = /续写|润色|改写|扩写|生成|创作|补充.*分支|写.*剧情|write|rewrite|continue/i
 const EXPLICIT_REPLACEMENT_INTENT = /(?:改成|改为|替换(?:成|为)?|修改为|调整为)\s*[：:]\s*(.+)$/s
@@ -417,7 +418,15 @@ function selectedDraftFromPrompt(prompt: string): string | undefined {
   return draft && draft.length >= 20 ? draft : undefined
 }
 
-function materialPromptPlan(snapshot: AgentProjectSnapshot, chapterId?: string): AgentExecutionResult {
+function materialPromptPlan(snapshot: AgentProjectSnapshot, chapterId?: string, prompt?: string): AgentExecutionResult {
+  if (prompt) {
+    const brief = buildCreativeBrief({ text: prompt, snapshot })
+    return result(
+      formatCreativeMaterialPlan(brief),
+      ['读取原始创作请求', '精确匹配项目素材', '列出缺少素材与可复制提示词'],
+      ['素材准备完成后，可选择“复用素材”并让我生成可审批的工作台场景。'],
+    )
+  }
   const chapter = snapshot.chapters.find((item) => item.id === chapterId)
   const backgroundAssets = snapshot.assets.filter((asset) => asset.type === 'BACKGROUND' || asset.type === 'CG')
   const lead = snapshot.characters[0]
@@ -620,10 +629,12 @@ export async function runLocalAssistant(input: {
   now?: Date
   contextSources?: AgentContextSource[]
   continuationText?: string
+  materialPlanOnly?: boolean
   lookupKnowledge?: (prompt: string) => Promise<PublicKnowledgeResult | null>
 }): Promise<AgentExecutionResult> {
   const prompt = input.prompt.trim()
   const contextSources = input.contextSources ?? []
+  if (input.materialPlanOnly) return materialPromptPlan(input.snapshot, input.chapterId, prompt)
   if (GREETING_INTENT.test(prompt)) return greeting(input.snapshot)
   if (THANKS_INTENT.test(prompt)) return result(`不客气。关于《${input.snapshot.title}》，你可以继续直接说想完善哪一部分，我会沿用当前对话上下文。`, ['延续当前对话'])
   if (CAPABILITY_INTENT.test(prompt)) return capabilities(input.snapshot)
