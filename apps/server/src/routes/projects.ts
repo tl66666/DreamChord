@@ -68,7 +68,7 @@ router.get('/:id', async (req: Request, res: Response) => {
     include: {
       author: { select: { username: true, nickname: true } },
       chapters: { orderBy: { order: 'asc' }, include: { nodes: true, edges: true } },
-      characters: true,
+      characters: { include: { sprites: true } },
     },
   })
 

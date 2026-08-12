@@ -69,7 +69,8 @@ export function createRuntimeEngine(story: RuntimeStory) {
         state.activeUIEvents = scene.uiEvents || []
         break
       case 'ON_REALITY_CHANGE':
-        state.realityVersion += 0.1
+        // 使用 Math.round 修正浮点数累加精度问题
+        state.realityVersion = Math.round((state.realityVersion + 0.1) * 10) / 10
         state.activeUIEvents = scene.uiEvents || []
         break
       case 'ON_REALITY_SAVE':

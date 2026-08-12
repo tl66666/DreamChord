@@ -38,10 +38,44 @@ const DEFAULT_SETTINGS: PlayerSettings = {
   sfxVolume: 0.7,
 }
 
-const POSITION_CLASS: Record<string, string> = {
-  left: 'left-[5%] md:left-[12%]',
-  center: 'left-1/2 -translate-x-1/2',
-  right: 'right-[5%] md:right-[12%]',
+/** 根据同屏角色数量动态计算立绘位置和宽度，防止遮挡 */
+function getPositionStyle(
+  position: string,
+  totalCharacters: number,
+): { posClass: string; widthClass: string } {
+  const pos = position || 'center'
+
+  // 单角色：居中，正常宽度
+  if (totalCharacters <= 1) {
+    return {
+      posClass: 'left-1/2 -translate-x-1/2',
+      widthClass: 'w-[45vw] md:w-[31vw]',
+    }
+  }
+
+  // 双角色：收窄宽度，拉开间距
+  if (totalCharacters === 2) {
+    const width = 'w-[38vw] md:w-[26vw]'
+    switch (pos) {
+      case 'left':
+        return { posClass: 'left-[6%] md:left-[8%]', widthClass: width }
+      case 'right':
+        return { posClass: 'right-[6%] md:right-[8%]', widthClass: width }
+      default:
+        return { posClass: 'left-1/2 -translate-x-1/2', widthClass: width }
+    }
+  }
+
+  // 三角色及以上：最窄宽度，贴边分布
+  const width = 'w-[30vw] md:w-[22vw]'
+  switch (pos) {
+    case 'left':
+      return { posClass: 'left-[2%] md:left-[4%]', widthClass: width }
+    case 'right':
+      return { posClass: 'right-[2%] md:right-[4%]', widthClass: width }
+    default:
+      return { posClass: 'left-1/2 -translate-x-1/2', widthClass: width }
+  }
 }
 
 type AudioWindow = typeof window & {
@@ -68,6 +102,7 @@ export default function VisualNovelPlayer() {
   const [, setTick] = useState(0)
 
   const autoTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const skipTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const typingRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const audioContextRef = useRef<AudioContext | null>(null)
 
@@ -131,7 +166,7 @@ export default function VisualNovelPlayer() {
       .then((data) => {
         setProject(data)
         const { nodes, edges } = mergeChaptersForPreview(data)
-        const runtimeStory = convertFlowToRuntime(data.id, data.title, nodes, edges)
+        const runtimeStory = convertFlowToRuntime(data.id, data.title, nodes, edges, data.characters)
         setEngine(createRuntimeEngine(runtimeStory))
       })
       .catch((err) => {
@@ -181,7 +216,7 @@ export default function VisualNovelPlayer() {
 
   const advance = useCallback(() => {
     if (!engine) return
-    playTone('tap')
+    if (!isSkip) playTone('tap')
     if (isTyping) {
       stopTyping()
       setDisplayedText(currentScene?.dialogue?.text || '')
@@ -195,7 +230,7 @@ export default function VisualNovelPlayer() {
     const hasMore = engine.next()
     setTick((value) => value + 1)
     if (!hasMore) setFinished(true)
-  }, [currentScene, engine, isTyping, playTone, pushHistory, stopTyping])
+  }, [currentScene, engine, isSkip, isTyping, playTone, pushHistory, stopTyping])
 
   const startTyping = useCallback(
     (text: string) => {
@@ -228,6 +263,23 @@ export default function VisualNovelPlayer() {
       if (autoTimer.current) clearTimeout(autoTimer.current)
     }
   }, [advance, currentScene?.choices, finished, isAuto, isTyping])
+
+  // 跳过模式：快速自动推进剧情，遇到选项时自动停止
+  useEffect(() => {
+    if (!isSkip || isTyping || currentScene?.choices || finished) return
+    if (skipTimer.current) clearTimeout(skipTimer.current)
+    skipTimer.current = setTimeout(() => advance(), 300)
+    return () => {
+      if (skipTimer.current) clearTimeout(skipTimer.current)
+    }
+  }, [advance, currentScene?.choices, finished, isSkip, isTyping])
+
+  // 遇到选项时自动关闭跳过模式
+  useEffect(() => {
+    if (isSkip && currentScene?.choices) {
+      setIsSkip(false)
+    }
+  }, [currentScene?.choices, isSkip])
 
   const selectChoice = useCallback(
     (index: number) => {
@@ -298,6 +350,7 @@ export default function VisualNovelPlayer() {
     return () => {
       stopTyping()
       if (autoTimer.current) clearTimeout(autoTimer.current)
+      if (skipTimer.current) clearTimeout(skipTimer.current)
     }
   }, [stopTyping])
 
@@ -362,6 +415,7 @@ export default function VisualNovelPlayer() {
               character={character}
               isSystem={CHARACTER_REGISTRY[character.id]?.layer === 'system'}
               zIndex={10 + index}
+              totalCharacters={characters.length}
             />
           ))}
         </AnimatePresence>
@@ -431,7 +485,7 @@ export default function VisualNovelPlayer() {
                 </p>
                 <div className="mt-4 flex items-center justify-between">
                   <span className="text-xs text-white/42">
-                    {isAuto ? '自动播放中' : isSkip ? '跳过中' : '点击继续'}
+                    {isSkip ? '⏩ 跳过中（遇选项自动停止）' : isAuto ? '自动播放中' : '点击继续'}
                   </span>
                   <ChevronDown className="h-5 w-5 animate-bounce text-white/42" />
                 </div>
@@ -452,7 +506,7 @@ export default function VisualNovelPlayer() {
             onClick={(event) => event.stopPropagation()}
           >
             <div className="mb-1 rounded-full border border-dream-200/25 bg-black/45 px-3 py-1 text-xs tracking-[0.18em] text-dream-100/80 backdrop-blur-md">
-              BRANCH SELECT
+              选择分支
             </div>
             {currentScene.choices.map((choice, index) => (
               <button
@@ -665,10 +719,11 @@ const CharacterSprite = forwardRef<
     character: CharacterOnStage
     zIndex: number
     isSystem: boolean
+    totalCharacters: number
   }
->(function CharacterSprite({ character, zIndex, isSystem }, ref) {
+>(function CharacterSprite({ character, zIndex, isSystem, totalCharacters }, ref) {
   const url = character.customUrl || resolveCharacterUrl(character.id, character.state)
-  const positionClass = POSITION_CLASS[character.position || 'center']
+  const { posClass, widthClass } = getPositionStyle(character.position || 'center', totalCharacters)
 
   return (
     <motion.div
@@ -677,7 +732,7 @@ const CharacterSprite = forwardRef<
       animate={{ opacity: 1, y: 0, scale: 1, filter: 'blur(0px)' }}
       exit={{ opacity: 0, y: 46, scale: 0.985, filter: 'blur(3px)' }}
       transition={{ duration: 0.52, ease: 'easeOut' }}
-      className={`absolute bottom-0 h-[76vh] w-[45vw] md:w-[31vw] ${positionClass}`}
+      className={`absolute bottom-0 h-[76vh] ${widthClass} ${posClass}`}
       style={{ zIndex }}
     >
       <div

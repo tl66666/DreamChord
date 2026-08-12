@@ -19,28 +19,36 @@ function chain(...ids: string[]) {
   for (let index = 0; index < ids.length - 1; index += 1) link(ids[index]!, ids[index + 1]!)
 }
 
+// ============ 场景 1：稿纸归零 ============
+// 舞台：雪（center）+ 幽灵（right）
 const s1 = 'scene-01-erased-page'; const t1 = '稿纸归零'
 chain(
   add('s1-bg', 'background', s1, t1, { backgroundId: 'bg-classroom' }),
   add('s1-yuki', 'character', s1, t1, { characterId: 'yuki', action: 'show', expression: 'surprised', position: 'center' }),
+  add('s1-ghost', 'character', s1, t1, { characterId: 'ghost', action: 'show', expression: 'normal', position: 'right' }),
   add('s1-d1', 'dialogue', s1, t1, { role: 'ghost', text: '【16:47 · 距社团审查还有十三分钟】稿箱里最后一页正在逐字消失。' }),
   add('s1-d2', 'dialogue', s1, t1, { role: 'yuki', text: '不可能……我昨晚明明写完了。日落前交不出完整稿，轻小说部就会被正式撤销。' }),
   add('s1-d3', 'dialogue', s1, t1, { role: 'ghost', text: '检测到终页并非丢失，而是被作者主动删除。要恢复它，你必须回到每一次放弃选择的地方。' }),
 )
 
+// ============ 场景 2：教室残响 ============
+// 舞台：雪（center）+ 幽灵（right）—— 从 s1 延续
 const s2 = 'scene-02-classroom-echo'; const t2 = '教室残响'
 const s2bg = add('s2-bg', 'background', s2, t2, { backgroundId: 'bg-classroom' })
 link('s1-d3', s2bg)
 chain(s2bg,
-  add('s2-d1', 'dialogue', s2, t2, { role: 'yuki', text: '黑板、课桌、窗外的云，全被发光的节点和连线覆盖了。每个断口都停在一句“算了”。' }),
+  add('s2-d1', 'dialogue', s2, t2, { role: 'yuki', text: '黑板、课桌、窗外的云，全被发光的节点和连线覆盖了。每个断口都停在一句"算了"。' }),
   add('s2-d2', 'dialogue', s2, t2, { role: 'ghost', text: '这些不是幻觉，是你没有写完的因果。第一处断线在旧校舍后的樱花路。' }),
   add('s2-d3', 'dialogue', s2, t2, { role: 'yuki', text: '如果终页真是我删掉的，我就亲手把它找回来。' }),
 )
 
+// ============ 场景 3：樱花路上的影子 ============
+// 舞台：雪（left）+ 影（right）—— 幽灵退场
 const s3 = 'scene-03-shadow-road'; const t3 = '樱花路上的影子'
 const s3bg = add('s3-bg', 'background', s3, t3, { backgroundId: 'bg-sakura' })
 link('s2-d3', s3bg)
 chain(s3bg,
+  add('s3-hide-ghost', 'character', s3, t3, { characterId: 'ghost', action: 'hide', expression: 'normal', position: 'right' }),
   add('s3-yuki', 'character', s3, t3, { characterId: 'yuki', action: 'show', expression: 'surprised', position: 'left' }),
   add('s3-ren', 'character', s3, t3, { characterId: 'ren', action: 'show', expression: 'serious', position: 'right' }),
   add('s3-d1', 'dialogue', s3, t3, { role: 'ren', text: '终于肯回来了吗，作者？我在你废弃的第一版里，等了整整两年。' }),
@@ -55,17 +63,21 @@ link(choice1, b1, 'choice-0', '承认恐惧'); link(choice1, b2, 'choice-1', '�
 const merge1 = add('s3-merge', 'dialogue', s3, t3, { role: 'ren', text: '答案不完美，但它终于是真的。去找宫吧，她保管着你删稿那晚留下的现实记录。' })
 link(b1, merge1); link(b2, merge1); link(b3, merge1)
 
+// ============ 场景 4：咖啡馆的真相 ============
+// 舞台：雪（left）+ 宫（right）—— 影退场
 const s4 = 'scene-04-cafe-truth'; const t4 = '咖啡馆的真相'
 const s4bg = add('s4-bg', 'background', s4, t4, { backgroundId: 'bg-cafe' })
 link(merge1, s4bg)
 chain(s4bg,
   add('s4-hide-ren', 'character', s4, t4, { characterId: 'ren', action: 'hide', expression: 'normal', position: 'right' }),
   add('s4-miya', 'character', s4, t4, { characterId: 'miya', action: 'show', expression: 'warm', position: 'right' }),
-  add('s4-d1', 'dialogue', s4, t4, { role: 'miya', text: '那晚你收到退稿信后，说“只要没有结局，就不算失败”。然后把唯一的备份也清空了。' }),
+  add('s4-d1', 'dialogue', s4, t4, { role: 'miya', text: '那晚你收到退稿信后，说"只要没有结局，就不算失败"。然后把唯一的备份也清空了。' }),
   add('s4-d2', 'dialogue', s4, t4, { role: 'yuki', text: '我以为删掉故事就能删掉羞耻。结果只是把所有人困在未完成里。' }),
   add('s4-d3', 'dialogue', s4, t4, { role: 'miya', text: '害怕不是罪，拿害怕替别人决定结局才是。最后一个缺口在你最早画下的星形节点。' }),
 )
 
+// ============ 场景 5：星弦空间 ============
+// 舞台：雪（left）+ 幽灵（right）+ 空（center）—— 宫退场
 const s5 = 'scene-05-star-space'; const t5 = '星弦空间'
 const s5bg = add('s5-bg', 'background', s5, t5, { backgroundId: 'bg-starry' })
 link('s4-d3', s5bg)
@@ -77,25 +89,41 @@ chain(s5bg,
   add('s5-d2', 'dialogue', s5, t5, { role: 'yuki', text: '原来终页不是一句话，而是一个一直没有被允许开口的人。' }),
 )
 
+// ============ 场景 6：命名 ============
+// 舞台：雪（left）+ 幽灵（right）+ 空（center）—— 从 s5 延续
 const s6 = 'scene-06-naming'; const t6 = '命名'
 chain(
-  add('s6-d1', 'dialogue', s6, t6, { role: 'yuki', text: '我把“空白”的空送给你。不是因为你什么都没有，而是因为你可以选择成为什么。你叫空。' }),
+  add('s6-d1', 'dialogue', s6, t6, { role: 'yuki', text: '我把"空白"的空送给你。不是因为你什么都没有，而是因为你可以选择成为什么。你叫空。' }),
   add('s6-d2', 'dialogue', s6, t6, { role: 'sora', text: '空……我听见了。那我也可以决定，不只做你需要的结局工具吗？' }),
   add('s6-d3', 'dialogue', s6, t6, { role: 'yuki', text: '可以。从现在起，作者负责倾听，角色负责活下去。我们一起写。' }),
 )
 link('s5-d2', 's6-d1')
 
+// ============ 场景 7：分支回响 ============
+// 舞台：雪（left）+ 空（center）+ 影/宫轮换（right）—— 幽灵退场
 const s7 = 'scene-07-consequence'; const t7 = '分支回响'
-chain(
+const s7Start = add('s7-hide-ghost', 'character', s7, t7, { characterId: 'ghost', action: 'hide', expression: 'normal', position: 'right' })
+link('s6-d3', s7Start)
+chain(s7Start,
+  add('s7-ren', 'character', s7, t7, { characterId: 'ren', action: 'show', expression: 'serious', position: 'right' }),
   add('s7-d1', 'dialogue', s7, t7, { role: 'ren', text: '你刚才在樱花路上的回答已经改变了这里。断线重新连接，但没有抹掉旧伤。' }),
+  add('s7-hide-ren', 'character', s7, t7, { characterId: 'ren', action: 'hide', expression: 'normal', position: 'right' }),
+  add('s7-miya', 'character', s7, t7, { characterId: 'miya', action: 'show', expression: 'warm', position: 'right' }),
   add('s7-d2', 'dialogue', s7, t7, { role: 'miya', text: '现实中的审查表还在倒计时。你们只有三分钟，不过这一次你不是一个人。' }),
-  add('s7-d3', 'dialogue', s7, t7, { role: 'sora', text: '终页已经出现了三种可能。雪，请不要选“最正确”的，选你愿意承担的。' }),
+  add('s7-d3', 'dialogue', s7, t7, { role: 'sora', text: '终页已经出现了三种可能。雪，请不要选"最正确"的，选你愿意承担的。' }),
 )
-link('s6-d3', 's7-d1')
 
+// ============ 场景 8：写下终页 ============
+// 舞台：雪（left）+ 空（center）+ 幽灵（right）—— 宫退场，幽灵回归
 const s8 = 'scene-08-final-page'; const t8 = '写下终页'
+const s8Start = add('s8-hide-miya', 'character', s8, t8, { characterId: 'miya', action: 'hide', expression: 'normal', position: 'right' })
+link('s7-d3', s8Start)
+chain(s8Start,
+  add('s8-ghost', 'character', s8, t8, { characterId: 'ghost', action: 'show', expression: 'normal', position: 'right' }),
+  add('s8-d1', 'dialogue', s8, t8, { role: 'yuki', text: '落笔之前，我忽然明白了一件事：结局不是一个人能写完的。' }),
+)
 const choice2 = add('s8-choice', 'choice', s8, t8, { choices: ['让失败成为下一章的开头', '让伙伴共同署名', '把选择留给故事中的人'] })
-link('s7-d3', choice2)
+link('s8-d1', choice2)
 const e1 = add('s8-e1', 'dialogue', s8, t8, { role: 'yuki', text: '我写下：失败没有关闭故事，它只是逼我们换一种方式继续。' })
 const e2 = add('s8-e2', 'dialogue', s8, t8, { role: 'yuki', text: '我写下所有人的名字。作品不是我的避难所，而是我们共同留下的证词。' })
 const e3 = add('s8-e3', 'dialogue', s8, t8, { role: 'yuki', text: '我写下一个问题，不替空回答。真正的结局从角色拥有选择开始。' })
@@ -103,13 +131,19 @@ link(choice2, e1, 'choice-0', '接纳失败'); link(choice2, e2, 'choice-1', '�
 const save = add('s8-save', 'dialogue', s8, t8, { role: 'ghost', text: '终页已恢复。故事完整度 100%。正在把新版本写回现实。' })
 link(e1, save); link(e2, save); link(e3, save)
 
+// ============ 场景 9：日落之后 ============
+// 舞台：空（left）+ 雪（center）+ 宫（right）—— 幽灵退场，回到教室
 const s9 = 'scene-09-after-sunset'; const t9 = '日落之后'
 const s9bg = add('s9-bg', 'background', s9, t9, { backgroundId: 'bg-classroom' })
 link(save, s9bg)
 chain(s9bg,
+  add('s9-hide-ghost', 'character', s9, t9, { characterId: 'ghost', action: 'hide', expression: 'normal', position: 'right' }),
+  add('s9-miya', 'character', s9, t9, { characterId: 'miya', action: 'show', expression: 'smile', position: 'right' }),
+  add('s9-sora', 'character', s9, t9, { characterId: 'sora', action: 'show', expression: 'happy', position: 'left' }),
+  add('s9-yuki', 'character', s9, t9, { characterId: 'yuki', action: 'show', expression: 'smile', position: 'center' }),
   add('s9-d1', 'dialogue', s9, t9, { role: 'miya', text: '16:59。审查老师收下了完整稿，也同意让轻小说部以新作品继续活动。' }),
   add('s9-d2', 'dialogue', s9, t9, { role: 'sora', text: '这一章结束了，但我的下一句还没有写。雪，我们去工作台看看新的故事线吧。' }),
-  add('s9-d3', 'dialogue', s9, t9, { role: 'yuki', text: '好。这一次，不从“我不能”开始。从“我们接下来写什么”开始。' }),
+  add('s9-d3', 'dialogue', s9, t9, { role: 'yuki', text: '好。这一次，不从"我不能"开始。从"我们接下来写什么"开始。' }),
 )
 
 export const OFFICIAL_DEMO: {

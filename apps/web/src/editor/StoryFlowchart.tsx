@@ -324,7 +324,7 @@ export default function StoryFlowchart({
             </defs>
             {connectionPaths.map(({ conn, pathData }) => {
               if (!pathData) return null
-              const isDimmedConn = dimmedIds.has(conn.sourceSceneId) && dimmedIds.has(conn.targetSceneId)
+              const isDimmedConn = dimmedIds.has(conn.sourceSceneId) || dimmedIds.has(conn.targetSceneId)
               const stroke = conn.isConvergence ? '#a855f7' : conn.isCrossChapter ? '#f97316' : conn.isChoice ? '#ec4899' : '#94a3b8'
               const dashArray = conn.isConvergence ? undefined : conn.isCrossChapter ? '2 3 6 3' : conn.isChoice ? '5 4' : undefined
               return (
@@ -343,19 +343,6 @@ export default function StoryFlowchart({
                       setDisconnectMenu({ visible: true, x: e.clientX, y: e.clientY, conn })
                     } : undefined}
                   />
-                  {conn.label && (
-                    <text
-                      x={pathData.labelX}
-                      y={pathData.labelY - 4}
-                      textAnchor="middle"
-                      fontSize="11"
-                      fill={stroke}
-                      className="select-none"
-                      style={{ paintOrder: 'stroke', stroke: '#fff', strokeWidth: 3 }}
-                    >
-                      {conn.label}
-                    </text>
-                  )}
                 </g>
               )
             })}
@@ -406,6 +393,35 @@ export default function StoryFlowchart({
               />
             )
           })}
+
+          {/* 连接线标签覆盖层（渲染在卡片之上，防止被遮挡） */}
+          <svg
+            className="pointer-events-none absolute left-0 top-0"
+            width={layout.width}
+            height={layout.height}
+            style={{ overflow: 'visible' }}
+          >
+            {connectionPaths.map(({ conn, pathData }) => {
+              if (!pathData || !conn.label) return null
+              const isDimmedConn = dimmedIds.has(conn.sourceSceneId) || dimmedIds.has(conn.targetSceneId)
+              const stroke = conn.isConvergence ? '#a855f7' : conn.isCrossChapter ? '#f97316' : conn.isChoice ? '#ec4899' : '#94a3b8'
+              return (
+                <text
+                  key={conn.id}
+                  x={pathData.labelX}
+                  y={pathData.labelY - 4}
+                  textAnchor="middle"
+                  fontSize="11"
+                  fill={stroke}
+                  className="select-none"
+                  opacity={isDimmedConn ? 0.1 : 1}
+                  style={{ paintOrder: 'stroke', stroke: '#fff', strokeWidth: 3 }}
+                >
+                  {conn.label}
+                </text>
+              )
+            })}
+          </svg>
 
           {/* 内联重命名覆盖层 */}
           {renamingId && onRenameScene && (() => {

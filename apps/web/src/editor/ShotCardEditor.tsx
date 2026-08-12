@@ -6,13 +6,14 @@
  * 选项卡支持分支去向：新建分支/跳转/汇合。
  */
 
-import { useMemo, useState, useCallback, useEffect } from 'react'
+import { useMemo, useState, useCallback, useEffect, useRef } from 'react'
 import { useToast } from '../components/FeedbackProvider'
 import type { Node, Edge } from '@xyflow/react'
 import {
   MessageSquare, GitBranch, Type,
   ImageIcon, ArrowRight,
-  FileText, Send, GitMerge,
+  FileText, Send, GitMerge, Flag, AlertTriangle,
+  ChevronLeft, ChevronRight, Map as MapIcon,
 } from 'lucide-react'
 import {
   type ShotCard, type LensType,
@@ -22,6 +23,7 @@ import {
   createSceneNodes, normalizeShotCard,
   layoutNodes, normalEdge, chainEdges, choiceEdge,
   groupNodesToCards, applyStageToShotCard,
+  getChoices,
 } from './sceneGraph'
 import { resolveStageStateAfterNode } from './workbench/storyEditorGraph'
 import { loadLibraryCharacters, loadLibraryScenes, loadStoryTemplates } from '../lib/libraryData'
@@ -715,7 +717,11 @@ export default function ShotCardEditor({
   }, [cards, nodes, edges, onUpdateGraph])
 
   /** 设置选项的分支去向 */
+  // 批量跳转时使用 ref 跟踪最新的 edges
+  const batchEdgesRef = useRef<Edge[] | null>(null)
+
   const setChoiceTarget = useCallback((cardId: string, choiceIndex: number, targetSceneId: string) => {
+    const workingEdges = batchEdgesRef.current ?? edges
     const card = cards.find((c) => c.id === cardId)
     if (!card || card.type !== 'choice') return
     // 找到 choice 节点
@@ -726,10 +732,10 @@ export default function ShotCardEditor({
     if (!choiceNodeId) return
 
     // 移除该选项的旧边
-    const oldEdge = edges.find((e) => e.source === choiceNodeId && e.sourceHandle === `choice-${choiceIndex}`)
-    let newEdges = edges
+    const oldEdge = workingEdges.find((e) => e.source === choiceNodeId && e.sourceHandle === `choice-${choiceIndex}`)
+    let newEdges = workingEdges
     if (oldEdge) {
-      newEdges = edges.filter((e) => e.id !== oldEdge.id)
+      newEdges = workingEdges.filter((e) => e.id !== oldEdge.id)
     }
     // 找到目标场景的第一个节点
     const targetScene = scenes.find((s) => s.id === targetSceneId)
@@ -738,8 +744,15 @@ export default function ShotCardEditor({
       const label = choices[choiceIndex] || `选项 ${choiceIndex + 1}`
       newEdges = [...newEdges, choiceEdge(choiceNodeId, targetScene.nodeIds[0]!, choiceIndex, label)]
     }
+    // 更新 batch ref，让后续调用读到最新值
+    batchEdgesRef.current = newEdges
     onUpdateGraph(nodes, newEdges)
   }, [cards, nodes, edges, scenes, onUpdateGraph])
+
+  // edges 变化后清除 batch ref
+  useEffect(() => {
+    batchEdgesRef.current = null
+  }, [edges])
 
   // 场景出口信息：当前场景尾节点的跨场景出边目标
   const sceneExitInfo = useMemo(() => {
@@ -750,6 +763,38 @@ export default function ShotCardEditor({
     const tailNode = sceneNodes[sceneNodes.length - 1]
     if (!tailNode) return null
 
+    // 检查尾节点是否为选项节点
+    const isChoiceTail = tailNode.type === 'choice'
+    // 只统计指向其他场景的选项边（跨场景分支才算"已配置"）
+    const choiceEdges = edges.filter(e =>
+      e.source === tailNode.id && e.sourceHandle?.startsWith('choice-') &&
+      getNodeSceneGroupId(nodes.find(n => n.id === e.target)!) !== selectedSceneId
+    )
+    const choiceConfigured = choiceEdges.length
+
+    // 计算各选项的详细去向信息
+    const choiceTargets = isChoiceTail ? (() => {
+      const choices = getChoices(tailNode)
+      return choices.map((text, index) => {
+        const edge = edges.find(e =>
+          e.source === tailNode.id && e.sourceHandle === `choice-${index}`,
+        )
+        const targetNode = edge ? nodes.find(n => n.id === edge.target) : undefined
+        const targetSceneId = targetNode ? getNodeSceneGroupId(targetNode) : ''
+        const targetScene = targetSceneId ? scenes.find(s => s.id === targetSceneId) : null
+        // 只算跨场景的为"已配置"
+        const hasTarget = targetSceneId && targetSceneId !== selectedSceneId && targetScene
+        return {
+          index,
+          text: text || `选项 ${index + 1}`,
+          hasTarget: !!hasTarget,
+          targetSceneId: hasTarget ? targetSceneId : '',
+          targetSceneCode: targetScene?.code || '',
+          targetSceneTitle: targetScene?.title || '',
+        }
+      })
+    })() : []
+
     const exitEdge = edges.find(e =>
       e.source === tailNode.id && !e.sourceHandle &&
       getNodeSceneGroupId(nodes.find(n => n.id === e.target)!) !== selectedSceneId
@@ -758,11 +803,31 @@ export default function ShotCardEditor({
       ? getNodeSceneGroupId(nodes.find(n => n.id === exitEdge.target)!)
       : null
     const targetScene = targetSceneId ? scenes.find(s => s.id === targetSceneId) : null
-    const isEnding = !exitEdge && sceneNodes.length > 0
+    const isEnding = !exitEdge && !isChoiceTail && sceneNodes.length > 0
     const isConvergence = targetSceneId ? convergenceMap.has(targetSceneId) : false
 
-    return { targetSceneId, targetScene, isEnding, isConvergence }
+    return { targetSceneId, targetScene, isEnding, isConvergence, isChoiceTail, choiceConfigured, choiceTargets, tailNodeId: tailNode.id }
   }, [selectedSceneId, nodes, edges, scenes, convergenceMap])
+
+  // 场景快速导航：上一场景 / 下一场景
+  const sceneNav = useMemo(() => {
+    if (!selectedSceneId || scenes.length === 0) return { prev: null as Scene | null, next: null as Scene | null, index: -1 }
+    const index = scenes.findIndex(s => s.id === selectedSceneId)
+    return {
+      prev: index > 0 ? scenes[index - 1]! : null,
+      next: index >= 0 && index < scenes.length - 1 ? scenes[index + 1]! : null,
+      index,
+    }
+  }, [selectedSceneId, scenes])
+
+  // 自动展开含未配置选项的卡片
+  useEffect(() => {
+    if (!sceneExitInfo?.isChoiceTail || !sceneExitInfo.choiceTargets?.some(t => !t.hasTarget)) return
+    const choiceCard = cards.find(c => c.type === 'choice')
+    if (choiceCard && editingCardId !== choiceCard.id) {
+      setEditingCardId(choiceCard.id)
+    }
+  }, [sceneExitInfo, cards, editingCardId])
 
   if (!selectedSceneId) {
     return (
@@ -818,53 +883,195 @@ export default function ShotCardEditor({
     <div className="flex h-full flex-col bg-dream-50/30">
       <div className="flex-1 overflow-y-auto p-4">
         <div className={compactMode ? 'mx-auto max-w-3xl space-y-1.5' : 'mx-auto max-w-2xl space-y-3'}>
+          {/* 场景快速导航 - 窄屏时显示（侧栏隐藏时替代方案） */}
+          {cards.length > 0 && scenes.length > 1 && (
+            <div className="flex items-center gap-1.5 rounded-lg border border-dream-100 bg-white px-2 py-1.5 lg:hidden">
+              <button
+                onClick={() => sceneNav.prev && onNavigateToScene(sceneNav.prev.id)}
+                disabled={!sceneNav.prev}
+                className="rounded-md p-1 text-dream-500 transition hover:bg-dream-50 disabled:opacity-30"
+                title="上一场景"
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </button>
+              <div className="relative flex-1">
+                <select
+                  value={selectedSceneId || ''}
+                  onChange={(e) => { if (e.target.value) onNavigateToScene(e.target.value) }}
+                  className="w-full cursor-pointer appearance-none rounded-md border border-dream-200 bg-white px-2 py-1 pr-6 text-xs text-dream-700 focus:border-dream-400 focus:outline-none"
+                >
+                  {scenes.map((s) => (
+                    <option key={s.id} value={s.id}>{s.code} · {s.title}</option>
+                  ))}
+                </select>
+                <MapIcon className="pointer-events-none absolute right-2 top-1/2 h-3 w-3 -translate-y-1/2 text-dream-300" />
+              </div>
+              <button
+                onClick={() => sceneNav.next && onNavigateToScene(sceneNav.next.id)}
+                disabled={!sceneNav.next}
+                className="rounded-md p-1 text-dream-500 transition hover:bg-dream-50 disabled:opacity-30"
+                title="下一场景"
+              >
+                <ChevronRight className="h-4 w-4" />
+              </button>
+            </div>
+          )}
           {/* 场景出口设置面板 */}
           {sceneExitInfo && cards.length > 0 && (
-            <div className="flex items-center gap-2 rounded-lg border border-dream-100 bg-white/60 px-3 py-2 text-xs">
-              <ArrowRight className="h-3.5 w-3.5 shrink-0 text-dream-400" />
-              <span className="shrink-0 text-dream-500">场景出口：</span>
-              {sceneExitInfo.targetScene ? (
-                <>
-                  <span className="font-medium text-dream-700">
-                    {sceneExitInfo.targetScene.title || sceneExitInfo.targetScene.code}
-                  </span>
-                  {sceneExitInfo.isConvergence && (
-                    <span className="flex items-center gap-0.5 rounded bg-purple-100 px-1.5 py-0.5 text-[10px] font-medium text-purple-600">
-                      <GitMerge className="h-2.5 w-2.5" /> 汇合点
+            <div className={`rounded-lg border px-3 py-2 text-xs transition ${
+              sceneExitInfo.isChoiceTail
+                ? 'border-indigo-200 bg-indigo-50/50'
+                : sceneExitInfo.isEnding
+                  ? 'border-amber-200 bg-amber-50/60'
+                  : sceneExitInfo.targetScene
+                    ? sceneExitInfo.isConvergence
+                      ? 'border-purple-200 bg-purple-50/40'
+                      : 'border-green-200 bg-green-50/40'
+                    : 'border-red-200 bg-red-50/40'
+            }`}>
+              {/* 第一行：状态摘要 */}
+              <div className="flex items-center gap-2">
+                {sceneExitInfo.isChoiceTail ? (
+                  <GitBranch className="h-3.5 w-3.5 shrink-0 text-indigo-500" />
+                ) : sceneExitInfo.isEnding ? (
+                  <Flag className="h-3.5 w-3.5 shrink-0 text-amber-500" />
+                ) : sceneExitInfo.targetScene ? (
+                  sceneExitInfo.isConvergence ? (
+                    <GitMerge className="h-3.5 w-3.5 shrink-0 text-purple-500" />
+                  ) : (
+                    <ArrowRight className="h-3.5 w-3.5 shrink-0 text-green-500" />
+                  )
+                ) : (
+                  <AlertTriangle className="h-3.5 w-3.5 shrink-0 text-red-400" />
+                )}
+                <span className="shrink-0 text-dream-500">场景出口：</span>
+                {sceneExitInfo.isChoiceTail ? (
+                  <>
+                    <span className="flex items-center gap-1 font-medium text-indigo-600">
+                      <GitBranch className="h-3 w-3" /> 分支选择
                     </span>
-                  )}
-                </>
-              ) : sceneExitInfo.isEnding ? (
-                <span className="font-medium text-amber-600">结局</span>
-              ) : (
-                <span className="text-dream-400">未连接</span>
+                    <span className={`rounded px-1.5 py-0.5 text-[10px] font-medium ${
+                      sceneExitInfo.choiceConfigured > 0
+                        ? 'bg-indigo-100 text-indigo-600'
+                        : 'bg-amber-100 text-amber-600'
+                    }`}>
+                      {sceneExitInfo.choiceConfigured}/{sceneExitInfo.choiceTargets.length} 已配置
+                    </span>
+                  </>
+                ) : sceneExitInfo.targetScene ? (
+                  <>
+                    <span className="font-medium text-dream-700">
+                      {sceneExitInfo.targetScene.title || sceneExitInfo.targetScene.code}
+                    </span>
+                    {sceneExitInfo.isConvergence && (
+                      <span className="flex items-center gap-0.5 rounded bg-purple-100 px-1.5 py-0.5 text-[10px] font-medium text-purple-600">
+                        <GitMerge className="h-2.5 w-2.5" /> 汇合点
+                      </span>
+                    )}
+                  </>
+                ) : sceneExitInfo.isEnding ? (
+                  <span className="flex items-center gap-1 font-medium text-amber-600">
+                    <Flag className="h-3 w-3" /> 故事结局
+                  </span>
+                ) : (
+                  <span className="text-red-400">未设置出口（玩家到此中断）</span>
+                )}
+                {!sceneExitInfo.isChoiceTail && (
+                  <>
+                    <select
+                      value={sceneExitInfo.targetSceneId || ''}
+                      onChange={(e) => {
+                        e.stopPropagation()
+                        const val = e.target.value
+                        onSetSceneExit(selectedSceneId, val || null)
+                      }}
+                      onClick={(e) => e.stopPropagation()}
+                      className="ml-auto rounded border border-dream-200 bg-white px-2 py-1 text-xs text-dream-600 focus:border-dream-400 focus:outline-none"
+                    >
+                      <option value="">— 选择出口 —</option>
+                      {scenes.filter(s => s.id !== selectedSceneId).map(s => (
+                        <option key={s.id} value={s.id}>{s.title || s.code}</option>
+                      ))}
+                    </select>
+                    <button
+                      onClick={(e) => { e.stopPropagation(); onSetSceneExit(selectedSceneId, null) }}
+                      className={`shrink-0 rounded px-2 py-1 text-xs transition ${
+                        sceneExitInfo.isEnding
+                          ? 'bg-amber-500 text-white hover:bg-amber-600'
+                          : 'border border-dream-200 text-dream-500 hover:bg-dream-50'
+                      }`}
+                      title="设为结局"
+                    >
+                      <Flag className="h-3 w-3" />
+                    </button>
+                  </>
+                )}
+              </div>
+              {/* 选项场景：内联显示各选项去向 */}
+              {sceneExitInfo.isChoiceTail && sceneExitInfo.choiceTargets.length > 0 && (
+                <div className="mt-2 space-y-1 border-t border-indigo-100 pt-2">
+                  {sceneExitInfo.choiceTargets.map((target) => {
+                    const choiceCard = cards.find(c => c.type === 'choice')
+                    return (
+                      <div key={target.index} className="flex items-center gap-1.5 pl-1">
+                        <span className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[10px] font-bold ${
+                          target.hasTarget ? 'bg-green-100 text-green-600' : 'bg-amber-100 text-amber-600'
+                        }`}>
+                          {String.fromCharCode(65 + target.index)}
+                        </span>
+                        <span className="min-w-0 flex-1 truncate text-dream-600">{target.text}</span>
+                        {target.hasTarget ? (
+                          <>
+                            <ArrowRight className="h-3 w-3 shrink-0 text-green-500" />
+                            <span className="shrink-0 font-mono text-[11px] text-green-600">{target.targetSceneCode}</span>
+                            <span className="hidden shrink-0 text-green-700 sm:inline">{target.targetSceneTitle}</span>
+                            <button
+                              onClick={() => onNavigateToScene(target.targetSceneId)}
+                              className="shrink-0 rounded-md px-1.5 py-0.5 text-[10px] text-dream-500 transition hover:bg-dream-50 hover:text-dream-700"
+                              title="前往编辑"
+                            >
+                              前往
+                            </button>
+                            <button
+                              onClick={() => choiceCard && setChoiceTarget(choiceCard.id, target.index, '')}
+                              className="shrink-0 rounded-md px-1.5 py-0.5 text-[10px] text-dream-300 transition hover:bg-red-50 hover:text-red-500"
+                              title="断开连接"
+                            >
+                              断开
+                            </button>
+                          </>
+                        ) : (
+                          <>
+                            <button
+                              onClick={() => choiceCard && onCreateBranch(choiceCard.id, target.index, target.text)}
+                              className="flex shrink-0 items-center gap-0.5 rounded-md bg-dream-600 px-2 py-0.5 text-[10px] font-medium text-white transition hover:bg-dream-700"
+                            >
+                              <GitBranch className="h-2.5 w-2.5" /> 新建分支
+                            </button>
+                            <div className="relative shrink-0">
+                              <select
+                                value=""
+                                onChange={(e) => {
+                                  if (e.target.value && choiceCard) {
+                                    setChoiceTarget(choiceCard.id, target.index, e.target.value)
+                                  }
+                                }}
+                                className="cursor-pointer appearance-none rounded-md border border-dream-200 bg-white px-2 py-0.5 pr-5 text-[10px] text-dream-600 transition hover:border-dream-300"
+                              >
+                                <option value="">跳转到...</option>
+                                {scenes.filter(s => s.id !== selectedSceneId).map(s => (
+                                  <option key={s.id} value={s.id}>{s.code} · {s.title}</option>
+                                ))}
+                              </select>
+                              <ArrowRight className="pointer-events-none absolute right-1 top-1/2 h-2.5 w-2.5 -translate-y-1/2 text-dream-400" />
+                            </div>
+                          </>
+                        )}
+                      </div>
+                    )
+                  })}
+                </div>
               )}
-              <select
-                value={sceneExitInfo.targetSceneId || ''}
-                onChange={(e) => {
-                  e.stopPropagation()
-                  const val = e.target.value
-                  onSetSceneExit(selectedSceneId, val || null)
-                }}
-                onClick={(e) => e.stopPropagation()}
-                className="ml-auto rounded border border-dream-200 bg-white px-2 py-1 text-xs text-dream-600 focus:border-dream-400 focus:outline-none"
-              >
-                <option value="">— 选择出口 —</option>
-                {scenes.filter(s => s.id !== selectedSceneId).map(s => (
-                  <option key={s.id} value={s.id}>{s.title || s.code}</option>
-                ))}
-              </select>
-              <button
-                onClick={(e) => { e.stopPropagation(); onSetSceneExit(selectedSceneId, null) }}
-                className={`shrink-0 rounded px-2 py-1 text-xs transition ${
-                  sceneExitInfo.isEnding
-                    ? 'bg-amber-100 text-amber-700'
-                    : 'border border-dream-200 text-dream-500 hover:bg-dream-50'
-                }`}
-                title="设为结局"
-              >
-                结局
-              </button>
             </div>
           )}
           {cards.map((card, index) => (

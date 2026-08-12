@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect, memo } from 'react'
-import { Film, Users, Clapperboard, GitBranch, ArrowLeftRight, Pencil, Check, X, Pin, GitMerge } from 'lucide-react'
+import { Film, Users, Clapperboard, GitBranch, ArrowLeftRight, Pencil, Check, X, Pin, GitMerge, AlertTriangle } from 'lucide-react'
 import type { Scene } from '../sceneGraph'
 import type { CardPosition, SceneInfo } from './types'
 import { CARD_WIDTH, CARD_HEIGHT } from './constants'
@@ -208,6 +208,12 @@ const SceneCard = memo(function SceneCard({
               {info.choiceOptions.length}分支
             </span>
           )}
+          {info.isChoiceScene && info.choiceOptions.some(o => !o.targetSceneId) && (
+            <span className="flex items-center gap-0.5 rounded bg-amber-500/85 px-1 py-0.5 text-[9px] font-semibold text-white" title={`${info.choiceOptions.filter(o => !o.targetSceneId).length} 个选项未配置去向`}>
+              <AlertTriangle className="h-2 w-2" />
+              {info.choiceOptions.filter(o => !o.targetSceneId).length}
+            </span>
+          )}
           {info.isEndingScene && (
             <span className="rounded bg-green-500/85 px-1 py-0.5 text-[9px] font-semibold text-white">
               END
@@ -302,16 +308,26 @@ const SceneCard = memo(function SceneCard({
         {/* 选项去向列表（仅选项场景，最多3个） */}
         {info.isChoiceScene && info.choiceOptions.length > 0 && (
           <div className="mt-auto space-y-0.5 overflow-hidden pt-1">
-            {info.choiceOptions.slice(0, 3).map((opt) => (
-              <div key={opt.text} className="flex items-center gap-1 text-[9px]">
-                <span className="truncate flex-1 text-dream-500" title={opt.text}>
-                  {truncate(opt.text, 10)}
-                </span>
-                <span className="shrink-0 rounded bg-pink-50 px-1 font-mono text-pink-400">
-                  {opt.targetCode}
-                </span>
-              </div>
-            ))}
+            {info.choiceOptions.slice(0, 3).map((opt) => {
+              const isConfigured = !!opt.targetSceneId
+              return (
+                <div key={opt.text} className="flex items-center gap-1 text-[9px]">
+                  <span className={`truncate flex-1 ${isConfigured ? 'text-dream-500' : 'text-amber-500'}`} title={opt.text}>
+                    {truncate(opt.text, 10)}
+                  </span>
+                  {isConfigured ? (
+                    <span className="shrink-0 rounded bg-pink-50 px-1 font-mono text-pink-400">
+                      {opt.targetCode}
+                    </span>
+                  ) : (
+                    <span className="flex shrink-0 items-center gap-0.5 rounded bg-amber-50 px-1 text-amber-500">
+                      <AlertTriangle className="h-2 w-2" />
+                      待设置
+                    </span>
+                  )}
+                </div>
+              )
+            })}
           </div>
         )}
       </div>

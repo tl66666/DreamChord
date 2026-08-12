@@ -7,7 +7,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react'
 import type { MouseEvent as ReactMouseEvent } from 'react'
-import { PADDING, MIN_SCALE, MAX_SCALE } from './constants'
+import { PADDING, MIN_SCALE, MAX_SCALE, CANVAS_TOP_SAFE } from './constants'
 
 function clampScale(value: number): number {
   return Math.min(MAX_SCALE, Math.max(MIN_SCALE, value))
@@ -50,11 +50,14 @@ export function usePanZoom(layoutWidth: number, layoutHeight: number) {
     const el = containerRef.current
     if (!el || layoutWidth <= 0 || layoutHeight <= 0) return
     const rect = el.getBoundingClientRect()
+    // 宽度方向留 60px 边距，高度方向额外扣除顶部安全区（搜索栏等悬浮 UI）
     const scaleX = (rect.width - 60) / layoutWidth
-    const scaleY = (rect.height - 60) / layoutHeight
+    const scaleY = (rect.height - 60 - CANVAS_TOP_SAFE) / layoutHeight
+    // 取宽高方向的较小值，但不低于 MIN_SCALE，避免内容过小不可读
     const nextScale = clampScale(Math.min(scaleX, scaleY, 1))
     const nx = Math.max(20, (rect.width - layoutWidth * nextScale) / 2)
-    const ny = Math.max(20, (rect.height - layoutHeight * nextScale) / 2)
+    // 顶部偏移不低于安全区高度，防止内容被搜索栏遮挡
+    const ny = Math.max(CANVAS_TOP_SAFE, (rect.height - layoutHeight * nextScale) / 2)
     applyTransform(nextScale, { x: nx, y: ny })
   }, [layoutWidth, layoutHeight, applyTransform])
 

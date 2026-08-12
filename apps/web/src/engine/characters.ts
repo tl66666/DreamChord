@@ -81,7 +81,8 @@ export function resolveCharacterUrl(
   const customUrl = resolveCustomCharacterUrl(id, expression)
   if (customUrl) return customUrl
 
-  const legacyMatch = id.match(/^(.+)_(.+)$/)
+  // 非贪婪匹配首组，正确解析多下划线 ID（如 miya_warm_v2 → base=miya, expr=warm_v2）
+  const legacyMatch = id.match(/^(.+?)_(.+)$/)
   if (legacyMatch) {
     const [, base, expr] = legacyMatch
     if (base in CHARACTER_REGISTRY) {

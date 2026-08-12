@@ -23,6 +23,7 @@ import {
   CHAPTER_HEADER_HEIGHT,
   CHAPTER_GAP_Y,
   PADDING,
+  MAX_SCENES_PER_ROW,
 } from './constants'
 
 /**
@@ -70,9 +71,12 @@ export function computeLayout(
     const headerY = cursorY
     cursorY += CHAPTER_HEADER_HEIGHT
 
-    // ---------- 主线场景水平排列 ----------
-    const mainY = cursorY
+    // ---------- 主线场景网格排列（自动折行） ----------
+    const mainStartY = cursorY
+    const mainRowCount = Math.ceil(mainScenes.length / MAX_SCENES_PER_ROW) || 1
     mainScenes.forEach((scene, i) => {
+      const row = Math.floor(i / MAX_SCENES_PER_ROW)
+      const col = i % MAX_SCENES_PER_ROW
       const override = positionOverrides?.get(scene.id)
       if (override) {
         positions.set(scene.id, {
@@ -82,15 +86,15 @@ export function computeLayout(
         overriddenSceneIds.add(scene.id)
       } else {
         positions.set(scene.id, {
-          x: PADDING + i * (CARD_WIDTH + CARD_GAP_X),
-          y: mainY,
+          x: PADDING + col * (CARD_WIDTH + CARD_GAP_X),
+          y: mainStartY + row * (CARD_HEIGHT + CARD_GAP_Y),
           isBranch: false,
           laneIndex: -1,
           rank: i,
         })
       }
     })
-    cursorY += CARD_HEIGHT
+    cursorY += mainRowCount * (CARD_HEIGHT + CARD_GAP_Y) - CARD_GAP_Y
 
     // ---------- 分支车道分配 ----------
     const branchesBySource = new Map<string, Scene[]>()
@@ -106,13 +110,22 @@ export function computeLayout(
       cursorY += CARD_GAP_Y
       const branchBaseY = cursorY
 
+      // 记录已占用的车道 x 坐标，防止同列分支重叠
+      const usedLaneX = new Set<number>()
+
       let laneIndex = 0
       branchesBySource.forEach((branches, sourceId) => {
         const sourcePos = positions.get(sourceId)
-        // 每个分支独占一个车道，按源场景 x 坐标水平偏移
-        const laneX = sourcePos
+        // 每个分支独占一个车道，优先使用源场景 x 坐标
+        let laneX = sourcePos
           ? sourcePos.x
           : PADDING + laneIndex * (CARD_WIDTH + CARD_GAP_X)
+
+        // 碰撞检测：若该 x 已被其他车道占用，向右偏移到下一个可用列
+        while (usedLaneX.has(laneX)) {
+          laneX += CARD_WIDTH + CARD_GAP_X
+        }
+        usedLaneX.add(laneX)
 
         const laneHeight = branches.length * (CARD_HEIGHT + CARD_GAP_Y)
 

@@ -5,7 +5,7 @@
  * 复用 resolveCharacterUrl 解析角色立绘。
  */
 
-import { useMemo } from 'react'
+import { useMemo, useState, useEffect } from 'react'
 import { Play, Eye, MessageSquare, GitBranch, Image as ImageIcon } from 'lucide-react'
 import type { ShotCard } from './sceneGraph'
 import { resolveCharacterUrl } from '../engine/characters'
@@ -20,6 +20,10 @@ interface MiniPreviewProps {
 export default function MiniPreview({ card, onFullScreen }: MiniPreviewProps) {
   const characters = useMemo(() => loadLibraryCharacters(), [])
   const libraryScenes = useMemo(() => loadLibraryScenes(), [])
+  const [bgError, setBgError] = useState(false)
+
+  // 切换卡片时重置背景图加载状态
+  useEffect(() => { setBgError(false) }, [card?.background])
 
 
   const getCharName = (id: string): string => {
@@ -64,14 +68,12 @@ export default function MiniPreview({ card, onFullScreen }: MiniPreviewProps) {
           <div className="relative h-full w-full">
             {/* 背景 */}
             <div className="absolute inset-0">
-              {bgUrl ? (
+              {bgUrl && !bgError ? (
                 <img
                   src={bgUrl}
                   alt="背景"
                   className="h-full w-full object-cover"
-                  onError={(e) => {
-                    ;(e.target as HTMLImageElement).style.display = 'none'
-                  }}
+                  onError={() => setBgError(true)}
                 />
               ) : (
                 <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-slate-800 to-slate-900">

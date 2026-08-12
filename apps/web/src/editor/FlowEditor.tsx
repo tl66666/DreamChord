@@ -175,13 +175,30 @@ export default function FlowEditor() {
   }
 
   /** 从选项创建新分支场景 */
-  const handleCreateBranch = (_cardId: string, choiceIndex: number, choiceText: string) => {
-    const card = selectedCard
+  // 批量操作时使用 ref 跟踪最新的 nodes/edges，避免闭包中读到旧值
+  const batchGraphRef = useRef<{ nodes: Node[]; edges: Edge[] } | null>(null)
+
+  const handleCreateBranch = (cardId: string, choiceIndex: number, choiceText: string) => {
+    // 使用 batch ref 中的值（批量操作时），否则使用 state
+    const workingNodes = batchGraphRef.current?.nodes ?? nodes
+    const workingEdges = batchGraphRef.current?.edges ?? edges
+
+    // 通过 cardId（= 文本节点 ID）在所有节点中查找 choice 节点
+    const choiceNode = workingNodes.find((n) => n.id === cardId && n.type === 'choice')
+    if (!choiceNode) return
+
+    // 找到该 choice 节点所在场景的全部节点，重建 card
+    const sceneGroupId = getNodeSceneGroupId(choiceNode)
+    const sceneStart = findSceneStartNode(sceneGroupId, workingNodes, workingEdges)
+    if (!sceneStart) return
+    const sceneNodes = getSceneGroupNodes(sceneStart, workingNodes, workingEdges)
+    const cards = groupNodesToCards(sceneNodes)
+    const card = cards.find((c) => c.id === cardId) || cards[0]
     if (!card) return
 
-    // 找到 choice 节点
+    // 找到 choice 节点 ID
     const choiceNodeId = card.nodeIds.find((id) => {
-      const n = nodes.find((nn) => nn.id === id)
+      const n = workingNodes.find((nn) => nn.id === id)
       return n?.type === 'choice'
     })
     if (!choiceNodeId) return
@@ -193,12 +210,12 @@ export default function FlowEditor() {
     const chapter = card.sceneCode ? card.sceneCode.split('-')[0] : '1'
     const sceneCode = ensureSceneCode(
       { sceneCode: '', sceneGroupId: '', } as ShotCard,
-      nodes,
+      workingNodes,
       chapter,
     )
 
     const draft: ShotCard = {
-      id: `card-${stamp}`,
+      id: `card-${stamp}-${rnd}`,
       sceneId: newSceneGroupId,
       type: 'dialogue',
       lensType: 'dialogue',
@@ -217,11 +234,11 @@ export default function FlowEditor() {
     const normalized = normalizeShotCard(draft)
     const { nodes: newNodes } = createSceneNodes(normalized, newSceneGroupId)
 
-    const allNodes = [...nodes, ...newNodes]
-    const allEdges = [...edges]
+    const allNodes = [...workingNodes, ...newNodes]
+    const allEdges = [...workingEdges]
 
     // 移除该选项的旧边
-    const oldEdge = edges.find((e) => e.source === choiceNodeId && e.sourceHandle === `choice-${choiceIndex}`)
+    const oldEdge = allEdges.find((e) => e.source === choiceNodeId && e.sourceHandle === `choice-${choiceIndex}`)
     if (oldEdge) {
       const idx = allEdges.indexOf(oldEdge)
       if (idx >= 0) allEdges.splice(idx, 1)
@@ -229,13 +246,20 @@ export default function FlowEditor() {
     // 添加新的 choice 边
     allEdges.push(choiceEdge(choiceNodeId, newNodes[0]!.id, choiceIndex, choiceText))
 
+    // 更新 batch ref，让后续调用读到最新值
+    batchGraphRef.current = { nodes: allNodes, edges: allEdges }
+
     const laidOut = layoutNodes(allNodes, allEdges)
     handleUpdateGraph(laidOut, allEdges)
 
-    // 自动跳转到新场景
-    setSelectedSceneId(newSceneGroupId)
-    setSelectedCardId(draft.id)
+    // 不自动跳转——批量操作时留在当前场景才能看到状态更新
+    // 单次操作时也不跳转，用户可以手动点击新场景
   }
+
+  // 在 nodes/edges 变化后清除 batch ref
+  useEffect(() => {
+    batchGraphRef.current = null
+  }, [nodes, edges])
 
   const handleAddScene = (chapter: string) => {
     const sceneCode = ensureSceneCode(
@@ -778,7 +802,7 @@ export default function FlowEditor() {
               onUpdateGraph={handleUpdateGraph}
               scenes={sceneList}
               onCreateBranch={handleCreateBranch}
-              onNavigateToScene={handleSelectScene}
+              onNavigateToScene={(sceneId) => { handleSelectScene(sceneId); setViewMode('scene') }}
               onRequestAI={handleRequestAI}
               onSetSceneExit={handleSetSceneExit}
               convergenceMap={convergenceMap}
@@ -862,6 +886,7 @@ export default function FlowEditor() {
           nodes={store.nodes}
           edges={store.edges}
           onClose={() => setShowHealth(false)}
+          onNavigateToScene={(sceneId) => { handleSelectScene(sceneId); setViewMode('scene') }}
         />
       )}
     </div>

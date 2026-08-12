@@ -112,7 +112,8 @@ export function CardEditor({
     if (!edge) return { hasTarget: false, targetSceneId: undefined }
     // 查找目标节点所属的场景
     const targetScene = allScenes.find((s) => s.nodeIds.includes(edge.target))
-    return { hasTarget: true, targetSceneId: targetScene?.id }
+    // 只有当目标场景存在时才算已配置
+    return { hasTarget: !!targetScene, targetSceneId: targetScene?.id }
   }
 
   const applyTemplate = (templateId: string) => {
@@ -311,24 +312,70 @@ export function CardEditor({
             <label className="block text-xs font-medium text-dream-500">选项列表与分支去向</label>
             <TemplateSelect templates={storyTemplates} onApply={applyTemplate} label="套用选项模板" />
           </div>
+          {/* 批量操作栏 */}
           {(() => {
-            const untargeted = localChoices.filter((_, i) => !getChoiceTarget(i).hasTarget).length
-            if (untargeted === 0) return null
+            const untargetedIndices = localChoices.map((_, i) => i).filter((i) => !getChoiceTarget(i).hasTarget)
+            if (untargetedIndices.length === 0) return null
+            const jumpScenes = allScenes.filter((s) => s.id !== card.sceneGroupId)
             return (
-              <div className="mb-2 flex items-center gap-1.5 rounded-lg border border-amber-200 bg-amber-50 px-2.5 py-1.5 text-xs text-amber-700">
-                <AlertTriangle className="h-3.5 w-3.5 shrink-0" />
-                <span>{untargeted} 个选项尚未设置分支去向，播放时将默认前进到下一场景</span>
+              <div className="mb-2 rounded-lg border border-amber-200 bg-amber-50 px-2.5 py-2">
+                <div className="flex items-center gap-2">
+                  <AlertTriangle className="h-3.5 w-3.5 shrink-0 text-amber-600" />
+                  <span className="flex-1 text-xs text-amber-700">
+                    {untargetedIndices.length} 个选项未设置去向
+                  </span>
+                  <button
+                    onClick={() => {
+                      untargetedIndices.forEach((i) => {
+                        const choiceText = localChoices[i] || `选项 ${i + 1}`
+                        onCreateBranch(i, choiceText)
+                      })
+                    }}
+                    className="flex items-center gap-1 rounded-md bg-amber-600 px-2 py-1 text-xs font-medium text-white transition hover:bg-amber-700"
+                  >
+                    <Plus className="h-3 w-3" /> 全部新建分支
+                  </button>
+                </div>
+                {jumpScenes.length > 0 && (
+                  <div className="mt-1.5 flex items-center gap-2 pl-5">
+                    <span className="text-[11px] text-amber-500">或全部跳转到：</span>
+                    <div className="relative flex-1">
+                      <select
+                        value=""
+                        onChange={(e) => {
+                          if (e.target.value) {
+                            untargetedIndices.forEach((i) => onSetChoiceTarget(i, e.target.value))
+                          }
+                        }}
+                        className="w-full cursor-pointer appearance-none rounded-md border border-amber-200 bg-white px-2 py-1 pr-6 text-xs text-amber-700 transition hover:border-amber-300"
+                      >
+                        <option value="">选择目标场景...</option>
+                        {jumpScenes.map((s) => (
+                          <option key={s.id} value={s.id}>{s.code} · {s.title}</option>
+                        ))}
+                      </select>
+                      <ArrowRight className="pointer-events-none absolute right-2 top-1/2 h-3 w-3 -translate-y-1/2 text-amber-400" />
+                    </div>
+                  </div>
+                )}
               </div>
             )
           })()}
           <div className="space-y-2">
             {localChoices.map((choice, i) => {
               const target = getChoiceTarget(i)
+              const targetScene = target.targetSceneId ? allScenes.find((s) => s.id === target.targetSceneId) : null
               return (
-                <div key={`choice-${i}`} className="rounded-lg border border-dream-150 bg-dream-50/30 p-2.5">
+                <div key={`choice-${i}`} className={`rounded-lg border p-2.5 transition ${
+                  target.hasTarget
+                    ? 'border-green-200 bg-green-50/20'
+                    : 'border-dream-150 bg-dream-50/30'
+                }`}>
                   {/* 选项文本 */}
                   <div className="flex items-center gap-2">
-                    <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-dream-100 text-xs font-bold text-dream-600">
+                    <span className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs font-bold ${
+                      target.hasTarget ? 'bg-green-100 text-green-600' : 'bg-dream-100 text-dream-600'
+                    }`}>
                       {String.fromCharCode(65 + i)}
                     </span>
                     <input
@@ -343,61 +390,61 @@ export function CardEditor({
                       <X className="h-3.5 w-3.5" />
                     </button>
                   </div>
-                  {/* 分支去向 */}
-                  <div className="mt-2 flex items-center gap-2 pl-8">
-                    <span className="text-xs text-dream-400">去向：</span>
-                    {target.hasTarget && target.targetSceneId ? (
-                      <>
-                        <span className="flex items-center gap-1 rounded bg-green-50 px-2 py-0.5 text-xs text-green-600">
-                          <ArrowRight className="h-3 w-3" />
-                          {allScenes.find((s) => s.id === target.targetSceneId)?.code || '?'} · {allScenes.find((s) => s.id === target.targetSceneId)?.title || '未知'}
-                        </span>
-                        {convergenceMap.has(target.targetSceneId) && (
+                  {/* 分支去向：已配置 */}
+                  {target.hasTarget && targetScene ? (
+                    <div className="mt-2 flex items-center gap-2 pl-8">
+                      <div className="flex items-center gap-1.5 rounded-lg bg-green-50 px-2.5 py-1 text-xs">
+                        <ArrowRight className="h-3 w-3 text-green-500" />
+                        <span className="font-mono text-green-600">{targetScene.code}</span>
+                        <span className="text-green-700">{targetScene.title}</span>
+                        {convergenceMap.has(targetScene.id) && (
                           <span className="flex items-center gap-0.5 rounded bg-purple-100 px-1.5 py-0.5 text-[10px] font-medium text-purple-600">
-                            <GitMerge className="h-2.5 w-2.5" /> 汇合点
+                            <GitMerge className="h-2.5 w-2.5" /> 汇合
                           </span>
                         )}
+                      </div>
+                      <button
+                        onClick={() => onNavigateToScene(targetScene.id)}
+                        className="rounded-md px-2 py-1 text-xs text-dream-500 transition hover:bg-dream-50 hover:text-dream-700"
+                      >
+                        前往编辑
+                      </button>
+                      <button
+                        onClick={() => onSetChoiceTarget(i, '')}
+                        className="rounded-md px-2 py-1 text-xs text-dream-300 transition hover:bg-red-50 hover:text-red-500"
+                      >
+                        断开
+                      </button>
+                    </div>
+                  ) : (
+                    /* 分支去向：未配置 — 双按钮布局 */
+                    <div className="mt-2 pl-8">
+                      <div className="flex items-center gap-1.5">
                         <button
-                          onClick={() => onNavigateToScene(target.targetSceneId!)}
-                          className="text-xs text-dream-500 underline hover:text-dream-700"
+                          onClick={() => onCreateBranch(i, choice || `选项 ${i + 1}`)}
+                          className="flex flex-1 items-center justify-center gap-1.5 rounded-lg bg-dream-600 px-3 py-1.5 text-xs font-medium text-white transition hover:bg-dream-700"
                         >
-                          前往编辑
+                          <Plus className="h-3.5 w-3.5" />
+                          新建分支场景
                         </button>
-                        <button
-                          onClick={() => onSetChoiceTarget(i, '')}
-                          className="text-xs text-dream-300 hover:text-red-500"
-                        >
-                          断开
-                        </button>
-                      </>
-                    ) : (
-                      <>
-                        <span className="flex items-center gap-1 rounded bg-amber-50 px-2 py-0.5 text-xs text-amber-600">
-                          <AlertTriangle className="h-3 w-3" /> 未设置去向
-                        </span>
-                        {/* 跳转到已有场景 */}
-                        <select
-                          value=""
-                          onChange={(e) => { if (e.target.value) onSetChoiceTarget(i, e.target.value) }}
-                          className="flex-1 rounded border border-dream-200 bg-white px-1.5 py-1 text-xs text-dream-600"
-                        >
-                          <option value="">跳转到已有场景...</option>
-                          {allScenes
-                            .filter((s) => s.id !== card.sceneGroupId)
-                            .map((s) => (
-                              <option key={s.id} value={s.id}>{s.code} · {s.title}</option>
-                            ))}
-                        </select>
-                        {/* 新建分支 */}
-                        <button
-                          onClick={() => onCreateBranch(i, choice)}
-                          className="flex items-center gap-1 rounded-lg bg-dream-600 px-2.5 py-1 text-xs font-medium text-white transition hover:bg-dream-700"
-                        >
-                          <Plus className="h-3 w-3" /> 写这条分支
-                        </button>
-                      </>
-                    )}
-                  </div>
+                        <div className="relative">
+                          <select
+                            value=""
+                            onChange={(e) => { if (e.target.value) onSetChoiceTarget(i, e.target.value) }}
+                            className="cursor-pointer appearance-none rounded-lg border border-dream-200 bg-white px-3 py-1.5 pr-7 text-xs text-dream-600 transition hover:border-dream-300 hover:bg-dream-50"
+                          >
+                            <option value="">跳转到已有场景</option>
+                            {allScenes
+                              .filter((s) => s.id !== card.sceneGroupId)
+                              .map((s) => (
+                                <option key={s.id} value={s.id}>{s.code} · {s.title}</option>
+                              ))}
+                          </select>
+                          <ArrowRight className="pointer-events-none absolute right-2 top-1/2 h-3 w-3 -translate-y-1/2 text-dream-400" />
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
               )
             })}
@@ -426,7 +473,7 @@ export function CardEditor({
         <div>
           <div className="mb-1 flex items-center justify-between gap-2">
             <label className="block text-xs font-medium text-dream-500">
-              {card.lensType === 'narration' ? '旁白文字' : card.lensType === 'thought' ? '心理描写' : '台词'}
+              {card.lensType === 'narration' ? '旁白文字' : card.lensType === 'thought' ? '心理描写' : card.lensType === 'memory' ? '回忆文字' : card.lensType === 'system' ? '系统提示' : '台词'}
             </label>
             <TemplateSelect templates={storyTemplates} onApply={applyTemplate} label="套用剧情素材" />
           </div>

@@ -1,5 +1,5 @@
 import type { Node, Edge } from '@xyflow/react'
-import type { RuntimeStory, RuntimeScene, RuntimeEvent, CharacterOnStage, CharacterId, CharacterState } from './types'
+import type { RuntimeStory, RuntimeScene, RuntimeEvent, CharacterOnStage, CharacterId, CharacterState, RuntimeCharacterCatalogEntry } from './types'
 import { CHARACTER_REGISTRY, resolveCharacterUrl } from './characters'
 import { loadLibraryCharacters } from '../lib/libraryData'
 import { resolveStageStateAfterNode } from '../editor/workbench/storyEditorGraph'
@@ -28,7 +28,7 @@ export function inferEvent(node: Node): RuntimeEvent {
   }
 }
 
-function parseCharacterOnStage(node: Node): CharacterOnStage | null {
+function parseCharacterOnStage(node: Node, projectCharacters: RuntimeCharacterCatalogEntry[]): CharacterOnStage | null {
   if (node.type !== 'character') return null
   const data = node.data as Record<string, unknown>
   const id = (data.characterId as string) || 'default-avatar'
@@ -42,6 +42,17 @@ function parseCharacterOnStage(node: Node): CharacterOnStage | null {
       state: 'normal' as CharacterState,
       position,
       customUrl: id,
+    }
+  }
+
+  const projectCharacter = projectCharacters.find((character) => character.id === id || character.name === id)
+  if (projectCharacter) {
+    const matchedSprite = projectCharacter.sprites?.find((sprite) => sprite.name === expression)
+    return {
+      id: projectCharacter.id as CharacterId,
+      state: expression as CharacterState,
+      position,
+      customUrl: matchedSprite?.url || projectCharacter.defaultSprite,
     }
   }
 
@@ -79,6 +90,7 @@ export function convertFlowToRuntime(
   projectTitle: string,
   nodes: Node[],
   edges: Edge[],
+  projectCharacters: RuntimeCharacterCatalogEntry[] = [],
 ): RuntimeStory {
   if (nodes.length === 0) {
     return {
@@ -100,25 +112,34 @@ export function convertFlowToRuntime(
   const visited = new Set<string>()
   const ordered: Node[] = []
 
+  // 预构建查找表，将 O(n) 的 nodes.find 降为 O(1)
+  const nodeMap = new Map<string, Node>()
+  for (const node of nodes) nodeMap.set(node.id, node)
+  const outEdgesBySource = new Map<string, Edge[]>()
+  for (const edge of edges) {
+    const arr = outEdgesBySource.get(edge.source) || []
+    arr.push(edge)
+    outEdgesBySource.set(edge.source, arr)
+  }
+
   function walk(nodeId: string) {
     if (visited.has(nodeId)) return
     visited.add(nodeId)
-    const node = nodes.find((n) => n.id === nodeId)
+    const node = nodeMap.get(nodeId)
     if (!node) return
     ordered.push(node)
 
-    const outEdges = edges
-      .filter((e) => e.source === nodeId)
-      .sort((a, b) => {
-        const aLabel = (a.sourceHandle || a.label || '').toString()
-        const bLabel = (b.sourceHandle || b.label || '').toString()
-        if (aLabel.startsWith('choice-') && bLabel.startsWith('choice-')) {
-          return Number(aLabel.replace('choice-', '')) - Number(bLabel.replace('choice-', ''))
-        }
-        if (aLabel.includes('真')) return -1
-        if (bLabel.includes('真')) return 1
-        return 0
-      })
+    const outEdges = (outEdgesBySource.get(nodeId) || []).sort((a, b) => {
+      const aLabel = (a.sourceHandle || a.label || '').toString()
+      const bLabel = (b.sourceHandle || b.label || '').toString()
+      if (aLabel.startsWith('choice-') && bLabel.startsWith('choice-')) {
+        return Number(aLabel.replace('choice-', '')) - Number(bLabel.replace('choice-', ''))
+      }
+      // "真"标签优先（真结局路线），其余按标签字母序
+      if (aLabel.includes('真')) return -1
+      if (bLabel.includes('真')) return 1
+      return 0
+    })
 
     for (const edge of outEdges) {
       walk(edge.target)
@@ -134,11 +155,11 @@ export function convertFlowToRuntime(
 
     while (currentId && !seen.has(currentId)) {
       seen.add(currentId)
-      const target = nodes.find((node) => node.id === currentId)
+      const target = nodeMap.get(currentId)
       if (!target) return ''
       if (PLAYABLE_NODE_TYPES.has(target.type || 'dialogue')) return target.id
 
-      const nextEdge = edges.find((edge) => edge.source === target.id && !edge.sourceHandle)
+      const nextEdge = (outEdgesBySource.get(currentId) || []).find((edge) => !edge.sourceHandle)
       if (!nextEdge) return ''
       currentId = nextEdge.target
     }
@@ -165,7 +186,7 @@ export function convertFlowToRuntime(
           position: character.position,
           action: 'show',
         },
-      })
+      }, projectCharacters)
       return parsed ? [parsed] : []
     })
 

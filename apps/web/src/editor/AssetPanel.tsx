@@ -225,7 +225,7 @@ export default function AssetPanel({
 
       <div className="flex-1 overflow-y-auto p-4">
         {activeType === 'SETTING' ? (
-          <SettingLibrary nodes={nodes} />
+          <SettingLibrary nodes={nodes} query={query} />
         ) : loading ? (
           <p className="text-center text-sm text-dream-500">加载中...</p>
         ) : (
@@ -342,10 +342,27 @@ export default function AssetPanel({
   </>)
 }
 
-function SettingLibrary({ nodes }: { nodes: Node[] }) {
+function SettingLibrary({ nodes, query }: { nodes: Node[]; query: string }) {
   const characters = loadLibraryCharacters()
   const scenes = loadLibraryScenes()
   const storyNodes = nodes.filter((node) => ['dialogue', 'subtitle', 'choice', 'background', 'character'].includes(node.type || ''))
+
+  const q = query.trim().toLowerCase()
+  const filteredCharacters = q
+    ? characters.filter((c) => c.name.toLowerCase().includes(q) || c.role.toLowerCase().includes(q) || c.biography.toLowerCase().includes(q))
+    : characters
+  const filteredScenes = q
+    ? scenes.filter((s) => s.name.toLowerCase().includes(q) || s.usage.toLowerCase().includes(q))
+    : scenes
+  const filteredStoryNodes = q
+    ? storyNodes.filter((node) => {
+        const data = getNodeData(node)
+        const text = node.type === 'choice'
+          ? ((data.choices as string[] | undefined) || []).join(' ')
+          : String(data.text || data.backgroundId || data.characterId || '')
+        return text.toLowerCase().includes(q) || (node.type || '').toLowerCase().includes(q)
+      })
+    : storyNodes
 
   return (
     <div className="space-y-5">
@@ -361,19 +378,24 @@ function SettingLibrary({ nodes }: { nodes: Node[] }) {
         <h4 className="mb-2 flex items-center gap-2 text-sm font-semibold text-dream-900">
           <User className="h-4 w-4" />
           角色设定
+          <span className="text-xs font-normal text-dream-400">{filteredCharacters.length}/{characters.length}</span>
         </h4>
         <div className="space-y-2">
-          {characters.map((character) => (
-            <div key={character.id} className="rounded-xl border border-dream-100 bg-white p-3">
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-medium text-dream-800">{character.name}</span>
-                <span className="text-xs text-dream-400">{character.role}</span>
+          {filteredCharacters.length === 0 ? (
+            <p className="rounded-xl border border-dashed border-dream-200 p-4 text-center text-xs text-dream-400">未找到匹配「{query}」的角色</p>
+          ) : (
+            filteredCharacters.map((character) => (
+              <div key={character.id} className="rounded-xl border border-dream-100 bg-white p-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium text-dream-800">{character.name}</span>
+                  <span className="text-xs text-dream-400">{character.role}</span>
+                </div>
+                <p className="mt-1 text-xs text-dream-500">立绘：{character.expressions.map((item) => item.label).join(' / ')}</p>
+                <p className="mt-1 line-clamp-3 text-xs leading-5 text-dream-500">{character.biography}</p>
+                <p className="mt-1 text-xs text-dream-500">主题色：{character.color}</p>
               </div>
-              <p className="mt-1 text-xs text-dream-500">立绘：{character.expressions.map((item) => item.label).join(' / ')}</p>
-              <p className="mt-1 line-clamp-3 text-xs leading-5 text-dream-500">{character.biography}</p>
-              <p className="mt-1 text-xs text-dream-500">主题色：{character.color}</p>
-            </div>
-          ))}
+            ))
+          )}
         </div>
       </section>
 
@@ -381,17 +403,22 @@ function SettingLibrary({ nodes }: { nodes: Node[] }) {
         <h4 className="mb-2 flex items-center gap-2 text-sm font-semibold text-dream-900">
           <Image className="h-4 w-4" />
           背景设定
+          <span className="text-xs font-normal text-dream-400">{filteredScenes.length}/{scenes.length}</span>
         </h4>
         <div className="grid grid-cols-2 gap-2">
-          {scenes.map((scene) => (
-            <div key={scene.id} className="overflow-hidden rounded-xl border border-dream-100 bg-white">
-              <img src={scene.url} alt={scene.name} className="h-20 w-full object-cover" />
-              <div className="p-2">
-                <p className="text-xs font-medium text-dream-700">{scene.name}</p>
-                <p className="line-clamp-2 text-[11px] text-dream-400">{scene.usage}</p>
+          {filteredScenes.length === 0 ? (
+            <p className="col-span-2 rounded-xl border border-dashed border-dream-200 p-4 text-center text-xs text-dream-400">未找到匹配「{query}」的背景</p>
+          ) : (
+            filteredScenes.map((scene) => (
+              <div key={scene.id} className="overflow-hidden rounded-xl border border-dream-100 bg-white">
+                <img src={scene.url} alt={scene.name} className="h-20 w-full object-cover" />
+                <div className="p-2">
+                  <p className="text-xs font-medium text-dream-700">{scene.name}</p>
+                  <p className="line-clamp-2 text-[11px] text-dream-400">{scene.usage}</p>
+                </div>
               </div>
-            </div>
-          ))}
+            ))
+          )}
         </div>
       </section>
 
@@ -399,14 +426,15 @@ function SettingLibrary({ nodes }: { nodes: Node[] }) {
         <h4 className="mb-2 flex items-center gap-2 text-sm font-semibold text-dream-900">
           <BookOpen className="h-4 w-4" />
           当前剧情素材
+          <span className="text-xs font-normal text-dream-400">{filteredStoryNodes.length}/{storyNodes.length}</span>
         </h4>
         <div className="space-y-2">
-          {storyNodes.length === 0 ? (
+          {filteredStoryNodes.length === 0 ? (
             <p className="rounded-xl border border-dashed border-dream-200 p-4 text-center text-xs text-dream-500">
-              还没有剧情节点。先在场景编辑里添加对话、旁白或选项。
+              {q ? `未找到匹配「${query}」的剧情节点` : '还没有剧情节点。先在场景编辑里添加对话、旁白或选项。'}
             </p>
           ) : (
-            storyNodes.slice(0, 12).map((node, index) => {
+            filteredStoryNodes.slice(0, 12).map((node, index) => {
               const data = getNodeData(node)
               const summary =
                 node.type === 'choice'

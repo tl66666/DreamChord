@@ -18,6 +18,15 @@ export interface CharacterOnStage {
   customUrl?: string
 }
 
+/** Character data shipped with a project so playback never depends on browser-local cache. */
+export interface RuntimeCharacterCatalogEntry {
+  id: string
+  name: string
+  color: string
+  defaultSprite: string
+  sprites?: Array<{ name: string; url: string }>
+}
+
 export type RuntimeEvent =
   | 'ON_INIT'
   | 'ON_NODE_VISUALIZE'

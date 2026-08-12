@@ -110,6 +110,7 @@ export interface Character {
   description: string | null
   color: string
   defaultSprite: string
+  sprites?: Array<{ id?: string; name: string; url: string }>
 }
 
 export async function getProject(id: string): Promise<ProjectDetail> {

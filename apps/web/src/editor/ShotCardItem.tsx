@@ -15,10 +15,12 @@ import { resolveBgUrl } from './storyFlowchart/bgUrl'
 import { CardEditor } from './CardEditor'
 
 /** 从 choice 节点的边中提取分支去向信息 */
-function getChoiceTargetFromEdges(choiceNodeId: string, index: number, edges: Edge[]): { action: string; targetSceneId?: string } {
+function getChoiceTargetFromEdges(choiceNodeId: string, index: number, edges: Edge[], allScenes: Scene[]): { action: string; targetSceneId?: string } {
   const edge = edges.find((e) => e.source === choiceNodeId && e.sourceHandle === `choice-${index}`)
   if (!edge) return { action: 'new_branch' }
-  return { action: 'jump', targetSceneId: edge.target }
+  // 通过目标节点 ID 查找所属场景
+  const targetScene = allScenes.find((s) => s.nodeIds.includes(edge.target))
+  return { action: 'jump', targetSceneId: targetScene?.id }
 }
 
 export interface ShotCardItemProps {
@@ -58,14 +60,18 @@ export function ShotCardItem({
   const typeIcon = card.type === 'choice' ? <GitBranch className="h-4 w-4" /> : <MessageSquare className="h-4 w-4" />
   const typeLabel = card.type === 'choice' ? '选项' : card.lensType === 'narration' ? '旁白' : card.lensType === 'thought' ? '心理' : card.lensType === 'memory' ? '回忆' : card.lensType === 'system' ? '系统' : '对话'
 
-  // 计算未设置去向的选项数量（仅 choice 类型）
-  const untargetedCount = card.type === 'choice'
-    ? (card.choices || []).filter((_, i) => {
+  // 预计算选项去向信息（仅 choice 类型），避免重复调用 getChoiceTargetFromEdges
+  const choiceTargets = card.type === 'choice'
+    ? (card.choices || []).map((_, i) => {
         const choiceNodeId = card.nodeIds.find(id => allEdges.some(e => e.source === id && e.sourceHandle === `choice-${i}`))
           || card.nodeIds[card.nodeIds.length - 1] || ''
-        return !getChoiceTargetFromEdges(choiceNodeId, i, allEdges).targetSceneId
-      }).length
-    : 0
+        const target = getChoiceTargetFromEdges(choiceNodeId, i, allEdges, allScenes)
+        const targetScene = target.targetSceneId ? allScenes.find(s => s.id === target.targetSceneId) : null
+        return { targetScene, hasTarget: !!targetScene }
+      })
+    : []
+  const untargetedCount = choiceTargets.filter(t => !t.hasTarget).length
+  const configuredCount = choiceTargets.filter(t => t.hasTarget).length
 
   return (
     <div
@@ -154,24 +160,48 @@ export function ShotCardItem({
               </div>
             )}
             {card.type === 'choice' ? (
-              <div className="space-y-0.5">
-                {(card.choices || []).map((choice, i) => {
-                  // 通过边信息找到 choice 节点：哪个 nodeId 有 choice-{i} 的 sourceHandle 边
-                  const choiceNodeId = card.nodeIds.find(id => allEdges.some(e => e.source === id && e.sourceHandle === `choice-${i}`))
-                    || card.nodeIds[card.nodeIds.length - 1] || ''
-                  const target = getChoiceTargetFromEdges(choiceNodeId, i, allEdges)
+              <div className="space-y-1">
+                {/* 选项概览统计 */}
+                {(() => {
+                  const total = (card.choices || []).length
+                  if (total === 0) return null
                   return (
-                    <div key={`choice-${i}`} className="flex items-center gap-1.5 text-xs text-dream-500">
-                      <span className="font-bold">{String.fromCharCode(65 + i)}.</span>
-                      <span className="truncate">{choice}</span>
-                      {target.targetSceneId ? (
-                        <span className="flex items-center gap-0.5 rounded bg-dream-50 px-1 text-[10px] text-dream-400">
+                    <div className="flex items-center gap-1.5 text-[10px]">
+                      <span className={`rounded-full px-1.5 py-0.5 font-medium ${
+                        configuredCount === total
+                          ? 'bg-green-100 text-green-600'
+                          : 'bg-amber-100 text-amber-600'
+                      }`}>
+                        {configuredCount}/{total} 已配置
+                      </span>
+                      {configuredCount < total && (
+                        <span className="flex items-center gap-0.5 text-amber-500">
+                          <Eye className="h-2.5 w-2.5" /> 点击展开配置去向
+                        </span>
+                      )}
+                    </div>
+                  )
+                })()}
+                {/* 选项列表 */}
+                {(card.choices || []).map((choice, i) => {
+                  const targetInfo = choiceTargets[i] || { targetScene: null, hasTarget: false }
+                  return (
+                    <div key={`choice-${i}`} className="flex items-center gap-1.5 text-xs">
+                      <span className={`flex h-4 w-4 shrink-0 items-center justify-center rounded text-[9px] font-bold ${
+                        targetInfo.hasTarget ? 'bg-green-100 text-green-600' : 'bg-dream-100 text-dream-400'
+                      }`}>
+                        {String.fromCharCode(65 + i)}
+                      </span>
+                      <span className="truncate text-dream-600">{choice}</span>
+                      {targetInfo.targetScene ? (
+                        <span className="flex shrink-0 items-center gap-0.5 rounded bg-green-50 px-1.5 py-0.5 text-[10px] text-green-600">
                           <ArrowRight className="h-2.5 w-2.5" />
-                          {allScenes.find(s => s.id === target.targetSceneId)?.code || '?'}
+                          <span className="font-mono">{targetInfo.targetScene.code}</span>
+                          <span className="max-w-[60px] truncate">{targetInfo.targetScene.title}</span>
                         </span>
                       ) : (
-                        <span className="flex items-center gap-0.5 rounded bg-amber-50 px-1 text-[10px] text-amber-500">
-                          <AlertTriangle className="h-2.5 w-2.5" /> 未设置
+                        <span className="flex shrink-0 items-center gap-0.5 rounded bg-amber-50 px-1.5 py-0.5 text-[10px] text-amber-500">
+                          <AlertTriangle className="h-2.5 w-2.5" /> 待设置
                         </span>
                       )}
                     </div>
@@ -180,7 +210,7 @@ export function ShotCardItem({
               </div>
             ) : (
               <div className="text-sm text-dream-700">
-                {card.speaker !== '旁白' && <span className="font-medium" style={{ color: characters.find((c) => c.id === card.speaker)?.color }}>{card.speaker}：</span>}
+                {card.speaker !== '旁白' && <span className="font-medium" style={{ color: characters.find((c) => c.id === card.speaker)?.color }}>{characters.find((c) => c.id === card.speaker)?.name || card.speaker}：</span>}
                 <span className={card.text ? '' : 'text-dream-300'}>{card.text || '（空台词）'}</span>
               </div>
             )}

@@ -31,4 +31,30 @@ describe('flow runtime stage continuity', () => {
     expect(wait?.background).toBe('/room.png')
     expect(leave?.background).toBe('/room.png')
   })
+
+  it('uses the current project character catalog instead of browser-local library data', () => {
+    const nodes: Node[] = [
+      { id: 'bg', type: 'background', position: { x: 0, y: 0 }, data: { backgroundId: '/uploads/project/room.webp' } },
+      { id: 'show-hero', type: 'character', position: { x: 0, y: 0 }, data: { characterId: 'hero-01', action: 'show', expression: 'smile', position: 'center' } },
+      { id: 'line', type: 'dialogue', position: { x: 0, y: 0 }, data: { role: 'hero-01', text: 'I am available in every browser.' } },
+    ]
+    const edges: Edge[] = [
+      { id: 'e1', source: 'bg', target: 'show-hero' },
+      { id: 'e2', source: 'show-hero', target: 'line' },
+    ]
+
+    const runtime = convertFlowToRuntime('project', 'Custom cast', nodes, edges, [
+      {
+        id: 'hero-01',
+        name: 'Lin',
+        color: '#0ea5e9',
+        defaultSprite: '/uploads/project/lin-default.webp',
+        sprites: [{ name: 'smile', url: '/uploads/project/lin-smile.webp' }],
+      },
+    ])
+
+    expect(runtime.scenes[0]?.characters).toEqual([
+      expect.objectContaining({ id: 'hero-01', customUrl: '/uploads/project/lin-smile.webp' }),
+    ])
+  })
 })

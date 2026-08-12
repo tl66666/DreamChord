@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { BookOpen, Settings2, X } from 'lucide-react'
 import { getStoryBible, updateStoryBible, type StoryBibleContent } from '../api/client'
 import type { ProjectData } from '../stores/editorStore'
@@ -16,20 +16,34 @@ export default function ProjectSettingsModal({ project, characters = [], onClose
   const [storyBible, setStoryBible] = useState<StoryBibleContent | null>(null)
   const [loadingBible, setLoadingBible] = useState(false)
   const [savingBible, setSavingBible] = useState(false)
+  const [savingProject, setSavingProject] = useState(false)
   const [bibleMessage, setBibleMessage] = useState('')
+  const [bibleStatus, setBibleStatus] = useState<'success' | 'error' | ''>('')
+
+  // Escape 键关闭弹窗
+  const handleKeyDown = useCallback((e: KeyboardEvent) => {
+    if (e.key === 'Escape') onClose()
+  }, [onClose])
+  useEffect(() => {
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [handleKeyDown])
 
   useEffect(() => {
     if (tab !== 'storyBible' || !project?.id || storyBible || loadingBible) return
     setLoadingBible(true)
     setBibleMessage('')
+    setBibleStatus('')
     getStoryBible(project.id)
       .then((response) => setStoryBible(response.content))
-      .catch((error: unknown) => setBibleMessage(error instanceof Error ? error.message : '故事圣经加载失败'))
+      .catch((error: unknown) => { setBibleMessage(error instanceof Error ? error.message : '故事圣经加载失败'); setBibleStatus('error') })
       .finally(() => setLoadingBible(false))
   }, [tab, project?.id, storyBible, loadingBible])
 
-  const handleProjectSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+  const handleProjectSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
+    if (savingProject) return
+    setSavingProject(true)
     const formData = new FormData(event.currentTarget)
     onUpdate({
       title: String(formData.get('title') || ''),
@@ -37,6 +51,8 @@ export default function ProjectSettingsModal({ project, characters = [], onClose
       cover: String(formData.get('cover') || ''),
       isPublic: formData.get('isPublic') === 'on',
     })
+    // 等待一小段时间让父组件处理更新，然后恢复按钮状态
+    setTimeout(() => setSavingProject(false), 800)
   }
 
   return (
@@ -67,12 +83,12 @@ export default function ProjectSettingsModal({ project, characters = [], onClose
               </label>
               <div className="flex justify-end gap-2 pt-2">
                 <button type="button" onClick={onClose} className="rounded-lg border border-dream-200 px-4 py-2 text-sm font-medium text-dream-700 hover:bg-dream-50">取消</button>
-                <button type="submit" className="rounded-lg bg-dream-600 px-4 py-2 text-sm font-medium text-white hover:bg-dream-700">保存项目信息</button>
+                <button type="submit" disabled={savingProject} className="rounded-lg bg-dream-600 px-4 py-2 text-sm font-medium text-white hover:bg-dream-700 disabled:opacity-60">{savingProject ? '保存中...' : '保存项目信息'}</button>
               </div>
             </form>
           ) : (
             <div>
-              {bibleMessage && <p className={`mb-4 rounded-lg px-3 py-2 text-sm ${bibleMessage === '故事圣经已保存' ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'}`}>{bibleMessage}</p>}
+              {bibleMessage && <p className={`mb-4 rounded-lg px-3 py-2 text-sm ${bibleStatus === 'success' ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'}`}>{bibleMessage}</p>}
               {loadingBible && <p className="py-10 text-center text-sm text-slate-500">正在加载故事圣经...</p>}
               {storyBible && project?.id && (
                 <StoryBiblePanel
@@ -82,12 +98,15 @@ export default function ProjectSettingsModal({ project, characters = [], onClose
                   onSave={async (content) => {
                     setSavingBible(true)
                     setBibleMessage('')
+                    setBibleStatus('')
                     try {
                       const saved = await updateStoryBible(project.id, content)
                       setStoryBible(saved.content)
                       setBibleMessage('故事圣经已保存')
+                      setBibleStatus('success')
                     } catch (error: unknown) {
                       setBibleMessage(error instanceof Error ? error.message : '故事圣经保存失败')
+                      setBibleStatus('error')
                     } finally {
                       setSavingBible(false)
                     }
