@@ -25,14 +25,15 @@ assert.doesNotMatch(launcher, /Stop-Process/, 'launcher must not terminate unrel
 assert.match(launcher, /versionNum\s+-lt\s+20/, 'launcher must require Node.js 20')
 assert.match(launcher, /corepack/, 'launcher must bootstrap the pinned package manager')
 assert.match(launcher, /RequiredPnpmVersion\s*=\s*'9\.1\.0'/, 'launcher must pin pnpm 9.1.0')
-assert.match(launcher, /pnpmVersion\s*-eq\s*\$RequiredPnpmVersion/, 'launcher must reject other pnpm versions')
-assert.match(launcher, /pnpm install --frozen-lockfile/, 'launcher must install from the workspace lockfile')
-assert.match(launcher, /prisma db push --accept-data-loss/, 'launcher must synchronize legacy local databases')
+assert.doesNotMatch(launcher, /corepack enable/, 'launcher must not require permission to write global Corepack shims')
+assert.match(launcher, /corepack\s+"pnpm@\$RequiredPnpmVersion"/, 'launcher must invoke the pinned pnpm through Corepack directly')
+assert.match(launcher, /Invoke-Pnpm\s+@\('install', '--frozen-lockfile'\)/, 'launcher must install from the workspace lockfile through the pinned pnpm')
+assert.match(launcher, /Invoke-Pnpm\s+@\('--filter', 'dreamchord-server', 'prisma', 'db', 'push', '--accept-data-loss'\)/, 'launcher must synchronize legacy local databases')
 assert.match(launcher, /function Find-DreamChordServer/, 'launcher must identify a running DreamChord API')
 assert.match(launcher, /\.service\s+-eq\s+'dreamchord-server'/, 'launcher must verify the API service identity')
 assert.match(launcher, /localhost/, 'launcher must detect a frontend bound to the IPv6 localhost interface')
 const runningServerProbeIndex = launcher.indexOf('$RunningServerPort = Find-DreamChordServer')
-const prismaGenerateIndex = launcher.indexOf('prisma generate')
+const prismaGenerateIndex = launcher.indexOf("Invoke-Pnpm @('--filter', 'dreamchord-server', 'prisma', 'generate')")
 assert.ok(runningServerProbeIndex >= 0, 'launcher must probe for a running DreamChord API')
 assert.ok(
   runningServerProbeIndex < prismaGenerateIndex,
@@ -41,12 +42,20 @@ assert.ok(
 assert.match(launcher, /DreamChord 已在运行/, 'launcher must explain when it reuses a running instance')
 assert.match(launcher, /SetupOnly[\s\S]*正在运行的 DreamChord/, 'setup mode must refuse to replace an active Prisma Client')
 const backupIndex = launcher.indexOf('backup-local-database.ps1')
-const schemaSyncIndex = launcher.indexOf('prisma db push --accept-data-loss')
+const schemaSyncIndex = launcher.indexOf("Invoke-Pnpm @('--filter', 'dreamchord-server', 'prisma', 'db', 'push', '--accept-data-loss')")
+const storyDomainBuildIndex = launcher.indexOf("Invoke-Pnpm @('--filter', '@dreamchord/story-domain', 'build')")
+const seedIndex = launcher.indexOf("Invoke-Pnpm @('--filter', 'dreamchord-server', 'prisma', 'db', 'seed')")
 assert.ok(backupIndex >= 0, 'launcher must invoke the database backup helper')
 assert.ok(schemaSyncIndex >= 0, 'launcher must invoke Prisma schema synchronization')
 assert.ok(
   backupIndex < schemaSyncIndex,
   'launcher must back up the local database before synchronizing it',
+)
+assert.ok(storyDomainBuildIndex >= 0, 'launcher must build the shared story domain for a clean clone')
+assert.ok(seedIndex >= 0, 'launcher must initialize the demo data')
+assert.ok(
+  storyDomainBuildIndex < seedIndex,
+  'launcher must build the shared story domain before demo seeding imports it',
 )
 assert.doesNotMatch(launcher, /dreamchord-web dev -- --host/, 'launcher must not pass a literal -- to Vite')
 assert.match(launcher, /dreamchord-web dev --host 127\.0\.0\.1/, 'launcher must bind Vite to IPv4 localhost')

@@ -11,6 +11,7 @@ chcp 65001 > $null 2>&1
 $ProjectRoot = Split-Path -Parent $MyInvocation.MyCommand.Path
 $ServerDir = Join-Path $ProjectRoot 'apps\server'
 $RequiredPnpmVersion = '9.1.0'
+$script:PnpmMode = $null
 $ServerPorts = 3001..3010
 $WebPorts = 5173..5183
 
@@ -67,24 +68,42 @@ function Assert-Node20 {
 }
 
 function Ensure-Pnpm {
-  if (Get-Command pnpm -ErrorAction SilentlyContinue) {
-    $pnpmVersion = pnpm --version
-    if ($pnpmVersion -eq $RequiredPnpmVersion) {
-      Write-Ok "pnpm $pnpmVersion"
-      return
-    }
-    Write-Warn "pnpm $pnpmVersion 与项目要求 $RequiredPnpmVersion 不一致，正在切换"
+  $pnpm = Get-Command pnpm -ErrorAction SilentlyContinue
+  if ($pnpm) {
+    try {
+      $installedVersion = (pnpm --version).Trim()
+      if ($installedVersion -eq $RequiredPnpmVersion) {
+        $script:PnpmMode = 'direct'
+        Write-Ok "pnpm $installedVersion"
+        return
+      }
+      Write-Warn "pnpm $installedVersion 与项目要求 $RequiredPnpmVersion 不一致，尝试使用 Corepack"
+    } catch { }
   }
   if (-not (Get-Command corepack -ErrorAction SilentlyContinue)) {
-    throw "未找到可用的 pnpm $RequiredPnpmVersion 或 Corepack。请重新安装 Node.js 20 LTS。"
+    throw "未找到 pnpm $RequiredPnpmVersion，也未找到 Corepack。请安装 Node.js 20 LTS 或 pnpm $RequiredPnpmVersion。"
   }
-  Write-Step "启用项目固定的 pnpm $RequiredPnpmVersion"
-  Invoke-Checked { corepack enable } 'Corepack 启用失败'
-  Invoke-Checked { corepack prepare "pnpm@$RequiredPnpmVersion" --activate } "pnpm $RequiredPnpmVersion 安装失败"
-  if (-not (Get-Command pnpm -ErrorAction SilentlyContinue)) { throw 'pnpm 启用后仍不可用，请重新打开终端再试' }
-  $pnpmVersion = pnpm --version
+  $script:PnpmMode = 'corepack'
+  Write-Step "准备项目固定的 pnpm $RequiredPnpmVersion"
+  Invoke-Checked { corepack "pnpm@$RequiredPnpmVersion" --version } "pnpm $RequiredPnpmVersion 准备失败"
+  $pnpmVersion = (& corepack "pnpm@$RequiredPnpmVersion" --version).Trim()
   if ($pnpmVersion -ne $RequiredPnpmVersion) { throw "pnpm 版本仍为 $pnpmVersion，需要 $RequiredPnpmVersion" }
   Write-Ok "pnpm $pnpmVersion"
+}
+
+function Invoke-Pnpm {
+  param([string[]]$Arguments)
+  if ($script:PnpmMode -eq 'direct') {
+    & pnpm @Arguments
+  } else {
+    & corepack "pnpm@$RequiredPnpmVersion" @Arguments
+  }
+  if ($LASTEXITCODE -ne 0) { throw "pnpm 命令失败: $($Arguments -join ' ')" }
+}
+
+function Get-PnpmCommand {
+  if ($script:PnpmMode -eq 'direct') { return 'pnpm' }
+  return "corepack pnpm@$RequiredPnpmVersion"
 }
 
 function Ensure-Environment([int]$ServerPort, [int]$WebPort) {
@@ -205,15 +224,16 @@ try {
 
   Write-Step '安装并校验工作区依赖'
   Push-Location $ProjectRoot
-  Invoke-Checked { pnpm install --frozen-lockfile } '依赖安装失败，请检查网络后重试'
+  Invoke-Pnpm @('install', '--frozen-lockfile')
 
   Write-Step '备份本地数据并同步数据库结构'
   Backup-LocalSqlite
-  Invoke-Checked { pnpm --filter dreamchord-server prisma generate } 'Prisma Client 生成失败'
-  Invoke-Checked { pnpm --filter dreamchord-server prisma db push --accept-data-loss } '数据库结构同步失败'
+  Invoke-Pnpm @('--filter', '@dreamchord/story-domain', 'build')
+  Invoke-Pnpm @('--filter', 'dreamchord-server', 'prisma', 'generate')
+  Invoke-Pnpm @('--filter', 'dreamchord-server', 'prisma', 'db', 'push', '--accept-data-loss')
 
   # Seed uses fixed IDs and upserts, so rerunning it never overwrites user projects.
-  Invoke-Checked { pnpm --filter dreamchord-server prisma db seed } '演示数据初始化失败'
+  Invoke-Pnpm @('--filter', 'dreamchord-server', 'prisma', 'db', 'seed')
   Pop-Location
   Write-Ok '本地数据已就绪（演示账号: demo / demo123）'
 
@@ -223,8 +243,9 @@ try {
   }
 
   Write-Step '启动后端和前端'
-  Start-ServiceWindow "DreamChord Backend ($ServerPort)" "set PORT=$ServerPort&& pnpm --filter dreamchord-server dev"
-  Start-ServiceWindow "DreamChord Frontend ($WebPort)" "set VITE_API_TARGET=http://127.0.0.1:$ServerPort&& pnpm --filter dreamchord-web dev --host 127.0.0.1 --port $WebPort --strictPort"
+  $PnpmCommand = Get-PnpmCommand
+  Start-ServiceWindow "DreamChord Backend ($ServerPort)" "set PORT=$ServerPort&& $PnpmCommand --filter dreamchord-server dev"
+  Start-ServiceWindow "DreamChord Frontend ($WebPort)" "set VITE_API_TARGET=http://127.0.0.1:$ServerPort&& $PnpmCommand --filter dreamchord-web dev --host 127.0.0.1 --port $WebPort --strictPort"
 
   $HomeUrl = "http://127.0.0.1:$WebPort"
   Wait-HttpReady "http://127.0.0.1:$ServerPort/api/health" '后端'
