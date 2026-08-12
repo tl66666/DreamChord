@@ -12,6 +12,7 @@
 | 理解系统如何工作 | [系统架构](ARCHITECTURE.md) | 15 分钟 |
 | 接手本轮 Agent 与文档更新 | [当前迭代交接](CURRENT_HANDOFF.md) | 12 分钟 |
 | 接手维护或开发 | [贡献指南](../CONTRIBUTING.md) | 10 分钟 |
+| 判断 GitHub、CI 与下一次迭代 | [维护与迭代手册](MAINTAINER_PLAYBOOK.md) | 12 分钟 |
 
 ## 使用文档
 
@@ -32,6 +33,7 @@
 - [场景编辑器设计](scene-editor-design.md)：场景与镜头卡编辑模型的详细设计。
 - [AI 与架构交接](AI_HANDOFF.md)：给后续维护者和编码 Agent 的实现级说明。
 - [当前迭代交接](CURRENT_HANDOFF.md)：本轮无 Key 降级、结构化剧本导入、启动器和展示材料的变更、边界与后续方向。
+- [维护与迭代手册](MAINTAINER_PLAYBOOK.md)：当前远端状态、首次验收、修改边界、质量检查、CI 判断和文档更新规则。
 - [交互架构图](dreamchord-architecture/dreamchord-architecture.html)：可视化系统关系。
 
 ## 维护与版本文档

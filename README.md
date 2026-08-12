@@ -2,7 +2,9 @@
 
 面向视觉小说创作者的本地故事工作台。作者可以用章节、场景和镜头卡组织故事，管理角色立绘、背景与 CG，通过分支流程图检查剧情，并让创作 Agent 读取项目上下文、调用受限工具、提出可审核的修改。
 
-[在线项目展示](https://tl66666.github.io/DreamChord/) | [新手入门](docs/GETTING_STARTED.md) | [项目概览](docs/PROJECT_OVERVIEW.md) | [当前迭代交接](docs/CURRENT_HANDOFF.md) | [完整文档](docs/README.md)
+[在线项目展示](https://tl66666.github.io/DreamChord/) | [新手入门](docs/GETTING_STARTED.md) | [项目概览](docs/PROJECT_OVERVIEW.md) | [维护与迭代手册](docs/MAINTAINER_PLAYBOOK.md) | [完整文档](docs/README.md)
+
+当前远端构建状态请查看 [GitHub Actions](https://github.com/tl66666/DreamChord/actions)：Actions 会保留历史失败记录，请以最新提交的 CI 与项目展示页部署结果为准。
 
 ![DreamChord 故事编辑器](docs/screenshots/editor-stage-continuity-1440.png)
 
@@ -108,6 +110,7 @@ source-assets            官方演示使用的源素材
 | 开发者或接手维护者 | [系统架构](docs/ARCHITECTURE.md) |
 | 想参与开发 | [贡献指南](CONTRIBUTING.md) |
 | 准备发布新版本 | [发布指南](docs/RELEASE_GUIDE.md) |
+| 第一次接手维护或迭代 | [维护与迭代手册](docs/MAINTAINER_PLAYBOOK.md) |
 | 查看版本变化 | [变更记录](CHANGELOG.md) |
 | 不理解项目术语 | [术语表](docs/GLOSSARY.md) |
 
