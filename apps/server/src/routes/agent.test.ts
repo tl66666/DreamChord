@@ -17,6 +17,7 @@ class MemoryAgentRunService implements AgentRunService {
     id: 'run', status: 'queued', prompt: '检查第二章', scope: 'chapter', targetId: null,
     provider: 'custom', model: 'fake', plan: [], timeline: [], sources: [], validation: {},
     errorCode: null, errorMessage: null, patch: null, createdAt: '2026-07-11T00:00:00.000Z', updatedAt: '2026-07-11T00:00:00.000Z', completedAt: null,
+    usage: { mode: 'provider', provider: 'custom', model: 'fake', toolCalls: 0, tools: [], memorySuggestions: 0, patch: false, fallback: false },
   }
   async listConversations() { return [] }
   async createConversation() { return { id: 'conversation', title: '新任务', scope: 'chapter', createdAt: this.run.createdAt, updatedAt: this.run.updatedAt } }

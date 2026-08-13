@@ -16,6 +16,7 @@ vi.mock('../api/client', () => ({ createAgentConversation: createConversation })
 const baseRun = {
   id: 'run', prompt: '检查', scope: 'chapter', targetId: null, provider: 'test', model: 'fake', plan: ['读取章节', '检查结构'],
   timeline: [], sources: [], validation: {}, errorCode: null, errorMessage: null, patch: null, createdAt: '', updatedAt: '', completedAt: null,
+  usage: { mode: 'provider', provider: 'test', model: 'fake', toolCalls: 0, tools: [], memorySuggestions: 0, patch: false, fallback: false },
 }
 
 function controller(run: unknown) {

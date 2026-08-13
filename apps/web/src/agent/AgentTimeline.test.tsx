@@ -9,6 +9,7 @@ function run(overrides: Partial<AgentRunDto> = {}): AgentRunDto {
     id: 'run', status: 'completed', prompt: '你好', scope: 'project', targetId: null,
     provider: 'glm', model: 'glm-4.7-flash', plan: [], timeline: [], sources: [], validation: {},
     errorCode: null, errorMessage: null, patch: null, createdAt: '', updatedAt: '', completedAt: '',
+    usage: { mode: 'provider', provider: 'glm', model: 'glm-4.7-flash', toolCalls: 0, tools: [], memorySuggestions: 0, patch: false, fallback: false },
     ...overrides,
   }
 }

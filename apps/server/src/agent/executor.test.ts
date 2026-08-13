@@ -54,6 +54,15 @@ describe('creative agent executor', () => {
     expect(chat).toHaveBeenCalledTimes(2)
   })
 
+  it('emits a policy receipt before executing a tool', async () => {
+    const onEvent = vi.fn()
+    const chat = vi.fn()
+      .mockResolvedValueOnce(JSON.stringify({ type: 'tool_call', tool: 'analyze_story_graph', input: {} }))
+      .mockResolvedValueOnce(JSON.stringify({ type: 'final', summary: '完成', plan: [] }))
+    await executeCreativeAgent({ prompt: '检查剧情', initialContext: [], chat, tools: registry(), onEvent })
+    expect(onEvent).toHaveBeenCalledWith(expect.objectContaining({ type: 'tool_policy', tool: 'analyze_story_graph', access: 'validate', decision: 'automatic' }))
+  })
+
   it('requires material inspection before a model creates a playable scene', async () => {
     const chat = vi.fn(async (_messages: unknown[]) => JSON.stringify({ type: 'final', summary: '已生成草案', plan: [], patch: { operations: [] } }))
 

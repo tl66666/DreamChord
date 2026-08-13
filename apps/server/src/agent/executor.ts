@@ -3,6 +3,7 @@ import type { LLMMessage } from '../llm/providers.js'
 import type { AgentContextSource } from './context.js'
 import { parseAgentModelResponse } from './protocol.js'
 import type { AgentToolName } from './tools.js'
+import { getAgentToolPolicy } from './toolPolicy.js'
 
 export interface UniformAgentTool {
   parseInput(value: unknown): unknown
@@ -11,8 +12,11 @@ export interface UniformAgentTool {
 export type UniformAgentToolRegistry = Partial<Record<AgentToolName, UniformAgentTool>>
 
 export interface AgentExecutionEvent {
-  type: 'tool_started' | 'tool_completed' | 'format_repair' | 'tool_input_repair' | 'response_fallback'
+  type: 'tool_started' | 'tool_completed' | 'tool_policy' | 'memory_suggestions' | 'format_repair' | 'tool_input_repair' | 'response_fallback'
   tool?: AgentToolName
+  access?: 'read' | 'prepare' | 'propose' | 'validate'
+  decision?: 'automatic' | 'author_review'
+  count?: number
 }
 
 export interface AgentExecutionResult {
@@ -138,6 +142,8 @@ export async function executeConversationalAgent(input: {
     const tool = input.tools[response.tool]
     if (!tool) throw new Error(`读取工具未注册: ${response.tool}`)
     const parsedInput = tool.parseInput(normalizeToolInput(response.tool, response.input))
+    const policy = getAgentToolPolicy(response.tool)
+    await input.onEvent?.({ type: 'tool_policy', tool: response.tool, access: policy.access, decision: policy.decision })
     await input.onEvent?.({ type: 'tool_started', tool: response.tool })
     const toolResult = await tool.execute(parsedInput)
     await input.onEvent?.({ type: 'tool_completed', tool: response.tool })
@@ -218,6 +224,8 @@ export async function executeCreativeAgent(input: {
       })
       continue
     }
+    const policy = getAgentToolPolicy(response.tool)
+    await input.onEvent?.({ type: 'tool_policy', tool: response.tool, access: policy.access, decision: policy.decision })
     await input.onEvent?.({ type: 'tool_started', tool: response.tool })
     const result = await tool.execute(parsedInput)
     await input.onEvent?.({ type: 'tool_completed', tool: response.tool })

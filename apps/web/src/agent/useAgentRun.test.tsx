@@ -12,6 +12,7 @@ vi.mock('../api/client', () => ({
 const baseRun = {
   id: 'run', status: 'queued' as const, prompt: '检查', scope: 'chapter', targetId: null, provider: 'test', model: 'fake',
   plan: [], timeline: [], sources: [], validation: {}, errorCode: null, errorMessage: null, patch: null,
+  usage: { mode: 'provider' as const, provider: 'test', model: 'fake', toolCalls: 0, tools: [], memorySuggestions: 0, patch: false, fallback: false },
   createdAt: '', updatedAt: '', completedAt: null,
 }
 

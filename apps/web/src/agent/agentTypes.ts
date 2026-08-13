@@ -8,6 +8,7 @@ export interface AgentRunDto {
   id: string; status: AgentRunStatus; prompt: string; scope: string; targetId: string | null; provider: string; model: string
   plan: string[]; timeline: Array<{ type?: string; tool?: string; at?: string }>; sources: unknown[]; validation: unknown
   errorCode: string | null; errorMessage: string | null; patch: AgentPatchDto | null
+  usage: { mode: 'local' | 'provider' | 'fallback'; provider: string; model: string; toolCalls: number; tools: string[]; memorySuggestions: number; patch: boolean; fallback: boolean }
   createdAt: string; updatedAt: string; completedAt: string | null
 }
 export interface AgentConversationDto {

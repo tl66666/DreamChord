@@ -30,6 +30,12 @@ export default function AgentTimeline({ run }: { run: AgentRunDto }) {
   const StatusIcon = active ? Loader2 : run.status === 'failed' ? AlertTriangle : Check
   return (
     <section className="border-b border-slate-200 px-4 py-3" aria-live="polite">
+      <div className="mt-2 grid grid-cols-2 gap-2 rounded-md bg-slate-50 px-3 py-2 text-[11px] text-slate-600">
+        <span>执行模式：{run.usage.mode === 'local' ? '本地模式' : run.usage.mode === 'fallback' ? '模型失败后降级' : '模型模式'}</span>
+        <span>模型：{run.usage.provider}/{run.usage.model}</span>
+        <span>工具调用：{run.usage.toolCalls} 次</span>
+        <span>待确认记忆：{run.usage.memorySuggestions} 条</span>
+      </div>
       <div className="flex items-center gap-2 text-sm font-semibold text-slate-900">
         <StatusIcon className={`h-4 w-4 ${active ? 'animate-spin text-cyan-600' : run.status === 'failed' ? 'text-amber-600' : 'text-emerald-600'}`} />
         {run.status === 'awaiting_approval' ? '草案等待确认' : statusLabels[run.status] || run.status}

@@ -16,9 +16,10 @@ import { decideAgentPolicy } from './policy.js'
 export type AgentRunStatus = 'queued' | 'planning' | 'gathering_context' | 'drafting' | 'validating' | 'awaiting_approval' | 'applying' | 'completed' | 'failed' | 'cancelled'
 export interface ProviderSecretConfig { provider: string; model: string; apiKey: string; baseUrl?: string }
 export interface AgentPatchDto { id: string; status: string; payload: unknown; validation: unknown; diff: unknown; baseVersion: number; appliedVersion: number | null }
+export interface AgentRunUsageDto { mode: 'local' | 'provider' | 'fallback'; provider: string; model: string; toolCalls: number; tools: string[]; memorySuggestions: number; patch: boolean; fallback: boolean }
 export interface AgentRunDto {
   id: string; status: AgentRunStatus; prompt: string; scope: string; targetId: string | null; provider: string; model: string
-  plan: string[]; timeline: unknown[]; sources: unknown[]; validation: unknown; errorCode: string | null; errorMessage: string | null
+  plan: string[]; timeline: unknown[]; sources: unknown[]; validation: unknown; errorCode: string | null; errorMessage: string | null; usage: AgentRunUsageDto
   patch: AgentPatchDto | null; createdAt: string; updatedAt: string; completedAt: string | null
 }
 export interface ConversationDto { id: string; title: string; scope: string; createdAt: string; updatedAt: string }
@@ -103,6 +104,7 @@ export class PrismaAgentRunService implements AgentRunService {
       id: run.id, status: run.status as AgentRunStatus, prompt: run.prompt, scope: run.scope, targetId: run.targetId,
       provider: run.provider, model: run.model, plan: parseJson(run.plan, []) as string[], timeline: parseJson(run.timeline, []) as unknown[],
       sources: parseJson(run.sources, []) as unknown[], validation: parseJson(run.validation, {}), errorCode: run.errorCode, errorMessage: run.errorMessage,
+      usage: parseJson(run.usage, { mode: 'provider', provider: run.provider, model: run.model, toolCalls: 0, tools: [], memorySuggestions: 0, patch: false, fallback: false }) as AgentRunUsageDto,
       patch: run.patch ? { id: run.patch.id, status: run.patch.status, payload: parseJson(run.patch.payload, {}), validation: parseJson(run.patch.validation, {}), diff: parseJson(run.patch.diff, {}), baseVersion: run.patch.baseVersion, appliedVersion: run.patch.appliedVersion } : null,
       createdAt: iso(run.createdAt), updatedAt: iso(run.updatedAt), completedAt: run.completedAt ? iso(run.completedAt) : null,
     }
@@ -212,7 +214,10 @@ export class PrismaAgentRunService implements AgentRunService {
     const actionRequested = policy.requiresPatch
     const actionPrompt = confirmationRequested ? '续写当前章节，并生成可审批的可运行场景。' : run.prompt
     let result
+    let executionMode: AgentRunUsageDto['mode'] = 'provider'
+    let usedFallback = false
     if (policy.kind === 'local-import' || policy.kind === 'local-immediate' || policy.kind === 'material-plan' || policy.kind === 'voice-plan') {
+      executionMode = 'local'
       result = await runLocalAssistant({
         prompt: actionPrompt,
         snapshot,
@@ -234,6 +239,8 @@ export class PrismaAgentRunService implements AgentRunService {
         })
       } catch (error) {
         if (!actionRequested) throw error
+        executionMode = 'fallback'
+        usedFallback = true
         await this.appendTimeline(run.id, { type: 'response_fallback' })
         result = await runLocalAssistant({
           prompt: actionPrompt, snapshot, chapterId: run.chapterId ?? undefined,
@@ -243,6 +250,8 @@ export class PrismaAgentRunService implements AgentRunService {
       }
     }
     if (actionRequested && run.chapterId && !result.patch) {
+      executionMode = 'fallback'
+      usedFallback = true
       const prose = result.summary
       await this.appendTimeline(run.id, { type: 'response_fallback' })
       const fallback = await runLocalAssistant({
@@ -264,7 +273,9 @@ export class PrismaAgentRunService implements AgentRunService {
         status: 'suggested', title: memory.title, content: memory.content, tags: JSON.stringify(memory.tags ?? []),
         importance: memory.importance ?? 50, sourceType: 'assistant', sourceId: run.id,
       })) })
+      await this.appendTimeline(run.id, { type: 'memory_suggestions', count: result.memorySuggestions.length })
     }
+    await this.writeUsage(run.id, { mode: executionMode, provider: run.provider, model: run.model, memorySuggestions: result.memorySuggestions.length, patch: Boolean(result.patch), fallback: usedFallback })
     await this.client.agentRun.update({ where: { id: run.id }, data: { status: 'validating', plan: JSON.stringify(result.plan) } })
     if (!result.patch) {
       await this.client.agentMessage.create({ data: { conversationId: run.conversationId, role: 'assistant', content: result.summary, metadata: JSON.stringify({ runId: run.id, artifactRefs: result.artifactRefs }) } })
@@ -322,6 +333,12 @@ export class PrismaAgentRunService implements AgentRunService {
       return
     }
     await this.client.agentRun.update({ where: { id: runId }, data: { status: 'failed', errorCode: error instanceof Error && 'code' in error ? String(error.code) : 'agent-failed', errorMessage: message, completedAt: new Date() } }).catch(() => undefined)
+  }
+  private async writeUsage(runId: string, input: Omit<AgentRunUsageDto, 'toolCalls' | 'tools'>): Promise<void> {
+    const row = await this.client.agentRun.findUnique({ where: { id: runId }, select: { timeline: true } })
+    const timeline = parseJson(row?.timeline ?? '[]', []) as Array<{ type?: string; tool?: string }>
+    const tools = [...new Set(timeline.filter((item) => item.type === 'tool_started' && item.tool).map((item) => item.tool!))]
+    await this.client.agentRun.update({ where: { id: runId }, data: { usage: JSON.stringify({ ...input, toolCalls: tools.length, tools }) } })
   }
 }
 
