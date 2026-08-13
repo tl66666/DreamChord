@@ -45,4 +45,4 @@
 ### Task 5: Verify and publish
 
 - [x] Run focused red/green tests, `pnpm lint`, `pnpm test`, `pnpm -r build`, `pnpm test:readiness`, and `git diff --check`.
-- [ ] Commit only code, docs, and tests; push `main`; wait for CI and Pages for that commit.
+- [x] Commit only code, docs, and tests; push `main`; wait for CI and Pages for that commit.
