@@ -17,7 +17,7 @@ const DEFAULT_PLAYABLE_MATERIAL = {
 }
 const BUILT_IN_CHARACTER_NAMES: Record<string, string> = { yuki: '雪', ren: '影', miya: '宫', sora: '空', ghost: '系统幽灵' }
 const MATERIAL_PROMPT_INTENT = /素材提示词|生成提示词|绘图提示词|image\s*prompt|asset\s*prompt/i
-const ASSET_INTENT = /素材|图片|立绘|CG|背景|白底|抠图|asset|image/i
+const ASSET_INTENT = /素材|图片|立绘|CG|背景|白底|抠图|配音|音效|BGM|音乐|声音|audio|sound|voice|asset|image/i
 const CHARACTER_INTENT = /角色|人物|character/i
 const HEALTH_INTENT = /体检|检查.*(剧情|章节|结构|分支)|(剧情|章节|结构|分支).*(问题|健康)|health|analy[sz]e/i
 const GREETING_INTENT = /^(你好|您好|嗨|哈喽|hello|hi)[!！。.？?]*$/i
@@ -526,9 +526,13 @@ function assetSummary(snapshot: AgentProjectSnapshot): AgentExecutionResult {
   const inventory = snapshot.assets.length
     ? snapshot.assets.map((asset) => `- ${asset.name}（${asset.type}${asset.width && asset.height ? `，${asset.width}x${asset.height}` : ''}）`).join('\n')
     : '素材库目前为空。'
+  const audioInventory = (type: 'BGM' | 'SFX' | 'VOICE', label: string) => {
+    const names = snapshot.assets.filter((asset) => asset.type === type).map((asset) => asset.name)
+    return `${label}：${names.length ? names.join('、') : '缺少'}`
+  }
   return result(
-    `素材库共有 ${snapshot.assets.length} 项：\n${inventory}\n\n角色立绘优先使用透明 PNG；白底或纯色底图片可以先做边缘连通去底和裁边。复杂背景无法只靠本地规则可靠抠图，建议换透明 PNG 或在专业抠图工具中处理。`,
-    ['盘点素材库', '给出图片处理建议'],
+    `素材库共有 ${snapshot.assets.length} 项：\n${inventory}\n\n音频盘点\n${audioInventory('BGM', 'BGM')}\n${audioInventory('SFX', '音效')}\n${audioInventory('VOICE', '配音')}\n\n角色立绘优先使用透明 PNG；白底或纯色底图片可以先做边缘连通去底和裁边。复杂背景无法只靠本地规则可靠抠图，建议换透明 PNG 或在专业抠图工具中处理。音频素材可在镜头卡中由作者选择并试听；我会提示缺口或提供素材需求，默认不会自动绑定或修改场景。`,
+    ['盘点素材库与音频缺口', '给出图片处理建议', '保留音频绑定给作者确认'],
   )
 }
 

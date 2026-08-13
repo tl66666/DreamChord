@@ -7,7 +7,7 @@
 import { useState, useEffect } from 'react'
 import type { Edge } from '@xyflow/react'
 import {
-  ImageIcon, Users, X, Wand2, ArrowRight, GitMerge, Plus, Sparkles, GitBranch, AlertTriangle, FolderOpen,
+  ImageIcon, Users, X, Wand2, ArrowRight, GitMerge, Plus, Sparkles, GitBranch, AlertTriangle, FolderOpen, Music, Volume2, Mic, RotateCcw,
 } from 'lucide-react'
 import {
   type ShotCard, type CharacterSlot, type Scene,
@@ -33,7 +33,7 @@ export function CardEditor({
   onCreateBranch: (choiceIndex: number, choiceText: string) => void
   onNavigateToScene: (sceneId: string) => void
   onRequestAI: (mode: 'polish' | 'continue' | 'choices' | 'branchReplies' | 'storyGraph') => void
-  onOpenAssetPicker: (cardId: string, field: 'background') => void
+  onOpenAssetPicker: (cardId: string, field: 'background' | 'bgm' | 'sfx' | 'voice') => void
 }) {
   const [newCharId, setNewCharId] = useState('')
   const [localText, setLocalText] = useState(card.text)
@@ -128,6 +128,14 @@ export function CardEditor({
     }
     setLocalText(template.content)
     onUpdate({ text: template.content })
+  }
+
+  const updateAudio = (updates: Partial<NonNullable<ShotCard['audio']>>) => {
+    onUpdate({ audio: { ...card.audio, ...updates } })
+  }
+
+  const setBgmAction = (action: 'keep' | 'play' | 'stop') => {
+    updateAudio({ bgm: { ...card.audio?.bgm, action } })
   }
 
   return (
@@ -304,6 +312,45 @@ export function CardEditor({
           )}
         </div>
       )}
+
+      <section className="rounded-lg border border-dream-150 bg-dream-50/30 p-3" aria-label="音频演出">
+        <div className="mb-2 flex items-center justify-between gap-2">
+          <div>
+            <h3 className="text-xs font-medium text-dream-600">音频演出</h3>
+            <p className="mt-0.5 text-[11px] text-dream-400">仅在进入此镜头时触发；BGM 可延续、切换或停止。</p>
+          </div>
+          {(card.audio?.bgm || card.audio?.sfx?.length || card.audio?.voice) && (
+            <button type="button" onClick={() => onUpdate({ audio: undefined })} className="flex h-7 w-7 items-center justify-center rounded border border-dream-200 bg-white text-dream-400 hover:text-red-500" title="清除本镜头音频" aria-label="清除本镜头音频"><RotateCcw className="h-3.5 w-3.5" /></button>
+          )}
+        </div>
+        <div className="space-y-2">
+          <div className="flex items-center gap-2">
+            <Music className="h-3.5 w-3.5 shrink-0 text-dream-500" />
+            <span className="w-8 shrink-0 text-xs text-dream-500">BGM</span>
+            <select aria-label="BGM 动作" value={card.audio?.bgm?.action || 'keep'} onChange={(event) => setBgmAction(event.target.value as 'keep' | 'play' | 'stop')} className="min-w-0 flex-1 rounded border border-dream-200 bg-white px-2 py-1 text-xs text-dream-700">
+              <option value="keep">延续上一首</option>
+              <option value="play">播放或切换</option>
+              <option value="stop">停止 BGM</option>
+            </select>
+            {card.audio?.bgm?.action === 'play' && card.audio.bgm.url && <span className="max-w-24 truncate text-[11px] text-dream-500" title={card.audio.bgm.url}>{card.audio.bgm.url.split('/').pop()}</span>}
+            <button type="button" aria-label="从项目素材选择背景音乐" title="从项目素材选择背景音乐" onClick={() => onOpenAssetPicker(card.id, 'bgm')} className="flex h-7 w-7 shrink-0 items-center justify-center rounded border border-dream-200 bg-white text-dream-600 hover:bg-dream-50"><FolderOpen className="h-3.5 w-3.5" /></button>
+          </div>
+          <div className="flex items-center gap-2">
+            <Volume2 className="h-3.5 w-3.5 shrink-0 text-dream-500" />
+            <span className="w-8 shrink-0 text-xs text-dream-500">音效</span>
+            <span className="min-w-0 flex-1 truncate text-xs text-dream-600" title={card.audio?.sfx?.map((effect) => effect.url).join('\n')}>{card.audio?.sfx?.length ? `${card.audio.sfx.length} 个音效` : '未设置'}</span>
+            {card.audio?.sfx?.length ? <button type="button" onClick={() => updateAudio({ sfx: [] })} className="text-[11px] text-dream-400 hover:text-red-500">移除</button> : null}
+            <button type="button" aria-label="从项目素材选择音效" title="从项目素材选择音效" onClick={() => onOpenAssetPicker(card.id, 'sfx')} className="flex h-7 w-7 shrink-0 items-center justify-center rounded border border-dream-200 bg-white text-dream-600 hover:bg-dream-50"><FolderOpen className="h-3.5 w-3.5" /></button>
+          </div>
+          <div className="flex items-center gap-2">
+            <Mic className="h-3.5 w-3.5 shrink-0 text-dream-500" />
+            <span className="w-8 shrink-0 text-xs text-dream-500">配音</span>
+            <span className="min-w-0 flex-1 truncate text-xs text-dream-600" title={card.audio?.voice?.url}>{card.audio?.voice?.url ? card.audio.voice.url.split('/').pop() : '未设置'}</span>
+            {card.audio?.voice ? <button type="button" onClick={() => updateAudio({ voice: undefined })} className="text-[11px] text-dream-400 hover:text-red-500">移除</button> : null}
+            <button type="button" aria-label="从项目素材选择配音" title="从项目素材选择配音" onClick={() => onOpenAssetPicker(card.id, 'voice')} className="flex h-7 w-7 shrink-0 items-center justify-center rounded border border-dream-200 bg-white text-dream-600 hover:bg-dream-50"><FolderOpen className="h-3.5 w-3.5" /></button>
+          </div>
+        </div>
+      </section>
 
       {/* 台词 / 选项编辑 */}
       {card.type === 'choice' ? (

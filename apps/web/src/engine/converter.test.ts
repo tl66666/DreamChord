@@ -57,4 +57,27 @@ describe('flow runtime stage continuity', () => {
       expect.objectContaining({ id: 'hero-01', customUrl: '/uploads/project/lin-smile.webp' }),
     ])
   })
+
+  it('carries BGM, sound effects, and voice-over direction into the playable scene', () => {
+    const nodes: Node[] = [
+      {
+        id: 'line', type: 'dialogue', position: { x: 0, y: 0 }, data: {
+          role: 'narrator', text: 'Rain begins.',
+          audio: {
+            bgm: { action: 'play', url: '/uploads/audio/rain.mp3', volume: 0.4, fadeInMs: 600 },
+            sfx: [{ url: '/uploads/audio/thunder.ogg', volume: 0.8 }],
+            voice: { url: '/uploads/audio/narration.wav', volume: 0.9 },
+          },
+        },
+      },
+    ]
+
+    const runtime = convertFlowToRuntime('project', 'Audio direction', nodes, [])
+
+    expect(runtime.scenes[0]?.audio).toEqual({
+      bgm: { action: 'play', url: '/uploads/audio/rain.mp3', volume: 0.4, fadeInMs: 600 },
+      sfx: [{ url: '/uploads/audio/thunder.ogg', volume: 0.8 }],
+      voice: { url: '/uploads/audio/narration.wav', volume: 0.9 },
+    })
+  })
 })

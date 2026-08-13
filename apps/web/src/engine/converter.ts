@@ -1,5 +1,5 @@
 import type { Node, Edge } from '@xyflow/react'
-import type { RuntimeStory, RuntimeScene, RuntimeEvent, CharacterOnStage, CharacterId, CharacterState, RuntimeCharacterCatalogEntry } from './types'
+import type { RuntimeStory, RuntimeScene, RuntimeEvent, CharacterOnStage, CharacterId, CharacterState, RuntimeCharacterCatalogEntry, RuntimeAudioDirection, RuntimeBgmDirection, RuntimeOneShotAudio } from './types'
 import { CHARACTER_REGISTRY, resolveCharacterUrl } from './characters'
 import { loadLibraryCharacters } from '../lib/libraryData'
 import { resolveStageStateAfterNode } from '../editor/workbench/storyEditorGraph'
@@ -84,6 +84,36 @@ function findStartNode(nodes: Node[], edges: Edge[]): Node {
 }
 
 const PLAYABLE_NODE_TYPES = new Set(['dialogue', 'subtitle', 'choice'])
+
+function parseAudioDirection(value: unknown): RuntimeAudioDirection | undefined {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return undefined
+  const input = value as Record<string, unknown>
+  const bgmInput = input.bgm && typeof input.bgm === 'object' && !Array.isArray(input.bgm)
+    ? input.bgm as Record<string, unknown>
+    : undefined
+  const action = bgmInput?.action
+  const bgm: RuntimeBgmDirection | undefined = action === 'keep' || action === 'stop'
+    ? { action }
+    : action === 'play' && typeof bgmInput?.url === 'string' && bgmInput.url
+      ? {
+          action,
+          url: bgmInput.url,
+          ...(typeof bgmInput.volume === 'number' ? { volume: bgmInput.volume } : {}),
+          ...(typeof bgmInput.fadeInMs === 'number' ? { fadeInMs: bgmInput.fadeInMs } : {}),
+          ...(typeof bgmInput.fadeOutMs === 'number' ? { fadeOutMs: bgmInput.fadeOutMs } : {}),
+        }
+      : undefined
+  const oneShot = (item: unknown): RuntimeOneShotAudio | undefined => item && typeof item === 'object' && !Array.isArray(item) && typeof (item as Record<string, unknown>).url === 'string'
+    ? {
+        url: (item as Record<string, unknown>).url as string,
+        ...(typeof (item as Record<string, unknown>).volume === 'number' ? { volume: (item as Record<string, unknown>).volume as number } : {}),
+      }
+    : undefined
+  const sfx = Array.isArray(input.sfx) ? input.sfx.map(oneShot).filter((item): item is NonNullable<typeof item> => Boolean(item)) : []
+  const voice = oneShot(input.voice)
+  if (!bgm && sfx.length === 0 && !voice) return undefined
+  return { ...(bgm ? { bgm } : {}), ...(sfx.length ? { sfx } : {}), ...(voice ? { voice } : {}) }
+}
 
 export function convertFlowToRuntime(
   projectId: string,
@@ -195,6 +225,7 @@ export function convertFlowToRuntime(
       event: inferEvent(node),
       background: stage.backgroundId,
       characters: stageCharacters,
+      ...(parseAudioDirection(data.audio) ? { audio: parseAudioDirection(data.audio) } : {}),
     }
     const outEdges = edges
       .filter((edge) => edge.source === node.id)

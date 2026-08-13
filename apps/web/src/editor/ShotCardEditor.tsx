@@ -22,7 +22,7 @@ import {
   getNodeCharacterId, getNodeSceneCode,
   createSceneNodes, normalizeShotCard,
   layoutNodes, normalEdge, chainEdges, choiceEdge,
-  groupNodesToCards, applyStageToShotCard,
+  groupNodesToCards, applyStageToShotCard, applyAudioAssetToShotCard,
   getChoices,
 } from './sceneGraph'
 import { resolveStageStateAfterNode } from './workbench/storyEditorGraph'
@@ -369,9 +369,14 @@ export default function ShotCardEditor({
 
   useEffect(() => {
     if (!assetSelection) return
-    if (assetSelection.target.field === 'background') updateCard(assetSelection.target.cardId, { background: assetSelection.asset.url })
+    const { field } = assetSelection.target
+    if (field === 'background') updateCard(assetSelection.target.cardId, { background: assetSelection.asset.url })
+    if (field === 'bgm' || field === 'sfx' || field === 'voice') {
+      const card = cards.find((item) => item.id === assetSelection.target.cardId)
+      if (card) updateCard(card.id, { audio: applyAudioAssetToShotCard(card, field, assetSelection.asset.url).audio })
+    }
     onAssetApplied()
-  }, [assetSelection, onAssetApplied, updateCard])
+  }, [assetSelection, cards, onAssetApplied, updateCard])
 
   const addCard = useCallback((type: 'dialogue' | 'choice' | 'narration') => {
     if (!selectedSceneId) return

@@ -21,6 +21,8 @@ const TYPE_TABS = [
   { key: 'BACKGROUND', label: '背景', icon: Image, accept: 'image/*' },
   { key: 'CG', label: '人物 / CG', icon: Image, accept: 'image/*' },
   { key: 'BGM', label: '音乐', icon: Music, accept: 'audio/*' },
+  { key: 'SFX', label: '音效', icon: Music, accept: 'audio/*' },
+  { key: 'VOICE', label: '配音', icon: Music, accept: 'audio/*' },
   { key: 'OTHER', label: '其他', icon: FileType, accept: '*' },
   { key: 'SETTING', label: '设定', icon: BookOpen, accept: '*' },
 ]
@@ -482,7 +484,7 @@ function AssetCard({
   onProcess: () => void
   onDelete: () => void
 }) {
-  const isAudio = asset.type === 'BGM'
+  const isAudio = ['BGM', 'SFX', 'VOICE'].includes(asset.type)
   return (
     <div className="group overflow-hidden rounded-xl border border-dream-100 bg-dream-50 transition hover:border-dream-300 hover:shadow-sm">
       <button onClick={onSelect} className="block w-full text-left">
@@ -496,6 +498,17 @@ function AssetCard({
       </button>
 
       <div className="p-2">
+        {isAudio && (
+          <audio
+            controls
+            preload="metadata"
+            src={asset.url}
+            className="mb-2 h-7 w-full"
+            onClick={(event) => event.stopPropagation()}
+          >
+            你的浏览器不支持音频预览。
+          </audio>
+        )}
         {editing ? (
           <div className="flex items-center gap-1">
             <input

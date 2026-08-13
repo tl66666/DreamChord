@@ -13,8 +13,9 @@ import { prisma } from '../lib/prisma.js'
 import { authenticateToken, type AuthRequest } from '../middleware/auth.js'
 
 const uploadDir = process.env.UPLOAD_DIR || './uploads'
-const ASSET_TYPES = ['BACKGROUND', 'CG', 'BGM', 'OTHER', 'SETTING'] as const
+const ASSET_TYPES = ['BACKGROUND', 'CG', 'BGM', 'SFX', 'VOICE', 'OTHER', 'SETTING'] as const
 type AssetType = typeof ASSET_TYPES[number]
+const AUDIO_ASSET_TYPES = new Set<AssetType>(['BGM', 'SFX', 'VOICE'])
 const renameSchema = z.object({ name: z.string().trim().min(1).max(200) }).strict()
 const processSchema = z.object({ purpose: z.enum(['sprite', 'cg', 'background']), removeWhite: z.boolean().optional(), whiteThreshold: z.number().int().min(180).max(255).optional(), feather: z.number().int().min(0).max(40).optional(), trim: z.boolean().optional() }).strict()
 const acceptSchema = z.object({ purpose: z.enum(['sprite', 'cg', 'background']), projectId: z.string().min(1).optional(), characterId: z.string().min(1).optional(), characterName: z.string().trim().min(1).max(100).optional(), expressionName: z.string().trim().min(1).max(100).optional() }).strict()
@@ -38,8 +39,8 @@ async function finalizeUpload(file: Express.Multer.File, type: AssetType, storag
   audio: AudioInspection | null
 }> {
   const buffer = fs.readFileSync(file.path)
-  const image = type === 'BGM' ? null : await inspectImage(buffer)
-  const audio = type === 'BGM' ? inspectAudio(buffer) : null
+  const image = AUDIO_ASSET_TYPES.has(type) ? null : await inspectImage(buffer)
+  const audio = AUDIO_ASSET_TYPES.has(type) ? inspectAudio(buffer) : null
   const extension = audio?.extension ?? (image?.format === 'jpeg' ? 'jpg' : image?.format)
   if (!extension) throw new Error('素材格式无法识别')
   const filename = `${path.parse(file.filename).name}.${extension}`

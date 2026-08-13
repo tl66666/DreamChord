@@ -7,6 +7,7 @@ import { getProject, type ProjectDetail } from '../api/client'
 import { safeJsonParse } from '../lib/safeJsonParse'
 import { createRuntimeEngine } from '../engine/runtime'
 import { convertFlowToRuntime } from '../engine/converter'
+import { createAudioDirector } from './audioDirector'
 import {
   CHARACTER_REGISTRY,
   resolveCharacterColor,
@@ -28,6 +29,7 @@ interface PlayerSettings {
   skipRead: boolean
   bgmVolume: number
   sfxVolume: number
+  voiceVolume: number
 }
 
 const DEFAULT_SETTINGS: PlayerSettings = {
@@ -36,6 +38,7 @@ const DEFAULT_SETTINGS: PlayerSettings = {
   skipRead: false,
   bgmVolume: 0.5,
   sfxVolume: 0.7,
+  voiceVolume: 0.8,
 }
 
 /** 根据同屏角色数量动态计算立绘位置和宽度，防止遮挡 */
@@ -105,6 +108,8 @@ export default function VisualNovelPlayer() {
   const skipTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const typingRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const audioContextRef = useRef<AudioContext | null>(null)
+  const audioDirectorRef = useRef<ReturnType<typeof createAudioDirector> | null>(null)
+  if (!audioDirectorRef.current) audioDirectorRef.current = createAudioDirector()
 
   const playTone = useCallback(
     (type: 'tap' | 'choice' | 'scene') => {
@@ -177,6 +182,26 @@ export default function VisualNovelPlayer() {
   }, [location.search, projectId, toast])
 
   const currentScene = engine?.currentScene() || null
+
+  // A scene ID identifies an immutable runtime snapshot; volume changes are handled below.
+  useEffect(() => {
+    audioDirectorRef.current?.playScene(currentScene?.audio, {
+      bgm: settings.bgmVolume,
+      sfx: settings.sfxVolume,
+      voice: settings.voiceVolume,
+    })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentScene?.id])
+
+  useEffect(() => {
+    audioDirectorRef.current?.updateMix({
+      bgm: settings.bgmVolume,
+      sfx: settings.sfxVolume,
+      voice: settings.voiceVolume,
+    })
+  }, [settings.bgmVolume, settings.sfxVolume, settings.voiceVolume])
+
+  useEffect(() => () => audioDirectorRef.current?.dispose(), [])
 
   const backgroundUrl = useMemo(() => {
     if (!currentScene) return '/assets/backgrounds/bg-starry.png'
@@ -295,6 +320,7 @@ export default function VisualNovelPlayer() {
 
   const restart = useCallback(() => {
     if (!engine) return
+    audioDirectorRef.current?.dispose()
     setHistory([])
     setFinished(false)
     setIsAuto(false)
@@ -607,11 +633,25 @@ export default function VisualNovelPlayer() {
                   onChange={(value) => setSettings((old) => ({ ...old, textSpeed: value }))}
                 />
                 <RangeControl
+                  label="背景音乐音量"
+                  value={Math.round(settings.bgmVolume * 100)}
+                  min={0}
+                  max={100}
+                  onChange={(value) => setSettings((old) => ({ ...old, bgmVolume: value / 100 }))}
+                />
+                <RangeControl
                   label="音效音量"
                   value={Math.round(settings.sfxVolume * 100)}
                   min={0}
                   max={100}
                   onChange={(value) => setSettings((old) => ({ ...old, sfxVolume: value / 100 }))}
+                />
+                <RangeControl
+                  label="配音音量"
+                  value={Math.round(settings.voiceVolume * 100)}
+                  min={0}
+                  max={100}
+                  onChange={(value) => setSettings((old) => ({ ...old, voiceVolume: value / 100 }))}
                 />
               </div>
               <button onClick={() => setShowSettings(false)} className="mt-6 w-full rounded-xl bg-white/10 py-2 text-sm text-white transition hover:bg-white/20">

@@ -6,6 +6,8 @@ import ProjectAssetPicker from './ProjectAssetPicker'
 const background = { id: 'background', name: '雨夜街道', type: 'BACKGROUND', url: '/uploads/rain.webp', createdAt: '2026-07-12T00:00:00Z' }
 const cg = { id: 'cg', name: '天台重逢', type: 'CG', url: '/uploads/rooftop.webp', createdAt: '2026-07-12T00:00:00Z' }
 const bgm = { id: 'bgm', name: '雨声', type: 'BGM', url: '/uploads/rain.mp3', createdAt: '2026-07-12T00:00:00Z' }
+const sfx = { id: 'sfx', name: '雷鸣', type: 'SFX', url: '/uploads/thunder.ogg', createdAt: '2026-07-12T00:00:00Z' }
+const voice = { id: 'voice', name: '旁白第一句', type: 'VOICE', url: '/uploads/narration.wav', createdAt: '2026-07-12T00:00:00Z' }
 const other = { id: 'other', name: '设定文档', type: 'OTHER', url: '/uploads/note.txt', createdAt: '2026-07-12T00:00:00Z' }
 
 describe('project asset picker', () => {
@@ -28,5 +30,22 @@ describe('project asset picker', () => {
     expect(screen.queryByRole('button', { name: '选择雨声' })).toBeNull()
     expect(screen.queryByRole('button', { name: '选择设定文档' })).toBeNull()
     expect(select).toHaveBeenCalledWith(target, cg)
+  })
+
+  it.each([
+    ['bgm', bgm, 'BGM'],
+    ['sfx', sfx, 'SFX'],
+    ['voice', voice, 'VOICE'],
+  ] as const)('filters %s selection to its matching audio asset type', (field, expectedAsset, expectedType) => {
+    const select = vi.fn()
+    const target = { cardId: 'card-audio', field }
+    render(<ProjectAssetPicker assets={[bgm, sfx, voice, other]} target={target} onSelect={select} onClose={vi.fn()} />)
+
+    fireEvent.click(screen.getByRole('button', { name: `选择${expectedAsset.name}` }))
+    expect(select).toHaveBeenCalledWith(target, expectedAsset)
+    ;[bgm, sfx, voice].filter((asset) => asset.id !== expectedAsset.id).forEach((asset) => {
+      expect(screen.queryByRole('button', { name: `选择${asset.name}` })).toBeNull()
+    })
+    expect(expectedAsset.type).toBe(expectedType)
   })
 })

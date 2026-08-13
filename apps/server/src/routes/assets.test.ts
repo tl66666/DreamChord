@@ -131,6 +131,28 @@ describe('asset routes', () => {
     expect(existsSync(path.join(root, storedUrl.slice('/uploads/'.length)))).toBe(true)
   })
 
+  it.each(['SFX', 'VOICE'] as const)('stores validated %s files through the same safe audio pipeline', async (type) => {
+    const root = temporaryRoot()
+    const create = vi.fn().mockImplementation(async ({ data }) => ({ id: 'asset', ...data }))
+    const client = {
+      project: { findUnique: vi.fn().mockResolvedValue({ id: 'project', authorId: 'owner' }) },
+      asset: { create },
+    } as unknown as PrismaClient
+    const mp3 = Buffer.alloc(417)
+    mp3.set([0xff, 0xfb, 0x90, 0x64])
+
+    const response = await request(appFor(client, root))
+      .post('/api/assets/upload')
+      .set('Authorization', `Bearer ${token('owner')}`)
+      .field('projectId', 'project')
+      .field('type', type)
+      .attach('file', mp3, { filename: 'audio.html', contentType: 'audio/mpeg' })
+
+    expect(response.status).toBe(200)
+    expect(create).toHaveBeenCalledWith({ data: expect.objectContaining({ type, mimeType: 'audio/mpeg' }) })
+    expect(create.mock.calls[0]?.[0].data.url).toMatch(/^\/uploads\/library\/owner\/[0-9a-f-]+\.mp3$/)
+  })
+
   it('keeps a replaced file when another database record still references its URL', async () => {
     const root = temporaryRoot()
     const oldUrl = '/uploads/shared-old.png'

@@ -65,7 +65,7 @@ export function createAgentToolRegistry(context: {
       },
     },
     list_project_assets: {
-      inputSchema: z.object({ type: z.enum(['BACKGROUND', 'CG', 'BGM', 'OTHER']).optional() }).strict(),
+      inputSchema: z.object({ type: z.enum(['BACKGROUND', 'CG', 'BGM', 'SFX', 'VOICE', 'OTHER', 'SETTING']).optional() }).strict(),
       async execute(input: { type?: string }) { return context.snapshot.assets.filter((asset) => !input.type || asset.type === input.type).slice(0, 100) },
     },
     inspect_asset: {

@@ -30,6 +30,7 @@ function getApiError(err: unknown, fallback = '操作失败'): string {
 }
 
 type LibraryTab = 'characters' | 'scenes' | 'stories' | 'projectAssets'
+const AUDIO_ASSET_TYPES = ['BGM', 'SFX', 'VOICE']
 
 const tabs: { id: LibraryTab; label: string; icon: ReactNode }[] = [
   { id: 'characters', label: '角色库', icon: <Users className="h-4 w-4" /> },
@@ -450,6 +451,8 @@ function ProjectAssetLibrary(props: { user: unknown; assets: Asset[]; assetType:
           <option value="CG">角色立绘 / CG</option>
           <option value="BACKGROUND">背景图</option>
           <option value="BGM">音乐</option>
+          <option value="SFX">音效</option>
+          <option value="VOICE">配音</option>
           <option value="OTHER">其他</option>
         </select>
         <label className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-md bg-dream-600 px-4 py-2 text-sm font-medium text-white hover:bg-dream-700">
@@ -462,7 +465,12 @@ function ProjectAssetLibrary(props: { user: unknown; assets: Asset[]; assetType:
       <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
         {assets.map((asset) => (
           <article key={asset.id} className="overflow-hidden rounded-lg border border-slate-200">
-            {asset.type === 'BGM' ? <div className="flex h-40 items-center justify-center bg-slate-100 text-sm text-slate-500">BGM</div> : <img src={asset.url} alt={asset.name} className="h-40 w-full object-contain bg-slate-100" />}
+            {AUDIO_ASSET_TYPES.includes(asset.type) ? (
+              <div className="flex h-40 flex-col items-center justify-center gap-3 bg-slate-100 px-3 text-sm text-slate-500">
+                <span>{asset.type}</span>
+                <audio controls preload="metadata" className="max-w-full" src={asset.url}>你的浏览器不支持音频预览。</audio>
+              </div>
+            ) : <img src={asset.url} alt={asset.name} className="h-40 w-full object-contain bg-slate-100" />}
             <div className="p-3">
               {renamingId === asset.id ? (
                 <div className="flex gap-2">
@@ -479,7 +487,7 @@ function ProjectAssetLibrary(props: { user: unknown; assets: Asset[]; assetType:
                     </div>
                     <RowActions onEdit={() => onStartRename(asset)} onDelete={() => onDelete(asset)} />
                   </div>
-                  {asset.type !== 'BGM' && (
+                  {!AUDIO_ASSET_TYPES.includes(asset.type) && (
                     <div className="flex flex-wrap gap-2">
                       <button onClick={() => onProcess(asset)} className="inline-flex items-center gap-1 rounded-md bg-cyan-700 px-2 py-1 text-xs font-medium text-white hover:bg-cyan-800"><SlidersHorizontal className="h-3 w-3" />处理图片</button>
                       <button onClick={() => onRegisterCharacter(asset)} className="rounded-md border border-dream-200 bg-dream-50 px-2 py-1 text-xs font-medium text-dream-700 hover:bg-dream-100">

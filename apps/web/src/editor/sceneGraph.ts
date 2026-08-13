@@ -27,6 +27,36 @@ export interface ChoiceOption {
   action: 'new_branch' | 'jump' | 'merge'
 }
 
+export interface ShotCardBgmDirection {
+  action: 'keep' | 'play' | 'stop'
+  url?: string
+  volume?: number
+  fadeInMs?: number
+  fadeOutMs?: number
+}
+
+export interface ShotCardOneShotAudio {
+  url: string
+  volume?: number
+}
+
+export interface ShotCardAudioDirection {
+  bgm?: ShotCardBgmDirection
+  sfx?: ShotCardOneShotAudio[]
+  voice?: ShotCardOneShotAudio
+}
+
+export function applyAudioAssetToShotCard(
+  card: ShotCard,
+  field: 'bgm' | 'sfx' | 'voice',
+  url: string,
+): ShotCard {
+  const audio = card.audio || {}
+  if (field === 'bgm') return { ...card, audio: { ...audio, bgm: { action: 'play', url } } }
+  if (field === 'sfx') return { ...card, audio: { ...audio, sfx: [...(audio.sfx || []), { url }] } }
+  return { ...card, audio: { ...audio, voice: { url } } }
+}
+
 export interface ShotCard {
   id: string
   sceneId: string
@@ -39,6 +69,7 @@ export interface ShotCard {
   speakerPosition: 'left' | 'center' | 'right'
   autoStageSpeaker: boolean
   text: string
+  audio?: ShotCardAudioDirection
   choices?: string[]
   sceneCode: string
   sceneGroupId: string
@@ -525,6 +556,7 @@ export function draftFromSceneNodes(sceneNodes: Node[]): ShotCard {
     speakerPosition: (String(speakerData.position || 'left') as ShotCard['speakerPosition']),
     autoStageSpeaker: Boolean(textData.autoStageSpeaker ?? true),
     text: String(textData.text || ''),
+    audio: textData.audio as ShotCardAudioDirection | undefined,
     choices: textNode?.type === 'choice' ? getChoices(textNode) : undefined,
     sceneCode: getNodeSceneCode(sceneNodes[0]!) || '1-1',
     sceneGroupId,
@@ -601,6 +633,7 @@ export function createSceneNodes(card: ShotCard, reuseGroupId?: string): { nodes
         sceneCode,
         lensType: card.lensType,
         autoStageSpeaker: card.autoStageSpeaker ?? true,
+        audio: card.audio,
       },
     })
   } else {
@@ -615,8 +648,8 @@ export function createSceneNodes(card: ShotCard, reuseGroupId?: string): { nodes
       type: isSubtitle ? 'subtitle' : 'dialogue',
       position: { x: 260, y: 120 + (visibleCharacters.length + 1) * 130 },
       data: isSubtitle
-        ? { role, text, position: 'bottom', duration: 0, sceneGroupId, sceneCode, lensType: card.lensType, autoStageSpeaker: card.autoStageSpeaker ?? true }
-        : { role, text, sceneGroupId, sceneCode, lensType: card.lensType, autoStageSpeaker: card.autoStageSpeaker ?? true },
+        ? { role, text, position: 'bottom', duration: 0, sceneGroupId, sceneCode, lensType: card.lensType, autoStageSpeaker: card.autoStageSpeaker ?? true, audio: card.audio }
+        : { role, text, sceneGroupId, sceneCode, lensType: card.lensType, autoStageSpeaker: card.autoStageSpeaker ?? true, audio: card.audio },
     })
   }
 

@@ -47,7 +47,7 @@ export interface ShotCardItemProps {
   onCreateBranch: (choiceIndex: number, choiceText: string) => void
   onNavigateToScene: (sceneId: string) => void
   onRequestAI: (mode: 'polish' | 'continue' | 'choices' | 'branchReplies' | 'storyGraph') => void
-  onOpenAssetPicker: (cardId: string, field: 'background') => void
+  onOpenAssetPicker: (cardId: string, field: 'background' | 'bgm' | 'sfx' | 'voice') => void
 }
 
 export function ShotCardItem({

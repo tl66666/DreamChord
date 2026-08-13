@@ -34,6 +34,7 @@ powershell -ExecutionPolicy Bypass -File .\start-dreamchord.ps1 -NoBrowser
 2. 新建一个场景，设置背景、角色、台词和选项，打开完整预览确认可播放。
 3. 在素材库上传一张图片，接受候选素材后将其绑定为角色表情或场景背景，再次预览。
 4. 在 Agent 中先进行不绑定章节的项目对话；再绑定章节生成提案，检查预览、应用和撤销。
+5. 上传或选择 BGM、SFX 和 VOICE 素材，在一个镜头卡完成三种音频绑定后预览，检查通道音量和重开播放器后的清理行为。
 
 不要删除 `.env`、`apps/server/prisma/dev.db`、`apps/server/uploads` 来处理启动问题。先运行：
 

@@ -39,6 +39,25 @@ describe('local agent assistant', () => {
     expect(result.summary).toContain('白底')
   })
 
+  it('audits available audio and keeps binding decisions with the author', async () => {
+    const result = await runLocalAssistant({
+      prompt: '素材库里的配音、BGM 和音效够不够？',
+      snapshot: {
+        ...snapshot,
+        assets: [
+          ...snapshot.assets,
+          { id: 'rain-bgm', name: '雨夜循环', type: 'BGM', url: '/uploads/rain.mp3', width: null, height: null },
+          { id: 'door-sfx', name: '推门', type: 'SFX', url: '/uploads/door.ogg', width: null, height: null },
+        ],
+      },
+    })
+
+    expect(result.summary).toContain('雨夜循环')
+    expect(result.summary).toContain('推门')
+    expect(result.summary).toContain('配音：缺少')
+    expect(result.summary).toContain('不会自动绑定')
+  })
+
   it('lists project characters', async () => {
     const result = await runLocalAssistant({ prompt: '这个故事有哪些角色？', snapshot })
     expect(result.summary).toContain('雪')

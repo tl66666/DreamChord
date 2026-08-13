@@ -817,8 +817,8 @@ export default function FlowEditor() {
           <div className={paneClasses.side}>
             {showAssets ? (
               <AssetPanel
-                selectedType={assetTarget?.field === 'background' ? 'BACKGROUND' : 'CG'}
-                selectionTypes={assetTarget?.field === 'background' ? ['BACKGROUND', 'CG'] : undefined}
+                selectedType={assetTarget?.field === 'background' ? 'BACKGROUND' : assetTarget?.field === 'bgm' ? 'BGM' : assetTarget?.field === 'sfx' ? 'SFX' : assetTarget?.field === 'voice' ? 'VOICE' : 'CG'}
+                selectionTypes={assetTarget?.field === 'background' ? ['BACKGROUND', 'CG'] : assetTarget?.field === 'bgm' ? ['BGM'] : assetTarget?.field === 'sfx' ? ['SFX'] : assetTarget?.field === 'voice' ? ['VOICE'] : undefined}
                 onSelect={handleSelectAsset}
                 onClose={() => setShowAssets(false)}
                 onProjectCharacterAccepted={handleProjectCharacterAccepted}

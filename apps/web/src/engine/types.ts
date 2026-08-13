@@ -27,6 +27,25 @@ export interface RuntimeCharacterCatalogEntry {
   sprites?: Array<{ name: string; url: string }>
 }
 
+export interface RuntimeBgmDirection {
+  action: 'keep' | 'play' | 'stop'
+  url?: string
+  volume?: number
+  fadeInMs?: number
+  fadeOutMs?: number
+}
+
+export interface RuntimeOneShotAudio {
+  url: string
+  volume?: number
+}
+
+export interface RuntimeAudioDirection {
+  bgm?: RuntimeBgmDirection
+  sfx?: RuntimeOneShotAudio[]
+  voice?: RuntimeOneShotAudio
+}
+
 export type RuntimeEvent =
   | 'ON_INIT'
   | 'ON_NODE_VISUALIZE'
@@ -44,6 +63,7 @@ export interface RuntimeScene {
   background: string
   characters?: CharacterOnStage[]
   uiEvents?: string[]
+  audio?: RuntimeAudioDirection
   dialogue?: {
     role: CharacterId | string
     text: string
