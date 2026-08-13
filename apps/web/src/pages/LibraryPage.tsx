@@ -30,7 +30,7 @@ function getApiError(err: unknown, fallback = '操作失败'): string {
 }
 
 type LibraryTab = 'characters' | 'scenes' | 'stories' | 'projectAssets'
-const AUDIO_ASSET_TYPES = ['BGM', 'SFX', 'VOICE']
+const AUDIO_ASSET_TYPES = ['BGM', 'SFX', 'VOICE', 'VOICE_SAMPLE']
 
 const tabs: { id: LibraryTab; label: string; icon: ReactNode }[] = [
   { id: 'characters', label: '角色库', icon: <Users className="h-4 w-4" /> },
@@ -483,7 +483,7 @@ function ProjectAssetLibrary(props: { user: unknown; assets: Asset[]; assetType:
                   <div className="flex items-start justify-between gap-2">
                     <div className="min-w-0">
                       <h3 className="truncate text-sm font-semibold text-slate-900">{asset.name}</h3>
-                      <p className="text-xs text-slate-500">{asset.type} · {new Date(asset.createdAt).toLocaleDateString()}</p>
+                      <p className="text-xs text-slate-500">{asset.type === 'VOICE_SAMPLE' ? '角色声音样本 · 仅作声线参考' : `${asset.type} · ${new Date(asset.createdAt).toLocaleDateString()}`}</p>
                     </div>
                     <RowActions onEdit={() => onStartRename(asset)} onDelete={() => onDelete(asset)} />
                   </div>

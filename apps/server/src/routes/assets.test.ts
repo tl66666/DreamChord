@@ -153,6 +153,43 @@ describe('asset routes', () => {
     expect(create.mock.calls[0]?.[0].data.url).toMatch(/^\/uploads\/library\/owner\/[0-9a-f-]+\.mp3$/)
   })
 
+  it('stores an authorised character voice reference only inside its owning project', async () => {
+    const root = temporaryRoot()
+    const create = vi.fn().mockImplementation(async ({ data }) => ({ id: 'sample', ...data }))
+    const client = {
+      project: { findUnique: vi.fn().mockResolvedValue({ id: 'project', authorId: 'owner' }) },
+      character: { findFirst: vi.fn().mockResolvedValue({ id: 'snow', projectId: 'project' }) },
+      asset: { create },
+    } as unknown as PrismaClient
+    const mp3 = Buffer.alloc(417); mp3.set([0xff, 0xfb, 0x90, 0x64])
+
+    const response = await request(appFor(client, root)).post('/api/assets/upload')
+      .set('Authorization', `Bearer ${token('owner')}`).field('projectId', 'project').field('type', 'VOICE_SAMPLE')
+      .field('voiceSample', JSON.stringify({ characterId: 'snow', consentConfirmed: true, style: '轻声' }))
+      .attach('file', mp3, { filename: 'sample.mp3', contentType: 'audio/mpeg' })
+
+    expect(response.status).toBe(200)
+    expect(create).toHaveBeenCalledWith({ data: expect.objectContaining({ type: 'VOICE_SAMPLE', projectId: 'project', metadata: expect.stringContaining('consentConfirmed') }) })
+    expect(client.character.findFirst).toHaveBeenCalledWith({ where: { id: 'snow', projectId: 'project' } })
+  })
+
+  it('rejects a voice reference without consent or a matching project character', async () => {
+    const root = temporaryRoot()
+    const client = {
+      project: { findUnique: vi.fn().mockResolvedValue({ id: 'project', authorId: 'owner' }) },
+      character: { findFirst: vi.fn().mockResolvedValue(null) }, asset: { create: vi.fn() },
+    } as unknown as PrismaClient
+    const mp3 = Buffer.alloc(417); mp3.set([0xff, 0xfb, 0x90, 0x64])
+
+    const response = await request(appFor(client, root)).post('/api/assets/upload')
+      .set('Authorization', `Bearer ${token('owner')}`).field('projectId', 'project').field('type', 'VOICE_SAMPLE')
+      .field('voiceSample', JSON.stringify({ characterId: 'snow', consentConfirmed: false }))
+      .attach('file', mp3, { filename: 'sample.mp3', contentType: 'audio/mpeg' })
+
+    expect(response.status).toBe(400)
+    expect(client.asset.create).not.toHaveBeenCalled()
+  })
+
   it('keeps a replaced file when another database record still references its URL', async () => {
     const root = temporaryRoot()
     const oldUrl = '/uploads/shared-old.png'

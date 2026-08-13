@@ -113,6 +113,12 @@ export interface Character {
   sprites?: Array<{ id?: string; name: string; url: string }>
 }
 
+export interface VoiceSampleUpload {
+  characterId: string
+  consentConfirmed: true
+  style?: string
+}
+
 export async function getProject(id: string): Promise<ProjectDetail> {
   const { data } = await api.get(`/projects/${id}`)
   return data
@@ -249,12 +255,14 @@ export async function uploadAsset(
   file: File,
   type: string,
   projectId?: string,
+  voiceSample?: VoiceSampleUpload,
 ): Promise<Asset> {
   const formData = new FormData()
   formData.append('file', file)
   if (projectId) formData.append('projectId', projectId)
   formData.append('type', type)
   formData.append('name', file.name)
+  if (voiceSample) formData.append('voiceSample', JSON.stringify(voiceSample))
 
   const { data } = await api.post('/assets/upload', formData, {
     headers: { 'Content-Type': 'multipart/form-data' },

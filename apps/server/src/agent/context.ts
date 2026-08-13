@@ -18,8 +18,8 @@ export interface AgentProjectSnapshot {
   title: string
   description: string
   bible: StoryBibleContent | null
-  characters: Array<{ id: string; name: string; description: string }>
-  assets: Array<{ id: string; name: string; type: string; url: string; width: number | null; height: number | null }>
+  characters: Array<{ id: string; name: string; description: string; voiceProfile?: string }>
+  assets: Array<{ id: string; name: string; type: string; url: string; width: number | null; height: number | null; metadata?: string }>
   chapters: Array<{ id: string; title: string; version: number; graph: StoryGraph }>
 }
 
@@ -131,7 +131,7 @@ export async function loadAgentProjectSnapshot(projectId: string, client: Prisma
     description: project.description ?? '',
     bible: parsedBible?.success ? parsedBible.data : null,
     characters: project.characters.map((character) => ({ id: character.id, name: character.name, description: character.description ?? '' })),
-    assets: project.assets.map((asset) => ({ id: asset.id, name: asset.name, type: asset.type, url: asset.url, width: asset.width, height: asset.height })),
+    assets: project.assets.map((asset) => ({ id: asset.id, name: asset.name, type: asset.type, url: asset.url, width: asset.width, height: asset.height, metadata: asset.metadata })),
     chapters: project.chapters.map((chapter) => ({
       id: chapter.id,
       title: chapter.title,

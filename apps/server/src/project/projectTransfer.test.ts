@@ -104,6 +104,29 @@ describe('project transfer', () => {
     }
   })
 
+  it('preserves authorised voice sample metadata and remaps its character reference on import', async () => {
+    const voice = Buffer.alloc(417); voice.set([0xff, 0xfb, 0x90, 0x64])
+    const voiceUrl = '/uploads/project/snow-voice.mp3'
+    writeFileSync(path.join(storageRoot, voiceUrl.slice('/uploads/'.length)), voice)
+    await client.asset.create({ data: {
+      id: 'voice-sample', ownerId: 'owner', projectId: 'project', name: '雪声音样本', type: 'VOICE_SAMPLE', url: voiceUrl, mimeType: 'audio/mpeg',
+      metadata: JSON.stringify({ voiceSample: { characterId: 'character', consentConfirmed: true, style: '低声、克制' } }),
+    } })
+    try {
+      const manifest = await exportProject('project', 'owner', client, storageRoot)
+      const sample = manifest.assets.find((asset) => asset.id === 'voice-sample')!
+      expect(sample.metadata).toHaveProperty('voiceSample')
+
+      const imported = await importProject(manifest, 'owner', client, storageRoot)
+      const copy = await client.project.findUniqueOrThrow({ where: { id: imported.id }, include: { characters: true, assets: true } })
+      const importedSample = copy.assets.find((asset) => asset.type === 'VOICE_SAMPLE')!
+      expect(JSON.parse(importedSample.metadata)).toMatchObject({ voiceSample: { characterId: copy.characters[0]!.id, consentConfirmed: true, style: '低声、克制' } })
+    } finally {
+      await client.asset.delete({ where: { id: 'voice-sample' } })
+      rmSync(path.join(storageRoot, voiceUrl.slice('/uploads/'.length)), { force: true })
+    }
+  })
+
   it('rejects unsafe or out-of-root source URLs during export', async () => {
     const unsafe = await client.asset.create({ data: { ownerId: 'owner', projectId: 'project', name: 'unsafe', type: 'CG', url: '/uploads/../outside.png', mimeType: 'image/png' } })
     await expect(exportProject('project', 'owner', client, storageRoot)).rejects.toThrow(/安全|路径/)

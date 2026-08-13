@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import type { Node } from '@xyflow/react'
-import { BookOpen, Check, FileType, Image, Music, Pencil, RefreshCw, Search, SlidersHorizontal, Trash2, Upload, User, X } from 'lucide-react'
+import { BookOpen, Check, FileType, Image, Mic, Music, Pencil, RefreshCw, Search, SlidersHorizontal, Trash2, Upload, User, X } from 'lucide-react'
 import { useEditorStore } from '../stores/editorStore'
 import { useToast, useConfirm } from '../components/FeedbackProvider'
 import { deleteAsset, getAssetLibrary, renameAsset, replaceAssetFile, uploadAsset, type AcceptedAssetVariant, type Asset } from '../api/client'
@@ -23,6 +23,7 @@ const TYPE_TABS = [
   { key: 'BGM', label: '音乐', icon: Music, accept: 'audio/*' },
   { key: 'SFX', label: '音效', icon: Music, accept: 'audio/*' },
   { key: 'VOICE', label: '配音', icon: Music, accept: 'audio/*' },
+  { key: 'VOICE_SAMPLE', label: '声线样本', icon: Mic, accept: 'audio/*' },
   { key: 'OTHER', label: '其他', icon: FileType, accept: '*' },
   { key: 'SETTING', label: '设定', icon: BookOpen, accept: '*' },
 ]
@@ -39,12 +40,14 @@ export default function AssetPanel({
   selectionTypes,
   onClose,
   onProjectCharacterAccepted,
+  projectCharacters,
 }: {
   onSelect?: (asset: Asset) => void
   selectedType?: string
   selectionTypes?: string[]
   onClose?: () => void
   onProjectCharacterAccepted?: (accepted: AcceptedAssetVariant) => void
+  projectCharacters?: Array<{ id: string; name: string }>
 }) {
   const { project, nodes } = useEditorStore()
   const toast = useToast()
@@ -58,6 +61,10 @@ export default function AssetPanel({
   const [editingName, setEditingName] = useState('')
   const [replaceTarget, setReplaceTarget] = useState<Asset | null>(null)
   const [processingAsset, setProcessingAsset] = useState<Asset | null>(null)
+  const [pendingVoiceSample, setPendingVoiceSample] = useState<File | null>(null)
+  const [voiceCharacterId, setVoiceCharacterId] = useState('')
+  const [voiceStyle, setVoiceStyle] = useState('')
+  const [voiceConsent, setVoiceConsent] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const replaceInputRef = useRef<HTMLInputElement>(null)
 
@@ -112,6 +119,14 @@ export default function AssetPanel({
   const handleUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]
     if (!file || !project?.id) return
+    if (activeType === 'VOICE_SAMPLE') {
+      setPendingVoiceSample(file)
+      setVoiceCharacterId(projectCharacters?.[0]?.id || '')
+      setVoiceStyle('')
+      setVoiceConsent(false)
+      if (fileInputRef.current) fileInputRef.current.value = ''
+      return
+    }
     setUploading(true)
     try {
       if (activeType === 'SETTING') return
@@ -122,6 +137,20 @@ export default function AssetPanel({
     } finally {
       setUploading(false)
       if (fileInputRef.current) fileInputRef.current.value = ''
+    }
+  }
+
+  const uploadVoiceSample = async () => {
+    if (!pendingVoiceSample || !project?.id || !voiceCharacterId || !voiceConsent) return
+    setUploading(true)
+    try {
+      await uploadAsset(pendingVoiceSample, 'VOICE_SAMPLE', project.id, { characterId: voiceCharacterId, consentConfirmed: true, style: voiceStyle.trim() || undefined })
+      await loadAssets()
+      setPendingVoiceSample(null)
+    } catch (err: unknown) {
+      toast.error(getApiError(err, '声音样本上传失败'))
+    } finally {
+      setUploading(false)
     }
   }
 
@@ -205,7 +234,7 @@ export default function AssetPanel({
         <input ref={replaceInputRef} type="file" accept={activeTab.accept} className="hidden" onChange={handleReplace} />
       </div>
 
-      <div className={`grid gap-1 border-b border-dream-100 p-3 ${visibleTabs.length === 2 ? 'grid-cols-2' : 'grid-cols-5'}`}>
+      <div className={`grid gap-1 border-b border-dream-100 p-3 ${visibleTabs.length === 2 ? 'grid-cols-2' : 'grid-cols-4'}`}>
         {visibleTabs.map((tab) => {
           const Icon = tab.icon
           const count = assets.filter((asset) => asset.type === tab.key).length
@@ -341,7 +370,25 @@ export default function AssetPanel({
       </div>
     </aside>
     {processingAsset && <AssetProcessingSheet asset={processingAsset} projectId={project?.id} onClose={() => setProcessingAsset(null)} onAccepted={(accepted) => { void loadAssets(); onProjectCharacterAccepted?.(accepted) }} />}
+    {pendingVoiceSample && <VoiceSampleSheet file={pendingVoiceSample} characters={projectCharacters || []} characterId={voiceCharacterId} style={voiceStyle} consent={voiceConsent} submitting={uploading} onCharacterChange={setVoiceCharacterId} onStyleChange={setVoiceStyle} onConsentChange={setVoiceConsent} onCancel={() => setPendingVoiceSample(null)} onSubmit={() => void uploadVoiceSample()} />}
   </>)
+}
+
+function VoiceSampleSheet({ file, characters, characterId, style, consent, submitting, onCharacterChange, onStyleChange, onConsentChange, onCancel, onSubmit }: { file: File; characters: Array<{ id: string; name: string }>; characterId: string; style: string; consent: boolean; submitting: boolean; onCharacterChange: (value: string) => void; onStyleChange: (value: string) => void; onConsentChange: (value: boolean) => void; onCancel: () => void; onSubmit: () => void }) {
+  return <div className="fixed inset-0 z-[80] flex items-center justify-center bg-slate-950/45 p-4">
+    <section role="dialog" aria-modal="true" aria-label="登记角色声音样本" className="w-full max-w-lg rounded-lg bg-white p-5 shadow-xl">
+      <div className="flex items-start justify-between gap-4">
+        <div><h3 className="text-base font-semibold text-slate-950">登记角色声音样本</h3><p className="mt-1 text-sm leading-6 text-slate-600">“{file.name}”只作为声线参考，不会直接作为播放器台词配音。</p></div>
+        <button onClick={onCancel} className="rounded-md p-1 text-slate-500 hover:bg-slate-100" title="取消"><X className="h-5 w-5" /></button>
+      </div>
+      {characters.length === 0 ? <p className="mt-5 rounded-md bg-amber-50 p-3 text-sm text-amber-800">当前项目还没有角色。请先将立绘登记为项目角色，再上传声音样本。</p> : <div className="mt-5 space-y-4">
+        <label className="block text-sm font-medium text-slate-800">归属角色<select value={characterId} onChange={(event) => onCharacterChange(event.target.value)} className="mt-1.5 w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm">{characters.map((character) => <option key={character.id} value={character.id}>{character.name}</option>)}</select></label>
+        <label className="block text-sm font-medium text-slate-800">演绎说明<span className="ml-1 font-normal text-slate-500">可选</span><textarea value={style} onChange={(event) => onStyleChange(event.target.value)} rows={3} placeholder="例如：近距离、低声、平稳，关键句前留短停顿" className="mt-1.5 w-full resize-none rounded-md border border-slate-300 px-3 py-2 text-sm leading-6" /></label>
+        <label className="flex cursor-pointer items-start gap-2 rounded-md border border-slate-200 p-3 text-sm leading-6 text-slate-700"><input type="checkbox" checked={consent} onChange={(event) => onConsentChange(event.target.checked)} className="mt-1 h-4 w-4" /><span>我确认拥有该声音的使用与声线生成授权。未来配置语音 Provider 时，只有经确认的样本才会被发送给选定 Provider。</span></label>
+      </div>}
+      <div className="mt-5 flex justify-end gap-2"><button onClick={onCancel} className="rounded-md border border-slate-300 px-3 py-2 text-sm text-slate-700">取消</button><button disabled={!characters.length || !characterId || !consent || submitting} onClick={onSubmit} className="rounded-md bg-dream-600 px-3 py-2 text-sm font-medium text-white disabled:cursor-not-allowed disabled:opacity-50">{submitting ? '上传中...' : '确认登记'}</button></div>
+    </section>
+  </div>
 }
 
 function SettingLibrary({ nodes, query }: { nodes: Node[]; query: string }) {

@@ -1,11 +1,12 @@
 import { analyzeStoryGraph, applyStoryPatch, storyPatchSchema, type StoryPatch } from '@dreamchord/story-domain'
 import { z } from 'zod'
 import { buildInitialContext, type AgentProjectSnapshot } from './context.js'
+import { buildCharacterVoicePlan } from './voicePlan.js'
 import type { UniformAgentToolRegistry } from './executor.js'
 
 export const AGENT_TOOL_NAMES = [
   'read_project_brief', 'read_chapter_outline', 'read_scene', 'search_story',
-  'read_conversation_context', 'search_memories', 'list_project_assets', 'inspect_asset', 'read_character_profile',
+  'read_conversation_context', 'search_memories', 'list_project_assets', 'inspect_asset', 'read_character_profile', 'plan_character_voice',
   'analyze_story_graph', 'create_story_patch', 'validate_story_patch',
   'prepare_character_asset', 'prepare_cg_asset', 'prepare_background_asset',
 ] as const
@@ -65,7 +66,7 @@ export function createAgentToolRegistry(context: {
       },
     },
     list_project_assets: {
-      inputSchema: z.object({ type: z.enum(['BACKGROUND', 'CG', 'BGM', 'SFX', 'VOICE', 'OTHER', 'SETTING']).optional() }).strict(),
+      inputSchema: z.object({ type: z.enum(['BACKGROUND', 'CG', 'BGM', 'SFX', 'VOICE', 'VOICE_SAMPLE', 'OTHER', 'SETTING']).optional() }).strict(),
       async execute(input: { type?: string }) { return context.snapshot.assets.filter((asset) => !input.type || asset.type === input.type).slice(0, 100) },
     },
     inspect_asset: {
@@ -78,6 +79,14 @@ export function createAgentToolRegistry(context: {
     read_character_profile: {
       inputSchema: z.object({ characterId: z.string().min(1) }).strict(),
       async execute(input: { characterId: string }) { return context.snapshot.characters.find((character) => character.id === input.characterId || character.name === input.characterId) ?? { error: '角色不存在' } },
+    },
+    plan_character_voice: {
+      inputSchema: z.object({ characterId: z.string().min(1), chapterId: z.string().min(1).optional(), sceneGroupId: z.string().min(1).optional() }).strict(),
+      async execute(input: { characterId: string; chapterId?: string; sceneGroupId?: string }) {
+        const chapterId = input.chapterId ?? context.chapterId
+        if (input.chapterId && !context.snapshot.chapters.some((item) => item.id === input.chapterId)) throw new Error('章节不存在或不属于当前项目')
+        return buildCharacterVoicePlan({ snapshot: context.snapshot, characterId: input.characterId, chapterId, sceneGroupId: input.sceneGroupId })
+      },
     },
     analyze_story_graph: {
       inputSchema: z.object({}).strict(),

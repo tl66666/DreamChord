@@ -212,7 +212,7 @@ export class PrismaAgentRunService implements AgentRunService {
     const actionRequested = policy.requiresPatch
     const actionPrompt = confirmationRequested ? '续写当前章节，并生成可审批的可运行场景。' : run.prompt
     let result
-    if (policy.kind === 'local-import' || policy.kind === 'local-immediate' || policy.kind === 'material-plan') {
+    if (policy.kind === 'local-import' || policy.kind === 'local-immediate' || policy.kind === 'material-plan' || policy.kind === 'voice-plan') {
       result = await runLocalAssistant({
         prompt: actionPrompt,
         snapshot,
@@ -220,6 +220,7 @@ export class PrismaAgentRunService implements AgentRunService {
         scope: run.scope as AgentScope,
         targetId: run.targetId ?? undefined,
         materialPlanOnly: policy.kind === 'material-plan',
+        voicePlanOnly: policy.kind === 'voice-plan',
         contextSources: initialContext.filter((source) => source.kind === 'conversation-history' || source.kind === 'conversation-summary' || source.kind === 'memory'),
       })
     } else {

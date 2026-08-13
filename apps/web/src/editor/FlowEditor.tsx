@@ -822,6 +822,7 @@ export default function FlowEditor() {
                 onSelect={handleSelectAsset}
                 onClose={() => setShowAssets(false)}
                 onProjectCharacterAccepted={handleProjectCharacterAccepted}
+                projectCharacters={project?.characters.map((character) => ({ id: character.id, name: character.name }))}
               />
             ) : (
               <MiniPreview card={selectedCard} onFullScreen={handlePreview} />

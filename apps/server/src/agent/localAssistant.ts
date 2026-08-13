@@ -4,6 +4,7 @@ import type { AgentExecutionResult } from './executor.js'
 import { answerCreativeKnowledge } from './creativeKnowledge.js'
 import { lookupPublicKnowledge, type PublicKnowledgeResult } from './publicKnowledge.js'
 import { buildCreativeBrief, formatCreativeMaterialPlan } from './creativeBrief.js'
+import { buildCharacterVoicePlan } from './voicePlan.js'
 
 const WRITING_INTENT = /续写|润色|改写|扩写|生成|创作|补充.*分支|写.*剧情|write|rewrite|continue/i
 const EXPLICIT_REPLACEMENT_INTENT = /(?:改成|改为|替换(?:成|为)?|修改为|调整为)\s*[：:]\s*(.+)$/s
@@ -634,10 +635,21 @@ export async function runLocalAssistant(input: {
   contextSources?: AgentContextSource[]
   continuationText?: string
   materialPlanOnly?: boolean
+  voicePlanOnly?: boolean
   lookupKnowledge?: (prompt: string) => Promise<PublicKnowledgeResult | null>
 }): Promise<AgentExecutionResult> {
   const prompt = input.prompt.trim()
   const contextSources = input.contextSources ?? []
+  if (input.voicePlanOnly) {
+    const character = input.snapshot.characters.find((item) => prompt.includes(item.name) || prompt.includes(item.id)) ?? input.snapshot.characters[0]
+    if (!character) return result('当前项目还没有可绑定声音档案的角色。先在项目中登记角色和立绘，再上传授权声音样本。', ['检查项目角色'])
+    const plan = buildCharacterVoicePlan({ snapshot: input.snapshot, characterId: character.id, chapterId: input.chapterId, sceneGroupId: input.scope === 'scene' ? input.targetId : undefined })
+    const lines = plan.lines.length
+      ? plan.lines.map((line, index) => `${index + 1}. ${line.speaker}：${line.text}\n   演绎：${line.emotion} / ${line.pace}；${line.delivery}\n   停顿：${line.pauseHint}`).join('\n')
+      : '当前范围没有可制作的台词。'
+    return result(`配音制作计划：${plan.character.name}\n\n${lines}\n\n${plan.warnings.length ? `注意：${plan.warnings.join('；')}\n\n` : ''}${plan.provider.reason}\n\n下一步：\n${plan.nextActions.map((item, index) => `${index + 1}. ${item}`).join('\n')}`,
+      ['读取角色声音档案', '盘点授权样本与章节台词', '生成待审核的逐句配音计划'], plan.nextActions)
+  }
   if (input.materialPlanOnly) return materialPromptPlan(input.snapshot, input.chapterId, prompt)
   if (GREETING_INTENT.test(prompt)) return greeting(input.snapshot)
   if (THANKS_INTENT.test(prompt)) return result(`不客气。关于《${input.snapshot.title}》，你可以继续直接说想完善哪一部分，我会沿用当前对话上下文。`, ['延续当前对话'])

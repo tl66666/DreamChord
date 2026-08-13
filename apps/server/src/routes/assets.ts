@@ -13,9 +13,10 @@ import { prisma } from '../lib/prisma.js'
 import { authenticateToken, type AuthRequest } from '../middleware/auth.js'
 
 const uploadDir = process.env.UPLOAD_DIR || './uploads'
-const ASSET_TYPES = ['BACKGROUND', 'CG', 'BGM', 'SFX', 'VOICE', 'OTHER', 'SETTING'] as const
+const ASSET_TYPES = ['BACKGROUND', 'CG', 'BGM', 'SFX', 'VOICE', 'VOICE_SAMPLE', 'OTHER', 'SETTING'] as const
 type AssetType = typeof ASSET_TYPES[number]
-const AUDIO_ASSET_TYPES = new Set<AssetType>(['BGM', 'SFX', 'VOICE'])
+const AUDIO_ASSET_TYPES = new Set<AssetType>(['BGM', 'SFX', 'VOICE', 'VOICE_SAMPLE'])
+const voiceSampleSchema = z.object({ characterId: z.string().min(1), consentConfirmed: z.literal(true), style: z.string().trim().max(500).optional() }).strict()
 const renameSchema = z.object({ name: z.string().trim().min(1).max(200) }).strict()
 const processSchema = z.object({ purpose: z.enum(['sprite', 'cg', 'background']), removeWhite: z.boolean().optional(), whiteThreshold: z.number().int().min(180).max(255).optional(), feather: z.number().int().min(0).max(40).optional(), trim: z.boolean().optional() }).strict()
 const acceptSchema = z.object({ purpose: z.enum(['sprite', 'cg', 'background']), projectId: z.string().min(1).optional(), characterId: z.string().min(1).optional(), characterName: z.string().trim().min(1).max(100).optional(), expressionName: z.string().trim().min(1).max(100).optional() }).strict()
@@ -97,6 +98,17 @@ export function createAssetRouter(client: PrismaClient = prisma, storageRoot = u
     if (!ASSET_TYPES.includes(type)) { removeUploadFile(pendingUrl, storageRoot); return res.status(400).json({ error: '素材类型无效' }) }
     if (projectId && !(await assertProjectOwner(client, projectId, req.userId))) { removeUploadFile(pendingUrl, storageRoot); return res.status(403).json({ error: '无权标记此来源项目' }) }
 
+    let voiceSample: z.infer<typeof voiceSampleSchema> | null = null
+    if (type === 'VOICE_SAMPLE') {
+      let raw: unknown = req.body.voiceSample
+      if (typeof raw === 'string') { try { raw = JSON.parse(raw) } catch { raw = null } }
+      const parsed = voiceSampleSchema.safeParse(raw)
+      if (!projectId || !parsed.success) { removeUploadFile(pendingUrl, storageRoot); return res.status(400).json({ error: '角色声音样本必须选择项目角色并确认已获得声音使用与克隆授权' }) }
+      const character = await client.character.findFirst({ where: { id: parsed.data.characterId, projectId } })
+      if (!character) { removeUploadFile(pendingUrl, storageRoot); return res.status(400).json({ error: '所选角色不属于当前项目' }) }
+      voiceSample = parsed.data
+    }
+
     let finalized: Awaited<ReturnType<typeof finalizeUpload>>
     try { finalized = await finalizeUpload(req.file, type, storageRoot, path.join('library', req.userId!)) }
     catch (error) { removeUploadFile(pendingUrl, storageRoot); return res.status(400).json({ error: error instanceof Error ? error.message : '素材无效' }) }
@@ -104,7 +116,7 @@ export function createAssetRouter(client: PrismaClient = prisma, storageRoot = u
     try {
       const asset = await client.asset.create({ data: {
         ownerId: req.userId!, ...(projectId ? { projectId } : {}), name: name || req.file.originalname, type, url: finalized.url, mimeType: finalized.mimeType,
-        ...(finalized.image ? { width: finalized.image.width, height: finalized.image.height, hasAlpha: finalized.image.hasAlpha, metadata: JSON.stringify({ format: finalized.image.format, animated: finalized.image.animated, pages: finalized.image.pages, analysis: finalized.image.analysis }) } : {}),
+        ...(finalized.image ? { width: finalized.image.width, height: finalized.image.height, hasAlpha: finalized.image.hasAlpha, metadata: JSON.stringify({ format: finalized.image.format, animated: finalized.image.animated, pages: finalized.image.pages, analysis: finalized.image.analysis }) } : voiceSample ? { metadata: JSON.stringify({ voiceSample }) } : {}),
       } })
       res.json(asset)
     } catch (error) {

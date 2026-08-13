@@ -6,6 +6,7 @@ describe('creative agent tools', () => {
     expect(AGENT_TOOL_NAMES).toEqual([
       'read_project_brief', 'read_chapter_outline', 'read_scene', 'search_story',
       'read_conversation_context', 'search_memories', 'list_project_assets', 'inspect_asset', 'read_character_profile',
+      'plan_character_voice',
       'analyze_story_graph', 'create_story_patch', 'validate_story_patch',
       'prepare_character_asset', 'prepare_cg_asset', 'prepare_background_asset',
     ])
@@ -63,5 +64,24 @@ describe('creative agent tools', () => {
       expect.objectContaining({ id: 'asset' }),
     ])
     await expect(registry.analyze_story_graph.execute({})).rejects.toThrow('请选择章节后再修改剧情')
+  })
+
+  it('keeps character voice planning project-scoped and read-only', async () => {
+    const registry = createAgentToolRegistry({
+      snapshot: {
+        projectId: 'p', title: '故事', description: '', bible: null,
+        characters: [{ id: 'snow', name: '雪', description: '', voiceProfile: JSON.stringify({ sampleAssetIds: ['sample'], consentConfirmed: true }) }],
+        assets: [
+          { id: 'sample', name: '雪样本', type: 'VOICE_SAMPLE', url: '/uploads/snow.mp3', width: null, height: null, metadata: JSON.stringify({ voiceSample: { characterId: 'snow', consentConfirmed: true } }) },
+          { id: 'other', name: '其他样本', type: 'VOICE_SAMPLE', url: '/uploads/other.mp3', width: null, height: null, metadata: JSON.stringify({ voiceSample: { characterId: 'other', consentConfirmed: true } }) },
+        ],
+        chapters: [{ id: 'c', title: '第一章', version: 1, graph: { nodes: [{ id: 'line', type: 'dialogue', position: { x: 0, y: 0 }, data: { role: '雪', text: '听见了吗？' } }], edges: [] } }],
+      }, chapterId: 'c',
+    })
+
+    await expect(registry.plan_character_voice.execute({ characterId: 'snow' })).resolves.toMatchObject({
+      samples: [expect.objectContaining({ assetId: 'sample' })],
+      lines: [expect.objectContaining({ nodeId: 'line' })],
+    })
   })
 })

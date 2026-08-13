@@ -41,4 +41,14 @@ describe('Agent execution policy', () => {
       materialMode: 'reuse',
     }).kind).toBe('local-immediate')
   })
+
+  it('keeps a character voice request read-only even when a chapter is selected', () => {
+    expect(decideAgentPolicy({
+      prompt: '给雪的台词做配音计划，盘点她的声音样本',
+      hasChapter: true,
+      hasSelectedDraft: false,
+      provider: 'local',
+      materialMode: 'reuse',
+    })).toEqual({ kind: 'voice-plan', requiresPatch: false })
+  })
 })
