@@ -1,6 +1,7 @@
 import dotenv from 'dotenv'
 import { createApp } from './app.js'
 import { prismaAgentRunService } from './agent/runService.js'
+import { prismaLongImportService } from './imports/longImportService.js'
 
 dotenv.config()
 
@@ -15,6 +16,7 @@ for (const key of REQUIRED_ENV) {
 
 const PORT = Number(process.env.PORT) || 3001
 await prismaAgentRunService.recoverInterruptedRuns()
+await prismaLongImportService.recoverInterruptedRuns()
 const app = createApp()
 
 const server = app.listen(PORT, () => {

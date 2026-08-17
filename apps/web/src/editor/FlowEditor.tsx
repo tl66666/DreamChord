@@ -792,6 +792,7 @@ export default function FlowEditor() {
           {/* 中栏：镜头卡编辑器 */}
           <div className={paneClasses.center}>
             <ShotCardEditor
+              projectId={projectId}
               nodes={nodes}
               edges={edges}
               selectedSceneId={selectedSceneId}

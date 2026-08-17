@@ -14,6 +14,8 @@ import { prismaConversationService, type ConversationService } from './agent/con
 import { prismaMemoryService, type MemoryService } from './agent/memoryService.js'
 import { createMemoryProjectRouter, createMemoryRouter } from './routes/memory.js'
 import { createProjectTransferRouter } from './routes/projectTransfer.js'
+import { createLongImportRouter } from './routes/longImport.js'
+import { prismaLongImportService, type LongImportService } from './imports/longImportService.js'
 
 export interface AppDependencies {
   storyBibleRepository?: StoryBibleRepository
@@ -22,6 +24,7 @@ export interface AppDependencies {
   agentRunService?: AgentRunService
   conversationService?: ConversationService
   memoryService?: MemoryService
+  longImportService?: LongImportService
 }
 
 export function createApp(dependencies: AppDependencies = {}): Express {
@@ -49,6 +52,7 @@ export function createApp(dependencies: AppDependencies = {}): Express {
   app.use('/api/projects', createAgentProjectRouter(dependencies.agentRunService ?? prismaAgentRunService, dependencies.conversationService ?? prismaConversationService))
   app.use('/api/projects', createMemoryProjectRouter(dependencies.memoryService ?? prismaMemoryService))
   app.use('/api/projects', createProjectTransferRouter())
+  app.use('/api/projects', createLongImportRouter(dependencies.longImportService ?? prismaLongImportService))
   app.use('/api/agent', createAgentRunRouter(dependencies.agentRunService ?? prismaAgentRunService, dependencies.conversationService ?? prismaConversationService))
   app.use('/api/agent', createMemoryRouter(dependencies.memoryService ?? prismaMemoryService))
   app.use('/api/assets', assetRoutes)

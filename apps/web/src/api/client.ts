@@ -119,6 +119,43 @@ export interface VoiceSampleUpload {
   style?: string
 }
 
+export interface LongImportChunk {
+  id: string; index: number; chapterTitle: string; startOffset: number; endOffset: number; status: string; attempts: number; errorMessage: string | null
+}
+export interface LongImportJob {
+  id: string; fileName: string; status: 'queued' | 'running' | 'paused' | 'completed' | 'failed' | 'cancelled'; chunkSize: number; totalChunks: number; completedChunks: number; failedChunks: number
+  progress: { total: number; completed: number; failed: number; percent: number }; errorMessage: string | null; createdAt: string; updatedAt: string; completedAt: string | null; chunks?: LongImportChunk[]
+}
+
+export async function createLongImportJob(projectId: string, payload: { fileName: string; text: string; chunkSize?: number }): Promise<LongImportJob> {
+  const { data } = await api.post(`/projects/${projectId}/import-jobs`, payload)
+  return data
+}
+export async function getLongImportJob(projectId: string, importId: string): Promise<LongImportJob> {
+  const { data } = await api.get(`/projects/${projectId}/import-jobs/${importId}`)
+  return data
+}
+export async function pauseLongImportJob(projectId: string, importId: string): Promise<LongImportJob> {
+  const { data } = await api.post(`/projects/${projectId}/import-jobs/${importId}/pause`)
+  return data
+}
+export async function resumeLongImportJob(projectId: string, importId: string): Promise<LongImportJob> {
+  const { data } = await api.post(`/projects/${projectId}/import-jobs/${importId}/resume`)
+  return data
+}
+export async function cancelLongImportJob(projectId: string, importId: string): Promise<LongImportJob> {
+  const { data } = await api.post(`/projects/${projectId}/import-jobs/${importId}/cancel`)
+  return data
+}
+export async function retryLongImportJob(projectId: string, importId: string): Promise<LongImportJob> {
+  const { data } = await api.post(`/projects/${projectId}/import-jobs/${importId}/retry`)
+  return data
+}
+export async function getLongImportResult(projectId: string, importId: string): Promise<{ importId: string; text: string }> {
+  const { data } = await api.get(`/projects/${projectId}/import-jobs/${importId}/result`)
+  return data
+}
+
 export async function getProject(id: string): Promise<ProjectDetail> {
   const { data } = await api.get(`/projects/${id}`)
   return data

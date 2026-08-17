@@ -23,6 +23,7 @@ model User {
   agentRuns     AgentRun[]
   agentMemories AgentMemory[]
   assets        Asset[]
+  longTextImports LongTextImport[]
 
   @@map("users")
 }
@@ -50,6 +51,7 @@ model Project {
   agentRuns     AgentRun[]
   storyPatches  StoryPatch[]
   agentMemories AgentMemory[]
+  longTextImports LongTextImport[]
 
   @@index([authorId])
   @@map("projects")
@@ -352,4 +354,51 @@ model AgentMemory {
   @@index([userId, projectId, status])
   @@index([conversationId, status])
   @@map("agent_memories")
+}
+
+model LongTextImport {
+  id            String   @id @default(uuid())
+  fileName      String
+  sourceText    String   @map("source_text")
+  status        String   @default("queued")
+  chunkSize     Int      @default(12000) @map("chunk_size")
+  totalChunks   Int      @default(0) @map("total_chunks")
+  completedChunks Int    @default(0) @map("completed_chunks")
+  failedChunks  Int      @default(0) @map("failed_chunks")
+  errorMessage  String?  @map("error_message")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+  completedAt   DateTime? @map("completed_at")
+
+  userId        String   @map("user_id")
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  projectId     String   @map("project_id")
+  project       Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  chunks        LongTextImportChunk[]
+
+  @@index([userId, projectId, createdAt])
+  @@index([status, updatedAt])
+  @@map("long_text_imports")
+}
+
+model LongTextImportChunk {
+  id          String   @id @default(uuid())
+  index       Int
+  chapterTitle String  @map("chapter_title")
+  text        String
+  startOffset Int      @map("start_offset")
+  endOffset   Int      @map("end_offset")
+  status      String   @default("queued")
+  attempts    Int      @default(0)
+  outputText  String?  @map("output_text")
+  errorMessage String? @map("error_message")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  importId    String   @map("import_id")
+  import      LongTextImport @relation(fields: [importId], references: [id], onDelete: Cascade)
+
+  @@unique([importId, index])
+  @@index([importId, status])
+  @@map("long_text_import_chunks")
 }

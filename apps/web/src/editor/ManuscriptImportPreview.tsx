@@ -1,12 +1,14 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { AlertTriangle, ChevronDown, FileText, X } from 'lucide-react'
 import { parseManuscript } from './manuscriptParser'
 import { loadLibraryCharacters } from '../lib/libraryData'
+import { cancelLongImportJob, createLongImportJob, getLongImportJob, getLongImportResult, pauseLongImportJob, resumeLongImportJob, retryLongImportJob, type LongImportJob } from '../api/client'
 
-export default function ManuscriptImportPreview({ characters, onClose, onImport }: {
+export default function ManuscriptImportPreview({ characters, onClose, onImport, projectId }: {
   characters: ReturnType<typeof loadLibraryCharacters>
   onClose: () => void
   onImport: (text: string) => number
+  projectId?: string
 }) {
   const [text, setText] = useState('')
   const [reviewing, setReviewing] = useState(false)
@@ -14,9 +16,37 @@ export default function ManuscriptImportPreview({ characters, onClose, onImport 
   const preview = useMemo(() => parseManuscript(text, characters.flatMap((character) => [character.id, character.name])), [characters, text])
   const scenes = preview.chapters.flatMap((chapter) => chapter.scenes)
   const cardCount = scenes.reduce((total, scene) => total + scene.cards.length, 0)
+  const [job, setJob] = useState<LongImportJob | null>(null)
+  const [jobBusy, setJobBusy] = useState(false)
+
+  useEffect(() => {
+    if (!projectId || !job || !['queued', 'running'].includes(job.status)) return
+    const timer = window.setInterval(() => { void getLongImportJob(projectId, job.id).then(setJob).catch(() => undefined) }, 900)
+    return () => window.clearInterval(timer)
+  }, [job, projectId])
+
+  useEffect(() => {
+    if (!projectId || !job || job.status !== 'completed') return
+    void getLongImportResult(projectId, job.id).then((result) => { const count = onImport(result.text); setJob(null); if (count > 0) onClose() }).catch(() => undefined)
+  }, [job, onClose, onImport, projectId])
 
   const confirmImport = () => {
     if (onImport(text) > 0) onClose()
+  }
+
+  const startImport = async () => {
+    if (!projectId) { confirmImport(); return }
+    setJobBusy(true)
+    try { setJob(await createLongImportJob(projectId, { fileName: 'dreamchord-manuscript.txt', text })) } finally { setJobBusy(false) }
+  }
+
+  const updateJob = async (action: 'pause' | 'resume' | 'cancel' | 'retry') => {
+    if (!projectId || !job) return
+    setJobBusy(true)
+    try {
+      const next = action === 'pause' ? await pauseLongImportJob(projectId, job.id) : action === 'resume' ? await resumeLongImportJob(projectId, job.id) : action === 'cancel' ? await cancelLongImportJob(projectId, job.id) : await retryLongImportJob(projectId, job.id)
+      setJob(next)
+    } finally { setJobBusy(false) }
   }
 
   return (
@@ -30,7 +60,8 @@ export default function ManuscriptImportPreview({ characters, onClose, onImport 
           {preview.warnings.length > 0 && <div className="mt-3 border border-amber-200 bg-amber-50 p-3"><h3 className="flex items-center gap-1.5 text-xs font-semibold text-amber-800"><AlertTriangle className="h-3.5 w-3.5" />需要检查</h3>{preview.warnings.map((warning, index) => <p key={`${warning.line}-${index}`} className="mt-1 text-xs text-amber-700">{warning.line ? `第 ${warning.line} 行：` : ''}{warning.message}</p>)}</div>}
           <div className="mt-4 space-y-2">{preview.chapters.map((chapter, chapterIndex) => <section key={`${chapter.title}-${chapterIndex}`}><h3 className="mb-2 text-xs font-semibold text-slate-800">{chapter.title}</h3>{chapter.scenes.map((scene, sceneIndex) => { const key = `${chapterIndex}:${sceneIndex}`; const open = openScene === key; return <div key={key} className="border border-slate-200"><button type="button" onClick={() => setOpenScene(open ? '' : key)} className="flex w-full items-center justify-between px-3 py-2 text-left text-xs font-medium text-slate-700"><span>{scene.title} · {scene.cards.length} 张</span><ChevronDown className={`h-3.5 w-3.5 transition ${open ? 'rotate-180' : ''}`} /></button>{open && <div className="border-t border-slate-100 px-3 py-2">{scene.cards.map((card, index) => <p key={`${card.line}-${index}`} className="border-b border-slate-50 py-1.5 text-xs leading-5 text-slate-600 last:border-0"><span className="mr-2 font-mono text-slate-400">{index + 1}</span>{card.speaker ? `${card.speaker}：` : ''}{card.text}<span className="ml-2 text-[10px] text-cyan-700">{card.lensType}</span></p>)}</div>}</div>})}</section>)}</div>
         </div>}
-        <footer className="flex items-center justify-between border-t border-slate-200 px-5 py-4"><p className="flex items-center gap-1.5 text-xs text-slate-500"><FileText className="h-3.5 w-3.5" />导入会作为一次编辑操作，可直接撤销。</p><div className="flex gap-2">{reviewing && <button type="button" onClick={() => setReviewing(false)} className="h-9 border border-slate-200 px-4 text-sm text-slate-700">返回修改</button>}<button type="button" disabled={!text.trim() || cardCount === 0} onClick={() => reviewing ? confirmImport() : setReviewing(true)} className="h-9 bg-slate-950 px-4 text-sm font-medium text-white disabled:opacity-40">{reviewing ? '确认导入' : '生成预览'}</button></div></footer>
+        {job && <div className="border-t border-cyan-100 bg-cyan-50 px-5 py-3" aria-live="polite"><div className="flex items-center justify-between text-xs font-semibold text-cyan-950"><span>长篇导入任务：{job.status}</span><span>{job.progress.percent}% · {job.progress.completed}/{job.progress.total} 块</span></div><div className="mt-2 h-1.5 overflow-hidden bg-cyan-100"><div className="h-full bg-cyan-600 transition-all" style={{ width: `${job.progress.percent}%` }} /></div><div className="mt-2 flex gap-2">{job.status === 'running' || job.status === 'queued' ? <button type="button" disabled={jobBusy} onClick={() => void updateJob('pause')} className="border border-cyan-200 bg-white px-2 py-1 text-[11px]">暂停</button> : null}{job.status === 'paused' ? <button type="button" disabled={jobBusy} onClick={() => void updateJob('resume')} className="border border-cyan-200 bg-white px-2 py-1 text-[11px]">继续</button> : null}{job.status === 'failed' ? <button type="button" disabled={jobBusy} onClick={() => void updateJob('retry')} className="border border-cyan-200 bg-white px-2 py-1 text-[11px]">重试失败块</button> : null}{!['completed', 'cancelled'].includes(job.status) ? <button type="button" disabled={jobBusy} onClick={() => void updateJob('cancel')} className="border border-red-200 bg-white px-2 py-1 text-[11px] text-red-700">取消</button> : null}</div></div>}
+        <footer className="flex items-center justify-between border-t border-slate-200 px-5 py-4"><p className="flex items-center gap-1.5 text-xs text-slate-500"><FileText className="h-3.5 w-3.5" />{projectId ? '长篇稿件会保存为可恢复任务，完成后再写入当前场景。' : '导入会作为一次编辑操作，可直接撤销。'}</p><div className="flex gap-2">{reviewing && <button type="button" onClick={() => setReviewing(false)} className="h-9 border border-slate-200 px-4 text-sm text-slate-700">返回修改</button>}<button type="button" disabled={!text.trim() || cardCount === 0 || jobBusy || Boolean(job && !['failed', 'cancelled'].includes(job.status))} onClick={() => reviewing ? void startImport() : setReviewing(true)} className="h-9 bg-slate-950 px-4 text-sm font-medium text-white disabled:opacity-40">{reviewing ? (projectId ? '开始长篇导入' : '确认导入') : '生成预览'}</button></div></footer>
       </section>
     </div>
   )

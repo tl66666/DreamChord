@@ -35,6 +35,7 @@ import type { ProjectAssetTarget } from './ProjectAssetPicker'
 import { mergeProjectCharacters } from './projectCharacters'
 
 interface ShotCardEditorProps {
+  projectId?: string
   nodes: Node[]
   edges: Edge[]
   selectedSceneId: string | null
@@ -56,6 +57,7 @@ interface ShotCardEditorProps {
 }
 
 export default function ShotCardEditor({
+  projectId,
   nodes, edges, selectedSceneId, selectedCardId,
   autoEditCardId, onConsumeAutoEdit,
   onSelectCard, onUpdateGraph, scenes, onCreateBranch, onNavigateToScene,
@@ -871,6 +873,7 @@ export default function ShotCardEditor({
         </div>
         {showImporter && (
           <ManuscriptImporter
+            projectId={projectId}
             characters={characters}
             onClose={() => setShowImporter(false)}
             onImport={(text) => {
@@ -1192,6 +1195,7 @@ export default function ShotCardEditor({
       </div>
       {showImporter && (
         <ManuscriptImporter
+          projectId={projectId}
           characters={characters}
           onClose={() => setShowImporter(false)}
           onImport={(text) => {
