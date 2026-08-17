@@ -1,4 +1,4 @@
-import { analyzeStoryGraph, applyStoryPatch, storyPatchSchema, type StoryPatch } from '@dreamchord/story-domain'
+import { analyzeStoryGraph, applyStoryPatch, sceneBlueprintSchema, storyPatchSchema, type StoryPatch } from '@dreamchord/story-domain'
 import { z } from 'zod'
 import { buildInitialContext, type AgentProjectSnapshot } from './context.js'
 import { buildCharacterVoicePlan } from './voicePlan.js'
@@ -7,7 +7,7 @@ import type { UniformAgentToolRegistry } from './executor.js'
 export const AGENT_TOOL_NAMES = [
   'read_project_brief', 'read_chapter_outline', 'read_scene', 'search_story',
   'read_conversation_context', 'search_memories', 'list_project_assets', 'inspect_asset', 'read_character_profile', 'plan_character_voice',
-  'analyze_story_graph', 'create_story_patch', 'validate_story_patch',
+  'analyze_story_graph', 'create_scene_blueprint', 'create_story_patch', 'validate_story_patch',
   'prepare_character_asset', 'prepare_cg_asset', 'prepare_background_asset',
 ] as const
 export type AgentToolName = (typeof AGENT_TOOL_NAMES)[number]
@@ -91,6 +91,13 @@ export function createAgentToolRegistry(context: {
     analyze_story_graph: {
       inputSchema: z.object({}).strict(),
       async execute(_input: Record<string, never>) { return analyzeStoryGraph(requireChapter().graph) },
+    },
+    create_scene_blueprint: {
+      inputSchema: sceneBlueprintSchema,
+      async execute(input: unknown) {
+        const blueprint = sceneBlueprintSchema.parse(input)
+        return { accepted: true, version: blueprint.version, title: blueprint.title, beatCount: blueprint.beats.length, blueprint }
+      },
     },
     create_story_patch: {
       inputSchema: storyPatchSchema,

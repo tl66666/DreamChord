@@ -18,6 +18,7 @@ const toolLabels: Record<string, string> = {
   inspect_asset: '检查素材', analyze_story_graph: '检查剧情结构', search_memories: '搜索记忆',
   get_project_characters: '读取角色', get_project_assets: '读取素材', get_chapter_graph: '读取章节',
   prepare_character_asset: '准备立绘', prepare_cg_asset: '准备 CG', prepare_background_asset: '准备背景',
+  create_scene_blueprint: '整理场景蓝图',
 }
 
 function eventText(item: AgentRunDto['timeline'][number]): string {

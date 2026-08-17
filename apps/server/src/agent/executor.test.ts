@@ -70,6 +70,7 @@ describe('creative agent executor', () => {
 
     const initialMessages = chat.mock.calls[0]?.[0] as Array<{ content?: string }> | undefined
     expect(initialMessages?.at(-1)?.content).toContain('list_project_assets')
+    expect(initialMessages?.at(-1)?.content).toContain('create_scene_blueprint')
     expect(initialMessages?.at(-1)?.content).toContain('create_story_patch')
   })
 

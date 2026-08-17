@@ -58,6 +58,7 @@ const SINGLE_ASSET_TOOLS = new Set<AgentToolName>([
   'prepare_cg_asset',
   'prepare_background_asset',
 ])
+const STRUCTURED_SCENE_INSTRUCTION = `For any request to turn prose into a playable scene, first call create_scene_blueprint with a validated scene blueprint. Keep narration, dialogue, choices, actions, and audio intent as separate beats. Use the returned blueprint as the source of truth when creating the StoryPatch; never copy headings, planning notes, or tool explanations into dialogue text. If a character or asset cannot be matched exactly, leave its reference empty and report it for author review.`
 const PLAYABLE_SCENE_REQUEST = /(?:根据|利用|使用)?.*(?:素材库|素材)?.*(?:创建|新建|搭建|生成|写一段).*(?:可运行|可播放|剧情场景|场景|剧情)/i
 
 function creativeTaskInstruction(prompt: string): string {
@@ -164,7 +165,7 @@ export async function executeCreativeAgent(input: {
 }): Promise<AgentExecutionResult> {
   const messages: LLMMessage[] = [
     { role: 'system', content: SYSTEM_PROMPT },
-    { role: 'user', content: `${input.prompt}${creativeTaskInstruction(input.prompt)}\n\n已提供上下文：\n${JSON.stringify(input.initialContext)}` },
+    { role: 'user', content: `${input.prompt}${creativeTaskInstruction(input.prompt)}\n\n${STRUCTURED_SCENE_INSTRUCTION}\n\n已提供上下文：\n${JSON.stringify(input.initialContext)}` },
   ]
   let toolSteps = 0
   let formatRepairs = 0

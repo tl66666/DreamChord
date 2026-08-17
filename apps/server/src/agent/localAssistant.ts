@@ -1,4 +1,4 @@
-import { analyzeStoryGraph, type StoryNode, type StoryPatch } from '@dreamchord/story-domain'
+import { analyzeStoryGraph, sceneBlueprintSchema, type StoryNode, type StoryPatch } from '@dreamchord/story-domain'
 import type { AgentContextSource, AgentProjectSnapshot, AgentScope } from './context.js'
 import type { AgentExecutionResult } from './executor.js'
 import { answerCreativeKnowledge } from './creativeKnowledge.js'
@@ -192,6 +192,16 @@ function importedScreenplayDraft(input: {
   suppliedContinuation: string[]
 }): AgentExecutionResult {
   const scenes = parseImportedScreenplay(input.suppliedContinuation, input.snapshot)
+  const blueprints = scenes.map((scene, index) => sceneBlueprintSchema.parse({
+    version: 1,
+    title: scene.title ?? scene.location ?? `文本草稿场景 ${index + 1}`,
+    ...(scene.location ? { location: scene.location } : {}),
+    beats: scene.cards.map((card) => card.type === 'dialogue'
+      ? { kind: 'dialogue' as const, speaker: card.role, text: card.text }
+      : card.type === 'choice'
+        ? { kind: 'choice' as const, choices: card.choices }
+        : { kind: 'narration' as const, text: card.text }),
+  }))
   const sceneCodeStart = Number(nextSceneCode(input.chapter.graph.nodes).split('-')[1] ?? 1)
   const operations: StoryPatch['operations'] = []
   let previousRef = input.terminal?.id
@@ -202,12 +212,13 @@ function importedScreenplayDraft(input: {
 
   scenes.forEach((scene, sceneIndex) => {
     if (scene.cards.length === 0) return
+    const blueprint = blueprints[sceneIndex]!
     const sceneCode = `1-${sceneCodeStart + sceneIndex}`
     const sceneGroupId = `agent-scene-${input.chapter.graph.nodes.length + sceneIndex + 1}`
-    const sceneTitle = scene.title ?? scene.location ?? `文本草稿场景 ${sceneCode}`
+    const sceneTitle = blueprint.title
     sceneTitles.push(sceneTitle)
     const sceneFields = { sceneGroupId, sceneTitle, sceneCode }
-    const background = matchImportedBackground(scene.location, input.snapshot)
+    const background = matchImportedBackground(blueprint.location, input.snapshot)
     const shownCharacterIds = new Set<string>()
     let firstRef: string | undefined
     let lastRef: string | undefined

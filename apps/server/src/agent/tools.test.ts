@@ -7,7 +7,7 @@ describe('creative agent tools', () => {
       'read_project_brief', 'read_chapter_outline', 'read_scene', 'search_story',
       'read_conversation_context', 'search_memories', 'list_project_assets', 'inspect_asset', 'read_character_profile',
       'plan_character_voice',
-      'analyze_story_graph', 'create_story_patch', 'validate_story_patch',
+      'analyze_story_graph', 'create_scene_blueprint', 'create_story_patch', 'validate_story_patch',
       'prepare_character_asset', 'prepare_cg_asset', 'prepare_background_asset',
     ])
   })
@@ -36,6 +36,11 @@ describe('creative agent tools', () => {
     })
     await registry.prepare_character_asset.execute({ assetId: 'asset', removeWhite: true, trim: true })
     expect(proposed).toEqual(['asset:sprite'])
+  })
+
+  it('validates a scene blueprint before it can become a playable patch', async () => {
+    const registry = createAgentToolRegistry({ snapshot: { projectId: 'p', title: '故事', description: '', bible: null, characters: [], assets: [], chapters: [{ id: 'c', title: '第一章', version: 1, graph: { nodes: [], edges: [] } }] }, chapterId: 'c' })
+    await expect(registry.create_scene_blueprint.execute({ version: 1, title: '雨夜', beats: [{ kind: 'narration', text: '雨落下来。' }] })).resolves.toMatchObject({ accepted: true, beatCount: 1 })
   })
 
   it('uses the owned pixel inspector instead of guessing from snapshot metadata', async () => {
