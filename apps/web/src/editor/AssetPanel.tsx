@@ -64,6 +64,8 @@ export default function AssetPanel({
   const [pendingVoiceSample, setPendingVoiceSample] = useState<File | null>(null)
   const [voiceCharacterId, setVoiceCharacterId] = useState('')
   const [voiceStyle, setVoiceStyle] = useState('')
+  const [voiceTranscript, setVoiceTranscript] = useState('')
+  const [voiceLanguage, setVoiceLanguage] = useState('zh')
   const [voiceConsent, setVoiceConsent] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const replaceInputRef = useRef<HTMLInputElement>(null)
@@ -123,6 +125,8 @@ export default function AssetPanel({
       setPendingVoiceSample(file)
       setVoiceCharacterId(projectCharacters?.[0]?.id || '')
       setVoiceStyle('')
+      setVoiceTranscript('')
+      setVoiceLanguage('zh')
       setVoiceConsent(false)
       if (fileInputRef.current) fileInputRef.current.value = ''
       return
@@ -141,10 +145,16 @@ export default function AssetPanel({
   }
 
   const uploadVoiceSample = async () => {
-    if (!pendingVoiceSample || !project?.id || !voiceCharacterId || !voiceConsent) return
+    if (!pendingVoiceSample || !project?.id || !voiceCharacterId || !voiceConsent || !voiceTranscript.trim()) return
     setUploading(true)
     try {
-      await uploadAsset(pendingVoiceSample, 'VOICE_SAMPLE', project.id, { characterId: voiceCharacterId, consentConfirmed: true, style: voiceStyle.trim() || undefined })
+      await uploadAsset(pendingVoiceSample, 'VOICE_SAMPLE', project.id, {
+        characterId: voiceCharacterId,
+        consentConfirmed: true,
+        transcript: voiceTranscript.trim(),
+        language: voiceLanguage,
+        style: voiceStyle.trim() || undefined,
+      })
       await loadAssets()
       setPendingVoiceSample(null)
     } catch (err: unknown) {
@@ -370,11 +380,11 @@ export default function AssetPanel({
       </div>
     </aside>
     {processingAsset && <AssetProcessingSheet asset={processingAsset} projectId={project?.id} onClose={() => setProcessingAsset(null)} onAccepted={(accepted) => { void loadAssets(); onProjectCharacterAccepted?.(accepted) }} />}
-    {pendingVoiceSample && <VoiceSampleSheet file={pendingVoiceSample} characters={projectCharacters || []} characterId={voiceCharacterId} style={voiceStyle} consent={voiceConsent} submitting={uploading} onCharacterChange={setVoiceCharacterId} onStyleChange={setVoiceStyle} onConsentChange={setVoiceConsent} onCancel={() => setPendingVoiceSample(null)} onSubmit={() => void uploadVoiceSample()} />}
+    {pendingVoiceSample && <VoiceSampleSheet file={pendingVoiceSample} characters={projectCharacters || []} characterId={voiceCharacterId} transcript={voiceTranscript} language={voiceLanguage} style={voiceStyle} consent={voiceConsent} submitting={uploading} onCharacterChange={setVoiceCharacterId} onTranscriptChange={setVoiceTranscript} onLanguageChange={setVoiceLanguage} onStyleChange={setVoiceStyle} onConsentChange={setVoiceConsent} onCancel={() => setPendingVoiceSample(null)} onSubmit={() => void uploadVoiceSample()} />}
   </>)
 }
 
-function VoiceSampleSheet({ file, characters, characterId, style, consent, submitting, onCharacterChange, onStyleChange, onConsentChange, onCancel, onSubmit }: { file: File; characters: Array<{ id: string; name: string }>; characterId: string; style: string; consent: boolean; submitting: boolean; onCharacterChange: (value: string) => void; onStyleChange: (value: string) => void; onConsentChange: (value: boolean) => void; onCancel: () => void; onSubmit: () => void }) {
+function VoiceSampleSheet({ file, characters, characterId, transcript, language, style, consent, submitting, onCharacterChange, onTranscriptChange, onLanguageChange, onStyleChange, onConsentChange, onCancel, onSubmit }: { file: File; characters: Array<{ id: string; name: string }>; characterId: string; transcript: string; language: string; style: string; consent: boolean; submitting: boolean; onCharacterChange: (value: string) => void; onTranscriptChange: (value: string) => void; onLanguageChange: (value: string) => void; onStyleChange: (value: string) => void; onConsentChange: (value: boolean) => void; onCancel: () => void; onSubmit: () => void }) {
   return <div className="fixed inset-0 z-[80] flex items-center justify-center bg-slate-950/45 p-4">
     <section role="dialog" aria-modal="true" aria-label="登记角色声音样本" className="w-full max-w-lg rounded-lg bg-white p-5 shadow-xl">
       <div className="flex items-start justify-between gap-4">
@@ -383,10 +393,13 @@ function VoiceSampleSheet({ file, characters, characterId, style, consent, submi
       </div>
       {characters.length === 0 ? <p className="mt-5 rounded-md bg-amber-50 p-3 text-sm text-amber-800">当前项目还没有角色。请先将立绘登记为项目角色，再上传声音样本。</p> : <div className="mt-5 space-y-4">
         <label className="block text-sm font-medium text-slate-800">归属角色<select value={characterId} onChange={(event) => onCharacterChange(event.target.value)} className="mt-1.5 w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm">{characters.map((character) => <option key={character.id} value={character.id}>{character.name}</option>)}</select></label>
+        <label className="block text-sm font-medium text-slate-800">录音原文<span className="ml-1 font-normal text-rose-600">必填且需逐字一致</span><textarea value={transcript} onChange={(event) => onTranscriptChange(event.target.value)} rows={3} placeholder="填写这段录音中实际说出的全部文字" className="mt-1.5 w-full resize-none rounded-md border border-slate-300 px-3 py-2 text-sm leading-6" /></label>
+        <label className="block text-sm font-medium text-slate-800">语言<select value={language} onChange={(event) => onLanguageChange(event.target.value)} className="mt-1.5 w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm"><option value="zh">中文</option><option value="ja">日语</option><option value="en">英语</option></select></label>
         <label className="block text-sm font-medium text-slate-800">演绎说明<span className="ml-1 font-normal text-slate-500">可选</span><textarea value={style} onChange={(event) => onStyleChange(event.target.value)} rows={3} placeholder="例如：近距离、低声、平稳，关键句前留短停顿" className="mt-1.5 w-full resize-none rounded-md border border-slate-300 px-3 py-2 text-sm leading-6" /></label>
+        <p className="rounded-md bg-sky-50 p-3 text-xs leading-5 text-sky-800">建议 3–15 秒、单人干声、无音乐和明显混响。较长录音可以保存，但不会优先作为 GPT-SoVITS 零样本参考。</p>
         <label className="flex cursor-pointer items-start gap-2 rounded-md border border-slate-200 p-3 text-sm leading-6 text-slate-700"><input type="checkbox" checked={consent} onChange={(event) => onConsentChange(event.target.checked)} className="mt-1 h-4 w-4" /><span>我确认拥有该声音的使用与声线生成授权。未来配置语音 Provider 时，只有经确认的样本才会被发送给选定 Provider。</span></label>
       </div>}
-      <div className="mt-5 flex justify-end gap-2"><button onClick={onCancel} className="rounded-md border border-slate-300 px-3 py-2 text-sm text-slate-700">取消</button><button disabled={!characters.length || !characterId || !consent || submitting} onClick={onSubmit} className="rounded-md bg-dream-600 px-3 py-2 text-sm font-medium text-white disabled:cursor-not-allowed disabled:opacity-50">{submitting ? '上传中...' : '确认登记'}</button></div>
+      <div className="mt-5 flex justify-end gap-2"><button onClick={onCancel} className="rounded-md border border-slate-300 px-3 py-2 text-sm text-slate-700">取消</button><button disabled={!characters.length || !characterId || !transcript.trim() || !consent || submitting} onClick={onSubmit} className="rounded-md bg-dream-600 px-3 py-2 text-sm font-medium text-white disabled:cursor-not-allowed disabled:opacity-50">{submitting ? '上传中...' : '确认登记'}</button></div>
     </section>
   </div>
 }

@@ -165,7 +165,7 @@ describe('asset routes', () => {
 
     const response = await request(appFor(client, root)).post('/api/assets/upload')
       .set('Authorization', `Bearer ${token('owner')}`).field('projectId', 'project').field('type', 'VOICE_SAMPLE')
-      .field('voiceSample', JSON.stringify({ characterId: 'snow', consentConfirmed: true, style: '轻声' }))
+      .field('voiceSample', JSON.stringify({ characterId: 'snow', consentConfirmed: true, transcript: '今天也要写下去。', language: 'zh', style: '轻声' }))
       .attach('file', mp3, { filename: 'sample.mp3', contentType: 'audio/mpeg' })
 
     expect(response.status).toBe(200)
@@ -183,7 +183,7 @@ describe('asset routes', () => {
 
     const response = await request(appFor(client, root)).post('/api/assets/upload')
       .set('Authorization', `Bearer ${token('owner')}`).field('projectId', 'project').field('type', 'VOICE_SAMPLE')
-      .field('voiceSample', JSON.stringify({ characterId: 'snow', consentConfirmed: false }))
+      .field('voiceSample', JSON.stringify({ characterId: 'snow', consentConfirmed: false, transcript: '样本文字', language: 'zh' }))
       .attach('file', mp3, { filename: 'sample.mp3', contentType: 'audio/mpeg' })
 
     expect(response.status).toBe(400)

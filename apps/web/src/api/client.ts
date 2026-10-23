@@ -116,6 +116,8 @@ export interface Character {
 export interface VoiceSampleUpload {
   characterId: string
   consentConfirmed: true
+  transcript: string
+  language: string
   style?: string
 }
 

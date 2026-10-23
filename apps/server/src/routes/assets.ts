@@ -16,7 +16,13 @@ const uploadDir = process.env.UPLOAD_DIR || './uploads'
 const ASSET_TYPES = ['BACKGROUND', 'CG', 'BGM', 'SFX', 'VOICE', 'VOICE_SAMPLE', 'OTHER', 'SETTING'] as const
 type AssetType = typeof ASSET_TYPES[number]
 const AUDIO_ASSET_TYPES = new Set<AssetType>(['BGM', 'SFX', 'VOICE', 'VOICE_SAMPLE'])
-const voiceSampleSchema = z.object({ characterId: z.string().min(1), consentConfirmed: z.literal(true), style: z.string().trim().max(500).optional() }).strict()
+const voiceSampleSchema = z.object({
+  characterId: z.string().min(1),
+  consentConfirmed: z.literal(true),
+  transcript: z.string().trim().min(1).max(2000),
+  language: z.string().trim().min(2).max(24),
+  style: z.string().trim().max(500).optional(),
+}).strict()
 const renameSchema = z.object({ name: z.string().trim().min(1).max(200) }).strict()
 const processSchema = z.object({ purpose: z.enum(['sprite', 'cg', 'background']), removeWhite: z.boolean().optional(), whiteThreshold: z.number().int().min(180).max(255).optional(), feather: z.number().int().min(0).max(40).optional(), trim: z.boolean().optional() }).strict()
 const acceptSchema = z.object({ purpose: z.enum(['sprite', 'cg', 'background']), projectId: z.string().min(1).optional(), characterId: z.string().min(1).optional(), characterName: z.string().trim().min(1).max(100).optional(), expressionName: z.string().trim().min(1).max(100).optional() }).strict()
