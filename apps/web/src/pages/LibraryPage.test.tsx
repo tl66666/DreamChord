@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import '@testing-library/jest-dom/vitest'
-import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { MemoryRouter } from 'react-router-dom'
 import { FeedbackProvider } from '../components/FeedbackProvider'
@@ -41,5 +41,22 @@ describe('global asset library', () => {
     fireEvent.change(screen.getByLabelText('上传素材文件'), { target: { files: [file] } })
     await waitFor(() => expect(api.upload).toHaveBeenCalledWith(file, 'CG'))
     expect(await screen.findByText('portrait.png')).toBeInTheDocument()
+  })
+
+  it('lets authors inspect a character as full body, bust, and final stage', async () => {
+    api.list.mockResolvedValue([])
+    render(<MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}><FeedbackProvider><LibraryPage /></FeedbackProvider></MemoryRouter>)
+
+    const modeGroup = await screen.findByRole('group', { name: '雪立绘预览模式' })
+    const preview = screen.getByTestId('character-preview-yuki')
+    expect(preview).toHaveAttribute('data-preview-mode', 'full')
+
+    fireEvent.click(within(modeGroup).getByRole('button', { name: '半身' }))
+    expect(preview).toHaveAttribute('data-preview-mode', 'bust')
+    expect(within(preview).getByTestId('stage-character-yuki')).toHaveAttribute('data-framing', 'bust')
+
+    fireEvent.click(within(modeGroup).getByRole('button', { name: '舞台' }))
+    expect(preview).toHaveAttribute('data-preview-mode', 'stage')
+    expect(within(preview).getByText('台词安全区')).toBeInTheDocument()
   })
 })

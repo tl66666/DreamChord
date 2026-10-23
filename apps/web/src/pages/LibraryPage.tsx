@@ -20,6 +20,8 @@ import {
 import { useAuthStore } from '../stores/authStore'
 import { useToast, useConfirm } from '../components/FeedbackProvider'
 import AssetProcessingSheet from '../assets/AssetProcessingSheet'
+import StageCharacters from '../stage/StageCharacters'
+import type { StagePreviewMode } from '../stage/stagePresentation'
 
 function getApiError(err: unknown, fallback = '操作失败'): string {
   if (typeof err === 'object' && err !== null && 'response' in err) {
@@ -265,6 +267,7 @@ function CharacterLibrary(props: {
   onReset: () => void
 }) {
   const { characters, selectedExpression, editingCharacter, onSelectExpression, onCreate, onEdit, onChange, onSave, onCancel, onDelete, onReset } = props
+  const [previewModes, setPreviewModes] = useState<Record<string, StagePreviewMode>>({})
   return (
     <div>
       <ToolbarTitle title="角色库" desc="管理人物设定、小传、故事大纲、戏剧冲突和立绘状态。编辑器会直接读取这里的角色。" createLabel="新增角色" onCreate={onCreate} onReset={onReset} />
@@ -272,11 +275,50 @@ function CharacterLibrary(props: {
       <div className="grid gap-4 xl:grid-cols-2">
         {characters.map((character) => {
           const selected = character.expressions.find((item) => item.id === (selectedExpression[character.id] || character.defaultExpression)) || character.expressions[0]
+          const previewMode = previewModes[character.id] || 'full'
           return (
             <article key={character.id} className="grid gap-4 rounded-lg border border-slate-200 p-4 md:grid-cols-[170px_1fr]">
-              <button type="button" onClick={() => selected && window.open(selected.url, '_blank')} className="flex h-72 items-end justify-center overflow-hidden rounded-md border border-slate-100 bg-slate-50" title="点击查看原图">
-                <img src={selected?.url || '/assets/characters/default-avatar.png'} alt={character.name} className="max-h-full max-w-full object-contain" />
-              </button>
+              <div>
+                <div
+                  data-testid={`character-preview-${character.id}`}
+                  data-preview-mode={previewMode}
+                  className={`relative h-72 overflow-hidden rounded-lg border ${previewMode === 'stage' ? 'border-dream-300/40 bg-[url(/assets/backgrounds/bg-classroom.png)] bg-cover bg-center' : 'border-slate-200 bg-gradient-to-b from-slate-100 to-slate-300'}`}
+                >
+                  {previewMode === 'stage' && <div className="absolute inset-0 bg-gradient-to-b from-slate-950/5 via-transparent to-slate-950/65" />}
+                  <StageCharacters
+                    mode={previewMode}
+                    characters={[{
+                      id: character.id,
+                      state: selected?.id || character.defaultExpression,
+                      position: 'center',
+                      customUrl: selected?.url || '/assets/characters/default-avatar.png',
+                    }]}
+                    speakerId={character.id}
+                    resolveName={() => character.name}
+                  />
+                  {previewMode === 'stage' && (
+                    <div className="absolute inset-x-2 bottom-2 z-30 rounded-md border border-white/15 bg-slate-950/68 px-3 py-2 text-[10px] text-white/65 backdrop-blur-sm">
+                      台词安全区
+                    </div>
+                  )}
+                </div>
+                <div role="group" aria-label={`${character.name}立绘预览模式`} className="mt-2 grid grid-cols-3 rounded-md bg-slate-100 p-1">
+                  {([['full', '全身'], ['bust', '半身'], ['stage', '舞台']] as const).map(([mode, label]) => (
+                    <button
+                      key={mode}
+                      type="button"
+                      aria-pressed={previewMode === mode}
+                      onClick={() => setPreviewModes((current) => ({ ...current, [character.id]: mode }))}
+                      className={`rounded px-2 py-1.5 text-xs font-medium transition ${previewMode === mode ? 'bg-white text-dream-700 shadow-sm' : 'text-slate-500 hover:text-slate-800'}`}
+                    >
+                      {label}
+                    </button>
+                  ))}
+                </div>
+                <button type="button" onClick={() => selected && window.open(selected.url, '_blank')} className="mt-2 w-full text-center text-xs text-slate-500 hover:text-dream-700">
+                  查看原图
+                </button>
+              </div>
               <div className="min-w-0">
                 <div className="mb-3 flex items-start justify-between gap-3">
                   <div>
