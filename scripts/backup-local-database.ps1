@@ -7,6 +7,10 @@ param(
 
 $ErrorActionPreference = 'Stop'
 
+# Windows PowerShell launched by Node.js does not always auto-import the Utility module,
+# even though it is present on PSModulePath. The backup verifier depends on Get-FileHash.
+Import-Module Microsoft.PowerShell.Utility -ErrorAction Stop
+
 $content = Get-Content -Raw -Encoding UTF8 -LiteralPath $EnvPath
 $match = [Regex]::Match(
   $content,

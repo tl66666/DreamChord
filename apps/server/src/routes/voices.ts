@@ -45,9 +45,14 @@ export function createVoiceRouter(client: PrismaClient = prisma, provider: Voice
   router.post('/profiles', async (req: AuthRequest, res: Response) => {
     const parsed = createVoiceProfileSchema.safeParse(req.body)
     if (!parsed.success) return res.status(400).json({ error: parsed.error.issues[0]?.message || '音色档案参数无效' })
-    const { authorizationConfirmed: _confirmed, tags, ...input } = parsed.data
+    const input = parsed.data
     const profile = await client.voiceProfile.create({
-      data: { ...input, ownerId: req.userId!, provider: 'gpt-sovits', tags: JSON.stringify(tags) },
+      data: {
+        ownerId: req.userId!, provider: 'gpt-sovits', name: input.name, description: input.description,
+        language: input.language, ageTone: input.ageTone, genderTone: input.genderTone,
+        tags: JSON.stringify(input.tags), defaultEmotion: input.defaultEmotion,
+        defaultSpeed: input.defaultSpeed, authorizationNote: input.authorizationNote,
+      },
       include: includeProfileDetails,
     })
     res.status(201).json(profile)
