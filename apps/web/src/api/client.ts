@@ -309,6 +309,81 @@ export async function uploadAsset(
   return data
 }
 
+export interface VoiceProviderHealth {
+  ok: boolean
+  provider: string
+  message: string
+}
+
+export interface VoiceReference {
+  id: string
+  transcript: string
+  language: string
+  emotion: string
+  status: string
+  asset: Asset
+}
+
+export interface CharacterVoiceBinding {
+  id: string
+  character: { id: string; name: string }
+  project: { id: string; title: string }
+}
+
+export interface VoiceProfile {
+  id: string
+  name: string
+  description: string
+  language: string
+  ageTone?: string
+  genderTone?: string
+  tags: string
+  provider: string
+  defaultEmotion: string
+  defaultSpeed: number
+  status: 'active' | 'disabled' | 'revoked'
+  previewUrl?: string | null
+  references: VoiceReference[]
+  bindings: CharacterVoiceBinding[]
+}
+
+export async function getVoiceProfiles(): Promise<VoiceProfile[]> {
+  const { data } = await api.get('/voices/profiles')
+  return data
+}
+
+export async function getVoiceProviderHealth(): Promise<VoiceProviderHealth> {
+  const { data } = await api.get('/voices/provider/health')
+  return data
+}
+
+export async function createVoiceProfile(payload: {
+  name: string
+  description?: string
+  language: string
+  ageTone?: string
+  genderTone?: string
+  tags?: string[]
+  defaultEmotion?: string
+  defaultSpeed?: number
+  authorizationConfirmed: true
+  authorizationNote?: string
+}): Promise<VoiceProfile> {
+  const { data } = await api.post('/voices/profiles', payload)
+  return data
+}
+
+export async function attachVoiceReference(profileId: string, payload: {
+  assetId: string
+  transcript: string
+  language: string
+  emotion?: string
+  authorizationConfirmed: true
+}): Promise<VoiceReference> {
+  const { data } = await api.post(`/voices/profiles/${profileId}/references`, payload)
+  return data
+}
+
 export async function replaceAssetFile(
   assetId: string,
   file: File,

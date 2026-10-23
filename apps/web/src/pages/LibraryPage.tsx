@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { Archive, BookOpen, Edit3, Image as ImageIcon, Loader2, Plus, RotateCcw, Save, SlidersHorizontal, Trash2, Upload, Users, X } from 'lucide-react'
+import { Archive, BookOpen, Edit3, Image as ImageIcon, Loader2, Mic2, Plus, RotateCcw, Save, SlidersHorizontal, Trash2, Upload, Users, X } from 'lucide-react'
 import { deleteAsset, getAssetLibrary, renameAsset, uploadAsset, type Asset } from '../api/client'
 import {
   CHARACTER_KEY,
@@ -22,6 +22,7 @@ import { useToast, useConfirm } from '../components/FeedbackProvider'
 import AssetProcessingSheet from '../assets/AssetProcessingSheet'
 import StageCharacters from '../stage/StageCharacters'
 import type { StagePreviewMode } from '../stage/stagePresentation'
+import VoiceLibrary from '../voice/VoiceLibrary'
 
 function getApiError(err: unknown, fallback = '操作失败'): string {
   if (typeof err === 'object' && err !== null && 'response' in err) {
@@ -31,13 +32,14 @@ function getApiError(err: unknown, fallback = '操作失败'): string {
   return err instanceof Error ? err.message || fallback : fallback
 }
 
-type LibraryTab = 'characters' | 'scenes' | 'stories' | 'projectAssets'
+type LibraryTab = 'characters' | 'scenes' | 'stories' | 'voices' | 'projectAssets'
 const AUDIO_ASSET_TYPES = ['BGM', 'SFX', 'VOICE', 'VOICE_SAMPLE']
 
 const tabs: { id: LibraryTab; label: string; icon: ReactNode }[] = [
   { id: 'characters', label: '角色库', icon: <Users className="h-4 w-4" /> },
   { id: 'scenes', label: '场景库', icon: <ImageIcon className="h-4 w-4" /> },
   { id: 'stories', label: '剧情与模板', icon: <BookOpen className="h-4 w-4" /> },
+  { id: 'voices', label: '声音库', icon: <Mic2 className="h-4 w-4" /> },
   { id: 'projectAssets', label: '全局素材', icon: <Archive className="h-4 w-4" /> },
 ]
 
@@ -197,6 +199,7 @@ export default function LibraryPage() {
               onUseConflict={useConflictTemplate}
             />
           )}
+          {activeTab === 'voices' && (user ? <VoiceLibrary /> : <div><SectionTitle title="声音库" desc="登录后管理私有音色、授权参考片段和角色绑定。" /><Link to="/login" className="mt-4 inline-flex rounded-lg bg-dream-600 px-4 py-2 text-sm font-medium text-white">登录后使用</Link></div>)}
           {activeTab === 'projectAssets' && (
             <ProjectAssetLibrary
               user={user}
