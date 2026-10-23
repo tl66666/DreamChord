@@ -3,7 +3,7 @@ import type { AgentProjectSnapshot } from './context.js'
 
 export interface CharacterVoicePlan {
   character: { id: string; name: string; voiceStyle: string; consentConfirmed: boolean }
-  samples: Array<{ assetId: string; name: string; url: string; consentConfirmed: boolean; style: string }>
+  samples: Array<{ assetId: string; name: string; url: string; consentConfirmed: boolean; style: string; transcript: string; language: string }>
   provider: { configured: false; reason: string }
   lines: Array<{ nodeId: string; text: string; speaker: string; emotion: string; pace: string; pauseHint: string; delivery: string }>
   warnings: string[]
@@ -11,7 +11,7 @@ export interface CharacterVoicePlan {
 }
 
 type VoiceProfile = { style?: string; pace?: string; defaultEmotion?: string; sampleAssetIds?: string[]; consentConfirmed?: boolean }
-type VoiceSampleMetadata = { voiceSample?: { characterId?: string; consentConfirmed?: boolean; style?: string } }
+type VoiceSampleMetadata = { voiceSample?: { characterId?: string; consentConfirmed?: boolean; style?: string; transcript?: string; language?: string } }
 
 function parseJson<T>(raw: string | undefined, fallback: T): T {
   if (!raw) return fallback
@@ -43,7 +43,7 @@ export function buildCharacterVoicePlan(input: { snapshot: AgentProjectSnapshot;
     const sample = parseJson<VoiceSampleMetadata>(asset.metadata, {}).voiceSample
     if (sample?.characterId !== character.id || sample.consentConfirmed !== true) return []
     if (profile.sampleAssetIds?.length && !profile.sampleAssetIds.includes(asset.id)) return []
-    return [{ assetId: asset.id, name: asset.name, url: asset.url, consentConfirmed: true, style: sample.style ?? '' }]
+    return [{ assetId: asset.id, name: asset.name, url: asset.url, consentConfirmed: true, style: sample.style ?? '', transcript: sample.transcript ?? '', language: sample.language ?? '' }]
   })
   const emotion = profile.defaultEmotion || '自然'
   const pace = profile.pace || 'normal'
@@ -53,7 +53,7 @@ export function buildCharacterVoicePlan(input: { snapshot: AgentProjectSnapshot;
   const nextActions: string[] = []
   if (samples.length === 0) {
     warnings.push('该角色缺少授权声音样本，不能提交克隆或声线生成请求。')
-    nextActions.push('在编辑器素材库上传该角色的 30-90 秒清晰声音样本，并确认拥有使用与克隆授权。')
+    nextActions.push('在编辑器素材库上传该角色 3-15 秒的清晰单人干声，填写逐字原文与语言，并确认拥有使用与声线生成授权。')
   }
   if (lines.length === 0) {
     warnings.push('所选范围内没有该角色的可配音台词。')
