@@ -1,8 +1,11 @@
 # DreamChord 官方演示剧情
 
-> 剧名：**《第一根弦：消失的终页》**  
-> 类型：Meta 视觉小说 / 创作主题短篇  
-> 运行时唯一来源：`packages/story-domain/src/officialDemo.ts`  
+> 剧名：**《第一根弦：消失的终页》**
+>
+> 类型：Meta 视觉小说 / 创作主题短篇
+>
+> 运行时唯一来源：`packages/story-domain/src/officialDemo.ts`
+>
 > 预计试玩：10–15 分钟
 
 ## 故事概述
