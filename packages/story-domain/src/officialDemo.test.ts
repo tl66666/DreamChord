@@ -21,4 +21,34 @@ describe('official demo graph', () => {
       expect(actual).toEqual(expected)
     }
   })
+
+  it('keeps the final choice on three distinct routes with separate endings', () => {
+    const finalChoice = OFFICIAL_DEMO.graph.nodes.find((node) => node.id === 's8-choice')
+    expect(finalChoice).toBeDefined()
+
+    const routes = ['choice-0', 'choice-1', 'choice-2'].map((handle) => {
+      const firstEdge = OFFICIAL_DEMO.graph.edges.find((edge) => edge.source === finalChoice?.id && edge.sourceHandle === handle)
+      expect(firstEdge).toBeDefined()
+      const route: string[] = []
+      let current = firstEdge!.target
+      while (current) {
+        expect(route).not.toContain(current)
+        route.push(current)
+        current = OFFICIAL_DEMO.graph.edges.find((edge) => edge.source === current)?.target || ''
+      }
+      return route
+    })
+
+    expect(new Set(routes.map((route) => route.at(-1))).size).toBe(3)
+    expect(routes.every((route) => route.length >= 6)).toBe(true)
+    expect(routes[0]!.some((id) => id.startsWith('ending-failure-'))).toBe(true)
+    expect(routes[1]!.some((id) => id.startsWith('ending-coauthor-'))).toBe(true)
+    expect(routes[2]!.some((id) => id.startsWith('ending-agency-'))).toBe(true)
+
+    for (let left = 0; left < routes.length; left += 1) {
+      for (let right = left + 1; right < routes.length; right += 1) {
+        expect(routes[left]!.filter((id) => routes[right]!.includes(id))).toEqual([])
+      }
+    }
+  })
 })

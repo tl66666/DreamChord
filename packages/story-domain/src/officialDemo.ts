@@ -124,27 +124,67 @@ chain(s8Start,
 )
 const choice2 = add('s8-choice', 'choice', s8, t8, { choices: ['让失败成为下一章的开头', '让伙伴共同署名', '把选择留给故事中的人'] })
 link('s8-d1', choice2)
-const e1 = add('s8-e1', 'dialogue', s8, t8, { role: 'yuki', text: '我写下：失败没有关闭故事，它只是逼我们换一种方式继续。' })
-const e2 = add('s8-e2', 'dialogue', s8, t8, { role: 'yuki', text: '我写下所有人的名字。作品不是我的避难所，而是我们共同留下的证词。' })
-const e3 = add('s8-e3', 'dialogue', s8, t8, { role: 'yuki', text: '我写下一个问题，不替空回答。真正的结局从角色拥有选择开始。' })
-link(choice2, e1, 'choice-0', '接纳失败'); link(choice2, e2, 'choice-1', '共同创作'); link(choice2, e3, 'choice-2', '交还选择')
-const save = add('s8-save', 'dialogue', s8, t8, { role: 'ghost', text: '终页已恢复。故事完整度 100%。正在把新版本写回现实。' })
-link(e1, save); link(e2, save); link(e3, save)
 
-// ============ 场景 9：日落之后 ============
-// 舞台：空（left）+ 雪（center）+ 宫（right）—— 幽灵退场，回到教室
+// ============ 场景 9：日落之后（三条独立尾声） ============
+// 最终选择不立即汇合：每条路线承担不同代价，并以不同一句话收束。
 const s9 = 'scene-09-after-sunset'; const t9 = '日落之后'
-const s9bg = add('s9-bg', 'background', s9, t9, { backgroundId: 'bg-classroom' })
-link(save, s9bg)
-chain(s9bg,
-  add('s9-hide-ghost', 'character', s9, t9, { characterId: 'ghost', action: 'hide', expression: 'normal', position: 'right' }),
-  add('s9-miya', 'character', s9, t9, { characterId: 'miya', action: 'show', expression: 'smile', position: 'right' }),
-  add('s9-sora', 'character', s9, t9, { characterId: 'sora', action: 'show', expression: 'happy', position: 'left' }),
-  add('s9-yuki', 'character', s9, t9, { characterId: 'yuki', action: 'show', expression: 'smile', position: 'center' }),
-  add('s9-d1', 'dialogue', s9, t9, { role: 'miya', text: '16:59。审查老师收下了完整稿，也同意让轻小说部以新作品继续活动。' }),
-  add('s9-d2', 'dialogue', s9, t9, { role: 'sora', text: '这一章结束了，但我的下一句还没有写。雪，我们去工作台看看新的故事线吧。' }),
-  add('s9-d3', 'dialogue', s9, t9, { role: 'yuki', text: '好。这一次，不从"我不能"开始。从"我们接下来写什么"开始。' }),
-)
+
+function addEndingRoute(config: {
+  prefix: 'ending-failure' | 'ending-coauthor' | 'ending-agency'
+  handle: 'choice-0' | 'choice-1' | 'choice-2'
+  label: string
+  yukiLine: string
+  ghostLine: string
+  miyaLine: string
+  soraLine: string
+  closingLine: string
+}) {
+  const first = add(`${config.prefix}-write`, 'dialogue', s8, t8, { role: 'yuki', text: config.yukiLine })
+  const saved = add(`${config.prefix}-save`, 'dialogue', s8, t8, { role: 'ghost', text: config.ghostLine })
+  const classroom = add(`${config.prefix}-bg`, 'background', s9, t9, { backgroundId: 'bg-classroom' })
+  const hideGhost = add(`${config.prefix}-hide-ghost`, 'character', s9, t9, { characterId: 'ghost', action: 'hide', expression: 'normal', position: 'right' })
+  const miya = add(`${config.prefix}-miya`, 'character', s9, t9, { characterId: 'miya', action: 'show', expression: 'smile', position: 'right' })
+  const sora = add(`${config.prefix}-sora`, 'character', s9, t9, { characterId: 'sora', action: 'show', expression: 'happy', position: 'left' })
+  const yuki = add(`${config.prefix}-yuki`, 'character', s9, t9, { characterId: 'yuki', action: 'show', expression: 'smile', position: 'center' })
+  const reality = add(`${config.prefix}-reality`, 'dialogue', s9, t9, { role: 'miya', text: config.miyaLine })
+  const response = add(`${config.prefix}-response`, 'dialogue', s9, t9, { role: 'sora', text: config.soraLine })
+  const closing = add(`${config.prefix}-closing`, 'dialogue', s9, t9, { role: 'yuki', text: config.closingLine })
+  link(choice2, first, config.handle, config.label)
+  chain(first, saved, classroom, hideGhost, miya, sora, yuki, reality, response, closing)
+}
+
+addEndingRoute({
+  prefix: 'ending-failure',
+  handle: 'choice-0',
+  label: '接纳失败',
+  yukiLine: '我写下：退稿和失败都是真的。它们不会被修正，但可以成为下一章的开头。',
+  ghostLine: '终页已恢复。版本标记：保留失败记录。正在写回现实。',
+  miyaLine: '16:59。审查老师没有通过旧稿，却同意给我们一周提交重写版。社团暂时保留。',
+  soraLine: '原来没有赢，也可以继续。那下一页让我陪你从不完美的地方写起。',
+  closingLine: '好。今天不庆祝奇迹，只庆祝我们没有再把失败删掉。',
+})
+
+addEndingRoute({
+  prefix: 'ending-coauthor',
+  handle: 'choice-1',
+  label: '共同创作',
+  yukiLine: '我写下所有人的名字。作品不是我的避难所，而是我们共同留下、共同负责的证词。',
+  ghostLine: '终页已恢复。署名节点由一个变为四个。正在写回现实。',
+  miyaLine: '16:59。审查老师收下了完整稿，也要求我们下周带着全体成员的修改记录再来。',
+  soraLine: '共同署名不是把责任分小，而是让每个人都能指出故事哪里还不够诚实。',
+  closingLine: '那就从工作台开始。下一次保存之前，我们先问完每一个人的意见。',
+})
+
+addEndingRoute({
+  prefix: 'ending-agency',
+  handle: 'choice-2',
+  label: '交还选择',
+  yukiLine: '我只写下一个问题，不替空回答。真正的结局，从故事中的人拥有选择开始。',
+  ghostLine: '终页已恢复。检测到开放节点：结局完整，但未来保持未锁定。',
+  miyaLine: '16:59。审查老师说这不像结局，更像邀请；她愿意让轻小说部把读者的回答做成下一章。',
+  soraLine: '那我的第一项选择是留下。不是因为剧情需要，而是因为我想和你们继续写。',
+  closingLine: '收到。作者不替你落笔——我们回工作台，把下一条线留给你的答案。',
+})
 
 export const OFFICIAL_DEMO: {
   id: string
