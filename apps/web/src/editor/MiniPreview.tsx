@@ -8,9 +8,9 @@
 import { useMemo, useState, useEffect } from 'react'
 import { Play, Eye, MessageSquare, GitBranch, Image as ImageIcon } from 'lucide-react'
 import type { ShotCard } from './sceneGraph'
-import { resolveCharacterUrl } from '../engine/characters'
 import { resolveBgUrl } from './storyFlowchart/bgUrl'
 import { loadLibraryCharacters, loadLibraryScenes } from '../lib/libraryData'
+import StageCharacters from '../stage/StageCharacters'
 
 interface MiniPreviewProps {
   card: ShotCard | null
@@ -32,12 +32,6 @@ export default function MiniPreview({ card, onFullScreen }: MiniPreviewProps) {
 
   const getCharColor = (id: string): string => {
     return characters.find((c) => c.id === id)?.color || '#a78bfa'
-  }
-
-  const positionClass: Record<string, string> = {
-    left: 'left-[8%]',
-    center: 'left-1/2 -translate-x-1/2',
-    right: 'right-[8%]',
   }
 
   const bgUrl = card ? resolveBgUrl(card.background, libraryScenes) : ''
@@ -86,30 +80,20 @@ export default function MiniPreview({ card, onFullScreen }: MiniPreviewProps) {
               <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/60" />
             </div>
 
-            {/* 角色立绘 */}
-            {visibleChars.map((char, index) => {
-              const url = char.characterId.startsWith('/uploads/') || char.characterId.startsWith('http')
-                ? char.characterId
-                : resolveCharacterUrl(char.characterId, char.expression)
-              const pos = positionClass[char.position] || positionClass.center
-              const isSpeaker = card.speaker === char.characterId && card.speaker !== '旁白'
-              return (
-                <div
-                  key={`${char.characterId}-${index}`}
-                  className={`absolute bottom-[28%] h-[60%] transition-all duration-300 ${pos} ${isSpeaker ? 'z-10' : 'z-0'}`}
-                  style={{ filter: isSpeaker ? 'none' : 'brightness(0.6) saturate(0.7)' }}
-                >
-                  <img
-                    src={url}
-                    alt={getCharName(char.characterId)}
-                    className="h-full object-contain drop-shadow-2xl"
-                    onError={(e) => {
-                      ;(e.target as HTMLImageElement).style.opacity = '0.2'
-                    }}
-                  />
-                </div>
-              )
-            })}
+            {/* 与正式播放器共享同一套人物裁切、站位和发言聚焦 */}
+            <StageCharacters
+              characters={visibleChars.map((character) => ({
+                id: character.characterId,
+                state: character.expression,
+                position: character.position,
+                customUrl: character.characterId.startsWith('/uploads/') || character.characterId.startsWith('http')
+                  ? character.characterId
+                  : undefined,
+              }))}
+              speakerId={card.speaker !== '旁白' ? card.speaker : undefined}
+              resolveName={getCharName}
+              className="z-[2]"
+            />
 
             {/* 场景代码标签 */}
             <div className="absolute left-3 top-3 rounded-md bg-black/50 px-2 py-1 text-xs font-mono text-white/70 backdrop-blur-sm">

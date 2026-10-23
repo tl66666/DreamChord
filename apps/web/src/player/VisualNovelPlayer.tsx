@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState, useCallback, forwardRef } from 'react'
+import { useEffect, useMemo, useRef, useState, useCallback } from 'react'
 import { useToast } from '../components/FeedbackProvider'
 import { useLocation, useNavigate, useParams } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -8,13 +8,9 @@ import { safeJsonParse } from '../lib/safeJsonParse'
 import { createRuntimeEngine } from '../engine/runtime'
 import { convertFlowToRuntime } from '../engine/converter'
 import { createAudioDirector } from './audioDirector'
-import {
-  CHARACTER_REGISTRY,
-  resolveCharacterColor,
-  resolveCharacterName,
-  resolveCharacterUrl,
-} from '../engine/characters'
-import type { CharacterOnStage, RuntimeScene } from '../engine/types'
+import { resolveCharacterColor, resolveCharacterName } from '../engine/characters'
+import type { RuntimeScene } from '../engine/types'
+import StageCharacters from '../stage/StageCharacters'
 
 interface HistoryItem {
   sceneId: string
@@ -39,46 +35,6 @@ const DEFAULT_SETTINGS: PlayerSettings = {
   bgmVolume: 0.5,
   sfxVolume: 0.7,
   voiceVolume: 0.8,
-}
-
-/** 根据同屏角色数量动态计算立绘位置和宽度，防止遮挡 */
-function getPositionStyle(
-  position: string,
-  totalCharacters: number,
-): { posClass: string; widthClass: string } {
-  const pos = position || 'center'
-
-  // 单角色：居中，正常宽度
-  if (totalCharacters <= 1) {
-    return {
-      posClass: 'left-1/2 -translate-x-1/2',
-      widthClass: 'w-[45vw] md:w-[31vw]',
-    }
-  }
-
-  // 双角色：收窄宽度，拉开间距
-  if (totalCharacters === 2) {
-    const width = 'w-[38vw] md:w-[26vw]'
-    switch (pos) {
-      case 'left':
-        return { posClass: 'left-[6%] md:left-[8%]', widthClass: width }
-      case 'right':
-        return { posClass: 'right-[6%] md:right-[8%]', widthClass: width }
-      default:
-        return { posClass: 'left-1/2 -translate-x-1/2', widthClass: width }
-    }
-  }
-
-  // 三角色及以上：最窄宽度，贴边分布
-  const width = 'w-[30vw] md:w-[22vw]'
-  switch (pos) {
-    case 'left':
-      return { posClass: 'left-[2%] md:left-[4%]', widthClass: width }
-    case 'right':
-      return { posClass: 'right-[2%] md:right-[4%]', widthClass: width }
-    default:
-      return { posClass: 'left-1/2 -translate-x-1/2', widthClass: width }
-  }
 }
 
 type AudioWindow = typeof window & {
@@ -433,19 +389,11 @@ export default function VisualNovelPlayer() {
         ))}
       </AnimatePresence>
 
-      <div className="absolute inset-0 z-10">
-        <AnimatePresence mode="popLayout">
-          {characters.map((character, index) => (
-            <CharacterSprite
-              key={`${character.id}-${character.state}-${character.position}`}
-              character={character}
-              isSystem={CHARACTER_REGISTRY[character.id]?.layer === 'system'}
-              zIndex={10 + index}
-              totalCharacters={characters.length}
-            />
-          ))}
-        </AnimatePresence>
-      </div>
+      <StageCharacters
+        characters={characters}
+        speakerId={currentScene?.dialogue?.role}
+        className="z-10"
+      />
 
       <div className="pointer-events-none absolute left-1/2 top-5 z-40 hidden -translate-x-1/2 rounded-full border border-white/12 bg-black/32 px-4 py-1.5 text-xs text-white/70 backdrop-blur-md md:block">
         {project?.title || 'DreamChord'}
@@ -752,58 +700,6 @@ function SidePanel({
     </motion.div>
   )
 }
-
-const CharacterSprite = forwardRef<
-  HTMLDivElement,
-  {
-    character: CharacterOnStage
-    zIndex: number
-    isSystem: boolean
-    totalCharacters: number
-  }
->(function CharacterSprite({ character, zIndex, isSystem, totalCharacters }, ref) {
-  const url = character.customUrl || resolveCharacterUrl(character.id, character.state)
-  const { posClass, widthClass } = getPositionStyle(character.position || 'center', totalCharacters)
-
-  return (
-    <motion.div
-      ref={ref}
-      initial={{ opacity: 0, y: 70, scale: 0.965, filter: 'blur(4px)' }}
-      animate={{ opacity: 1, y: 0, scale: 1, filter: 'blur(0px)' }}
-      exit={{ opacity: 0, y: 46, scale: 0.985, filter: 'blur(3px)' }}
-      transition={{ duration: 0.52, ease: 'easeOut' }}
-      className={`absolute bottom-0 h-[76vh] ${widthClass} ${posClass}`}
-      style={{ zIndex }}
-    >
-      <div
-        className="pointer-events-none absolute bottom-[2%] left-1/2 h-6 w-[50%] -translate-x-1/2 rounded-[100%] opacity-40 blur-md"
-        style={{ background: 'radial-gradient(ellipse, rgba(0,0,0,0.45) 0%, transparent 75%)' }}
-      />
-      <div
-        className="relative h-full w-full"
-        style={{
-          WebkitMaskImage: 'linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,1) 88%, rgba(0,0,0,0) 100%)',
-          maskImage: 'linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,1) 88%, rgba(0,0,0,0) 100%)',
-        }}
-      >
-        <motion.img
-          key={url}
-          src={url}
-          alt={character.id}
-          className="h-full w-full object-contain object-bottom"
-          initial={{ opacity: 0, scale: 1.012 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.25 }}
-          style={{
-            filter: isSystem
-              ? 'drop-shadow(0 10px 18px rgba(0,0,0,0.35)) drop-shadow(0 0 20px rgba(167,139,250,0.3))'
-              : 'drop-shadow(0 10px 18px rgba(0,0,0,0.35))',
-          }}
-        />
-      </div>
-    </motion.div>
-  )
-})
 
 function mergeChaptersForPreview(project: ProjectDetail) {
   const nodes: Array<{
