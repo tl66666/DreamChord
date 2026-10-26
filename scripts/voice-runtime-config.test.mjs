@@ -39,6 +39,7 @@ test('replaces an existing env key without duplicating it', () => {
 })
 
 test('pins a versioned Miniforge installer and checksum', () => {
+  assert.equal(MINIFORGE_RELEASE.tag, '25.9.1-0')
   assert.match(MINIFORGE_RELEASE.installer, /Miniforge3-\d+\.\d+\.\d+-\d+-Windows-x86_64\.exe$/)
   assert.equal(MINIFORGE_RELEASE.checksum, `${MINIFORGE_RELEASE.installer}.sha256`)
   assert.match(MINIFORGE_RELEASE.baseUrl, /^https:\/\/github\.com\/conda-forge\/miniforge\/releases\/download\//)

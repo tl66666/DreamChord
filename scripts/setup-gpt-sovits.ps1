@@ -10,6 +10,8 @@ $ErrorActionPreference = 'Stop'
 $projectRoot = (Resolve-Path (Join-Path $PSScriptRoot '..')).Path
 $configScript = Join-Path $PSScriptRoot 'voice-runtime-config.mjs'
 $serverEnv = Join-Path $projectRoot 'apps\server\.env'
+$release = (& node $configScript release-json) | ConvertFrom-Json
+if ($LASTEXITCODE -ne 0) { throw '无法读取 Miniforge 固定版本配置。' }
 
 function Invoke-CheckedCommand {
   param([string]$Command, [string[]]$Arguments, [string]$FailureMessage)
@@ -41,7 +43,7 @@ if (-not (Test-Path $RuntimeRoot) -and $driveInfo.Free -lt 40GB) {
   throw "目标磁盘可用空间不足 40GB：$runtimeDrive"
 }
 
-$miniforgeRoot = Join-Path $RuntimeRoot 'miniforge3'
+$miniforgeRoot = Join-Path $RuntimeRoot "miniforge3-$($release.tag)"
 $condaExe = Join-Path $miniforgeRoot 'Scripts\conda.exe'
 $gptRoot = Join-Path $RuntimeRoot 'gpt-sovits'
 $environmentRoot = Join-Path $gptRoot '.conda'
@@ -59,8 +61,6 @@ if ($Device -eq 'AUTO') {
 
 if (-not (Test-Path $condaExe)) {
   New-Item -ItemType Directory -Force -Path $downloadsRoot | Out-Null
-  $release = (& node $configScript release-json) | ConvertFrom-Json
-  if ($LASTEXITCODE -ne 0) { throw '无法读取 Miniforge 固定版本配置。' }
   $installerPath = Join-Path $downloadsRoot $release.installer
   $checksumPath = Join-Path $downloadsRoot $release.checksum
   $installerUrl = "$($release.baseUrl)/$($release.installer)"

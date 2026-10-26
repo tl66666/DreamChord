@@ -2,10 +2,11 @@ import fs from 'node:fs/promises'
 import { fileURLToPath } from 'node:url'
 
 export const MINIFORGE_RELEASE = Object.freeze({
-  tag: '26.9.4-0',
-  installer: 'Miniforge3-26.9.4-0-Windows-x86_64.exe',
-  checksum: 'Miniforge3-26.9.4-0-Windows-x86_64.exe.sha256',
-  baseUrl: 'https://github.com/conda-forge/miniforge/releases/download/26.9.4-0',
+  // 26.9.4-0 has a Windows launcher regression that prevents environment creation.
+  tag: '25.9.1-0',
+  installer: 'Miniforge3-25.9.1-0-Windows-x86_64.exe',
+  checksum: 'Miniforge3-25.9.1-0-Windows-x86_64.exe.sha256',
+  baseUrl: 'https://github.com/conda-forge/miniforge/releases/download/25.9.1-0',
 })
 
 export function chooseRuntimeRoot(drives, minimumGiB = 40) {

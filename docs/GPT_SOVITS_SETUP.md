@@ -14,7 +14,7 @@ DreamChord 把 GPT-SoVITS 当作由项目自己管理的本地声音引擎。它
 1. Git
 2. PowerShell 7
 
-不需要再单独安装 Miniconda。DreamChord 会下载经过 SHA256 校验的 Miniforge，并安装到自己的运行时目录，不修改系统 PATH，也不接管系统 Python。
+不需要再单独安装 Miniconda。DreamChord 会下载经过 SHA256 校验、通过项目实机兼容性验证的固定 Miniforge 版本，并安装到自己的版本化运行时目录，不修改系统 PATH，也不接管系统 Python。
 
 然后在 DreamChord 项目根目录执行：
 
