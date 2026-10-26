@@ -193,6 +193,7 @@ export default function VoiceLibrary() {
             {filtered.map((profile) => (
               <button key={profile.id} onClick={() => setSelectedId(profile.id)} className={`w-full rounded-lg border p-3 text-left transition ${selected?.id === profile.id ? 'border-dream-300 bg-white shadow-sm' : 'border-transparent hover:bg-white'}`}>
                 <div className="flex items-center justify-between gap-2"><span className="font-semibold text-slate-900">{profile.name}</span><span className={`h-2 w-2 rounded-full ${profile.status === 'active' ? 'bg-emerald-500' : 'bg-slate-400'}`} /></div>
+                {isStarterVoice(profile) && <span className="mt-2 inline-flex rounded-full border border-cyan-200 bg-cyan-50 px-2 py-0.5 text-[10px] font-semibold text-cyan-800">梦弦内置 · 合成音</span>}
                 <p className="mt-1 line-clamp-2 text-xs leading-5 text-slate-500">{profile.description || '暂无说明'}</p>
                 <p className="mt-2 text-[11px] text-slate-400">{profile.language} · {profile.references.length} 条参考 · {profile.bindings.length} 个角色</p>
               </button>
@@ -204,9 +205,10 @@ export default function VoiceLibrary() {
         <section className="rounded-xl border border-slate-200 p-5">
           {selected ? <>
             <div className="flex flex-wrap items-start justify-between gap-3 border-b border-slate-100 pb-4">
-              <div><div className="flex items-center gap-2"><Mic2 className="h-5 w-5 text-dream-600" /><h3 className="text-xl font-bold text-slate-950">{selected.name}</h3><span className="rounded-full bg-slate-100 px-2 py-0.5 text-xs text-slate-600">私有</span></div><p className="mt-2 text-sm leading-6 text-slate-600">{selected.description || '为这个音色补充年龄感、情绪范围和适用角色，会更容易稳定复用。'}</p></div>
+              <div><div className="flex flex-wrap items-center gap-2"><Mic2 className="h-5 w-5 text-dream-600" /><h3 className="text-xl font-bold text-slate-950">{selected.name}</h3><span className={`rounded-full px-2 py-0.5 text-xs font-semibold ${isStarterVoice(selected) ? 'border border-cyan-200 bg-cyan-50 text-cyan-800' : 'bg-slate-100 text-slate-600'}`}>{isStarterVoice(selected) ? '梦弦内置 · 合成音' : '私有'}</span></div><p className="mt-2 text-sm leading-6 text-slate-600">{selected.description || '为这个音色补充年龄感、情绪范围和适用角色，会更容易稳定复用。'}</p></div>
               <span className="rounded-full bg-dream-50 px-3 py-1 text-xs font-medium text-dream-700">{selected.provider}</span>
             </div>
+            {isStarterVoice(selected) && <div className="mt-4 flex items-start gap-3 rounded-xl border border-cyan-200 bg-cyan-50/70 p-4"><ShieldCheck className="mt-0.5 h-5 w-5 shrink-0 text-cyan-700" /><div><p className="text-sm font-semibold text-cyan-950">来源清晰的合成起始音色</p><p className="mt-1 text-xs leading-5 text-cyan-900">{selected.authorizationNote}</p></div></div>}
             <div className="mt-4 grid gap-3 sm:grid-cols-3"><Info label="语言" value={selected.language} /><Info label="默认情绪" value={selected.defaultEmotion} /><Info label="默认语速" value={`${selected.defaultSpeed.toFixed(2)}×`} /></div>
             <div className="mt-6"><h4 className="font-semibold text-slate-900">授权参考片段</h4><p className="mt-1 text-xs leading-5 text-slate-500">推荐 3–15 秒单人干声，并填写与录音逐字一致的原文。</p>
               <div className="mt-3 space-y-2">{selected.references.map((item) => <div key={item.id} className="rounded-lg border border-slate-200 bg-slate-50 p-3"><div className="flex items-center justify-between gap-3"><span className="text-sm font-medium text-slate-900">{item.asset.name}</span><span className="text-xs text-emerald-700">已授权</span></div><audio controls preload="metadata" className="mt-2 h-9 w-full" src={item.asset.url}>你的浏览器不支持音频预览。</audio><p className="mt-2 text-xs leading-5 text-slate-600">“{item.transcript}” · {item.language} · {item.emotion}</p></div>)}</div>
@@ -252,4 +254,8 @@ export default function VoiceLibrary() {
 
 function Info({ label, value }: { label: string; value: string }) { return <div className="rounded-lg bg-slate-50 p-3"><p className="text-xs text-slate-400">{label}</p><p className="mt-1 text-sm font-medium text-slate-800">{value}</p></div> }
 function Field({ label, value, onChange, placeholder = '' }: { label: string; value: string; onChange: (value: string) => void; placeholder?: string }) { return <label className="text-sm font-medium text-slate-700">{label}<input aria-label={label} value={value} onChange={(event) => onChange(event.target.value)} placeholder={placeholder} className="mt-1.5 w-full rounded-md border border-slate-300 px-3 py-2" /></label> }
+
+function isStarterVoice(profile: VoiceProfile) {
+  return profile.id.startsWith('starter-voice-profile-dreamchord-')
+}
 

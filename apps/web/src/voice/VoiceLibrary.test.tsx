@@ -48,6 +48,18 @@ describe('VoiceLibrary', () => {
     expect(screen.getByText(/手动上传配音仍可使用/)).toBeInTheDocument()
   })
 
+  it('labels bundled synthetic voices and shows their provenance note', async () => {
+    common()
+    api.list.mockResolvedValue([{ id: 'starter-voice-profile-dreamchord-xingli', name: '星璃・清澈', description: '清亮自然', language: 'zh-CN', tags: '["合成音色"]', status: 'active', provider: 'gpt-sovits', defaultEmotion: '自然', defaultSpeed: 1, authorizationNote: 'DreamChord 内置合成起始音色，源自 hexgrad/Kokoro-82M/zf_xiaobei（Apache-2.0）；非真人声音克隆。', references: [], bindings: [] }])
+    api.health.mockResolvedValue({ ok: true, provider: 'gpt-sovits', message: '服务可访问' })
+    api.assets.mockResolvedValue([])
+    render(<VoiceLibrary />)
+
+    expect(await screen.findAllByText('梦弦内置 · 合成音')).not.toHaveLength(0)
+    expect(screen.getByText(/Apache-2.0/)).toBeInTheDocument()
+    expect(screen.getByText(/非真人声音克隆/)).toBeInTheDocument()
+  })
+
   it('requires rights confirmation before creating a private profile', async () => {
     common()
     api.list.mockResolvedValue([])

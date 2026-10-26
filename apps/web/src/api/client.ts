@@ -347,6 +347,7 @@ export interface VoiceProfile {
   provider: string
   defaultEmotion: string
   defaultSpeed: number
+  authorizationNote: string
   status: 'active' | 'disabled' | 'revoked'
   previewUrl?: string | null
   references: VoiceReference[]
