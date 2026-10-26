@@ -1,5 +1,6 @@
 # Dependencies
 node_modules
+assets/voice-packs/dreamchord-starter/generated/
 .pnpm-store
 
 # Build outputs

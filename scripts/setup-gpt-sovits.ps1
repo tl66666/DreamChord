@@ -19,6 +19,13 @@ function Invoke-CheckedCommand {
   if ($LASTEXITCODE -ne 0) { throw $FailureMessage }
 }
 
+function Import-Module-Check {
+  param([string]$Python, [string]$Module)
+  if (-not (Test-Path $Python)) { return $false }
+  & $Python -c "import $Module" 2>$null
+  return $LASTEXITCODE -eq 0
+}
+
 function Get-PreferredRuntimeRoot {
   $drives = Get-PSDrive -PSProvider FileSystem |
     Where-Object { $_.Root -match '^[A-Za-z]:\\$' } |
@@ -99,7 +106,9 @@ if (-not (Test-Path $environmentPython)) {
 
 $inferenceConfig = Join-Path $gptRoot 'GPT_SoVITS\configs\tts_infer.yaml'
 $pretrainedRoot = Join-Path $gptRoot 'GPT_SoVITS\pretrained_models'
-if (-not (Test-Path $pretrainedRoot) -or -not (Get-ChildItem $pretrainedRoot -File -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1)) {
+$pretrainedSpeakerRoot = Join-Path $gptRoot 'GPT_SoVITS\pretrained_models\sv'
+$runtimeReady = (Test-Path $pretrainedSpeakerRoot) -and (Import-Module-Check $environmentPython 'torch')
+if (-not $runtimeReady) {
   Write-Host '正在安装依赖和预训练模型，首次执行会下载较大文件，请保持网络连接…' -ForegroundColor Yellow
   Invoke-CheckedCommand $condaExe @(
     'run', '--no-capture-output', '-p', $environmentRoot,
@@ -110,9 +119,10 @@ if (-not (Test-Path $pretrainedRoot) -or -not (Get-ChildItem $pretrainedRoot -Fi
   Write-Host '检测到预训练模型，跳过重复安装。'
 }
 
-foreach ($requiredPath in @((Join-Path $gptRoot 'api_v2.py'), $inferenceConfig, $environmentPython, $pretrainedRoot)) {
+foreach ($requiredPath in @((Join-Path $gptRoot 'api_v2.py'), $inferenceConfig, $environmentPython, $pretrainedSpeakerRoot)) {
   if (-not (Test-Path $requiredPath)) { throw "声音运行时不完整，缺少：$requiredPath" }
 }
+if (-not (Import-Module-Check $environmentPython 'torch')) { throw '声音运行时不完整：PyTorch 尚未安装。' }
 
 & node $configScript upsert-env $serverEnv 'VOICE_PROVIDER' 'gpt-sovits'
 & node $configScript upsert-env $serverEnv 'GPT_SOVITS_HOME' $gptRoot

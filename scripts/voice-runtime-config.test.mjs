@@ -50,3 +50,14 @@ test('uses PowerShell 7 so UTF-8 installer messages parse correctly on Windows',
   assert.match(packageJson.scripts['voice:setup'], /^pwsh /)
   assert.match(packageJson.scripts['voice:setup:cpu'], /^pwsh /)
 })
+
+test('installer does not mistake the pretrained .gitignore placeholder for a complete runtime', () => {
+  const installer = fs.readFileSync(new URL('./setup-gpt-sovits.ps1', import.meta.url), 'utf8')
+  assert.match(installer, /pretrained_models\\sv/)
+  assert.match(installer, /Import-Module-Check.*torch/s)
+})
+
+test('starter voice generation resolves the managed Python instead of hard-coding a drive', () => {
+  const packageJson = JSON.parse(fs.readFileSync(new URL('../package.json', import.meta.url), 'utf8'))
+  assert.equal(packageJson.scripts['voice:starter:generate'], 'pwsh -NoProfile -File scripts/generate-starter-voices.ps1')
+})

@@ -1,0 +1,54 @@
+{
+  "schemaVersion": 1,
+  "packId": "dreamchord-starter",
+  "displayName": "梦弦起始音色",
+  "sourceModel": "hexgrad/Kokoro-82M",
+  "sourceUrl": "https://huggingface.co/hexgrad/Kokoro-82M",
+  "sourceLicense": "Apache-2.0",
+  "syntheticSource": true,
+  "generatedAt": null,
+  "voices": [
+    {
+      "id": "dreamchord-xingli",
+      "name": "星璃・清澈",
+      "description": "清亮而自然的少女声线，适合校园日常、轻快独白与温柔旁白。",
+      "language": "zh-CN",
+      "ageTone": "少女",
+      "genderTone": "女声",
+      "tags": ["清澈", "轻快", "校园", "合成音色"],
+      "sourceVoiceId": "zf_xiaobei",
+      "transcript": "傍晚的风穿过旧教学楼，我在那段熟悉的旋律里，第一次听见属于未来的回声。",
+      "outputFile": "generated/dreamchord-xingli.wav",
+      "sha256": null,
+      "durationSeconds": null
+    },
+    {
+      "id": "dreamchord-wulan",
+      "name": "雾岚・轻语",
+      "description": "柔和克制的年轻女声，适合秘密对话、情绪转折与安静的内心戏。",
+      "language": "zh-CN",
+      "ageTone": "青年",
+      "genderTone": "女声",
+      "tags": ["轻柔", "克制", "神秘", "合成音色"],
+      "sourceVoiceId": "zf_xiaoyi",
+      "transcript": "如果记忆真的会褪色，那就把今晚的月光写进歌里，等我们再次相遇时慢慢唱完。",
+      "outputFile": "generated/dreamchord-wulan.wav",
+      "sha256": null,
+      "durationSeconds": null
+    },
+    {
+      "id": "dreamchord-muchuan",
+      "name": "暮川・沉稳",
+      "description": "沉静可靠的青年男声，适合关键角色、悬疑推进与有分量的剧情说明。",
+      "language": "zh-CN",
+      "ageTone": "青年",
+      "genderTone": "男声",
+      "tags": ["沉稳", "可靠", "叙事", "合成音色"],
+      "sourceVoiceId": "zm_yunjian",
+      "transcript": "故事从来不是只有一个答案，真正重要的，是你愿意为自己的选择走到哪一步。",
+      "outputFile": "generated/dreamchord-muchuan.wav",
+      "sha256": null,
+      "durationSeconds": null
+    }
+  ]
+}
