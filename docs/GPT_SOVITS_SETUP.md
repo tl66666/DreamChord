@@ -9,11 +9,12 @@ DreamChord 把 GPT-SoVITS 当作由项目自己管理的本地声音引擎。它
 
 ## 一次性安装（Windows）
 
-先安装以下三个基础工具：
+先确认电脑上有以下两个基础工具：
 
 1. Git
-2. Miniconda
-3. PowerShell 7
+2. PowerShell 7
+
+不需要再单独安装 Miniconda。DreamChord 会下载经过 SHA256 校验的 Miniforge，并安装到自己的运行时目录，不修改系统 PATH，也不接管系统 Python。
 
 然后在 DreamChord 项目根目录执行：
 
@@ -21,11 +22,19 @@ DreamChord 把 GPT-SoVITS 当作由项目自己管理的本地声音引擎。它
 pnpm voice:setup
 ```
 
-安装脚本会自动检测 NVIDIA 显卡；检测到显卡时使用 CUDA 12.6 方案，否则使用 CPU 方案。中国大陆默认从 ModelScope 获取模型。想强制只用 CPU，可执行：
+安装脚本会选择至少有 40GB 空间且剩余空间最多的本地磁盘。本机默认会使用 `D:\DreamChordRuntime`，避免挤占空间较少的 C 盘。它会自动检测 NVIDIA 显卡；检测到显卡时使用 CUDA 12.6 方案，否则使用 CPU 方案。中国大陆默认从 ModelScope 获取模型。想强制只用 CPU，可执行：
 
 ```powershell
 pnpm voice:setup:cpu
 ```
+
+如果确实要指定目录，可以直接运行：
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/setup-gpt-sovits.ps1 -RuntimeRoot "E:\DreamChordRuntime"
+```
+
+网络中断或官方依赖下载失败时，再次运行同一个命令即可。已通过校验的 Miniforge、源码、Python 环境和模型会被复用。
 
 安装完成后，不需要再运行 GPT-SoVITS 命令。正常执行 `pnpm dev`，DreamChord 后端会在隐藏窗口中启动本机 `api_v2.py`，只监听 `127.0.0.1:9880`；关闭 DreamChord 时会一起停止。声音库页面也提供启动与停止按钮。
 
@@ -49,7 +58,7 @@ pnpm voice:setup:cpu
 
 ## 常见状态
 
-- “内置声音引擎尚未安装”：先执行 `pnpm voice:setup`。
+- “内置声音引擎尚未安装”：先执行 `pnpm voice:setup`；脚本不再要求提前安装 Conda。
 - “正在加载声音模型”：正常现象，首次启动通常更久。
 - “无法连接本机 GPT-SoVITS”：在声音库点“启动内置声音引擎”；仍失败时检查安装命令上方的报错。
 - 显存不足：先缩短台词并关闭其他占显存程序；仍不足时重新使用 CPU 模式安装。
