@@ -10,6 +10,7 @@
     "build": "pnpm -r build",
     "test": "pnpm -r test",
     "test:readiness": "node scripts/workspace-readiness.test.mjs",
+    "test:voice-runtime": "node --test scripts/voice-runtime-config.test.mjs",
     "voice:setup": "powershell -ExecutionPolicy Bypass -File scripts/setup-gpt-sovits.ps1",
     "voice:setup:cpu": "powershell -ExecutionPolicy Bypass -File scripts/setup-gpt-sovits.ps1 -Device CPU",
     "lint": "pnpm -r lint",
