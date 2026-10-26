@@ -49,6 +49,16 @@ export default function StageCharacters({
           })
           const url = character.customUrl || resolveUrl(character.id, character.state)
           const failed = Boolean(failedImages[key])
+          const hasExplicitSpeaker = Boolean(speakerId)
+          const mobileStageClass = mode !== 'stage' ? '' : hasExplicitSpeaker
+            ? isSpeaker
+              ? presentation.framing === 'full'
+                ? 'max-sm:!left-1/2 max-sm:!w-[64%] max-sm:!h-[76%] max-sm:!bottom-[2%]'
+                : 'max-sm:!left-1/2 max-sm:!w-[88%] max-sm:!h-[92%] max-sm:!bottom-[-12%]'
+              : 'max-sm:!opacity-0'
+            : presentation.framing === 'full'
+              ? `max-sm:!w-[38%] max-sm:!h-[58%] max-sm:!bottom-[8%] ${character.position === 'left' ? 'max-sm:!left-[18%]' : 'max-sm:!left-[82%]'}`
+              : `max-sm:!w-[56%] max-sm:!h-[82%] max-sm:!bottom-[-14%] ${character.position === 'right' ? 'max-sm:!left-[82%]' : character.position === 'left' ? 'max-sm:!left-[18%]' : 'max-sm:!left-1/2'}`
 
           return (
             <div
@@ -57,7 +67,7 @@ export default function StageCharacters({
               data-framing={presentation.framing}
               data-speaker={String(isSpeaker)}
               data-load-error={String(failed)}
-              className="absolute"
+              className={`absolute ${mobileStageClass}`}
               style={{
                 left: `${presentation.anchorPercent}%`,
                 width: `${presentation.widthPercent}%`,

@@ -25,6 +25,9 @@ describe('StageCharacters', () => {
     expect(screen.getByAltText('雪')).toHaveAttribute('src', '/assets/characters/yuki_smile.png')
     expect(ghost).toHaveAttribute('data-framing', 'full')
     expect(ghost).toHaveAttribute('data-speaker', 'false')
+    expect(yuki).toHaveClass('max-sm:!w-[88%]')
+    expect(yuki).toHaveClass('max-sm:!left-1/2')
+    expect(ghost).toHaveClass('max-sm:!opacity-0')
   })
 
   it('uses a supplied custom URL and exposes an unobtrusive fallback on load failure', () => {
