@@ -56,6 +56,11 @@ $gptRoot = Join-Path $RuntimeRoot 'gpt-sovits'
 $environmentRoot = Join-Path $gptRoot '.conda'
 $environmentPython = Join-Path $environmentRoot 'python.exe'
 $downloadsRoot = Join-Path $RuntimeRoot 'downloads'
+$nativeBuildTemp = Join-Path $RuntimeRoot 'tmp'
+New-Item -ItemType Directory -Force -Path $nativeBuildTemp | Out-Null
+$env:TEMP = $nativeBuildTemp
+$env:TMP = $nativeBuildTemp
+$env:TMPDIR = $nativeBuildTemp
 
 Write-Host 'DreamChord 内置声音引擎安装向导' -ForegroundColor Cyan
 Write-Host "运行时目录：$RuntimeRoot"
@@ -107,7 +112,11 @@ if (-not (Test-Path $environmentPython)) {
 $inferenceConfig = Join-Path $gptRoot 'GPT_SoVITS\configs\tts_infer.yaml'
 $pretrainedRoot = Join-Path $gptRoot 'GPT_SoVITS\pretrained_models'
 $pretrainedSpeakerRoot = Join-Path $gptRoot 'GPT_SoVITS\pretrained_models\sv'
-$runtimeReady = (Test-Path $pretrainedSpeakerRoot) -and (Import-Module-Check $environmentPython 'torch')
+$pythonModulesReady = (Import-Module-Check $environmentPython 'torch') -and
+  (Import-Module-Check $environmentPython 'numpy') -and
+  (Import-Module-Check $environmentPython 'soundfile') -and
+  (Import-Module-Check $environmentPython 'fastapi')
+$runtimeReady = (Test-Path $pretrainedSpeakerRoot) -and $pythonModulesReady
 if (-not $runtimeReady) {
   Write-Host '正在安装依赖和预训练模型，首次执行会下载较大文件，请保持网络连接…' -ForegroundColor Yellow
   Invoke-CheckedCommand $condaExe @(
@@ -122,7 +131,9 @@ if (-not $runtimeReady) {
 foreach ($requiredPath in @((Join-Path $gptRoot 'api_v2.py'), $inferenceConfig, $environmentPython, $pretrainedSpeakerRoot)) {
   if (-not (Test-Path $requiredPath)) { throw "声音运行时不完整，缺少：$requiredPath" }
 }
-if (-not (Import-Module-Check $environmentPython 'torch')) { throw '声音运行时不完整：PyTorch 尚未安装。' }
+foreach ($requiredModule in @('torch', 'numpy', 'soundfile', 'fastapi')) {
+  if (-not (Import-Module-Check $environmentPython $requiredModule)) { throw "声音运行时不完整，缺少 Python 模块：$requiredModule" }
+}
 
 & node $configScript upsert-env $serverEnv 'VOICE_PROVIDER' 'gpt-sovits'
 & node $configScript upsert-env $serverEnv 'GPT_SOVITS_HOME' $gptRoot

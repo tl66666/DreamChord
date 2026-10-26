@@ -55,9 +55,19 @@ test('installer does not mistake the pretrained .gitignore placeholder for a com
   const installer = fs.readFileSync(new URL('./setup-gpt-sovits.ps1', import.meta.url), 'utf8')
   assert.match(installer, /pretrained_models\\sv/)
   assert.match(installer, /Import-Module-Check.*torch/s)
+  for (const moduleName of ['numpy', 'soundfile', 'fastapi']) {
+    assert.match(installer, new RegExp(`Import-Module-Check \\$environmentPython '${moduleName}'`))
+  }
 })
 
 test('starter voice generation resolves the managed Python instead of hard-coding a drive', () => {
   const packageJson = JSON.parse(fs.readFileSync(new URL('../package.json', import.meta.url), 'utf8'))
   assert.equal(packageJson.scripts['voice:starter:generate'], 'pwsh -NoProfile -File scripts/generate-starter-voices.ps1')
+})
+
+test('installer uses an ASCII temporary directory for native Python builds', () => {
+  const installer = fs.readFileSync(new URL('./setup-gpt-sovits.ps1', import.meta.url), 'utf8')
+  assert.match(installer, /Join-Path \$RuntimeRoot 'tmp'/)
+  assert.match(installer, /\$env:TEMP = \$nativeBuildTemp/)
+  assert.match(installer, /\$env:TMP = \$nativeBuildTemp/)
 })
