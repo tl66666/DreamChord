@@ -1,6 +1,6 @@
 # DreamChord 内置声音克隆（GPT-SoVITS）
 
-DreamChord 把 GPT-SoVITS 当作由项目自己管理的本地声音引擎。它不会在浏览器里连接陌生网站，也不要求日常另外打开 GPT-SoVITS WebUI。引擎源码、Python 环境和模型放在项目根目录的 `.runtime/gpt-sovits`，该目录已被 Git 忽略。
+DreamChord 把 GPT-SoVITS 当作由项目自己管理的本地声音引擎。它不会在浏览器里连接陌生网站，也不要求日常另外打开 GPT-SoVITS WebUI。引擎源码、Python 环境和模型默认放在空间充足的 `DreamChordRuntime` 目录（本机为 `D:\DreamChordRuntime`），不会塞进 Git 仓库。
 
 ## 你需要先知道的两件事
 
@@ -31,12 +31,27 @@ pnpm voice:setup:cpu
 如果确实要指定目录，可以直接运行：
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File scripts/setup-gpt-sovits.ps1 -RuntimeRoot "E:\DreamChordRuntime"
+pwsh -NoProfile -File scripts/setup-gpt-sovits.ps1 -RuntimeRoot "E:\DreamChordRuntime"
 ```
 
 网络中断或官方依赖下载失败时，再次运行同一个命令即可。已通过校验的 Miniforge、源码、Python 环境和模型会被复用。
 
 安装完成后，不需要再运行 GPT-SoVITS 命令。正常执行 `pnpm dev`，DreamChord 后端会在隐藏窗口中启动本机 `api_v2.py`，只监听 `127.0.0.1:9880`；关闭 DreamChord 时会一起停止。声音库页面也提供启动与停止按钮。
+
+## 安装三款梦弦起始音色
+
+项目附带三款中文合成起始音色的清单：`星璃・清澈`、`雾岚・轻语`、`暮川・沉稳`。它们不是从声优、主播或其他真人身上克隆的；参考音由 Apache-2.0 的 Kokoro 模型生成，声音库里会一直显示来源模型、源 voice id、授权协议、哈希和“非真人声音克隆”标识。
+
+完成 GPT-SoVITS 安装后执行：
+
+```powershell
+pnpm voice:starter:generate
+pnpm voice:seed
+```
+
+第一条命令会在同一个项目声音环境里补装轻量生成组件，生成三段本地参考 WAV，并把时长与 SHA256 写回清单；第二条命令会校验哈希并把它们导入 demo 账号的声音库。两条命令都可以安全重复执行，不会创建重复音色。
+
+这三款属于开箱即用的零样本音色，不应被描述成“训练出来的真人音色”。以后如果加入真正的角色微调，应另建训练任务、独立模型权重和清晰的授权记录，不能覆盖这里的来源信息。
 
 ## 在 DreamChord 里的完整流程
 
