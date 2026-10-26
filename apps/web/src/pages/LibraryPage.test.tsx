@@ -59,4 +59,13 @@ describe('global asset library', () => {
     expect(preview).toHaveAttribute('data-preview-mode', 'stage')
     expect(within(preview).getByText('台词安全区')).toBeInTheDocument()
   })
+
+  it('uses a wide responsive shell with horizontally scrollable navigation', async () => {
+    api.list.mockResolvedValue([])
+    render(<MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}><FeedbackProvider><LibraryPage /></FeedbackProvider></MemoryRouter>)
+
+    expect(await screen.findByTestId('library-shell')).toHaveClass('max-w-[1760px]', 'lg:grid-cols-[232px_minmax(0,1fr)]')
+    expect(screen.getByTestId('library-navigation')).toHaveClass('overflow-x-auto', 'lg:sticky')
+    expect(screen.getByTestId('library-content')).not.toHaveClass('max-w-7xl')
+  })
 })

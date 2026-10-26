@@ -20,9 +20,8 @@ import {
 import { useAuthStore } from '../stores/authStore'
 import { useToast, useConfirm } from '../components/FeedbackProvider'
 import AssetProcessingSheet from '../assets/AssetProcessingSheet'
-import StageCharacters from '../stage/StageCharacters'
-import type { StagePreviewMode } from '../stage/stagePresentation'
 import VoiceLibrary from '../voice/VoiceLibrary'
+import CharacterGallery from '../library/CharacterGallery'
 
 function getApiError(err: unknown, fallback = '操作失败'): string {
   if (typeof err === 'object' && err !== null && 'response' in err) {
@@ -130,9 +129,9 @@ export default function LibraryPage() {
   }
 
   return (<>
-    <main className="min-h-screen bg-slate-50">
-      <header className="border-b border-slate-200 bg-white/90 px-6 py-4 backdrop-blur">
-        <div className="mx-auto flex max-w-7xl items-center justify-between">
+    <main className="min-h-screen bg-[#f5f6f8]">
+      <header className="sticky top-0 z-40 border-b border-slate-200/80 bg-white/90 px-4 py-3 backdrop-blur-xl sm:px-6 sm:py-4">
+        <div className="mx-auto flex max-w-[1760px] items-center justify-between gap-3">
           <Link to="/" className="flex items-center gap-3">
             <img src="/assets/logo.png" alt="DreamChord" className="h-9 w-9 rounded-lg" />
             <div>
@@ -141,36 +140,33 @@ export default function LibraryPage() {
             </div>
           </Link>
           <div className="flex items-center gap-2">
-            <button onClick={() => navigate('/agent')} className="rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50">创作 Agent</button>
-            <button onClick={() => navigate('/')} className="rounded-lg bg-dream-600 px-4 py-2 text-sm font-medium text-white hover:bg-dream-700">去编辑器使用</button>
+            <button onClick={() => navigate('/agent')} className="hidden min-h-10 rounded-xl border border-slate-200 bg-white px-4 text-sm font-medium text-slate-700 hover:bg-slate-50 sm:block">创作 Agent</button>
+            <button onClick={() => navigate('/')} className="min-h-10 rounded-xl bg-slate-950 px-3 text-sm font-semibold text-white hover:bg-dream-700 sm:px-4">去编辑器使用</button>
           </div>
         </div>
       </header>
 
-      <div className="mx-auto grid max-w-7xl gap-6 px-6 py-6 lg:grid-cols-[220px_1fr]">
-        <aside className="h-fit rounded-lg border border-slate-200 bg-white p-2">
+      <div data-testid="library-shell" className="mx-auto grid max-w-[1760px] gap-5 px-4 py-5 sm:px-6 lg:grid-cols-[232px_minmax(0,1fr)] lg:gap-8 lg:py-8">
+        <aside data-testid="library-navigation" className="flex h-fit gap-1 overflow-x-auto rounded-2xl border border-slate-200/90 bg-white p-2 shadow-sm lg:sticky lg:top-24 lg:block">
           {tabs.map((tab) => (
-            <button key={tab.id} onClick={() => setActiveTab(tab.id)} className={`mb-1 flex w-full items-center gap-2 rounded-md px-3 py-2 text-left text-sm font-medium ${activeTab === tab.id ? 'bg-dream-50 text-dream-700' : 'text-slate-600 hover:bg-slate-50'}`}>
+            <button key={tab.id} onClick={() => setActiveTab(tab.id)} className={`flex min-h-10 shrink-0 items-center gap-2 rounded-xl px-3 text-left text-sm font-medium transition lg:mb-1 lg:w-full ${activeTab === tab.id ? 'bg-dream-50 text-dream-700 shadow-sm' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-950'}`}>
               {tab.icon}
               {tab.label}
             </button>
           ))}
         </aside>
 
-        <section className="min-h-[680px] rounded-lg border border-slate-200 bg-white p-5">
+        <section data-testid="library-content" className={`min-h-[680px] min-w-0 ${activeTab === 'characters' ? '' : 'rounded-2xl border border-slate-200/90 bg-white p-5 shadow-sm'}`}>
           {activeTab === 'characters' && (
-            <CharacterLibrary
+            <CharacterGallery
               characters={characters}
               selectedExpression={selectedExpression}
-              editingCharacter={editingCharacter}
               onSelectExpression={(characterId, expressionId) => setSelectedExpression((prev) => ({ ...prev, [characterId]: expressionId }))}
               onCreate={() => setEditingCharacter(newCharacter())}
               onEdit={(character) => setEditingCharacter(structuredClone(character))}
-              onChange={setEditingCharacter}
-              onSave={saveCharacter}
-              onCancel={() => setEditingCharacter(null)}
               onDelete={(id) => setCharacters((prev) => prev.filter((item) => item.id !== id))}
               onReset={async () => { if (await confirm({ message: '确定恢复默认角色库吗？', danger: true })) setCharacters(defaultCharacters) }}
+              editor={editingCharacter ? <CharacterEditor character={editingCharacter} onChange={setEditingCharacter} onSave={saveCharacter} onCancel={() => setEditingCharacter(null)} /> : null}
             />
           )}
           {activeTab === 'scenes' && (
@@ -254,109 +250,6 @@ export default function LibraryPage() {
     </main>
     {processingAsset && <AssetProcessingSheet asset={processingAsset} onClose={() => setProcessingAsset(null)} onAccepted={() => void getAssetLibrary().then(setAssets)} />}
   </>)
-}
-
-function CharacterLibrary(props: {
-  characters: LibraryCharacter[]
-  selectedExpression: Record<string, string>
-  editingCharacter: LibraryCharacter | null
-  onSelectExpression: (characterId: string, expressionId: string) => void
-  onCreate: () => void
-  onEdit: (character: LibraryCharacter) => void
-  onChange: (character: LibraryCharacter) => void
-  onSave: () => void
-  onCancel: () => void
-  onDelete: (id: string) => void
-  onReset: () => void
-}) {
-  const { characters, selectedExpression, editingCharacter, onSelectExpression, onCreate, onEdit, onChange, onSave, onCancel, onDelete, onReset } = props
-  const [previewModes, setPreviewModes] = useState<Record<string, StagePreviewMode>>({})
-  return (
-    <div>
-      <ToolbarTitle title="角色库" desc="管理人物设定、小传、故事大纲、戏剧冲突和立绘状态。编辑器会直接读取这里的角色。" createLabel="新增角色" onCreate={onCreate} onReset={onReset} />
-      {editingCharacter && <CharacterEditor character={editingCharacter} onChange={onChange} onSave={onSave} onCancel={onCancel} />}
-      <div className="grid gap-4 xl:grid-cols-2">
-        {characters.map((character) => {
-          const selected = character.expressions.find((item) => item.id === (selectedExpression[character.id] || character.defaultExpression)) || character.expressions[0]
-          const previewMode = previewModes[character.id] || 'full'
-          return (
-            <article key={character.id} className="grid gap-4 rounded-lg border border-slate-200 p-4 md:grid-cols-[170px_1fr]">
-              <div>
-                <div
-                  data-testid={`character-preview-${character.id}`}
-                  data-preview-mode={previewMode}
-                  className={`relative h-72 overflow-hidden rounded-lg border ${previewMode === 'stage' ? 'border-dream-300/40 bg-[url(/assets/backgrounds/bg-classroom.png)] bg-cover bg-center' : 'border-slate-200 bg-gradient-to-b from-slate-100 to-slate-300'}`}
-                >
-                  {previewMode === 'stage' && <div className="absolute inset-0 bg-gradient-to-b from-slate-950/5 via-transparent to-slate-950/65" />}
-                  <StageCharacters
-                    mode={previewMode}
-                    characters={[{
-                      id: character.id,
-                      state: selected?.id || character.defaultExpression,
-                      position: 'center',
-                      customUrl: selected?.url || '/assets/characters/default-avatar.png',
-                    }]}
-                    speakerId={character.id}
-                    resolveName={() => character.name}
-                  />
-                  {previewMode === 'stage' && (
-                    <div className="absolute inset-x-2 bottom-2 z-30 rounded-md border border-white/15 bg-slate-950/68 px-3 py-2 text-[10px] text-white/65 backdrop-blur-sm">
-                      台词安全区
-                    </div>
-                  )}
-                </div>
-                <div role="group" aria-label={`${character.name}立绘预览模式`} className="mt-2 grid grid-cols-3 rounded-md bg-slate-100 p-1">
-                  {([['full', '全身'], ['bust', '半身'], ['stage', '舞台']] as const).map(([mode, label]) => (
-                    <button
-                      key={mode}
-                      type="button"
-                      aria-pressed={previewMode === mode}
-                      onClick={() => setPreviewModes((current) => ({ ...current, [character.id]: mode }))}
-                      className={`rounded px-2 py-1.5 text-xs font-medium transition ${previewMode === mode ? 'bg-white text-dream-700 shadow-sm' : 'text-slate-500 hover:text-slate-800'}`}
-                    >
-                      {label}
-                    </button>
-                  ))}
-                </div>
-                <button type="button" onClick={() => selected && window.open(selected.url, '_blank')} className="mt-2 w-full text-center text-xs text-slate-500 hover:text-dream-700">
-                  查看原图
-                </button>
-              </div>
-              <div className="min-w-0">
-                <div className="mb-3 flex items-start justify-between gap-3">
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <span className="h-3 w-3 rounded-full" style={{ backgroundColor: character.color }} />
-                      <h3 className="text-xl font-bold text-slate-950">{character.name}</h3>
-                      <span className="rounded-full bg-slate-100 px-2 py-0.5 text-xs text-slate-500">{character.role}</span>
-                    </div>
-                    <p className="mt-1 text-xs text-slate-400">ID: {character.id} · 更新 {character.updatedAt}</p>
-                  </div>
-                  <RowActions onEdit={() => onEdit(character)} onDelete={() => onDelete(character.id)} />
-                </div>
-                <p className="mb-3 text-sm leading-6 text-slate-700">{character.description}</p>
-                <InfoBlock title="人物小传" text={character.biography} />
-                <InfoBlock title="故事大纲" text={character.outline} />
-                <div className="mb-3 rounded-md bg-rose-50 p-3 text-sm text-rose-700">
-                  <p className="mb-1 font-medium">戏剧冲突</p>
-                  <ul className="list-inside list-disc space-y-1">{character.conflicts.map((item) => <li key={item}>{item}</li>)}</ul>
-                </div>
-                <p className="mb-4 rounded-md bg-slate-50 p-3 text-sm text-slate-600">项目用途：{character.usage}</p>
-                <div className="flex flex-wrap gap-2">
-                  {character.expressions.map((expression) => (
-                    <button key={expression.id} type="button" onClick={() => onSelectExpression(character.id, expression.id)} className={`flex items-center gap-2 rounded-md border px-2 py-1 ${selected?.id === expression.id ? 'border-dream-400 bg-dream-50 text-dream-800' : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50'}`}>
-                      <img src={expression.url} alt={expression.label} className="h-10 w-10 object-contain" />
-                      <span className="text-xs">{expression.label}</span>
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </article>
-          )
-        })}
-      </div>
-    </div>
-  )
 }
 
 function CharacterEditor({ character, onChange, onSave, onCancel }: { character: LibraryCharacter; onChange: (character: LibraryCharacter) => void; onSave: () => void; onCancel: () => void }) {
@@ -599,10 +492,6 @@ function TextField({ label, value, onChange }: { label: string; value: string; o
 
 function TextArea({ label, value, onChange, rows = 4 }: { label: string; value: string; onChange: (value: string) => void; rows?: number }) {
   return <label className="block"><span className="mb-1 block text-sm font-medium text-slate-700">{label}</span><textarea value={value} onChange={(event) => onChange(event.target.value)} rows={rows} className="w-full rounded-md border border-slate-200 px-3 py-2 text-sm leading-6" /></label>
-}
-
-function InfoBlock({ title, text }: { title: string; text: string }) {
-  return <div className="mb-3 rounded-md bg-slate-50 p-3 text-sm text-slate-700"><p className="mb-1 font-medium text-slate-900">{title}</p><p className="leading-6">{text}</p></div>
 }
 
 function EmptyState({ text }: { text: string }) {
