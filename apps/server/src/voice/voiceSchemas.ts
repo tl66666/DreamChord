@@ -54,6 +54,10 @@ export const createVoiceGenerationSchema = z.object({
   seed: z.number().int().min(-1).max(2_147_483_647).optional(),
 }).strict()
 
+export const acceptVoiceGenerationSchema = z.object({
+  name: z.string().trim().min(1).max(200).optional(),
+}).strict()
+
 export type CreateVoiceProfileInput = z.infer<typeof createVoiceProfileSchema>
 export type CreateVoiceGenerationInput = z.infer<typeof createVoiceGenerationSchema>
 

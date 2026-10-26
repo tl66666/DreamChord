@@ -2,6 +2,7 @@ import dotenv from 'dotenv'
 import { createApp } from './app.js'
 import { prismaAgentRunService } from './agent/runService.js'
 import { prismaLongImportService } from './imports/longImportService.js'
+import { getManagedVoiceEngine } from './voice/managedVoiceEngine.js'
 
 dotenv.config()
 
@@ -17,6 +18,15 @@ for (const key of REQUIRED_ENV) {
 const PORT = Number(process.env.PORT) || 3001
 await prismaAgentRunService.recoverInterruptedRuns()
 await prismaLongImportService.recoverInterruptedRuns()
+const managedVoiceEngine = getManagedVoiceEngine()
+if (process.env.GPT_SOVITS_AUTO_START !== 'false' && managedVoiceEngine.status().installed) {
+  try {
+    managedVoiceEngine.start()
+    console.log('正在后台启动 DreamChord 内置声音引擎…')
+  } catch (error) {
+    console.error('内置声音引擎自动启动失败，可在声音库中重试。', error)
+  }
+}
 const app = createApp()
 
 const server = app.listen(PORT, () => {
@@ -26,6 +36,7 @@ const server = app.listen(PORT, () => {
 // ---------- Graceful Shutdown ----------
 process.on('SIGTERM', () => {
   console.log('收到 SIGTERM 信号，正在关闭服务...')
+  managedVoiceEngine.stop()
   server.close(() => {
     console.log('服务已关闭')
     process.exit(0)
@@ -34,6 +45,7 @@ process.on('SIGTERM', () => {
 
 process.on('SIGINT', () => {
   console.log('收到 SIGINT 信号，正在关闭服务...')
+  managedVoiceEngine.stop()
   server.close(() => {
     console.log('服务已关闭')
     process.exit(0)

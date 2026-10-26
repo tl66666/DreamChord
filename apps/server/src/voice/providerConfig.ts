@@ -3,8 +3,9 @@ export type VoiceProviderConfig =
   | { enabled: false; provider: 'none'; reason: string }
 
 export function readVoiceProviderConfig(env: Record<string, string | undefined> = process.env): VoiceProviderConfig {
-  if (env.VOICE_PROVIDER !== 'gpt-sovits') {
-    return { enabled: false, provider: 'none', reason: '未配置声音生成服务，仍可使用声音库与手动上传。' }
+  const selectedProvider = env.VOICE_PROVIDER?.trim() || 'gpt-sovits'
+  if (selectedProvider !== 'gpt-sovits') {
+    return { enabled: false, provider: 'none', reason: '本机声音生成服务已停用，仍可使用声音库与手动上传。' }
   }
 
   const rawBaseUrl = env.GPT_SOVITS_BASE_URL || 'http://127.0.0.1:9880'

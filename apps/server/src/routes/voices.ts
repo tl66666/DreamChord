@@ -1,16 +1,26 @@
 import { Router, type Response, type Router as ExpressRouter } from 'express'
+import fs from 'node:fs/promises'
+import path from 'node:path'
+import { randomUUID } from 'node:crypto'
 import type { PrismaClient } from '@prisma/client'
+import { storagePathFromUrl, uploadUrl } from '../assets/storagePaths.js'
 import { prisma } from '../lib/prisma.js'
 import { authenticateToken, type AuthRequest } from '../middleware/auth.js'
 import { GptSovitsProvider } from '../voice/gptSovitsProvider.js'
+import { getManagedVoiceEngine, type ManagedVoiceEngine } from '../voice/managedVoiceEngine.js'
 import type { VoiceProvider } from '../voice/provider.js'
 import { readVoiceProviderConfig } from '../voice/providerConfig.js'
+import { SerialVoiceQueue } from '../voice/voiceQueue.js'
 import {
+  acceptVoiceGenerationSchema,
   attachVoiceReferenceSchema,
   bindCharacterVoiceSchema,
+  createVoiceGenerationSchema,
   createVoiceProfileSchema,
   updateVoiceProfileSchema,
 } from '../voice/voiceSchemas.js'
+
+const defaultVoiceQueue = new SerialVoiceQueue()
 
 function configuredProvider(): VoiceProvider | null {
   const config = readVoiceProviderConfig()
@@ -22,16 +32,34 @@ const includeProfileDetails = {
   bindings: { include: { character: true, project: { select: { id: true, title: true } } } },
 }
 
-export function createVoiceRouter(client: PrismaClient = prisma, provider: VoiceProvider | null = configuredProvider()): ExpressRouter {
+export function createVoiceRouter(
+  client: PrismaClient = prisma,
+  provider: VoiceProvider | null = configuredProvider(),
+  options: { storageRoot?: string; queue?: SerialVoiceQueue; engine?: ManagedVoiceEngine } = {},
+): ExpressRouter {
   const router: ExpressRouter = Router()
+  const storageRoot = options.storageRoot || process.env.UPLOAD_DIR || './uploads'
+  const queue = options.queue || defaultVoiceQueue
+  const engine = options.engine || getManagedVoiceEngine()
   router.use(authenticateToken)
 
   router.get('/provider/health', async (_req: AuthRequest, res: Response) => {
     if (!provider) {
       const config = readVoiceProviderConfig()
-      return res.json({ ok: false, provider: 'none', message: config.enabled ? '声音服务不可用' : config.reason })
+      return res.json({ ok: false, provider: 'none', message: config.enabled ? '声音服务不可用' : config.reason, engine: engine.status() })
     }
-    res.json(await provider.health())
+    const health = await provider.health()
+    if (health.ok) engine.markRunning()
+    res.json({ ...health, engine: engine.status() })
+  })
+
+  router.post('/provider/start', (_req: AuthRequest, res: Response) => {
+    try { res.status(202).json(engine.start()) }
+    catch (error) { res.status(409).json({ error: error instanceof Error ? error.message : '声音引擎无法启动', engine: engine.status() }) }
+  })
+
+  router.post('/provider/stop', (_req: AuthRequest, res: Response) => {
+    res.json(engine.stop())
   })
 
   router.get('/profiles', async (req: AuthRequest, res: Response) => {
@@ -113,8 +141,121 @@ export function createVoiceRouter(client: PrismaClient = prisma, provider: Voice
     res.status(204).end()
   })
 
+  router.get('/jobs', async (req: AuthRequest, res: Response) => {
+    const profileId = typeof req.query.profileId === 'string' ? req.query.profileId : undefined
+    res.json(await client.voiceGenerationJob.findMany({
+      where: { ownerId: req.userId!, ...(profileId ? { profileId } : {}) },
+      include: {
+        character: { select: { id: true, name: true } },
+        profile: { select: { id: true, name: true } },
+        acceptedAsset: true,
+      },
+      orderBy: { createdAt: 'desc' },
+      take: 40,
+    }))
+  })
+
+  router.get('/jobs/:jobId', async (req: AuthRequest, res: Response) => {
+    const job = await client.voiceGenerationJob.findFirst({
+      where: { id: req.params.jobId, ownerId: req.userId! },
+      include: {
+        character: { select: { id: true, name: true } },
+        profile: { select: { id: true, name: true } },
+        acceptedAsset: true,
+      },
+    })
+    if (!job) return res.status(404).json({ error: '生成任务不存在' })
+    res.json(job)
+  })
+
+  router.post('/generate', async (req: AuthRequest, res: Response) => {
+    if (!provider) return res.status(503).json({ error: '请先在服务端配置并启动本机 GPT-SoVITS' })
+    const parsed = createVoiceGenerationSchema.safeParse(req.body)
+    if (!parsed.success) return res.status(400).json({ error: parsed.error.issues[0]?.message || '配音生成参数无效' })
+    const input = parsed.data
+    const userId = req.userId!
+    const [project, character, binding, reference] = await Promise.all([
+      client.project.findFirst({ where: { id: input.projectId, authorId: userId } }),
+      client.character.findFirst({ where: { id: input.characterId, projectId: input.projectId } }),
+      client.characterVoiceBinding.findFirst({ where: { characterId: input.characterId, projectId: input.projectId } }),
+      client.voiceReference.findFirst({
+        where: { id: input.referenceId, status: 'active', profile: { ownerId: userId, status: 'active' } },
+        include: { asset: true },
+      }),
+    ])
+    if (!project || !character) return res.status(403).json({ error: '角色不属于你的项目' })
+    if (input.chapterId) {
+      const chapter = await client.chapter.findFirst({ where: { id: input.chapterId, projectId: project.id } })
+      if (!chapter) return res.status(400).json({ error: '章节不属于当前项目' })
+    }
+    if (!binding) return res.status(409).json({ error: '请先给角色绑定一个音色' })
+    if (!reference || reference.profileId !== binding.profileId || reference.asset.ownerId !== userId) {
+      return res.status(400).json({ error: '请选择当前角色音色中的授权参考片段' })
+    }
+    let referencePath: string
+    try { referencePath = storagePathFromUrl(storageRoot, reference.asset.url) }
+    catch { return res.status(400).json({ error: '参考音频路径无效，请重新上传' }) }
+
+    const job = await client.voiceGenerationJob.create({ data: {
+      ownerId: userId, projectId: project.id, characterId: character.id,
+      ...(input.chapterId ? { chapterId: input.chapterId } : {}),
+      ...(input.nodeId ? { nodeId: input.nodeId } : {}),
+      profileId: binding.profileId, referenceId: reference.id,
+      text: input.text, language: input.language, emotion: input.emotion,
+      speed: input.speed, ...(input.seed !== undefined ? { seed: input.seed } : {}), status: 'queued',
+    } })
+
+    void queue.enqueue(async () => {
+      await client.voiceGenerationJob.update({ where: { id: job.id }, data: { status: 'running', errorMessage: null } })
+      const result = await provider.synthesize({
+        text: input.text, textLanguage: input.language, referencePath,
+        promptText: reference.transcript, promptLanguage: reference.language,
+        speed: input.speed, ...(input.seed !== undefined ? { seed: input.seed } : {}),
+      })
+      const relative = path.join('library', userId, 'voice-generated', `${randomUUID()}.wav`)
+      const outputPath = path.resolve(storageRoot, relative)
+      await fs.mkdir(path.dirname(outputPath), { recursive: true })
+      await fs.writeFile(outputPath, result.bytes)
+      await client.voiceGenerationJob.update({ where: { id: job.id }, data: {
+        status: 'completed', outputUrl: uploadUrl(relative), outputMimeType: result.mimeType,
+        seed: result.seed ?? input.seed, completedAt: new Date(),
+        providerMetadata: JSON.stringify({ provider: provider.id }),
+      } })
+    }).catch(async (error: unknown) => {
+      const message = error instanceof Error ? error.message : '配音生成失败'
+      try {
+        await client.voiceGenerationJob.update({ where: { id: job.id }, data: {
+          status: 'failed', errorMessage: message.slice(0, 500), completedAt: new Date(),
+        } })
+      } catch (updateError) { console.error('记录配音生成失败状态时出错', updateError) }
+    })
+
+    res.status(202).json(job)
+  })
+
+  router.post('/jobs/:jobId/accept', async (req: AuthRequest, res: Response) => {
+    const parsed = acceptVoiceGenerationSchema.safeParse(req.body)
+    if (!parsed.success) return res.status(400).json({ error: parsed.error.issues[0]?.message || '素材名称无效' })
+    const job = await client.voiceGenerationJob.findFirst({
+      where: { id: req.params.jobId, ownerId: req.userId! },
+      include: { character: { select: { name: true } }, profile: { select: { name: true } } },
+    })
+    if (!job) return res.status(404).json({ error: '生成任务不存在' })
+    if (job.status !== 'completed' || !job.outputUrl || !job.outputMimeType) return res.status(409).json({ error: '配音尚未生成完成' })
+    if (job.acceptedAssetId) return res.status(409).json({ error: '该候选已经收入素材库' })
+    const asset = await client.asset.create({ data: {
+      ownerId: req.userId!, projectId: job.projectId,
+      name: parsed.data.name || `${job.character.name}-${job.text.slice(0, 20)}`,
+      type: 'VOICE', url: job.outputUrl, mimeType: job.outputMimeType,
+      metadata: JSON.stringify({ voiceGeneration: {
+        jobId: job.id, profileId: job.profileId, profileName: job.profile.name,
+        characterId: job.characterId, text: job.text, emotion: job.emotion, speed: job.speed,
+      } }),
+    } })
+    await client.voiceGenerationJob.update({ where: { id: job.id }, data: { acceptedAssetId: asset.id } })
+    res.json(asset)
+  })
+
   return router
 }
-
-export default createVoiceRouter()
 

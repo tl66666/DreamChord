@@ -10,6 +10,8 @@
     "build": "pnpm -r build",
     "test": "pnpm -r test",
     "test:readiness": "node scripts/workspace-readiness.test.mjs",
+    "voice:setup": "powershell -ExecutionPolicy Bypass -File scripts/setup-gpt-sovits.ps1",
+    "voice:setup:cpu": "powershell -ExecutionPolicy Bypass -File scripts/setup-gpt-sovits.ps1 -Device CPU",
     "lint": "pnpm -r lint",
     "db:migrate": "pnpm --filter server prisma migrate dev",
     "db:generate": "pnpm --filter server prisma generate",

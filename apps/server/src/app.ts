@@ -16,7 +16,7 @@ import { createMemoryProjectRouter, createMemoryRouter } from './routes/memory.j
 import { createProjectTransferRouter } from './routes/projectTransfer.js'
 import { createLongImportRouter } from './routes/longImport.js'
 import { prismaLongImportService, type LongImportService } from './imports/longImportService.js'
-import voiceRoutes from './routes/voices.js'
+import { createVoiceRouter } from './routes/voices.js'
 
 export interface AppDependencies {
   storyBibleRepository?: StoryBibleRepository
@@ -57,7 +57,7 @@ export function createApp(dependencies: AppDependencies = {}): Express {
   app.use('/api/agent', createAgentRunRouter(dependencies.agentRunService ?? prismaAgentRunService, dependencies.conversationService ?? prismaConversationService))
   app.use('/api/agent', createMemoryRouter(dependencies.memoryService ?? prismaMemoryService))
   app.use('/api/assets', assetRoutes)
-  app.use('/api/voices', voiceRoutes)
+  app.use('/api/voices', createVoiceRouter())
   app.use('/api/ai', aiRoutes)
 
   app.get('/api/health', (_req, res) => {

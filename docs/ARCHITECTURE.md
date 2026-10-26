@@ -111,7 +111,7 @@ Agent 只能使用注册的业务工具。模型没有数据库、shell、任意
 
 素材分类还包括 `BGM`、`SFX`、`VOICE` 和 `VOICE_SAMPLE`。它们都使用服务端的实际媒体内容检测与安全扩展名存储路径；`VOICE` 是可播放成品，`VOICE_SAMPLE` 必须绑定当前项目角色，携带逐字原文、语言与授权确认，只作为 Provider 的声线参考。备份会保留并重映射样本的角色引用，播放器只读取 `VOICE` 的已保存 URL，不依赖浏览器临时对象 URL。
 
-声音库由 `VoiceProfile`、`VoiceReference`、`CharacterVoiceBinding` 和 `VoiceGenerationJob` 分层：全局音色不随项目删除，项目角色只保存绑定，生成任务保留来源与状态。`VoiceProvider` 隔离具体推理服务；当前 `GptSovitsProvider` 只接受服务端环境变量中的回环地址，并把参考文件的服务端路径映射为官方 `/tts` 参数。`SerialVoiceQueue` 将推理限制为单并发，避免 GPT-SoVITS 的全局管线状态在不同角色任务间互相污染。正式播放层不依赖 Provider。
+声音库由 `VoiceProfile`、`VoiceReference`、`CharacterVoiceBinding` 和 `VoiceGenerationJob` 分层：全局音色不随项目删除，项目角色只保存绑定，生成任务保留来源与状态。`VoiceProvider` 隔离具体推理服务；当前 `GptSovitsProvider` 只接受服务端环境变量中的回环地址，并把参考文件的服务端路径映射为官方 `/tts` 参数。`ManagedVoiceEngine` 从项目 `.runtime` 以隐藏子进程方式启动官方 `api_v2.py`，固定绑定回环地址，并随 DreamChord 关闭；浏览器只能请求启停，不能提交命令、路径或监听地址。`SerialVoiceQueue` 将推理限制为单并发，避免 GPT-SoVITS 的全局管线状态在不同角色任务间互相污染。正式播放层不依赖 Provider。
 
 接受候选后才成为正式素材。立绘还需要在项目里绑定角色和表情。删除操作会检查角色、表情和故事引用，避免留下破图。
 

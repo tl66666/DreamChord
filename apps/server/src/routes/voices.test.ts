@@ -1,18 +1,22 @@
 import express from 'express'
 import jwt from 'jsonwebtoken'
 import request from 'supertest'
+import { existsSync, mkdtempSync, rmSync } from 'node:fs'
+import { tmpdir } from 'node:os'
+import path from 'node:path'
 import type { PrismaClient } from '@prisma/client'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import type { VoiceProvider } from '../voice/provider.js'
+import type { ManagedVoiceEngine } from '../voice/managedVoiceEngine.js'
 import { createVoiceRouter } from './voices.js'
 
 const secret = 'voice-route-secret-1234'
 const token = (userId: string) => jwt.sign({ userId }, secret)
 
-function appFor(client: PrismaClient, provider: VoiceProvider | null = null) {
+function appFor(client: PrismaClient, provider: VoiceProvider | null = null, storageRoot?: string, engine?: ManagedVoiceEngine) {
   const app = express()
   app.use(express.json())
-  app.use('/api/voices', createVoiceRouter(client, provider))
+  app.use('/api/voices', createVoiceRouter(client, provider, { ...(storageRoot ? { storageRoot } : {}), ...(engine ? { engine } : {}) }))
   return app
 }
 
@@ -88,7 +92,113 @@ describe('voice library routes', () => {
     }
     const response = await request(appFor({} as PrismaClient, provider)).get('/api/voices/provider/health')
       .set('Authorization', `Bearer ${token('owner')}`)
-    expect(response.body).toEqual({ ok: true, provider: 'gpt-sovits', message: '服务可访问' })
+    expect(response.body).toEqual(expect.objectContaining({ ok: true, provider: 'gpt-sovits', message: '服务可访问' }))
     expect(JSON.stringify(response.body)).not.toContain('127.0.0.1')
+  })
+
+  it('starts and stops the embedded engine through authenticated controls', async () => {
+    const start = vi.fn().mockReturnValue({ installed: true, canManage: true, state: 'starting', message: '正在加载' })
+    const stop = vi.fn().mockReturnValue({ installed: true, canManage: true, state: 'stopped', message: '已停止' })
+    const engine = { start, stop, status: vi.fn(), markRunning: vi.fn() } as unknown as ManagedVoiceEngine
+    const app = appFor({} as PrismaClient, null, undefined, engine)
+
+    const started = await request(app).post('/api/voices/provider/start').set('Authorization', `Bearer ${token('owner')}`)
+    const stopped = await request(app).post('/api/voices/provider/stop').set('Authorization', `Bearer ${token('owner')}`)
+
+    expect(started.status).toBe(202)
+    expect(stopped.status).toBe(200)
+    expect(start).toHaveBeenCalledOnce()
+    expect(stop).toHaveBeenCalledOnce()
+  })
+
+  it('queues one authorized synthesis job and stores its preview outside the asset library', async () => {
+    const root = mkdtempSync(path.join(tmpdir(), 'dreamchord-voice-'))
+    const create = vi.fn().mockResolvedValue({ id: 'job', status: 'queued' })
+    const update = vi.fn().mockImplementation(async ({ data }) => ({ id: 'job', ...data }))
+    const provider: VoiceProvider = {
+      id: 'gpt-sovits',
+      health: vi.fn(),
+      synthesize: vi.fn().mockResolvedValue({ bytes: Buffer.from('RIFF-test'), mimeType: 'audio/wav', seed: 42 }),
+    }
+    const client = {
+      project: { findFirst: vi.fn().mockResolvedValue({ id: 'project', authorId: 'owner' }) },
+      character: { findFirst: vi.fn().mockResolvedValue({ id: 'character', name: '雪', projectId: 'project' }) },
+      characterVoiceBinding: { findFirst: vi.fn().mockResolvedValue({ profileId: 'voice' }) },
+      voiceReference: { findFirst: vi.fn().mockResolvedValue({
+        id: 'reference', profileId: 'voice', transcript: '参考原文', language: 'zh', status: 'active',
+        asset: { id: 'sample', ownerId: 'owner', url: '/uploads/library/owner/sample.wav' },
+      }) },
+      voiceGenerationJob: { create, update },
+    } as unknown as PrismaClient
+
+    try {
+      const response = await request(appFor(client, provider, root)).post('/api/voices/generate')
+        .set('Authorization', `Bearer ${token('owner')}`)
+        .send({ projectId: 'project', characterId: 'character', referenceId: 'reference', text: '今晚也要继续写下去。', language: 'zh', speed: 1 })
+
+      expect(response.status).toBe(202)
+      expect(create).toHaveBeenCalledWith(expect.objectContaining({ data: expect.objectContaining({ ownerId: 'owner', profileId: 'voice', status: 'queued' }) }))
+      await vi.waitFor(() => expect(update).toHaveBeenCalledWith(expect.objectContaining({
+        where: { id: 'job' }, data: expect.objectContaining({ status: 'completed', outputMimeType: 'audio/wav' }),
+      })))
+      const completed = update.mock.calls.find(([arg]) => arg.data.status === 'completed')?.[0].data
+      expect(completed.outputUrl).toMatch(/^\/uploads\/library\/owner\/voice-generated\/.+\.wav$/)
+      expect(existsSync(path.join(root, completed.outputUrl.slice('/uploads/'.length)))).toBe(true)
+    } finally {
+      rmSync(root, { recursive: true, force: true })
+    }
+  })
+
+  it('rejects a chapter from another project before queuing synthesis', async () => {
+    const create = vi.fn()
+    const provider: VoiceProvider = {
+      id: 'gpt-sovits', health: vi.fn(), synthesize: vi.fn(),
+    }
+    const client = {
+      project: { findFirst: vi.fn().mockResolvedValue({ id: 'project', authorId: 'owner' }) },
+      character: { findFirst: vi.fn().mockResolvedValue({ id: 'character', projectId: 'project' }) },
+      characterVoiceBinding: { findFirst: vi.fn().mockResolvedValue({ profileId: 'voice' }) },
+      voiceReference: { findFirst: vi.fn().mockResolvedValue({
+        id: 'reference', profileId: 'voice', transcript: '参考原文', language: 'zh',
+        asset: { ownerId: 'owner', url: '/uploads/library/owner/sample.wav' },
+      }) },
+      chapter: { findFirst: vi.fn().mockResolvedValue(null) },
+      voiceGenerationJob: { create },
+    } as unknown as PrismaClient
+
+    const response = await request(appFor(client, provider)).post('/api/voices/generate')
+      .set('Authorization', `Bearer ${token('owner')}`)
+      .send({ projectId: 'project', characterId: 'character', chapterId: 'foreign', referenceId: 'reference', text: '测试台词', language: 'zh' })
+
+    expect(response.status).toBe(400)
+    expect(response.body.error).toMatch(/章节/)
+    expect(create).not.toHaveBeenCalled()
+  })
+
+  it('accepts a completed candidate into the ordinary VOICE asset library', async () => {
+    const assetCreate = vi.fn().mockResolvedValue({ id: 'asset', type: 'VOICE', status: 'ready' })
+    const jobUpdate = vi.fn().mockResolvedValue({ id: 'job', acceptedAssetId: 'asset' })
+    const client = {
+      voiceGenerationJob: {
+        findFirst: vi.fn().mockResolvedValue({
+          id: 'job', ownerId: 'owner', status: 'completed', outputUrl: '/uploads/library/owner/voice-generated/job.wav',
+          outputMimeType: 'audio/wav', text: '今晚也要继续写下去。', emotion: '自然', speed: 1,
+          projectId: 'project', characterId: 'character', profileId: 'voice', acceptedAssetId: null,
+          character: { name: '雪' }, profile: { name: '雪·轻声' },
+        }),
+        update: jobUpdate,
+      },
+      asset: { create: assetCreate },
+    } as unknown as PrismaClient
+
+    const response = await request(appFor(client)).post('/api/voices/jobs/job/accept')
+      .set('Authorization', `Bearer ${token('owner')}`)
+      .send({ name: '雪-序章对白' })
+
+    expect(response.status).toBe(200)
+    expect(assetCreate).toHaveBeenCalledWith(expect.objectContaining({ data: expect.objectContaining({
+      ownerId: 'owner', projectId: 'project', type: 'VOICE', url: '/uploads/library/owner/voice-generated/job.wav', name: '雪-序章对白',
+    }) }))
+    expect(jobUpdate).toHaveBeenCalledWith({ where: { id: 'job' }, data: { acceptedAssetId: 'asset' } })
   })
 })

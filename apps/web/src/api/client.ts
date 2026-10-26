@@ -313,6 +313,12 @@ export interface VoiceProviderHealth {
   ok: boolean
   provider: string
   message: string
+  engine?: {
+    installed: boolean
+    canManage: boolean
+    state: 'not-installed' | 'stopped' | 'starting' | 'running' | 'failed'
+    message: string
+  }
 }
 
 export interface VoiceReference {
@@ -347,6 +353,22 @@ export interface VoiceProfile {
   bindings: CharacterVoiceBinding[]
 }
 
+export interface VoiceGenerationJob {
+  id: string
+  status: 'queued' | 'running' | 'completed' | 'failed'
+  text: string
+  language: string
+  emotion: string
+  speed: number
+  outputUrl?: string | null
+  outputMimeType?: string | null
+  errorMessage?: string | null
+  acceptedAsset?: Asset | null
+  character?: { id: string; name: string }
+  profile?: { id: string; name: string }
+  createdAt?: string
+}
+
 export async function getVoiceProfiles(): Promise<VoiceProfile[]> {
   const { data } = await api.get('/voices/profiles')
   return data
@@ -354,6 +376,16 @@ export async function getVoiceProfiles(): Promise<VoiceProfile[]> {
 
 export async function getVoiceProviderHealth(): Promise<VoiceProviderHealth> {
   const { data } = await api.get('/voices/provider/health')
+  return data
+}
+
+export async function startVoiceEngine(): Promise<NonNullable<VoiceProviderHealth['engine']>> {
+  const { data } = await api.post('/voices/provider/start')
+  return data
+}
+
+export async function stopVoiceEngine(): Promise<NonNullable<VoiceProviderHealth['engine']>> {
+  const { data } = await api.post('/voices/provider/stop')
   return data
 }
 
@@ -381,6 +413,39 @@ export async function attachVoiceReference(profileId: string, payload: {
   authorizationConfirmed: true
 }): Promise<VoiceReference> {
   const { data } = await api.post(`/voices/profiles/${profileId}/references`, payload)
+  return data
+}
+
+export async function bindCharacterVoice(profileId: string, payload: { projectId: string; characterId: string }): Promise<CharacterVoiceBinding> {
+  const { data } = await api.post(`/voices/profiles/${profileId}/bindings`, payload)
+  return data
+}
+
+export async function getVoiceGenerationJobs(profileId?: string): Promise<VoiceGenerationJob[]> {
+  const { data } = await api.get('/voices/jobs', { params: profileId ? { profileId } : undefined })
+  return data
+}
+
+export async function getVoiceGenerationJob(jobId: string): Promise<VoiceGenerationJob> {
+  const { data } = await api.get(`/voices/jobs/${jobId}`)
+  return data
+}
+
+export async function createVoiceGeneration(payload: {
+  projectId: string
+  characterId: string
+  referenceId: string
+  text: string
+  language: string
+  emotion?: string
+  speed?: number
+}): Promise<VoiceGenerationJob> {
+  const { data } = await api.post('/voices/generate', payload)
+  return data
+}
+
+export async function acceptVoiceGeneration(jobId: string, payload: { name?: string }): Promise<Asset> {
+  const { data } = await api.post(`/voices/jobs/${jobId}/accept`, payload)
   return data
 }
 

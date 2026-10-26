@@ -53,5 +53,8 @@ apps/server/src/generated/
 *.swp
 *~
 
+# Optional local AI runtimes and model weights
+.runtime/
+
 # Isolated feature worktrees
 .worktrees/

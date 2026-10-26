@@ -79,15 +79,13 @@
 
 向 Agent 提问“给某角色的台词做配音计划”时，它会读取当前项目的授权样本与章节台词，逐句列出情绪、语速、停顿和演绎方向。生成动作应发生在编辑阶段，先进入候选、试听和接受流程；正式播放器只读取已确认的 `VOICE` URL，不在游玩时等待模型生成。
 
-要连接本机 GPT-SoVITS，在 `apps/server/.env` 中设置：
+第一次使用前，在项目根目录执行：
 
-```env
-VOICE_PROVIDER="gpt-sovits"
-GPT_SOVITS_BASE_URL="http://127.0.0.1:9880"
-GPT_SOVITS_TIMEOUT_MS=120000
+```powershell
+pnpm voice:setup
 ```
 
-第一版只允许本机地址，不从浏览器接收 Provider URL，也不负责安装模型、训练权重或自动切换角色权重。
+安装完成后 DreamChord 会随开发服务自动后台启动引擎；也可以在声音库中启动或停止，不需要另开 GPT-SoVITS WebUI。声音库支持角色绑定、生成候选、进度查看、试听和确认入库。详细步骤见 [GPT-SoVITS 小白安装与使用指南](GPT_SOVITS_SETUP.md)。第一版使用官方预训练模型加参考音做零样本生成，不包含权重训练工作台。
 
 ## Agent 应该什么时候使用
 

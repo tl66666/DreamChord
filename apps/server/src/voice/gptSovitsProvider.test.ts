@@ -43,6 +43,7 @@ describe('GPT-SoVITS provider', () => {
   it('accepts only a server-configured loopback endpoint in the first release', () => {
     expect(readVoiceProviderConfig({ VOICE_PROVIDER: 'gpt-sovits', GPT_SOVITS_BASE_URL: 'http://localhost:9880' })).toMatchObject({ enabled: true })
     expect(readVoiceProviderConfig({ VOICE_PROVIDER: 'gpt-sovits', GPT_SOVITS_BASE_URL: 'https://example.com' })).toMatchObject({ enabled: false, reason: expect.stringContaining('本机') })
-    expect(readVoiceProviderConfig({})).toMatchObject({ enabled: false, reason: expect.stringContaining('未配置') })
+    expect(readVoiceProviderConfig({})).toMatchObject({ enabled: true, provider: 'gpt-sovits' })
+    expect(readVoiceProviderConfig({ VOICE_PROVIDER: 'none' })).toMatchObject({ enabled: false, reason: expect.stringContaining('停用') })
   })
 })
