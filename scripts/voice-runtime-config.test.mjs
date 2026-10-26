@@ -1,5 +1,6 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
+import fs from 'node:fs'
 import {
   MINIFORGE_RELEASE,
   chooseRuntimeRoot,
@@ -41,4 +42,10 @@ test('pins a versioned Miniforge installer and checksum', () => {
   assert.match(MINIFORGE_RELEASE.installer, /Miniforge3-\d+\.\d+\.\d+-\d+-Windows-x86_64\.exe$/)
   assert.equal(MINIFORGE_RELEASE.checksum, `${MINIFORGE_RELEASE.installer}.sha256`)
   assert.match(MINIFORGE_RELEASE.baseUrl, /^https:\/\/github\.com\/conda-forge\/miniforge\/releases\/download\//)
+})
+
+test('uses PowerShell 7 so UTF-8 installer messages parse correctly on Windows', () => {
+  const packageJson = JSON.parse(fs.readFileSync(new URL('../package.json', import.meta.url), 'utf8'))
+  assert.match(packageJson.scripts['voice:setup'], /^pwsh /)
+  assert.match(packageJson.scripts['voice:setup:cpu'], /^pwsh /)
 })
