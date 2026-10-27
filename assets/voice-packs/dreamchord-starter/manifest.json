@@ -6,7 +6,7 @@
   "sourceUrl": "https://huggingface.co/hexgrad/Kokoro-82M",
   "sourceLicense": "Apache-2.0",
   "syntheticSource": true,
-  "generatedAt": null,
+  "generatedAt": "2026-10-26T09:30:05.761238+00:00",
   "voices": [
     {
       "id": "dreamchord-xingli",
@@ -15,12 +15,17 @@
       "language": "zh-CN",
       "ageTone": "少女",
       "genderTone": "女声",
-      "tags": ["清澈", "轻快", "校园", "合成音色"],
+      "tags": [
+        "清澈",
+        "轻快",
+        "校园",
+        "合成音色"
+      ],
       "sourceVoiceId": "zf_xiaobei",
       "transcript": "傍晚的风穿过旧教学楼，我在那段熟悉的旋律里，第一次听见属于未来的回声。",
       "outputFile": "generated/dreamchord-xingli.wav",
-      "sha256": null,
-      "durationSeconds": null
+      "sha256": "30d6032eab5194a8905474123fa6c39a9842ce849108638ce7e2ca4a68bd4239",
+      "durationSeconds": 8.9
     },
     {
       "id": "dreamchord-wulan",
@@ -29,12 +34,17 @@
       "language": "zh-CN",
       "ageTone": "青年",
       "genderTone": "女声",
-      "tags": ["轻柔", "克制", "神秘", "合成音色"],
+      "tags": [
+        "轻柔",
+        "克制",
+        "神秘",
+        "合成音色"
+      ],
       "sourceVoiceId": "zf_xiaoyi",
       "transcript": "如果记忆真的会褪色，那就把今晚的月光写进歌里，等我们再次相遇时慢慢唱完。",
       "outputFile": "generated/dreamchord-wulan.wav",
-      "sha256": null,
-      "durationSeconds": null
+      "sha256": "80c9c91226fda5aedf5f0068f2c645db783a9782a037f74fcb625f834a93c879",
+      "durationSeconds": 7.4
     },
     {
       "id": "dreamchord-muchuan",
@@ -43,12 +53,17 @@
       "language": "zh-CN",
       "ageTone": "青年",
       "genderTone": "男声",
-      "tags": ["沉稳", "可靠", "叙事", "合成音色"],
+      "tags": [
+        "沉稳",
+        "可靠",
+        "叙事",
+        "合成音色"
+      ],
       "sourceVoiceId": "zm_yunjian",
       "transcript": "故事从来不是只有一个答案，真正重要的，是你愿意为自己的选择走到哪一步。",
       "outputFile": "generated/dreamchord-muchuan.wav",
-      "sha256": null,
-      "durationSeconds": null
+      "sha256": "e038943b463cb5967c98971d206609812d6f6cc6015369eb024742797ecb3095",
+      "durationSeconds": 7.25
     }
   ]
 }
