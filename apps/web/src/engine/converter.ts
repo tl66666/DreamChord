@@ -1,5 +1,5 @@
 import type { Node, Edge } from '@xyflow/react'
-import type { RuntimeStory, RuntimeScene, RuntimeEvent, CharacterOnStage, CharacterId, CharacterState, RuntimeCharacterCatalogEntry, RuntimeAudioDirection, RuntimeBgmDirection, RuntimeOneShotAudio } from './types'
+import type { RuntimeStory, RuntimeScene, RuntimeEvent, CharacterOnStage, CharacterId, CharacterState, RuntimeCharacterCatalogEntry, RuntimeAudioDirection, RuntimeBgmDirection, RuntimeOneShotAudio, RuntimeConditionTarget, RuntimeEffect, RuntimeValue } from './types'
 import { CHARACTER_REGISTRY, resolveCharacterUrl } from './characters'
 import { loadLibraryCharacters } from '../lib/libraryData'
 import { resolveStageStateAfterNode } from '../editor/workbench/storyEditorGraph'
@@ -115,6 +115,25 @@ function parseAudioDirection(value: unknown): RuntimeAudioDirection | undefined 
   return { ...(bgm ? { bgm } : {}), ...(sfx.length ? { sfx } : {}), ...(voice ? { voice } : {}) }
 }
 
+function isRuntimeValue(value: unknown): value is RuntimeValue {
+  return typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean'
+}
+
+function parseChoiceEffects(value: unknown, choiceCount: number): RuntimeEffect[][] | undefined {
+  if (!Array.isArray(value)) return undefined
+  const effects = Array.from({ length: choiceCount }, (_, index) => {
+    const input = value[index]
+    if (!Array.isArray(input)) return []
+    return input.flatMap((item): RuntimeEffect[] => {
+      if (!item || typeof item !== 'object' || Array.isArray(item)) return []
+      const effect = item as Record<string, unknown>
+      if (effect.kind !== 'setVariable' || typeof effect.variable !== 'string' || !effect.variable.trim() || !isRuntimeValue(effect.value)) return []
+      return [{ kind: 'setVariable', variable: effect.variable, value: effect.value }]
+    })
+  })
+  return effects.some((items) => items.length > 0) ? effects : undefined
+}
+
 export function convertFlowToRuntime(
   projectId: string,
   projectTitle: string,
@@ -133,6 +152,7 @@ export function convertFlowToRuntime(
         constantNodeLocked: false,
         characters: { yuki: 'normal', ren: 'normal', miya: 'normal', sora: 'normal', ghost: 'normal' },
         activeUIEvents: [],
+        variables: {},
       },
       scenes: [],
     }
@@ -178,23 +198,41 @@ export function convertFlowToRuntime(
 
   walk(start.id)
 
-  function resolvePlayableTargetId(targetId?: string | null): string {
-    if (!targetId) return ''
-    const seen = new Set<string>()
-    let currentId = targetId
+  type RoutingResolution = { targetId: string; conditionalTargets: RuntimeConditionTarget[] }
 
-    while (currentId && !seen.has(currentId)) {
-      seen.add(currentId)
-      const target = nodeMap.get(currentId)
-      if (!target) return ''
-      if (PLAYABLE_NODE_TYPES.has(target.type || 'dialogue')) return target.id
+  function resolveRouting(targetId?: string | null, seen = new Set<string>()): RoutingResolution {
+    if (!targetId || seen.has(targetId)) return { targetId: '', conditionalTargets: [] }
+    const nextSeen = new Set(seen)
+    nextSeen.add(targetId)
+    const target = nodeMap.get(targetId)
+    if (!target) return { targetId: '', conditionalTargets: [] }
+    if (PLAYABLE_NODE_TYPES.has(target.type || 'dialogue')) return { targetId: target.id, conditionalTargets: [] }
 
-      const nextEdge = (outEdgesBySource.get(currentId) || []).find((edge) => !edge.sourceHandle)
-      if (!nextEdge) return ''
-      currentId = nextEdge.target
+    if (target.type === 'condition') {
+      const data = target.data as Record<string, unknown>
+      const variable = typeof data.variable === 'string' ? data.variable : ''
+      const operator = ['==', '!=', '>', '>=', '<', '<='].includes(String(data.operator))
+        ? data.operator as RuntimeConditionTarget['operator']
+        : '=='
+      const value = isRuntimeValue(data.value) ? data.value : ''
+      const routes = outEdgesBySource.get(target.id) || []
+      const trueEdge = routes.find((edge) => edge.sourceHandle === 'true' || edge.sourceHandle === 'condition-true') || routes[0]
+      const falseEdge = routes.find((edge) => edge.sourceHandle === 'false' || edge.sourceHandle === 'condition-false') || routes.find((edge) => edge !== trueEdge)
+      const whenTrue = resolveRouting(trueEdge?.target, nextSeen)
+      const whenFalse = resolveRouting(falseEdge?.target, nextSeen)
+      const conditionalTargets = variable && whenTrue.targetId
+        ? [{ variable, operator, value, target: whenTrue.targetId }, ...whenFalse.conditionalTargets]
+        : whenFalse.conditionalTargets
+      return { targetId: whenFalse.targetId, conditionalTargets }
     }
 
-    return ''
+    const nextEdge = (outEdgesBySource.get(target.id) || []).find((edge) => !edge.sourceHandle)
+      || (outEdgesBySource.get(target.id) || [])[0]
+    return resolveRouting(nextEdge?.target, nextSeen)
+  }
+
+  function resolvePlayableTargetId(targetId?: string | null): string {
+    return resolveRouting(targetId).targetId
   }
 
   const scenes: RuntimeScene[] = []
@@ -202,7 +240,7 @@ export function convertFlowToRuntime(
   for (const node of ordered) {
     const data = node.data as Record<string, unknown>
 
-    if (node.type === 'background' || node.type === 'character') continue
+    if (!PLAYABLE_NODE_TYPES.has(node.type || 'dialogue')) continue
 
     const stage = resolveStageStateAfterNode(nodes, edges, node.id)
     const stageCharacters = stage.characters.flatMap((character) => {
@@ -251,6 +289,8 @@ export function convertFlowToRuntime(
     } else if (node.type === 'choice') {
       const choices = Array.isArray(data.choices) ? (data.choices as string[]) : []
       scene.choices = choices.length > 0 ? choices : ['继续']
+      const choiceEffects = parseChoiceEffects(data.effects, scene.choices.length)
+      if (choiceEffects) scene.choiceEffects = choiceEffects
       const targets = scene.choices.map((_, index) => {
         const edge = outEdges.find((item) => item.sourceHandle === `choice-${index}`)
         return edge?.target
@@ -260,7 +300,9 @@ export function convertFlowToRuntime(
       )
     }
     if (node.type !== 'choice') {
-      scene.nextSceneId = resolvePlayableTargetId(outEdges[0]?.target) || null
+      const routing = resolveRouting(outEdges[0]?.target)
+      scene.nextSceneId = routing.targetId || null
+      if (routing.conditionalTargets.length > 0) scene.conditionalTargets = routing.conditionalTargets
     }
 
     scenes.push(scene)
@@ -276,6 +318,7 @@ export function convertFlowToRuntime(
       constantNodeLocked: false,
       characters: { yuki: 'normal', ren: 'normal', miya: 'normal', sora: 'normal', ghost: 'normal' },
       activeUIEvents: [],
+      variables: {},
     },
     scenes,
   }

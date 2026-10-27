@@ -4,6 +4,7 @@ import type {
   WorldState,
   RuntimeEvent,
   CharacterId,
+  RuntimeConditionTarget,
 } from './types'
 
 function cloneState(state: WorldState): WorldState {
@@ -11,6 +12,7 @@ function cloneState(state: WorldState): WorldState {
     ...state,
     characters: { ...state.characters },
     activeUIEvents: [...state.activeUIEvents],
+    variables: { ...(state.variables || {}) },
   }
 }
 
@@ -94,6 +96,11 @@ export function createRuntimeEngine(story: RuntimeStory) {
     }
 
     history.push(scene)
+    const conditionalTarget = scene.conditionalTargets?.find((condition) => matchesCondition(condition))
+    if (conditionalTarget) {
+      const targetIndex = findSceneIndex(conditionalTarget.target)
+      return targetIndex >= 0 ? moveToScene(targetIndex) : moveToScene(story.scenes.length)
+    }
     if (scene.nextSceneId !== undefined) {
       if (scene.nextSceneId === null) {
         return moveToScene(story.scenes.length)
@@ -114,6 +121,9 @@ export function createRuntimeEngine(story: RuntimeStory) {
     }
 
     history.push(scene)
+    for (const effect of scene.choiceEffects?.[index] || []) {
+      if (effect.kind === 'setVariable') state.variables[effect.variable] = effect.value
+    }
     const targetId = scene.choiceTargets?.[index]
     if (targetId) {
       const targetIndex = findSceneIndex(targetId)
@@ -123,6 +133,18 @@ export function createRuntimeEngine(story: RuntimeStory) {
     }
     // 未设置目标或目标无效时，前进到下一场景
     return moveToScene(sceneIndex + 1)
+  }
+
+  function matchesCondition(condition: RuntimeConditionTarget) {
+    const actual = state.variables[condition.variable]
+    switch (condition.operator) {
+      case '==': return actual === condition.value
+      case '!=': return actual !== condition.value
+      case '>': return typeof actual === 'number' && typeof condition.value === 'number' && actual > condition.value
+      case '>=': return typeof actual === 'number' && typeof condition.value === 'number' && actual >= condition.value
+      case '<': return typeof actual === 'number' && typeof condition.value === 'number' && actual < condition.value
+      case '<=': return typeof actual === 'number' && typeof condition.value === 'number' && actual <= condition.value
+    }
   }
 
   function emit(event: RuntimeEvent, target?: string) {

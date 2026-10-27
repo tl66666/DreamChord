@@ -46,6 +46,21 @@ export interface RuntimeAudioDirection {
   voice?: RuntimeOneShotAudio
 }
 
+export type RuntimeValue = string | number | boolean
+
+export interface RuntimeEffect {
+  kind: 'setVariable'
+  variable: string
+  value: RuntimeValue
+}
+
+export interface RuntimeConditionTarget {
+  variable: string
+  operator: '==' | '!=' | '>' | '>=' | '<' | '<='
+  value: RuntimeValue
+  target: string
+}
+
 export type RuntimeEvent =
   | 'ON_INIT'
   | 'ON_NODE_VISUALIZE'
@@ -70,6 +85,8 @@ export interface RuntimeScene {
   }
   choices?: string[]
   choiceTargets?: (string | undefined)[]
+  choiceEffects?: RuntimeEffect[][]
+  conditionalTargets?: RuntimeConditionTarget[]
   nextSceneId?: string | null
 }
 
@@ -79,6 +96,7 @@ export interface WorldState {
   constantNodeLocked: boolean
   characters: Record<CharacterId, CharacterState>
   activeUIEvents: string[]
+  variables: Record<string, RuntimeValue>
 }
 
 export interface RuntimeStory {

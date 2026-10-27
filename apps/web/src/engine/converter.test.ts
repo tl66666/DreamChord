@@ -80,4 +80,49 @@ describe('flow runtime stage continuity', () => {
       voice: { url: '/uploads/audio/narration.wav', volume: 0.9 },
     })
   })
+
+  it('compiles choice effects and chained condition nodes without blank scenes', () => {
+    const nodes: Node[] = [
+      {
+        id: 'choice', type: 'choice', position: { x: 0, y: 0 }, data: {
+          choices: ['承认恐惧', '选择重写', '交还选择'],
+          effects: [
+            [{ kind: 'setVariable', variable: 'authorStance', value: 'fear' }],
+            [{ kind: 'setVariable', variable: 'authorStance', value: 'rewrite' }],
+            [{ kind: 'setVariable', variable: 'authorStance', value: 'agency' }],
+          ],
+        },
+      },
+      { id: 'echo', type: 'dialogue', position: { x: 0, y: 0 }, data: { role: 'ghost', text: '产生回响。' } },
+      { id: 'fear?', type: 'condition', position: { x: 0, y: 0 }, data: { variable: 'authorStance', operator: '==', value: 'fear' } },
+      { id: 'rewrite?', type: 'condition', position: { x: 0, y: 0 }, data: { variable: 'authorStance', operator: '==', value: 'rewrite' } },
+      { id: 'fear', type: 'dialogue', position: { x: 0, y: 0 }, data: { role: 'ren', text: '恐惧回响。' } },
+      { id: 'rewrite', type: 'dialogue', position: { x: 0, y: 0 }, data: { role: 'miya', text: '重写回响。' } },
+      { id: 'agency', type: 'dialogue', position: { x: 0, y: 0 }, data: { role: 'sora', text: '选择回响。' } },
+    ]
+    const edges: Edge[] = [
+      { id: 'e1', source: 'choice', target: 'echo', sourceHandle: 'choice-0' },
+      { id: 'e2', source: 'choice', target: 'echo', sourceHandle: 'choice-1' },
+      { id: 'e3', source: 'choice', target: 'echo', sourceHandle: 'choice-2' },
+      { id: 'e4', source: 'echo', target: 'fear?' },
+      { id: 'e5', source: 'fear?', target: 'fear', sourceHandle: 'true' },
+      { id: 'e6', source: 'fear?', target: 'rewrite?', sourceHandle: 'false' },
+      { id: 'e7', source: 'rewrite?', target: 'rewrite', sourceHandle: 'true' },
+      { id: 'e8', source: 'rewrite?', target: 'agency', sourceHandle: 'false' },
+    ]
+
+    const runtime = convertFlowToRuntime('project', '条件回响', nodes, edges)
+
+    expect(runtime.scenes.map((scene) => scene.id)).toEqual(['choice', 'echo', 'fear', 'rewrite', 'agency'])
+    expect(runtime.scenes[0]?.choiceEffects?.[2]).toEqual([
+      { kind: 'setVariable', variable: 'authorStance', value: 'agency' },
+    ])
+    expect(runtime.scenes[1]).toMatchObject({
+      conditionalTargets: [
+        { variable: 'authorStance', operator: '==', value: 'fear', target: 'fear' },
+        { variable: 'authorStance', operator: '==', value: 'rewrite', target: 'rewrite' },
+      ],
+      nextSceneId: 'agency',
+    })
+  })
 })
