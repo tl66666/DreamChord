@@ -2,6 +2,9 @@
 node_modules
 assets/voice-packs/dreamchord-starter/generated/
 assets/music-packs/dreamchord-starter/generated/
+assets/music-packs/ternox-vn/originals/
+assets/music-packs/ternox-vn/auditions/
+assets/music-packs/ternox-vn/downloads/
 .pnpm-store
 
 # Build outputs
