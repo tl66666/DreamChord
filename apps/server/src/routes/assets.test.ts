@@ -75,6 +75,28 @@ describe('asset routes', () => {
     expect(response.status).toBe(400)
   })
 
+  it('stores validated music-library metadata without discarding existing audio facts', async () => {
+    const update = vi.fn().mockImplementation(async ({ data }) => ({ id: 'music', ownerId: 'owner', type: 'BGM', ...data }))
+    const client = { asset: {
+      findUnique: vi.fn().mockResolvedValue({
+        id: 'music', ownerId: 'owner', type: 'BGM', name: '雨夜循环',
+        metadata: JSON.stringify({ format: 'wav', sampleRate: 24000 }),
+      }),
+      update,
+    } } as unknown as PrismaClient
+
+    const response = await request(appFor(client)).patch('/api/assets/music')
+      .set('Authorization', `Bearer ${token('owner')}`)
+      .send({
+        name: '雨夜手记',
+        audioLibrary: { mood: '忧郁', style: '氛围', scene: '雨夜独白', loop: true, license: '原创', source: 'DreamChord' },
+      })
+
+    expect(response.status).toBe(200)
+    const saved = JSON.parse(update.mock.calls[0]?.[0].data.metadata)
+    expect(saved).toMatchObject({ format: 'wav', sampleRate: 24000, audioLibrary: { mood: '忧郁', style: '氛围', loop: true } })
+  })
+
   it('rejects executable markup disguised as an MP3 upload', async () => {
     const root = temporaryRoot()
     const client = {

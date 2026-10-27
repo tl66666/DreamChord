@@ -1,0 +1,49 @@
+{
+  "schemaVersion": 1,
+  "packId": "dreamchord-music-starter",
+  "displayName": "梦弦原创示例音乐",
+  "source": "DreamChord deterministic procedural synthesizer",
+  "sourceLicense": "MIT",
+  "generatedAt": "2026-10-27T01:07:44.129Z",
+  "tracks": [
+    {
+      "id": "dreamchord-twilight-corridor",
+      "name": "薄暮回廊",
+      "description": "温柔而略带怀旧的黄昏垫乐，适合放学、回忆与关系升温。",
+      "mood": "温柔",
+      "style": "氛围",
+      "scene": "黄昏日常 / 回忆",
+      "loop": true,
+      "outputFile": "generated/dreamchord-twilight-corridor.wav",
+      "sampleRate": 24000,
+      "durationSeconds": 24,
+      "sha256": "0f2e4cc67276a88bc5ece9cb4af0459e4cd7e85552d975ef351272e8297c71c4"
+    },
+    {
+      "id": "dreamchord-rain-window",
+      "name": "雨窗手记",
+      "description": "稀疏的雨夜音符，适合独白、错过、秘密被轻轻说出的段落。",
+      "mood": "忧郁",
+      "style": "钢琴",
+      "scene": "雨夜独白 / 情绪转折",
+      "loop": true,
+      "outputFile": "generated/dreamchord-rain-window.wav",
+      "sampleRate": 24000,
+      "durationSeconds": 20,
+      "sha256": "f551cc7ca2a5ec061b8273c9d9a1fe4b389d465cc54d26d1413f4b6d424eda1f"
+    },
+    {
+      "id": "dreamchord-branch-pulse",
+      "name": "分岔脉冲",
+      "description": "克制的低频脉冲与不安和声，适合选项出现、调查与真相逼近。",
+      "mood": "紧张",
+      "style": "电子",
+      "scene": "分支选择 / 悬疑调查",
+      "loop": true,
+      "outputFile": "generated/dreamchord-branch-pulse.wav",
+      "sampleRate": 24000,
+      "durationSeconds": 19.2,
+      "sha256": "a99d8869ecdac41dcf6e737c62ed55641b479fd7a4d62a3f4eafd54fa6f38f1f"
+    }
+  ]
+}

@@ -34,6 +34,9 @@ export default function VoiceLibrary() {
   const [jobs, setJobs] = useState<VoiceGenerationJob[]>([])
   const [selectedId, setSelectedId] = useState('')
   const [query, setQuery] = useState('')
+  const [genderFilter, setGenderFilter] = useState('全部声线')
+  const [ageFilter, setAgeFilter] = useState('全部年龄感')
+  const [previewProfile, setPreviewProfile] = useState<VoiceProfile | null>(null)
   const [creating, setCreating] = useState(false)
   const [submitting, setSubmitting] = useState(false)
   const [engineBusy, setEngineBusy] = useState(false)
@@ -59,10 +62,11 @@ export default function VoiceLibrary() {
 
   const filtered = useMemo(() => {
     const normalized = query.trim().toLowerCase()
-    if (!normalized) return profiles
-    return profiles.filter((profile) => `${profile.name} ${profile.description} ${profile.tags}`.toLowerCase().includes(normalized))
-  }, [profiles, query])
-  const selected = profiles.find((profile) => profile.id === selectedId) || filtered[0]
+    return profiles.filter((profile) => (!normalized || `${profile.name} ${profile.description} ${profile.tags}`.toLowerCase().includes(normalized))
+      && (genderFilter === '全部声线' || profile.genderTone === genderFilter)
+      && (ageFilter === '全部年龄感' || profile.ageTone === ageFilter))
+  }, [ageFilter, genderFilter, profiles, query])
+  const selected = filtered.find((profile) => profile.id === selectedId) || filtered[0]
   const selectedProject = projects.find((project) => project.id === binding.projectId)
   const chosenReferenceId = generation.referenceId || selected?.references[0]?.id || ''
   const hasCurrentBinding = Boolean(selected?.bindings.some((item) => item.character.id === binding.characterId && item.project.id === binding.projectId))
@@ -186,23 +190,32 @@ export default function VoiceLibrary() {
       </div>
       {error && <p className="mb-4 rounded-lg bg-rose-50 p-3 text-sm text-rose-700">{error}</p>}
 
-      <div className="grid min-h-[560px] gap-4 lg:grid-cols-[310px_1fr]">
-        <aside className="rounded-xl border border-slate-200 bg-slate-50 p-3">
-          <label className="relative block"><Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" /><span className="sr-only">搜索音色</span><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="搜索名称、标签、说明" className="w-full rounded-lg border border-slate-200 bg-white py-2 pl-9 pr-3 text-sm" /></label>
-          <div className="mt-3 space-y-2">
-            {filtered.map((profile) => (
-              <button key={profile.id} onClick={() => setSelectedId(profile.id)} className={`w-full rounded-lg border p-3 text-left transition ${selected?.id === profile.id ? 'border-dream-300 bg-white shadow-sm' : 'border-transparent hover:bg-white'}`}>
-                <div className="flex items-center justify-between gap-2"><span className="font-semibold text-slate-900">{profile.name}</span><span className={`h-2 w-2 rounded-full ${profile.status === 'active' ? 'bg-emerald-500' : 'bg-slate-400'}`} /></div>
-                {isStarterVoice(profile) && <span className="mt-2 inline-flex rounded-full border border-cyan-200 bg-cyan-50 px-2 py-0.5 text-[10px] font-semibold text-cyan-800">梦弦内置 · 合成音</span>}
-                <p className="mt-1 line-clamp-2 text-xs leading-5 text-slate-500">{profile.description || '暂无说明'}</p>
-                <p className="mt-2 text-[11px] text-slate-400">{profile.language} · {profile.references.length} 条参考 · {profile.bindings.length} 个角色</p>
-              </button>
-            ))}
-            {!filtered.length && <div className="rounded-lg border border-dashed border-slate-300 p-6 text-center text-sm text-slate-500">还没有音色档案</div>}
-          </div>
-        </aside>
+      <div role="group" aria-label="音色筛选" className="grid gap-3 rounded-2xl border border-slate-200 bg-slate-50/80 p-3 md:grid-cols-[minmax(220px,1.5fr)_1fr_1fr]">
+        <label className="relative"><Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" /><span className="sr-only">搜索音色</span><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="搜索名称、标签、适用剧情" className="h-10 w-full rounded-xl border border-slate-200 bg-white py-2 pl-9 pr-3 text-sm outline-none focus:border-violet-500" /></label>
+        <select aria-label="性别声线" value={genderFilter} onChange={(event) => setGenderFilter(event.target.value)} className="h-10 rounded-xl border border-slate-200 bg-white px-3 text-sm"><option>全部声线</option><option>女声</option><option>男声</option><option>中性</option></select>
+        <select aria-label="年龄感" value={ageFilter} onChange={(event) => setAgeFilter(event.target.value)} className="h-10 rounded-xl border border-slate-200 bg-white px-3 text-sm"><option>全部年龄感</option><option>少女</option><option>少年</option><option>青年</option><option>成熟</option></select>
+      </div>
 
-        <section className="rounded-xl border border-slate-200 p-5">
+      <div className="mt-5 grid gap-4 md:grid-cols-2 2xl:grid-cols-3">
+        {filtered.map((profile, index) => {
+          const tags = voiceTags(profile)
+          const canPreview = Boolean(profile.references[0]?.asset.url)
+          return <article key={profile.id} className={`rounded-2xl border bg-white p-4 transition hover:-translate-y-0.5 hover:shadow-lg ${selected?.id === profile.id ? 'border-violet-300 shadow-md shadow-violet-100' : 'border-slate-200'}`}>
+            <div className="flex items-center gap-3">
+              <div className={`flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-gradient-to-br ${index % 3 === 0 ? 'from-fuchsia-200 to-violet-500' : index % 3 === 1 ? 'from-cyan-200 to-blue-500' : 'from-amber-200 to-rose-500'} text-lg font-black text-white ring-4 ring-white shadow`}>{profile.name.slice(0, 1)}</div>
+              <div className="min-w-0 flex-1"><div className="flex items-center gap-2"><h3 className="truncate font-bold text-slate-950">{profile.name}</h3><span className={`h-2 w-2 shrink-0 rounded-full ${profile.status === 'active' ? 'bg-emerald-500' : 'bg-slate-400'}`} /></div><p className="mt-1 text-xs text-slate-500">{profile.genderTone || '未设声线'} · {profile.ageTone || '未设年龄感'} · {profile.language}</p></div>
+              <button type="button" aria-label={`试听${profile.name}`} disabled={!canPreview} onClick={() => setPreviewProfile(profile)} className="rounded-full bg-slate-950 p-2.5 text-white transition hover:bg-violet-700 disabled:cursor-not-allowed disabled:bg-slate-200"><Play className="h-4 w-4 fill-current" /></button>
+            </div>
+            <p className="mt-4 line-clamp-2 min-h-10 text-sm leading-5 text-slate-600">{profile.description || '暂无音色说明'}</p>
+            <div className="mt-3 flex min-h-6 flex-wrap gap-1.5">{tags.slice(0, 3).map((tag) => <span key={tag} className="rounded-full border border-violet-100 bg-violet-50 px-2 py-0.5 text-[11px] font-medium text-violet-700">{tag}</span>)}{isStarterVoice(profile) && <span className="rounded-full border border-cyan-100 bg-cyan-50 px-2 py-0.5 text-[11px] font-semibold text-cyan-800">梦弦合成音</span>}</div>
+            <div className="mt-4 flex items-center justify-between border-t border-slate-100 pt-3"><span className="text-[11px] text-slate-400">{profile.references.length} 条参考 · {profile.bindings.length} 个角色</span><button onClick={() => setSelectedId(profile.id)} className="text-xs font-semibold text-violet-700 hover:text-violet-900">查看与使用</button></div>
+          </article>
+        })}
+        {!filtered.length && <div className="md:col-span-2 2xl:col-span-3 rounded-2xl border border-dashed border-slate-300 p-10 text-center text-sm text-slate-500">没有符合条件的音色，换个筛选条件试试。</div>}
+      </div>
+
+      <div className="mt-6 min-h-[560px]">
+        <section className="rounded-2xl border border-slate-200 p-5">
           {selected ? <>
             <div className="flex flex-wrap items-start justify-between gap-3 border-b border-slate-100 pb-4">
               <div><div className="flex flex-wrap items-center gap-2"><Mic2 className="h-5 w-5 text-dream-600" /><h3 className="text-xl font-bold text-slate-950">{selected.name}</h3><span className={`rounded-full px-2 py-0.5 text-xs font-semibold ${isStarterVoice(selected) ? 'border border-cyan-200 bg-cyan-50 text-cyan-800' : 'bg-slate-100 text-slate-600'}`}>{isStarterVoice(selected) ? '梦弦内置 · 合成音' : '私有'}</span></div><p className="mt-2 text-sm leading-6 text-slate-600">{selected.description || '为这个音色补充年龄感、情绪范围和适用角色，会更容易稳定复用。'}</p></div>
@@ -247,6 +260,8 @@ export default function VoiceLibrary() {
         </section>
       </div>
 
+      {previewProfile?.references[0] && <div data-testid="voice-player-tray" className="sticky bottom-4 z-20 mt-5 flex flex-wrap items-center gap-4 rounded-2xl border border-slate-700 bg-slate-950 p-3 text-white shadow-2xl shadow-slate-400/40"><div className="flex h-11 w-11 items-center justify-center rounded-full bg-gradient-to-br from-fuchsia-300 to-violet-600 font-black">{previewProfile.name.slice(0, 1)}</div><div className="min-w-0 flex-1"><p className="truncate text-sm font-semibold">{previewProfile.name}</p><p className="text-xs text-slate-400">{previewProfile.references[0].emotion} · {previewProfile.references[0].asset.name}</p></div><audio key={previewProfile.references[0].asset.url} aria-label="音色持续播放器" controls autoPlay preload="metadata" src={previewProfile.references[0].asset.url} className="h-10 w-full max-w-xl md:w-[420px]">你的浏览器不支持音频预览。</audio><button aria-label="关闭音色播放器" onClick={() => setPreviewProfile(null)} className="rounded-lg p-2 text-slate-400 hover:bg-white/10 hover:text-white"><X className="h-4 w-4" /></button></div>}
+
       {creating && <div className="fixed inset-0 z-[90] flex items-center justify-center bg-slate-950/50 p-4"><section role="dialog" aria-modal="true" aria-label="新建音色" className="w-full max-w-xl rounded-xl bg-white p-5 shadow-2xl"><div className="flex items-center justify-between"><div><h3 className="text-lg font-bold text-slate-950">新建私有音色</h3><p className="mt-1 text-sm text-slate-500">先建立档案，再登记一个或多个授权参考片段。</p></div><button onClick={() => setCreating(false)} aria-label="关闭"><X className="h-5 w-5" /></button></div><div className="mt-5 grid gap-4 sm:grid-cols-2"><Field label="音色名称" value={draft.name} onChange={(value) => setDraft((old) => ({ ...old, name: value }))} /><label className="text-sm font-medium text-slate-700">主要语言<select value={draft.language} onChange={(event) => setDraft((old) => ({ ...old, language: event.target.value }))} className="mt-1.5 w-full rounded-md border border-slate-300 bg-white px-3 py-2"><option value="zh">中文</option><option value="ja">日语</option><option value="en">英语</option></select></label><Field label="年龄感" value={draft.ageTone} onChange={(value) => setDraft((old) => ({ ...old, ageTone: value }))} placeholder="例如：青年、成熟" /><Field label="声音标签" value={draft.tags} onChange={(value) => setDraft((old) => ({ ...old, tags: value }))} placeholder="温柔，清亮，近距离" /><label className="sm:col-span-2 text-sm font-medium text-slate-700">说明<textarea value={draft.description} onChange={(event) => setDraft((old) => ({ ...old, description: event.target.value }))} rows={3} className="mt-1.5 w-full rounded-md border border-slate-300 px-3 py-2" /></label><label className="sm:col-span-2 flex items-start gap-2 rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm leading-6 text-amber-900"><input aria-label="我确认拥有本人同意或合法授权" type="checkbox" checked={draft.consent} onChange={(event) => setDraft((old) => ({ ...old, consent: event.target.checked }))} className="mt-1" /><span>我确认声音来自本人，或已获得声音所有者明确、可撤销的合法授权；不会用于冒充、欺骗或未经同意的克隆。</span></label></div><div className="mt-5 flex justify-end gap-2"><button onClick={() => setCreating(false)} className="rounded-md border border-slate-300 px-4 py-2 text-sm">取消</button><button disabled={!draft.name.trim() || !draft.consent || submitting} onClick={() => void submitProfile()} className="rounded-md bg-dream-600 px-4 py-2 text-sm font-medium text-white disabled:opacity-40">创建私有音色</button></div></section></div>}
     </div>
   )
@@ -257,5 +272,12 @@ function Field({ label, value, onChange, placeholder = '' }: { label: string; va
 
 function isStarterVoice(profile: VoiceProfile) {
   return profile.id.startsWith('starter-voice-profile-dreamchord-')
+}
+
+function voiceTags(profile: VoiceProfile): string[] {
+  try {
+    const parsed = JSON.parse(profile.tags)
+    return Array.isArray(parsed) ? parsed.filter((tag): tag is string => typeof tag === 'string') : []
+  } catch { return [] }
 }
 

@@ -290,6 +290,20 @@ export async function renameAsset(assetId: string, name: string): Promise<Asset>
   return data
 }
 
+export interface AudioLibraryMetadata {
+  mood?: string
+  style?: string
+  scene?: string
+  loop?: boolean
+  license?: string
+  source?: string
+}
+
+export async function updateAssetDetails(assetId: string, details: { name?: string; audioLibrary?: AudioLibraryMetadata }): Promise<Asset> {
+  const { data } = await api.patch(`/assets/${assetId}`, details)
+  return data
+}
+
 export async function uploadAsset(
   file: File,
   type: string,

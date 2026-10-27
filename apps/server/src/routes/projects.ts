@@ -44,7 +44,10 @@ router.get('/me/list', authenticateToken, async (req: AuthRequest, res: Response
   const projects = await prisma.project.findMany({
     where: { authorId: req.userId },
     orderBy: { createdAt: 'desc' },
-    include: { chapters: { select: { id: true } } },
+    include: {
+      chapters: { select: { id: true } },
+      characters: { select: { id: true, name: true, description: true, color: true, defaultSprite: true } },
+    },
   })
   res.json(projects)
 })

@@ -23,7 +23,18 @@ const voiceSampleSchema = z.object({
   language: z.string().trim().min(2).max(24),
   style: z.string().trim().max(500).optional(),
 }).strict()
-const renameSchema = z.object({ name: z.string().trim().min(1).max(200) }).strict()
+const audioLibrarySchema = z.object({
+  mood: z.string().trim().max(40).optional(),
+  style: z.string().trim().max(40).optional(),
+  scene: z.string().trim().max(80).optional(),
+  loop: z.boolean().optional(),
+  license: z.string().trim().max(120).optional(),
+  source: z.string().trim().max(300).optional(),
+}).strict()
+const updateAssetSchema = z.object({
+  name: z.string().trim().min(1).max(200).optional(),
+  audioLibrary: audioLibrarySchema.optional(),
+}).strict().refine((value) => value.name !== undefined || value.audioLibrary !== undefined, '至少修改一项素材信息')
 const processSchema = z.object({ purpose: z.enum(['sprite', 'cg', 'background']), removeWhite: z.boolean().optional(), whiteThreshold: z.number().int().min(180).max(255).optional(), feather: z.number().int().min(0).max(40).optional(), trim: z.boolean().optional() }).strict()
 const acceptSchema = z.object({ purpose: z.enum(['sprite', 'cg', 'background']), projectId: z.string().min(1).optional(), characterId: z.string().min(1).optional(), characterName: z.string().trim().min(1).max(100).optional(), expressionName: z.string().trim().min(1).max(100).optional() }).strict()
 
@@ -161,12 +172,21 @@ export function createAssetRouter(client: PrismaClient = prisma, storageRoot = u
   })
 
   router.patch('/:assetId', async (req: AuthRequest, res: Response) => {
-    const body = renameSchema.safeParse(req.body)
+    const body = updateAssetSchema.safeParse(req.body)
     if (!body.success) return res.status(400).json({ error: body.error.issues[0]?.message || '请求无效' })
     const asset = await client.asset.findUnique({ where: { id: req.params.assetId } })
     if (!asset) return res.status(404).json({ error: '素材不存在' })
     if (asset.ownerId !== req.userId) return res.status(403).json({ error: '无权修改此素材' })
-    res.json(await client.asset.update({ where: { id: asset.id }, data: { name: body.data.name } }))
+    if (body.data.audioLibrary && !AUDIO_ASSET_TYPES.has(asset.type as AssetType)) return res.status(400).json({ error: '只有音频素材可以设置声音库标签' })
+    let metadata: Record<string, unknown> = {}
+    try {
+      const parsed = JSON.parse(asset.metadata || '{}')
+      if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) metadata = parsed
+    } catch { metadata = {} }
+    res.json(await client.asset.update({ where: { id: asset.id }, data: {
+      ...(body.data.name ? { name: body.data.name } : {}),
+      ...(body.data.audioLibrary ? { metadata: JSON.stringify({ ...metadata, audioLibrary: body.data.audioLibrary }) } : {}),
+    } }))
   })
 
   router.get('/:assetId/inspection', async (req: AuthRequest, res: Response) => {

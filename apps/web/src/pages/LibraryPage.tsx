@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { Archive, BookOpen, Edit3, Image as ImageIcon, Loader2, Mic2, Plus, RotateCcw, Save, SlidersHorizontal, Trash2, Upload, Users, X } from 'lucide-react'
-import { deleteAsset, getAssetLibrary, renameAsset, uploadAsset, type Asset } from '../api/client'
+import { Archive, BookOpen, Edit3, Image as ImageIcon, Loader2, Mic2, Music2, Plus, RotateCcw, Save, SlidersHorizontal, Trash2, Upload, Users, X } from 'lucide-react'
+import { deleteAsset, getAssetLibrary, renameAsset, updateAssetDetails, uploadAsset, type Asset, type AudioLibraryMetadata } from '../api/client'
 import {
   CHARACTER_KEY,
   SCENE_KEY,
@@ -22,6 +22,7 @@ import { useToast, useConfirm } from '../components/FeedbackProvider'
 import AssetProcessingSheet from '../assets/AssetProcessingSheet'
 import VoiceLibrary from '../voice/VoiceLibrary'
 import CharacterGallery from '../library/CharacterGallery'
+import MusicLibrary from '../library/MusicLibrary'
 
 function getApiError(err: unknown, fallback = '操作失败'): string {
   if (typeof err === 'object' && err !== null && 'response' in err) {
@@ -31,7 +32,7 @@ function getApiError(err: unknown, fallback = '操作失败'): string {
   return err instanceof Error ? err.message || fallback : fallback
 }
 
-type LibraryTab = 'characters' | 'scenes' | 'stories' | 'voices' | 'projectAssets'
+type LibraryTab = 'characters' | 'scenes' | 'stories' | 'voices' | 'music' | 'projectAssets'
 const AUDIO_ASSET_TYPES = ['BGM', 'SFX', 'VOICE', 'VOICE_SAMPLE']
 
 const tabs: { id: LibraryTab; label: string; icon: ReactNode }[] = [
@@ -39,6 +40,7 @@ const tabs: { id: LibraryTab; label: string; icon: ReactNode }[] = [
   { id: 'scenes', label: '场景库', icon: <ImageIcon className="h-4 w-4" /> },
   { id: 'stories', label: '剧情与模板', icon: <BookOpen className="h-4 w-4" /> },
   { id: 'voices', label: '声音库', icon: <Mic2 className="h-4 w-4" /> },
+  { id: 'music', label: '音乐库', icon: <Music2 className="h-4 w-4" /> },
   { id: 'projectAssets', label: '全局素材', icon: <Archive className="h-4 w-4" /> },
 ]
 
@@ -100,11 +102,11 @@ export default function LibraryPage() {
     })
   }
 
-  const handleUpload = async (file: File | undefined) => {
+  const handleUpload = async (file: File | undefined, overrideType?: string) => {
     if (!file) return
     setAssetLoading(true)
     try {
-      const uploaded = await uploadAsset(file, assetType)
+      const uploaded = await uploadAsset(file, overrideType || assetType)
       setAssets((prev) => [uploaded, ...prev])
     } catch (err: unknown) {
       toast.error(getApiError(err, '上传失败，请确认已经登录并检查文件格式'))
@@ -126,6 +128,12 @@ export default function LibraryPage() {
     if (!await confirm({ message: `确定删除素材"${asset.name}"吗？`, danger: true })) return
     await deleteAsset(asset.id)
     setAssets((prev) => prev.filter((item) => item.id !== asset.id))
+  }
+
+  const updateAudioAsset = async (assetId: string, details: { name?: string; audioLibrary?: AudioLibraryMetadata }) => {
+    const updated = await updateAssetDetails(assetId, details)
+    setAssets((current) => current.map((asset) => asset.id === updated.id ? updated : asset))
+    return updated
   }
 
   return (<>
@@ -196,6 +204,7 @@ export default function LibraryPage() {
             />
           )}
           {activeTab === 'voices' && (user ? <VoiceLibrary /> : <div><SectionTitle title="声音库" desc="登录后管理私有音色、授权参考片段和角色绑定。" /><Link to="/login" className="mt-4 inline-flex rounded-lg bg-dream-600 px-4 py-2 text-sm font-medium text-white">登录后使用</Link></div>)}
+          {activeTab === 'music' && (user ? <MusicLibrary assets={assets} loading={assetLoading} onUpload={(file, type) => handleUpload(file, type)} onUpdate={updateAudioAsset} onDelete={removeAsset} /> : <div><SectionTitle title="音乐库" desc="登录后管理 BGM 与音效素材。" /><Link to="/login" className="mt-4 inline-flex rounded-lg bg-dream-600 px-4 py-2 text-sm font-medium text-white">登录后使用</Link></div>)}
           {activeTab === 'projectAssets' && (
             <ProjectAssetLibrary
               user={user}

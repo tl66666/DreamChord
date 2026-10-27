@@ -128,10 +128,17 @@ if (-not $runtimeReady) {
   Write-Host '检测到预训练模型，跳过重复安装。'
 }
 
+# GPT-SoVITS v2 still imports resampy on the actual /tts path, although some
+# upstream installer combinations do not leave it in the environment.
+if (-not (Import-Module-Check $environmentPython 'resampy')) {
+  Write-Host '正在补充 GPT-SoVITS 推理所需的 resampy…' -ForegroundColor Yellow
+  Invoke-CheckedCommand $environmentPython @('-m', 'pip', 'install', 'resampy>=0.4,<1') 'resampy 安装失败。'
+}
+
 foreach ($requiredPath in @((Join-Path $gptRoot 'api_v2.py'), $inferenceConfig, $environmentPython, $pretrainedSpeakerRoot)) {
   if (-not (Test-Path $requiredPath)) { throw "声音运行时不完整，缺少：$requiredPath" }
 }
-foreach ($requiredModule in @('torch', 'numpy', 'soundfile', 'fastapi')) {
+foreach ($requiredModule in @('torch', 'numpy', 'soundfile', 'fastapi', 'resampy')) {
   if (-not (Import-Module-Check $environmentPython $requiredModule)) { throw "声音运行时不完整，缺少 Python 模块：$requiredModule" }
 }
 

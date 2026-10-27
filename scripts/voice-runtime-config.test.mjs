@@ -55,7 +55,7 @@ test('installer does not mistake the pretrained .gitignore placeholder for a com
   const installer = fs.readFileSync(new URL('./setup-gpt-sovits.ps1', import.meta.url), 'utf8')
   assert.match(installer, /pretrained_models\\sv/)
   assert.match(installer, /Import-Module-Check.*torch/s)
-  for (const moduleName of ['numpy', 'soundfile', 'fastapi']) {
+  for (const moduleName of ['numpy', 'soundfile', 'fastapi', 'resampy']) {
     assert.match(installer, new RegExp(`Import-Module-Check \\$environmentPython '${moduleName}'`))
   }
 })

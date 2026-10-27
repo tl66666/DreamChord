@@ -60,6 +60,28 @@ describe('VoiceLibrary', () => {
     expect(screen.getByText(/非真人声音克隆/)).toBeInTheDocument()
   })
 
+  it('presents voices as a filterable audition catalog with a persistent preview tray', async () => {
+    common()
+    api.list.mockResolvedValue([
+      { id: 'girl', name: '星璃・清澈', description: '校园少女', language: 'zh-CN', ageTone: '少女', genderTone: '女声', tags: '["清澈","校园"]', status: 'active', provider: 'gpt-sovits', defaultEmotion: '自然', defaultSpeed: 1, authorizationNote: '合成音', references: [{ id: 'ref', transcript: '你好。', language: 'zh-CN', emotion: '自然', status: 'active', asset: { id: 'sample', name: '星璃试听', type: 'VOICE_SAMPLE', url: '/uploads/xingli.wav', createdAt: '2026-10-27' } }], bindings: [] },
+      { id: 'man', name: '暮川・沉稳', description: '可靠青年', language: 'zh-CN', ageTone: '青年', genderTone: '男声', tags: '["沉稳"]', status: 'active', provider: 'gpt-sovits', defaultEmotion: '自然', defaultSpeed: 1, authorizationNote: '合成音', references: [], bindings: [] },
+    ])
+    api.health.mockResolvedValue({ ok: true, provider: 'gpt-sovits', message: '服务可访问' })
+    api.assets.mockResolvedValue([])
+    render(<VoiceLibrary />)
+
+    expect(await screen.findByRole('group', { name: '音色筛选' })).toBeInTheDocument()
+    fireEvent.change(screen.getByLabelText('性别声线'), { target: { value: '男声' } })
+    expect(screen.getAllByText('暮川・沉稳').length).toBeGreaterThan(0)
+    expect(screen.queryByText('星璃・清澈')).not.toBeInTheDocument()
+    fireEvent.change(screen.getByLabelText('性别声线'), { target: { value: '女声' } })
+    expect(screen.getAllByText('星璃・清澈').length).toBeGreaterThan(0)
+    expect(screen.queryByText('暮川・沉稳')).not.toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: '试听星璃・清澈' }))
+    expect(screen.getByLabelText('音色持续播放器')).toHaveAttribute('src', '/uploads/xingli.wav')
+    expect(screen.getByTestId('voice-player-tray')).toHaveTextContent('星璃・清澈')
+  })
+
   it('requires rights confirmation before creating a private profile', async () => {
     common()
     api.list.mockResolvedValue([])

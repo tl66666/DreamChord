@@ -37,10 +37,10 @@ export class GptSovitsProvider implements VoiceProvider {
         signal: controller.signal,
         body: JSON.stringify({
           text: input.text,
-          text_lang: input.textLanguage,
+          text_lang: normalizeLanguage(input.textLanguage),
           ref_audio_path: input.referencePath,
           prompt_text: input.promptText,
-          prompt_lang: input.promptLanguage,
+          prompt_lang: normalizeLanguage(input.promptLanguage),
           speed_factor: input.speed,
           seed: input.seed ?? -1,
           media_type: 'wav',
@@ -62,5 +62,13 @@ export class GptSovitsProvider implements VoiceProvider {
       clearTimeout(timeout)
     }
   }
+}
+
+function normalizeLanguage(language: string): string {
+  const normalized = language.trim().toLowerCase().replace('_', '-')
+  const primary = normalized.split('-')[0]
+  if (primary === 'cn') return 'zh'
+  if (primary === 'jp') return 'ja'
+  return primary || 'zh'
 }
 

@@ -68,4 +68,13 @@ describe('global asset library', () => {
     expect(screen.getByTestId('library-navigation')).toHaveClass('overflow-x-auto', 'lg:sticky')
     expect(screen.getByTestId('library-content')).not.toHaveClass('max-w-7xl')
   })
+
+  it('promotes music into its own first-class library', async () => {
+    api.list.mockResolvedValue([])
+    render(<MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}><FeedbackProvider><LibraryPage /></FeedbackProvider></MemoryRouter>)
+
+    fireEvent.click(await screen.findByRole('button', { name: /音乐库/ }))
+    expect(screen.getByRole('heading', { name: '音乐库' })).toBeInTheDocument()
+    expect(screen.getByText(/BGM 与音效/)).toBeInTheDocument()
+  })
 })

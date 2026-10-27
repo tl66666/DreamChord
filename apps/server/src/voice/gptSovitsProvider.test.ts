@@ -40,6 +40,18 @@ describe('GPT-SoVITS provider', () => {
     })).rejects.toThrow('GPT-SoVITS 请求失败（503）')
   })
 
+  it('normalizes BCP 47 library languages to GPT-SoVITS language codes', async () => {
+    const fetcher = vi.fn().mockResolvedValue(new Response(new Uint8Array([1]), { status: 200, headers: { 'content-type': 'audio/wav' } }))
+    const provider = new GptSovitsProvider({ baseUrl: 'http://127.0.0.1:9880', timeoutMs: 5000 }, fetcher)
+
+    await provider.synthesize({
+      text: '你好。', textLanguage: 'zh-CN', referencePath: 'C:\\voice.wav', promptText: '参考文本。', promptLanguage: 'zh-CN', speed: 1,
+    })
+
+    const body = JSON.parse(fetcher.mock.calls[0]![1].body)
+    expect(body).toMatchObject({ text_lang: 'zh', prompt_lang: 'zh' })
+  })
+
   it('accepts only a server-configured loopback endpoint in the first release', () => {
     expect(readVoiceProviderConfig({ VOICE_PROVIDER: 'gpt-sovits', GPT_SOVITS_BASE_URL: 'http://localhost:9880' })).toMatchObject({ enabled: true })
     expect(readVoiceProviderConfig({ VOICE_PROVIDER: 'gpt-sovits', GPT_SOVITS_BASE_URL: 'https://example.com' })).toMatchObject({ enabled: false, reason: expect.stringContaining('本机') })
