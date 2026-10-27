@@ -51,4 +51,44 @@ describe('official demo graph', () => {
       }
     }
   })
+
+  it('uses directed dialogue and non-dialogue staging throughout the demo', () => {
+    const dialogues = OFFICIAL_DEMO.graph.nodes.filter((node) => node.type === 'dialogue')
+    const subtitles = OFFICIAL_DEMO.graph.nodes.filter((node) => node.type === 'subtitle')
+    const transitions = OFFICIAL_DEMO.graph.nodes.filter((node) => node.type === 'transition')
+    const audioNodes = OFFICIAL_DEMO.graph.nodes.filter((node) => node.data.audio)
+
+    expect(dialogues.length).toBeGreaterThanOrEqual(52)
+    expect(dialogues.every((node) => node.data.voiceDirection && typeof node.data.voiceDirection === 'object')).toBe(true)
+    expect(subtitles.length).toBeGreaterThanOrEqual(4)
+    expect(transitions.length).toBeGreaterThanOrEqual(3)
+    expect(audioNodes.length).toBeGreaterThanOrEqual(12)
+  })
+
+  it('stores the first choice and pays it off with three conditional echoes', () => {
+    const choice = OFFICIAL_DEMO.graph.nodes.find((node) => node.id === 's3-choice')
+    expect(choice?.data.effects).toEqual([
+      [{ kind: 'setVariable', variable: 'authorStance', value: 'fear' }],
+      [{ kind: 'setVariable', variable: 'authorStance', value: 'rewrite' }],
+      [{ kind: 'setVariable', variable: 'authorStance', value: 'agency' }],
+    ])
+
+    const conditions = OFFICIAL_DEMO.graph.nodes.filter((node) => node.type === 'condition')
+    expect(conditions.map((node) => node.data.value)).toEqual(expect.arrayContaining(['fear', 'rewrite']))
+    expect(OFFICIAL_DEMO.graph.nodes.some((node) => node.id === 's7-fear-echo')).toBe(true)
+    expect(OFFICIAL_DEMO.graph.nodes.some((node) => node.id === 's7-rewrite-echo')).toBe(true)
+    expect(OFFICIAL_DEMO.graph.nodes.some((node) => node.id === 's7-agency-echo')).toBe(true)
+  })
+
+  it('assigns distinct musical identities and deliberate silence to story beats', () => {
+    const bgmUrls = OFFICIAL_DEMO.graph.nodes.flatMap((node) => {
+      const audio = node.data.audio as { bgm?: { action?: string; url?: string } } | undefined
+      return audio?.bgm?.action === 'play' && audio.bgm.url ? [audio.bgm.url] : []
+    })
+    expect(new Set(bgmUrls).size).toBeGreaterThanOrEqual(6)
+    expect(OFFICIAL_DEMO.graph.nodes.some((node) => {
+      const audio = node.data.audio as { bgm?: { action?: string } } | undefined
+      return audio?.bgm?.action === 'stop'
+    })).toBe(true)
+  })
 })

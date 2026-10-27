@@ -8,10 +8,46 @@ const sceneFields = {
   autoStageSpeaker: z.boolean().optional(),
 }
 
+const voiceDirectionSchema = z.object({
+  emotion: z.enum(['neutral', 'warm', 'joy', 'sad', 'tense', 'angry', 'afraid', 'resolve', 'whisper']),
+  intensity: z.number().min(0).max(1),
+  pace: z.number().min(0.75).max(1.2),
+  pauseProfile: z.enum(['short', 'natural', 'dramatic']),
+  delivery: z.string().trim().min(1).max(300),
+  lockedFields: z.array(z.enum(['emotion', 'intensity', 'pace', 'pauseProfile', 'delivery'])).max(5),
+  source: z.enum(['manual', 'auto']),
+  textHash: z.string().regex(/^[a-f0-9]{8}$/),
+}).strict()
+
+const oneShotAudioSchema = z.object({
+  url: z.string().trim().min(1).max(2_000),
+  volume: z.number().min(0).max(1).optional(),
+}).strict()
+
+const audioDirectionSchema = z.object({
+  bgm: z.object({
+    action: z.enum(['keep', 'play', 'stop']),
+    url: z.string().trim().min(1).max(2_000).optional(),
+    volume: z.number().min(0).max(1).optional(),
+    fadeInMs: z.number().int().min(0).max(60_000).optional(),
+    fadeOutMs: z.number().int().min(0).max(60_000).optional(),
+  }).strict().optional(),
+  sfx: z.array(oneShotAudioSchema).max(12).optional(),
+  voice: oneShotAudioSchema.optional(),
+}).strict()
+
+const choiceEffectSchema = z.object({
+  kind: z.literal('setVariable'),
+  variable: z.string().trim().min(1).max(100),
+  value: z.union([z.string(), z.number(), z.boolean()]),
+}).strict()
+
 const dialogueDataSchema = z.object({
   ...sceneFields,
   role: z.string().max(100),
   text: z.string().max(20_000),
+  voiceDirection: voiceDirectionSchema.optional(),
+  audio: audioDirectionSchema.optional(),
 }).strict()
 
 const subtitleDataSchema = z.object({
@@ -25,6 +61,7 @@ const subtitleDataSchema = z.object({
 const choiceDataSchema = z.object({
   ...sceneFields,
   choices: z.array(z.string().max(200)).min(1).max(12),
+  effects: z.array(z.array(choiceEffectSchema).max(12)).max(12).optional(),
 }).strict()
 
 const backgroundDataSchema = z.object({
@@ -96,6 +133,9 @@ const allowedChangesSchema = z.object({
   sceneTitle: z.string().optional(),
   lensType: z.enum(['dialogue', 'narration', 'thought', 'memory', 'system']).optional(),
   autoStageSpeaker: z.boolean().optional(),
+  voiceDirection: voiceDirectionSchema.optional(),
+  audio: audioDirectionSchema.optional(),
+  effects: z.array(z.array(choiceEffectSchema).max(12)).max(12).optional(),
 }).strict().refine((value) => Object.keys(value).length > 0, '至少修改一个字段')
 
 const anchorSchema = z.union([

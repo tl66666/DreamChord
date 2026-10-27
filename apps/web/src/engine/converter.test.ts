@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest'
 import type { Edge, Node } from '@xyflow/react'
+import { OFFICIAL_DEMO } from '@dreamchord/story-domain'
 import { convertFlowToRuntime } from './converter'
+import { createRuntimeEngine } from './runtime'
 
 describe('flow runtime stage continuity', () => {
   it('keeps character state isolated between choice branches', () => {
@@ -124,5 +126,30 @@ describe('flow runtime stage continuity', () => {
       ],
       nextSceneId: 'agency',
     })
+  })
+
+  it('plays the official rewrite stance into its matching later echo', () => {
+    const runtime = convertFlowToRuntime(
+      OFFICIAL_DEMO.id,
+      OFFICIAL_DEMO.title,
+      OFFICIAL_DEMO.graph.nodes as Node[],
+      OFFICIAL_DEMO.graph.edges as Edge[],
+    )
+    const engine = createRuntimeEngine(runtime)
+    let guard = 0
+    while (engine.currentScene()?.id !== 's3-choice' && guard < 100) {
+      engine.next()
+      guard += 1
+    }
+    expect(engine.currentScene()?.id).toBe('s3-choice')
+    engine.choose(1)
+    while (engine.currentScene()?.id !== 's7-gate' && guard < 200) {
+      engine.next()
+      guard += 1
+    }
+    expect(engine.state.variables.authorStance).toBe('rewrite')
+    expect(engine.currentScene()?.id).toBe('s7-gate')
+    engine.next()
+    expect(engine.currentScene()?.id).toBe('s7-rewrite-echo')
   })
 })
