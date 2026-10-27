@@ -37,6 +37,18 @@ const DEFAULT_SETTINGS: PlayerSettings = {
   voiceVolume: 0.8,
 }
 
+export interface AutoAdvanceState {
+  isAuto: boolean
+  isTyping: boolean
+  isVoicePlaying: boolean
+  hasChoices: boolean
+  finished: boolean
+}
+
+export function canScheduleAutoAdvance(state: AutoAdvanceState) {
+  return state.isAuto && !state.isTyping && !state.isVoicePlaying && !state.hasChoices && !state.finished
+}
+
 type AudioWindow = typeof window & {
   webkitAudioContext?: typeof AudioContext
 }
@@ -58,6 +70,9 @@ export default function VisualNovelPlayer() {
   const [isSkip, setIsSkip] = useState(false)
   const [finished, setFinished] = useState(false)
   const [settings, setSettings] = useState<PlayerSettings>(DEFAULT_SETTINGS)
+  const [audioDirectorGeneration, setAudioDirectorGeneration] = useState(0)
+  const [voiceEndedSceneId, setVoiceEndedSceneId] = useState<string | null>(null)
+  const [voiceLifecycleTick, setVoiceLifecycleTick] = useState(0)
   const [, setTick] = useState(0)
 
   const autoTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -65,6 +80,7 @@ export default function VisualNovelPlayer() {
   const typingRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const audioContextRef = useRef<AudioContext | null>(null)
   const audioDirectorRef = useRef<ReturnType<typeof createAudioDirector> | null>(null)
+  const activeSceneIdRef = useRef<string | null>(null)
   if (!audioDirectorRef.current) audioDirectorRef.current = createAudioDirector()
 
   const playTone = useCallback(
@@ -138,6 +154,16 @@ export default function VisualNovelPlayer() {
   }, [location.search, projectId, toast])
 
   const currentScene = engine?.currentScene() || null
+  activeSceneIdRef.current = currentScene?.id || null
+
+  useEffect(() => {
+    const director = audioDirectorRef.current
+    if (!director) return
+    return director.onVoiceEnded(() => {
+      setVoiceEndedSceneId(activeSceneIdRef.current)
+      setVoiceLifecycleTick((value) => value + 1)
+    })
+  }, [audioDirectorGeneration])
 
   // A scene ID identifies an immutable runtime snapshot; volume changes are handled below.
   useEffect(() => {
@@ -205,6 +231,8 @@ export default function VisualNovelPlayer() {
     }
     if (currentScene?.choices) return
 
+    audioDirectorRef.current?.stopTransient({ fadeOutMs: isSkip ? 0 : 100 })
+
     const scene = engine.currentScene()
     if (scene) pushHistory(scene)
 
@@ -237,13 +265,21 @@ export default function VisualNovelPlayer() {
   )
 
   useEffect(() => {
-    if (!isAuto || isTyping || currentScene?.choices || finished) return
+    const isVoicePlaying = audioDirectorRef.current?.isVoicePlaying() ?? false
+    if (!canScheduleAutoAdvance({
+      isAuto,
+      isTyping,
+      isVoicePlaying,
+      hasChoices: Boolean(currentScene?.choices),
+      finished,
+    })) return
     if (autoTimer.current) clearTimeout(autoTimer.current)
-    autoTimer.current = setTimeout(() => advance(), 1200)
+    const delay = voiceEndedSceneId === currentScene?.id ? 350 : 1200
+    autoTimer.current = setTimeout(() => advance(), delay)
     return () => {
       if (autoTimer.current) clearTimeout(autoTimer.current)
     }
-  }, [advance, currentScene?.choices, finished, isAuto, isTyping])
+  }, [advance, currentScene?.choices, currentScene?.id, finished, isAuto, isTyping, voiceEndedSceneId, voiceLifecycleTick])
 
   // 跳过模式：快速自动推进剧情，遇到选项时自动停止
   useEffect(() => {
@@ -262,10 +298,15 @@ export default function VisualNovelPlayer() {
     }
   }, [currentScene?.choices, isSkip])
 
+  useEffect(() => {
+    if (isSkip) audioDirectorRef.current?.stopTransient()
+  }, [isSkip])
+
   const selectChoice = useCallback(
     (index: number) => {
       if (!engine || !currentScene?.choices) return
       playTone('choice')
+      audioDirectorRef.current?.stopTransient({ fadeOutMs: 100 })
       pushHistory(currentScene)
       const hasMore = engine.choose(index)
       setTick((value) => value + 1)
@@ -277,6 +318,9 @@ export default function VisualNovelPlayer() {
   const restart = useCallback(() => {
     if (!engine) return
     audioDirectorRef.current?.dispose()
+    audioDirectorRef.current = createAudioDirector()
+    setAudioDirectorGeneration((value) => value + 1)
+    setVoiceEndedSceneId(null)
     setHistory([])
     setFinished(false)
     setIsAuto(false)
@@ -459,7 +503,11 @@ export default function VisualNovelPlayer() {
                 </p>
                 <div className="mt-4 flex items-center justify-between">
                   <span className="text-xs text-white/42">
-                    {isSkip ? '⏩ 跳过中（遇选项自动停止）' : isAuto ? '自动播放中' : '点击继续'}
+                    {isSkip
+                      ? '⏩ 跳过中（遇选项自动停止）'
+                      : isAuto && audioDirectorRef.current?.isVoicePlaying()
+                        ? '自动播放中 · 等待配音'
+                        : isAuto ? '自动播放中' : '点击继续'}
                   </span>
                   <ChevronDown className="h-5 w-5 animate-bounce text-white/42" />
                 </div>
