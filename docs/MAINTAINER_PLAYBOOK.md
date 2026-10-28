@@ -17,7 +17,7 @@ pnpm test:readiness
 
 工作流采用以下固定流程：
 
-- CI：构建共享剧情包、生成 Prisma Client、在隔离 SQLite 数据库执行迁移和演示数据种子、运行 lint、测试与构建。
+- CI：构建共享剧情包、生成 Prisma Client、在隔离 SQLite 数据库执行迁移和演示数据种子、运行 lint、测试与构建，随后检查声音运行配置和素材来源、工作区交接与展示页资源。声音检查不启动或下载语音模型。
 - GitHub Pages：部署项目展示页面；它和应用后端不是同一个服务。
 
 当前声音与视觉迭代以 [CURRENT_HANDOFF.md](CURRENT_HANDOFF.md) 和 [VOICE_WORKFLOW.md](VOICE_WORKFLOW.md) 为入口。展示资源审计执行 `pnpm test:presentation`；截图索引在 `docs/screenshots/README.md`。本地服务运行期间不要重新覆盖 Prisma Client，Windows DLL 占用时可用已有 Client 执行 `pnpm -r test`。
