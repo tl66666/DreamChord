@@ -6,6 +6,14 @@ import { createHash } from 'node:crypto'
 const root = fileURLToPath(new URL('..', import.meta.url))
 const page = resolve(root, 'docs/showcase.html')
 const html = readFileSync(page, 'utf8')
+// The existing showcase identity is part of the delivery: enrich it without replacing its Hero.
+for (const section of ['project-overview', 'agent-core', 'philosophy', 'characters', 'scenes', 'tech', 'faq', 'roadmap']) {
+  assert.ok(html.includes(`id="${section}"`), `Preserve original showcase section: ${section}`)
+}
+const hero = html.match(/<section class="hero">[\s\S]*?<\/section>/)?.[0] ?? ''
+assert.ok(hero.includes('hf_20260324_151826_c7218672-6e92-402c-9e45-f1e0f454bdc4.mp4'), 'Preserve the original Hero video')
+assert.ok(hero.includes('id="heroTitle"') && hero.includes('梦弦 Agent') && hero.includes('DreamChord'), 'Preserve the original Hero title')
+assert.ok(html.includes('hf_20260416_101255_3099d3e4-d0cf-4e59-9666-97fbf521ac71.mp4'), 'Preserve the original footer video')
 let assets = 0
 for (const match of html.matchAll(/(?:src|data-zoom|poster)="([^"]+)"/g)) {
   if (/^(?:https?:|data:)/.test(match[1])) continue

@@ -39,3 +39,13 @@ Unit / integration coverage checks changed text, bindings, manual audio and chap
 Automatic synthesis is scheduled while the editor is open, not during public playback. Voice and language preferences are local per browser/project; bindings and accepted audio are server-backed. Official bundled voices are synthetic, only part of the story is pre-recorded, and no human-equivalence quality claim is made.
 
 Personal website unrelated pre-existing deletions / documents remain outside the commit scope. Only DreamChord presentation files, media and its explicit handoff are included. Current documentation is rooted at `CURRENT_HANDOFF.md` and `VOICE_WORKFLOW.md`; unused temporary QA screenshots, obsolete placeholder JPGs and six unreferenced old portfolio captures were removed.
+
+## Showcase correction: preserve the original design
+
+Following the author's clarification, the project showcase uses the original `2446b35` Dream Light page as its foundation. Its Hero video, title, entrance animation, parallax, footer video, philosophy, comparison, Agent explanation, characters, scenes and architecture remain. The Hero font size is constrained to keep the badge and actions visible. The application homepage is separate and keeps its approved writing-room illustration.
+
+The new voice section supplements this foundation with current catalog / binding / automatic dubbing / music / player captures and opt-in Chinese / Japanese samples. Obsolete planned-TTS and music descriptions are corrected. The comparison table retains its purpose while correcting third-party claims against official Ren'Py and TyranoBuilder documentation. Static scene illustrations are explicitly distinguished from real browser captures.
+
+Verified locally at 1440 × 900, 390 × 844 and 320 × 740: no horizontal document overflow after fixing the original overview and quick-start grid sizing; screenshot dialog opens and closes with Escape; FAQ reports its expanded state; both samples load to readyState 4 (5.76 / 5.92 seconds). Original Hero video loads to readyState 4 and plays. Browser autoplay restrictions still require user interaction for audible samples.
+
+Re-ran lint, production build and all 456 workspace tests successfully. Presentation resource / audio provenance checks and workspace readiness pass. The presentation audit now protects the original Hero title, both video identities and retained core sections from accidental replacement.
