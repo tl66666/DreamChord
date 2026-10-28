@@ -3,6 +3,7 @@ import { Link, useLocation } from 'react-router-dom'
 import { Save, ExternalLink, Check, AlertCircle, ArrowLeft } from 'lucide-react'
 import { loadAIConfigs, saveAIConfigs, PROVIDER_META, type AIProviderConfig } from '../lib/aiConfig'
 import AppHeader from '../components/AppHeader'
+import StudioIntro from '../components/StudioIntro'
 
 export default function SettingsPage() {
   const location = useLocation()
@@ -92,7 +93,7 @@ export default function SettingsPage() {
         </button>
       </div>
 
-      <section className="mb-6 overflow-hidden rounded-2xl border border-dream-100 bg-white sm:grid sm:grid-cols-[1fr_200px]"><div className="p-5"><p className="text-xs font-semibold text-dream-600">创作设置</p><h2 className="mt-2 text-lg font-bold text-slate-950">让工具配合你的写作习惯</h2><p className="mt-2 max-w-xl text-sm leading-6 text-slate-500">创作助手与日语配音翻译共用已启用的模型。未配置在线模型时，配音可使用本机翻译组件。</p></div><img src="/assets/ui/writing-nook.webp" alt="" className="hidden h-full w-full object-cover sm:block" /></section>
+      <StudioIntro className="mb-6" image="/assets/ui/writing-nook.webp" landscape><div><p className="text-xs font-semibold text-dream-600">创作设置</p><h2 className="mt-2 text-lg font-bold text-slate-950">让工具配合你的写作习惯</h2><p className="mt-2 max-w-xl text-sm leading-6 text-slate-500">创作助手与日语配音翻译共用已启用的模型。未配置在线模型时，配音可使用本机翻译组件。</p></div></StudioIntro>
       <div className="mb-6 flex items-start gap-3 rounded-xl border border-dream-200 bg-dream-50/50 p-4 text-sm text-dream-700">
         <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-dream-500" />
         <p>同一时间只能启用一个 AI 提供商。启用新的提供商会自动停用当前的。切换后编辑器中的 AI 功能将立即使用新模型。</p>

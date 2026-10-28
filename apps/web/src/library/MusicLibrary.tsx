@@ -1,5 +1,5 @@
 import { useMemo, useRef, useState, type ReactNode } from 'react'
-import { Check, Disc3, Edit3, FileAudio, Loader2, Music2, Pause, Play, Search, Sparkles, Trash2, Upload, Volume2, X } from 'lucide-react'
+import { Check, Edit3, FileAudio, Loader2, Music2, Pause, Play, Search, Sparkles, Trash2, Upload, Volume2, X } from 'lucide-react'
 import type { Asset, AudioLibraryMetadata } from '../api/client'
 import AudioWorkspaceHeader from './AudioWorkspaceHeader'
 
@@ -18,13 +18,7 @@ interface MusicEntry { asset: Asset; metadata: AudioLibraryMetadata; durationSec
 
 const moodOptions = ['全部情绪', '日常', '温柔', '轻快', '忧郁', '紧张', '神秘', '治愈', '热血']
 const styleOptions = ['全部风格', '视觉小说原声', '氛围', '钢琴', '电子', '管弦', '摇滚', '环境', '提示音']
-const covers = [
-  'from-indigo-950 via-violet-700 to-fuchsia-400',
-  'from-slate-950 via-dream-800 to-emerald-400',
-  'from-rose-950 via-orange-700 to-amber-300',
-  'from-blue-950 via-indigo-700 to-sky-300',
-  'from-zinc-950 via-slate-700 to-purple-400',
-]
+
 
 export default function MusicLibrary({ assets, loading, onUpload, onUpdate, onDelete }: MusicLibraryProps) {
   const uploadRef = useRef<HTMLInputElement | null>(null)
@@ -76,18 +70,9 @@ export default function MusicLibrary({ assets, loading, onUpload, onUpdate, onDe
   }
 
   return (
-    <div className="pb-24">
-      <AudioWorkspaceHeader kind="music" count={assets.filter((asset) => asset.type === 'BGM' || asset.type === 'SFX').length} action={<button onClick={() => uploadRef.current?.click()} className="inline-flex items-center gap-2 rounded-xl bg-amber-100 px-4 py-3 text-sm font-semibold text-slate-950 hover:bg-white"><Upload className="h-4 w-4" />导入声音素材</button>} />
-      <div className="flex flex-wrap items-start justify-between gap-4">
-        <div>
-          <div className="flex items-center gap-2"><span className="rounded-full bg-dream-50 p-2 text-dream-700"><Music2 className="h-5 w-5" /></span><h2 className="text-2xl font-bold text-slate-950">音乐库</h2></div>
-          <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-600">集中管理 BGM 与音效，用情绪、风格和剧情场景快速筛选；试听不会打断你的素材整理。</p>
-        </div>
-        <label className="inline-flex cursor-pointer items-center gap-2 rounded-xl bg-slate-950 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-dream-800">
-          {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}上传{kind === 'BGM' ? '音乐' : '音效'}
-          <input ref={uploadRef} aria-label="上传音乐或音效" type="file" accept="audio/*" className="hidden" onChange={(event) => { const file = event.target.files?.[0]; if (file) void onUpload(file, kind); event.target.value = '' }} />
-        </label>
-      </div>
+    <div className="pb-44 sm:pb-32">
+      <AudioWorkspaceHeader kind="music" count={assets.filter((asset) => asset.type === 'BGM' || asset.type === 'SFX').length} action={<button disabled={loading} onClick={() => uploadRef.current?.click()} className="dc-primary">{loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}导入音频</button>} />
+      <input ref={uploadRef} aria-label="上传音乐或音效" type="file" accept="audio/*" className="hidden" onChange={(event) => { const file = event.target.files?.[0]; if (file) void onUpload(file, kind); event.target.value = '' }} />
 
       <div className="mt-6 flex w-fit rounded-xl bg-slate-100 p-1" role="group" aria-label="音乐素材类型">
         {([['BGM', '背景音乐', Music2], ['SFX', '音效', Volume2]] as const).map(([value, label, Icon]) => <button key={value} onClick={() => { setKind(value); setMood('全部情绪'); setStyle('全部风格') }} className={`inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold transition ${kind === value ? 'bg-white text-slate-950 shadow-sm' : 'text-slate-500 hover:text-slate-800'}`} aria-label={label === '背景音乐' ? '背景音乐' : '音效'}><Icon className="h-4 w-4" />{label}</button>)}
@@ -100,18 +85,18 @@ export default function MusicLibrary({ assets, loading, onUpload, onUpdate, onDe
       </div>
 
       <div className="mt-5 grid gap-4 md:grid-cols-2 2xl:grid-cols-3">
-        {filtered.map((entry, index) => {
+        {filtered.map((entry) => {
           const active = current?.asset.id === entry.asset.id
           return <article key={entry.asset.id} className={`group overflow-hidden rounded-2xl border bg-white transition hover:-translate-y-0.5 hover:shadow-lg ${active ? 'border-dream-400 shadow-md shadow-dream-100' : 'border-slate-200'}`}>
             <div className="flex gap-4 p-4">
-              <button type="button" aria-label={`试听${entry.asset.name}`} onClick={() => setCurrent(active ? null : entry)} className={`relative flex h-24 w-24 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-gradient-to-br ${covers[(hash(entry.asset.id) + index) % covers.length]} text-white shadow-inner`}>
-                <span className="absolute inset-0 opacity-25" style={{ backgroundImage: 'radial-gradient(circle at 30% 25%, white 0 2px, transparent 3px), linear-gradient(135deg, transparent 45%, white 46% 48%, transparent 49%)' }} />
+              <button type="button" aria-label={`试听${entry.asset.name}`} onClick={() => setCurrent(active ? null : entry)} className="relative flex h-24 w-24 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-slate-100 text-white">
+                <img src={musicCover(entry)} alt="" className="absolute inset-0 h-full w-full object-cover" />
                 <span className="relative rounded-full bg-black/35 p-3 backdrop-blur-sm">{active ? <Pause className="h-5 w-5 fill-current" /> : <Play className="h-5 w-5 fill-current" />}</span>
               </button>
               <div className="min-w-0 flex-1">
-                <div className="flex items-start justify-between gap-2"><div className="min-w-0"><h3 className="truncate font-bold text-slate-950">{entry.asset.name}</h3><p className="mt-1 text-xs text-slate-400">{entry.asset.type === 'BGM' ? '背景音乐' : '剧情音效'} · {entry.metadata.loop ? '可循环' : '单次播放'}</p></div><div className="flex shrink-0 items-center gap-1"><span className="text-xs font-semibold tabular-nums text-dream-700">{formatDuration(entry.durationSeconds)}</span><button aria-label={`编辑${entry.asset.name}`} onClick={() => openEditor(entry)} className="rounded-lg p-2 text-slate-400 hover:bg-slate-100 hover:text-slate-800"><Edit3 className="h-4 w-4" /></button></div></div>
-                <div className="mt-3 flex flex-wrap gap-1.5">{[entry.metadata.mood, entry.metadata.style, entry.metadata.scene].filter(Boolean).map((tag) => <span key={tag} className="rounded-full border border-dream-100 bg-dream-50 px-2 py-0.5 text-[11px] font-medium text-dream-800">{tag}</span>)}{!entry.metadata.mood && !entry.metadata.style && <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[11px] text-slate-500">待补充标签</span>}</div>
-                <p className="mt-3 truncate text-[11px] text-slate-400">{entry.metadata.license ? `授权：${entry.metadata.license}` : '请补充授权来源'}</p>
+                <div className="flex items-start justify-between gap-2"><div className="min-w-0"><h3 className="line-clamp-2 font-bold text-slate-950">{entry.asset.name}</h3><p className="mt-1 text-xs text-slate-400">{entry.asset.type === 'BGM' ? '背景音乐' : '剧情音效'} · {entry.metadata.loop ? '可循环' : '单次播放'}</p></div><div className="flex shrink-0 items-center gap-1"><span className="text-xs font-semibold tabular-nums text-dream-700">{formatDuration(entry.durationSeconds)}</span><button aria-label={`编辑${entry.asset.name}`} onClick={() => openEditor(entry)} className="rounded-lg p-2 text-slate-400 hover:bg-slate-100 hover:text-slate-800"><Edit3 className="h-4 w-4" /></button></div></div>
+                <div className="mt-3 flex flex-wrap gap-1.5">{[...new Set([...splitTags(entry.metadata.mood).slice(0, 2), ...splitTags(entry.metadata.style).slice(0, 1)])].map((tag) => <span key={tag} className="rounded-full border border-dream-100 bg-dream-50 px-2 py-0.5 text-[11px] font-medium text-dream-800">{tag}</span>)}{!entry.metadata.mood && !entry.metadata.style && <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[11px] text-slate-500">待补充标签</span>}</div>
+                <p className="mt-3 line-clamp-2 text-xs leading-5 text-slate-600">{entry.metadata.scene || "试听后补充适用剧情，方便下次选曲。"}</p><p className="mt-2 truncate text-[11px] text-slate-400">{entry.metadata.license ? `授权：${entry.metadata.license}` : '请补充授权来源'}</p>
               </div>
             </div>
           </article>
@@ -120,16 +105,16 @@ export default function MusicLibrary({ assets, loading, onUpload, onUpdate, onDe
 
       {!loading && !filtered.length && <div className="mt-5 rounded-2xl border border-dashed border-slate-300 bg-slate-50 px-6 py-14 text-center"><FileAudio className="mx-auto h-10 w-10 text-slate-300" /><p className="mt-3 font-semibold text-slate-700">{entries.length ? '没有符合筛选条件的素材' : kind === 'BGM' ? '音乐库还是空的' : '音效库还是空的'}</p><p className="mt-1 text-sm text-slate-500">上传音频后，就能在镜头卡中直接选择并试听。</p></div>}
 
-      {current && <div data-testid="music-player-tray" className="sticky bottom-4 z-20 mt-6 flex flex-wrap items-center gap-4 rounded-2xl border border-slate-700 bg-slate-950 p-3 text-white shadow-2xl shadow-slate-400/40">
-        <div className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br ${covers[hash(current.asset.id) % covers.length]}`}><Disc3 className="h-5 w-5" /></div>
+      {current && <div data-testid="music-player-tray" className="fixed bottom-4 left-4 right-4 z-50 flex flex-wrap items-center gap-3 rounded-2xl border border-dream-200 bg-white p-3 text-slate-900 shadow-xl shadow-slate-200/70 lg:left-[max(288px,calc((100vw-1760px)/2+288px))] lg:right-[max(24px,calc((100vw-1760px)/2+24px))]">
+        <img src={musicCover(current)} alt="" className="h-11 w-11 shrink-0 rounded-lg object-cover" />
         <div className="min-w-0 flex-1"><p className="truncate text-sm font-semibold">{current.asset.name}</p><p className="text-xs text-slate-400">{current.metadata.scene || '试听中'} · {current.metadata.loop ? '循环素材' : '单次素材'}</p></div>
         <audio key={current.asset.url} aria-label="音乐库持续播放器" controls autoPlay loop={Boolean(current.metadata.loop)} preload="metadata" src={current.asset.url} className="h-10 w-full max-w-xl md:w-[420px]">你的浏览器不支持音频预览。</audio>
-        <button onClick={() => setCurrent(null)} aria-label="关闭播放器" className="rounded-lg p-2 text-slate-400 hover:bg-white/10 hover:text-white"><X className="h-4 w-4" /></button>
+        <button onClick={() => setCurrent(null)} aria-label="关闭播放器" className="rounded-lg p-2 text-slate-400 hover:bg-slate-100 hover:text-slate-800"><X className="h-4 w-4" /></button>
       </div>}
 
       {editing && <div className="fixed inset-0 z-50 flex justify-end bg-slate-950/35 backdrop-blur-sm" onMouseDown={(event) => { if (event.target === event.currentTarget) setEditing(null) }}>
         <aside className="h-full w-full max-w-lg overflow-y-auto bg-white p-6 shadow-2xl" aria-label="编辑音乐信息">
-          <div className="flex items-start justify-between gap-3"><div><p className="text-xs font-bold uppercase tracking-[0.18em] text-dream-700">Audio dossier</p><h3 className="mt-1 text-2xl font-bold text-slate-950">整理音乐信息</h3><p className="mt-2 text-sm leading-6 text-slate-500">这些字段用于筛选与剧情选曲，不会修改原始音频。</p></div><button onClick={() => setEditing(null)} className="rounded-lg p-2 text-slate-500 hover:bg-slate-100"><X className="h-5 w-5" /></button></div>
+          <div className="flex items-start justify-between gap-3"><div><p className="text-xs font-bold uppercase tracking-[0.18em] text-dream-700">音乐资料</p><h3 className="mt-1 text-2xl font-bold text-slate-950">整理音乐信息</h3><p className="mt-2 text-sm leading-6 text-slate-500">这些字段用于筛选与剧情选曲，不会修改原始音频。</p></div><button onClick={() => setEditing(null)} className="rounded-lg p-2 text-slate-500 hover:bg-slate-100"><X className="h-5 w-5" /></button></div>
           <div className="mt-6 space-y-4">
             <Field label="素材名称"><input aria-label="素材名称" value={draft.name} onChange={(event) => setDraft({ ...draft, name: event.target.value })} className={fieldClass} /></Field>
             <div className="grid gap-4 sm:grid-cols-2"><Field label="情绪"><input aria-label="情绪" value={draft.mood} onChange={(event) => setDraft({ ...draft, mood: event.target.value })} placeholder="如：温柔、紧张" className={fieldClass} /></Field><Field label="风格"><input aria-label="风格" value={draft.style} onChange={(event) => setDraft({ ...draft, style: event.target.value })} placeholder="如：钢琴、氛围" className={fieldClass} /></Field></div>
@@ -173,6 +158,11 @@ function formatDuration(seconds?: number) {
   return `${String(Math.floor(whole / 60)).padStart(2, '0')}:${String(whole % 60).padStart(2, '0')}`
 }
 
-function hash(value: string) {
-  return Array.from(value).reduce((sum, char) => (sum * 31 + char.charCodeAt(0)) >>> 0, 7)
+function musicCover(entry: MusicEntry) {
+  const words = `${entry.metadata.scene || ''} ${entry.metadata.mood || ''} ${entry.asset.name}`
+  if (/雨|咖啡|暖/.test(words)) return '/assets/backgrounds/bg-cafe.png'
+  if (/樱|春|相遇|轻快/.test(words)) return '/assets/backgrounds/bg-sakura.png'
+  if (/日常|校园|午后|黄昏/.test(words)) return '/assets/backgrounds/bg-classroom.png'
+  if (/梦|星|记忆|悬疑|神秘/.test(words)) return '/assets/backgrounds/bg-starry.png'
+  return '/assets/ui/music-collection.webp'
 }

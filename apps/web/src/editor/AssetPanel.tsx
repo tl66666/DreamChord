@@ -41,6 +41,7 @@ export default function AssetPanel({
   onClose,
   onProjectCharacterAccepted,
   projectCharacters,
+  onBrowseLibrary,
 }: {
   onSelect?: (asset: Asset) => void
   selectedType?: string
@@ -48,6 +49,7 @@ export default function AssetPanel({
   onClose?: () => void
   onProjectCharacterAccepted?: (accepted: AcceptedAssetVariant) => void
   projectCharacters?: Array<{ id: string; name: string }>
+  onBrowseLibrary?: (type: string) => void
 }) {
   const { project, nodes } = useEditorStore()
   const toast = useToast()
@@ -210,6 +212,7 @@ export default function AssetPanel({
           <div>
             <h3 className="font-semibold text-dream-900">{isSceneImageSelection ? '选择背景 / CG' : '素材库'}</h3>
             <p className="text-xs text-dream-500">{isSceneImageSelection ? '两类全屏画面都可以直接用于当前镜头。' : '上传、选择、重命名、替换、删除项目素材。'}</p>
+            {onBrowseLibrary && <button onClick={() => onBrowseLibrary(activeType)} className="mt-2 min-h-8 text-xs font-medium text-dream-700 underline underline-offset-4">浏览素材库并分配到故事</button>}
           </div>
           <div className="flex items-center gap-2">
             <button

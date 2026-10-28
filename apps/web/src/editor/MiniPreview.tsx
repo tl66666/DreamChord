@@ -146,11 +146,13 @@ export default function MiniPreview({ card, onFullScreen }: MiniPreviewProps) {
             </div>
           </div>
         ) : (
-          <div className="flex h-full items-center justify-center text-center text-white/30">
-            <div>
-              <Eye className="mx-auto mb-3 h-12 w-12 opacity-30" />
-              <p className="text-sm">选中一个镜头卡</p>
-              <p className="mt-1 text-xs">预览将在这里显示</p>
+          <div className="relative flex h-full items-center justify-center px-4 text-center text-white/80">
+            <img src="/assets/backgrounds/bg-classroom.png" alt="" className="absolute inset-0 h-full w-full object-cover opacity-25" />
+            <div className="absolute inset-0 bg-gradient-to-b from-gray-900/30 to-gray-900/90" />
+            <div className="relative max-w-xs">
+              <Eye className="mx-auto mb-4 h-8 w-8 text-dream-200" />
+              <p className="text-sm font-medium">选择一张镜头卡</p>
+              <p className="mt-2 max-w-xs text-xs leading-5 text-white/45">在这里检查画面与立绘构图。完整预览可以试听配音和音乐。</p>
             </div>
           </div>
         )}

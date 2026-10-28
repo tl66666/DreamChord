@@ -44,7 +44,7 @@ export default function ConversationTranscript({ conversation, messages, loading
       }} className="min-h-0 flex-1 overflow-y-auto bg-[linear-gradient(to_bottom,#f8fafc_1px,transparent_1px)] bg-[length:100%_32px] px-4 py-5 sm:px-6">
         {hasMore && <button type="button" onClick={onLoadMore} className="mx-auto mb-4 flex h-9 items-center gap-1 rounded-md border border-slate-200 bg-white px-3 text-xs font-medium text-slate-600 hover:bg-slate-50"><ChevronUp className="h-3.5 w-3.5" />加载更早消息</button>}
         {loading && messages.length === 0 && <p className="py-10 text-center text-sm text-slate-500">正在读取对话...</p>}
-        {!loading && conversation && messages.length === 0 && <div className="mx-auto max-w-md py-14 text-center"><Bot className="mx-auto h-6 w-6 text-dream-700" /><h3 className="mt-3 text-sm font-semibold text-slate-900">从一个具体任务开始</h3><p className="mt-2 text-xs leading-5 text-slate-500">例如续写当前场景、检查人物动机，或为一个选择补出真正不同的后果。</p></div>}
+        {!loading && conversation && messages.length === 0 && <div className="mx-auto max-w-md py-8 text-center"><img src="/assets/ui/writing-nook.webp" alt="" className="mx-auto mb-5 aspect-[16/9] w-full max-w-sm object-cover [mask-image:radial-gradient(ellipse_at_center,black_30%,transparent_74%)]" /><h3 className="mt-3 text-sm font-semibold text-slate-900">从一个具体任务开始</h3><p className="mt-2 text-xs leading-5 text-slate-500">例如续写当前场景、检查人物动机，或为一个选择补出真正不同的后果。</p></div>}
         <div className="mx-auto max-w-3xl space-y-5">
           {messages.map((message) => {
             const user = message.role === 'user'

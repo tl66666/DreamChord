@@ -21,7 +21,7 @@ describe('MusicLibrary', () => {
   it('filters BGM by story mood and exposes a persistent preview player', () => {
     render(<MusicLibrary assets={assets} loading={false} onUpload={vi.fn()} onUpdate={vi.fn()} onDelete={vi.fn()} />)
 
-    expect(screen.getByRole('heading', { name: '音乐库' })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: '音乐与音效' })).toBeInTheDocument()
     expect(screen.getByText('雨夜手记.wav')).toBeInTheDocument()
     expect(screen.getByText('00:20')).toBeInTheDocument()
     expect(screen.queryByText('放学铃.wav')).not.toBeInTheDocument()

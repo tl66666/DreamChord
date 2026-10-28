@@ -1,6 +1,7 @@
 import axios from 'axios'
 import { getDefaultProvider, resolveBaseUrl } from '../lib/aiConfig'
 import { useAuthStore } from '../stores/authStore'
+import { presentVoiceProfile } from '../voice/voiceCatalog'
 import type { AgentConversationDto, AgentMemoryDto, AgentMemoryInput, AgentMessageDto, AgentMessagePageDto, AgentProviderConfig, AgentRunDto, AppliedPatchDto, StartAgentRunInput } from '../agent/agentTypes'
 
 export const api = axios.create({
@@ -395,12 +396,12 @@ export interface VoiceGenerationJob {
 
 export async function getVoiceProfiles(): Promise<VoiceProfile[]> {
   const { data } = await api.get('/voices/profiles')
-  return data
+  return data.map(presentVoiceProfile)
 }
 
 export async function updateVoiceProfile(profileId: string, payload: Partial<Pick<VoiceProfile, 'name' | 'description' | 'language' | 'ageTone' | 'genderTone' | 'defaultEmotion' | 'defaultSpeed' | 'status'>> & { tags?: string[] }): Promise<VoiceProfile> {
   const { data } = await api.patch(`/voices/profiles/${profileId}`, payload)
-  return data
+  return presentVoiceProfile(data)
 }
 
 export async function deleteVoiceProfile(profileId: string): Promise<void> {

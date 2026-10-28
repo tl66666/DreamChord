@@ -23,6 +23,9 @@ export interface LibraryScene {
   description: string
   usage: string
   updatedAt: string
+  place?: string
+  timeOfDay?: string
+  moods?: string[]
 }
 
 export interface StoryTemplate {
@@ -110,36 +113,36 @@ export const defaultScenes: LibraryScene[] = [
     id: 'bg-classroom',
     name: '黄昏教室',
     url: '/assets/backgrounds/bg-classroom.png',
-    type: '日常场景',
+    type: '校园', place: '校园', timeOfDay: '黄昏', moods: ['温暖', '日常'],
     description: '放学后的教室，适合安静对话、现实确认和日常铺垫。',
-    usage: '背景节点、开场日常、宫的现实锚点剧情',
+    usage: '放学后闲谈、社团活动、安静的独白或人物对质',
     updatedAt: '2026-06-30',
   },
   {
     id: 'bg-sakura',
     name: '樱花坡道',
     url: '/assets/backgrounds/bg-sakura.png',
-    type: '主线场景',
-    description: '雪第一次看见节点的地点，适合开场、相遇和分支显形。',
-    usage: '序章、影登场、第一次选择',
+    type: '街道', place: '街道', timeOfDay: '白天', moods: ['浪漫', '轻快'],
+    description: '春日樱花盛开的坡道与街巷，适合轻快的相遇、同行和约定。',
+    usage: '初次相遇、放学同行、春日约定与告白',
     updatedAt: '2026-06-30',
   },
   {
     id: 'bg-cafe',
-    name: '咖啡店',
+    name: '雨夜咖啡馆',
     url: '/assets/backgrounds/bg-cafe.png',
-    type: '关系场景',
+    type: '室内', place: '室内', timeOfDay: '夜晚', moods: ['温暖', '静谧'],
     description: '暖色调的现实空间，适合角色整理信息和缓冲悬疑节奏。',
-    usage: '宫线剧情、信息复盘、角色关系推进',
+    usage: '雨夜谈心、整理线索、秘密揭示后的缓冲',
     updatedAt: '2026-06-30',
   },
   {
     id: 'bg-starry',
-    name: '星空节点空间',
+    name: '星海回廊',
     url: '/assets/backgrounds/bg-starry.png',
-    type: '系统场景',
-    description: '非现实节点空间，适合系统提示、空的登场和核心选择。',
-    usage: '系统剧情、空白节点、结尾分歧',
+    type: '幻想', place: '幻想', timeOfDay: '夜晚', moods: ['神秘', '静谧'],
+    description: '星光交织的幻想空间，适合梦境、秘密揭示与内心抉择。',
+    usage: '梦境相遇、内心世界、重要选择与结局余韵',
     updatedAt: '2026-06-30',
   },
 ]
@@ -221,7 +224,7 @@ function normalizeList<T extends { id: string }>(key: string, fallback: T[], nor
     const raw = localStorage.getItem(key)
     if (!raw) return fallback
     const parsed = JSON.parse(raw) as T[]
-    return Array.isArray(parsed) && parsed.length > 0 ? parsed.map(normalize) : fallback
+    return Array.isArray(parsed) ? parsed.map(normalize) : fallback
   } catch {
     return fallback
   }
@@ -241,9 +244,14 @@ function normalizeCharacter(character: LibraryCharacter): LibraryCharacter {
 
 function normalizeScene(scene: LibraryScene): LibraryScene {
   const fallback = defaultScenes.find((item) => item.id === scene.id)
+  const oldNames: Record<string, string> = { 'bg-cafe': '咖啡店', 'bg-starry': '星空节点空间' }
+  const oldTypes = ['日常场景', '主线场景', '关系场景', '系统场景']
+  const oldUsages = ['背景节点、开场日常、宫的现实锚点剧情', '序章、影登场、第一次选择', '宫线剧情、信息复盘、角色关系推进', '系统剧情、空白节点、结尾分歧']
+  const oldDescriptions = ['雪第一次看见节点的地点，适合开场、相遇和分支显形。', '非现实节点空间，适合系统提示、空的登场和核心选择。']
   return {
     ...fallback,
     ...scene,
+    ...(fallback && scene.url === fallback.url ? { name: scene.name === oldNames[scene.id] ? fallback.name : scene.name, type: oldTypes.includes(scene.type) ? fallback.type : scene.type, usage: oldUsages.includes(scene.usage) ? fallback.usage : scene.usage, description: oldDescriptions.includes(scene.description) ? fallback.description : scene.description } : {}),
     id: scene.id || fallback?.id || scene.url,
     url: scene.url || fallback?.url || '/assets/backgrounds/bg-classroom.png',
   }

@@ -11,13 +11,13 @@ import {
   Sparkles,
   Trash2,
   Download,
-  Menu,
   Upload,
   X,
 } from 'lucide-react'
 import { createProject, deleteProject, exportProjectBackup, getMyProjects, importProjectBackup, updateProject, type ProjectDetail } from '../api/client'
 import { useAuthStore } from '../stores/authStore'
 import { useToast, useConfirm } from '../components/FeedbackProvider'
+import AppHeader from '../components/AppHeader'
 
 export const MAX_PROJECT_BACKUP_BYTES = 90 * 1024 * 1024
 
@@ -31,7 +31,7 @@ function getApiError(err: unknown, fallback = '操作失败'): string {
 
 export default function HomePage() {
   const navigate = useNavigate()
-  const { user, isLoading, logout } = useAuthStore()
+  const { user } = useAuthStore()
   const toast = useToast()
   const confirm = useConfirm()
   const [creating, setCreating] = useState(false)
@@ -40,7 +40,6 @@ export default function HomePage() {
   const [editingId, setEditingId] = useState<string | null>(null)
   const [editingTitle, setEditingTitle] = useState('')
   const [deletingId, setDeletingId] = useState<string | null>(null)
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const importInputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
@@ -112,92 +111,44 @@ export default function HomePage() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50">
-      <nav className="border-b border-slate-200 bg-white/90 px-4 py-3 backdrop-blur sm:px-6 sm:py-4">
-        <div className="mx-auto flex max-w-7xl items-center justify-between">
-          <Link to="/" className="flex items-center gap-3">
-            <img src="/assets/logo.png" alt="DreamChord" className="h-10 w-10 rounded-xl ring-1 ring-black/5" />
-            <span className="text-lg font-bold text-slate-950 sm:text-xl">DreamChord</span>
-          </Link>
-          <div className="hidden items-center gap-4 md:flex">
-            <Link to="/library" className="text-sm font-medium text-slate-700 hover:text-dream-600">素材库</Link>
-            <Link to="/agent" className="inline-flex min-h-10 items-center gap-1.5 rounded-md bg-slate-950 px-3 text-sm font-semibold text-white hover:bg-cyan-800"><Bot className="h-4 w-4" />创作 Agent</Link>
-            <Link to="/explore" className="text-sm font-medium text-slate-700 hover:text-dream-600">发现作品</Link>
-            <Link to="/settings" className="text-sm font-medium text-slate-700 hover:text-dream-600">设置</Link>
-            {!isLoading && (user ? (
-              <div className="flex items-center gap-3">
-                <span className="text-sm text-slate-700">{user.nickname || user.username}</span>
-                <button onClick={logout} className="rounded-lg bg-slate-100 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-200">退出</button>
-              </div>
-            ) : (
-              <div className="flex items-center gap-2">
-                <Link to="/login" className="rounded-lg px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100">登录</Link>
-                <Link to="/register" className="rounded-lg bg-dream-600 px-4 py-2 text-sm font-medium text-white hover:bg-dream-700">注册</Link>
-              </div>
-            ))}
-          </div>
-          <button
-            type="button"
-            aria-label={mobileMenuOpen ? '关闭导航菜单' : '打开导航菜单'}
-            aria-expanded={mobileMenuOpen}
-            onClick={() => setMobileMenuOpen((open) => !open)}
-            className="grid h-10 w-10 place-items-center rounded-md border border-slate-200 text-slate-700 md:hidden"
-          >
-            {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-          </button>
-        </div>
-        {mobileMenuOpen && <div role="navigation" aria-label="移动端导航" className="mx-auto mt-3 max-w-7xl border-t border-slate-200 pt-3 md:hidden">
-          <div className="grid grid-cols-2 gap-2">
-            <Link onClick={() => setMobileMenuOpen(false)} to="/library" className="rounded-md px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100">素材库</Link>
-            <Link onClick={() => setMobileMenuOpen(false)} to="/agent" className="inline-flex items-center gap-1.5 rounded-md bg-slate-950 px-3 py-2 text-sm font-semibold text-white"><Bot className="h-4 w-4" />创作 Agent</Link>
-            <Link onClick={() => setMobileMenuOpen(false)} to="/explore" className="rounded-md px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100">发现作品</Link>
-            <Link onClick={() => setMobileMenuOpen(false)} to="/settings" className="rounded-md px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100">设置</Link>
-          </div>
-          {!isLoading && (user ? <div className="mt-3 flex items-center justify-between border-t border-slate-200 pt-3">
-            <span className="truncate text-sm text-slate-600">{user.nickname || user.username}</span>
-            <button type="button" aria-label="退出登录" onClick={logout} className="rounded-md bg-slate-100 px-4 py-2 text-sm font-medium text-slate-700">退出</button>
-          </div> : <div className="mt-3 grid grid-cols-2 gap-2 border-t border-slate-200 pt-3">
-            <Link onClick={() => setMobileMenuOpen(false)} to="/login" className="rounded-md px-3 py-2 text-center text-sm font-medium text-slate-700">登录</Link>
-            <Link onClick={() => setMobileMenuOpen(false)} to="/register" className="rounded-md bg-dream-600 px-3 py-2 text-center text-sm font-medium text-white">注册</Link>
-          </div>)}
-        </div>}
-      </nav>
+    <div className="dc-page">
+      <AppHeader />
 
       <section className="mx-auto grid max-w-7xl items-center gap-12 px-6 py-14 lg:grid-cols-[1fr_520px]">
         <div className="space-y-7">
           <div className="inline-flex items-center gap-2 rounded-full border border-dream-200 bg-white px-4 py-1.5 text-sm text-dream-700">
             <Sparkles className="h-4 w-4" />
-            节点剧情 · 独立素材库 · Agent 创作闭环
+            写对白 · 配角色 · 编排故事分支
           </div>
           <h1 className="text-4xl font-bold leading-tight text-slate-950 sm:text-5xl">
-            DreamChord 创作 Agent
+            梦弦 DreamChord
             <br />
             <span className="text-dream-700">把灵感变成能玩的故事</span>
           </h1>
           <p className="max-w-xl text-lg leading-8 text-slate-700">
-            Agent 会结合故事圣经、章节、角色、素材、最近对话和分层记忆回答问题。普通对话默认只读；明确修改时才调用工具生成候选，由你预览、应用或撤销。
+            从一句对白开始，为角色安排相遇，也为故事留下不同的结局。在同一个工作台里挑选背景、分配声线、编排分支，随时试玩。
           </p>
           <div className="flex flex-wrap gap-3">
             <button onClick={handleCreate} disabled={creating} className="rounded-lg bg-dream-600 px-6 py-3 font-medium text-white shadow-lg shadow-dream-500/20 hover:bg-dream-700 disabled:opacity-50">
               {creating ? <span className="flex items-center gap-2"><Loader2 className="h-4 w-4 animate-spin" /> 创建中</span> : '新建故事'}
             </button>
-            <Link to="/agent" className="inline-flex items-center gap-2 rounded-lg bg-slate-950 px-6 py-3 font-medium text-white hover:bg-cyan-800"><Bot className="h-4 w-4" />和 Agent 一起创作</Link>
+            <Link to="/agent" className="inline-flex items-center gap-2 rounded-lg bg-slate-950 px-6 py-3 font-medium text-white hover:bg-dream-800"><Bot className="h-4 w-4" />和 Agent 一起创作</Link>
             <Link to="/play/dreamchord-first-thread" className="rounded-lg border border-slate-200 bg-white px-6 py-3 font-medium text-slate-700 hover:bg-slate-50">试玩演示</Link>
           </div>
         </div>
         <div className="relative">
-          <img src="/assets/hero.png" alt="DreamChord 编辑器预览" className="relative rounded-lg border border-white shadow-2xl" />
+          <img src="/assets/hero.png" alt="梦弦故事世界插画" className="relative rounded-lg border border-white shadow-2xl" />
         </div>
       </section>
 
       {user && (
         <section className="mx-auto max-w-7xl px-6 py-8">
-          <div className="mb-6 flex items-center justify-between">
+          <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
             <div>
               <p className="text-sm font-semibold text-dream-600">故事项目</p>
               <h2 className="text-2xl font-bold text-slate-950">我的作品</h2>
             </div>
-            <div className="flex gap-2"><input ref={importInputRef} type="file" accept=".json,.dreamchord.json,application/json" className="hidden" onChange={(event) => void handleImport(event.target.files?.[0])} /><button type="button" onClick={() => importInputRef.current?.click()} className="inline-flex items-center gap-1.5 border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700"><Upload className="h-4 w-4" />导入备份</button><button onClick={handleCreate} disabled={creating} className="rounded-lg bg-dream-600 px-5 py-2 text-sm font-medium text-white hover:bg-dream-700 disabled:opacity-50">新建故事</button></div>
+            <div className="flex flex-wrap gap-2"><input ref={importInputRef} type="file" accept=".json,.dreamchord.json,application/json" className="hidden" onChange={(event) => void handleImport(event.target.files?.[0])} /><button type="button" onClick={() => importInputRef.current?.click()} className="inline-flex items-center gap-1.5 border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700"><Upload className="h-4 w-4" />导入备份</button><button onClick={handleCreate} disabled={creating} className="rounded-lg bg-dream-600 px-5 py-2 text-sm font-medium text-white hover:bg-dream-700 disabled:opacity-50">新建故事</button></div>
           </div>
           {projectsLoading ? (
             <div className="flex h-32 items-center justify-center text-slate-500"><Loader2 className="mr-2 h-5 w-5 animate-spin" /> 加载中...</div>
@@ -230,7 +181,7 @@ export default function HomePage() {
                       )}
                       {editingId !== project.id && (
                         <div className="flex items-center gap-1">
-                          <button onClick={() => void handleExport(project)} className="rounded p-1 text-cyan-700 hover:bg-cyan-50" title="导出备份"><Download className="h-3.5 w-3.5" /></button>
+                          <button onClick={() => void handleExport(project)} className="rounded p-1 text-dream-700 hover:bg-dream-50" title="导出备份"><Download className="h-3.5 w-3.5" /></button>
                           <button onClick={() => { setEditingId(project.id); setEditingTitle(project.title) }} className="rounded p-1 text-slate-500 hover:bg-slate-100"><Pencil className="h-3.5 w-3.5" /></button>
                           <button onClick={() => handleDelete(project.id)} disabled={deletingId === project.id} className="rounded p-1 text-red-500 hover:bg-red-50 disabled:opacity-50">
                             {deletingId === project.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Trash2 className="h-3.5 w-3.5" />}
@@ -241,9 +192,9 @@ export default function HomePage() {
                     <p className="mb-4 line-clamp-2 text-sm text-slate-600">{project.description || '暂无简介'}</p>
                     <div className="grid grid-cols-2 gap-2">
                       <Link to={`/editor/${project.id}`} className="rounded-md bg-dream-600 py-2 text-center text-sm font-medium text-white hover:bg-dream-700">继续编辑</Link>
-                      <Link to={`/agent?project=${project.id}`} className="inline-flex items-center justify-center gap-1 rounded-md bg-slate-950 py-2 text-center text-sm font-medium text-white hover:bg-cyan-800"><Bot className="h-3.5 w-3.5" />问 Agent</Link>
+                      <Link to={`/agent?project=${project.id}`} className="inline-flex items-center justify-center gap-1 rounded-md bg-slate-950 py-2 text-center text-sm font-medium text-white hover:bg-dream-800"><Bot className="h-3.5 w-3.5" />问 Agent</Link>
                       <Link to={`/play/${project.id}`} className="rounded-md border border-slate-200 py-2 text-center text-sm font-medium text-slate-700 hover:bg-slate-50">预览</Link>
-                      <Link to="/library" className="rounded-md border border-slate-200 py-2 text-center text-sm font-medium text-slate-700 hover:bg-slate-50">素材</Link>
+                      <Link to={`/library?project=${project.id}`} className="rounded-md border border-slate-200 py-2 text-center text-sm font-medium text-slate-700 hover:bg-slate-50">素材</Link>
                     </div>
                   </div>
                 </div>
@@ -256,7 +207,7 @@ export default function HomePage() {
       <section className="mx-auto max-w-7xl px-6 py-16">
         <div className="mb-8">
           <p className="text-sm font-semibold text-dream-600">完整创作闭环</p>
-          <h2 className="text-2xl font-bold text-slate-950">Agent 串起三个真实工作区</h2>
+          <h2 className="text-2xl font-bold text-slate-950">从灵感到可以游玩的故事</h2>
         </div>
         <div className="grid gap-5 lg:grid-cols-3">
           <FeatureCard
@@ -269,16 +220,18 @@ export default function HomePage() {
           />
           <FeatureCard
             icon={<Archive className="h-5 w-5" />}
-            title="素材库与设定"
-            desc="独立管理角色、背景、剧情素材和项目上传素材。进入素材库不会创建新故事。"
-            items={['角色和场景可编辑删除', '立绘状态可点击预览', '剧情素材可新建、修改、删除']}
+            title="挑选素材，搭建场景"
+            image="/assets/ui/scene-collection.webp"
+            desc="背景、立绘、音色和配乐按用途整理。先预览试听，再把合适的素材分配给故事。"
+            items={['按场所和氛围查找背景', '试听音色后直接分配角色', '音乐、对白与音效分别管理']}
             action="打开素材库"
             onClick={() => navigate('/library')}
           />
           <FeatureCard
             icon={<Bot className="h-5 w-5" />}
-            title="创作 Agent"
-            desc="先自然对话，再按需要读取项目、记忆和受限工具；只有明确修改才进入审批。"
+            title="把灵感写成下一幕"
+            image="/assets/ui/writing-nook.webp"
+            desc="和创作助手讨论人物、调整对白，或把正文整理成可编辑的场景。生成结果可以先查看，再应用。"
             items={['项目对话无需绑定章节', '多对话分别保存创作上下文', '变更应用前预览，应用后可撤销']}
             action="打开创作 Agent"
             onClick={() => navigate('/agent')}
@@ -291,6 +244,7 @@ export default function HomePage() {
 
 function FeatureCard({
   icon,
+  image,
   title,
   desc,
   items,
@@ -298,6 +252,7 @@ function FeatureCard({
   onClick,
 }: {
   icon: ReactNode
+  image?: string
   title: string
   desc: string
   items: string[]
@@ -305,7 +260,8 @@ function FeatureCard({
   onClick: () => void
 }) {
   return (
-    <article className="flex h-full flex-col rounded-lg border border-slate-200 bg-white p-5 shadow-sm transition hover:-translate-y-1 hover:shadow-lg">
+    <article className="flex h-full flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition hover:shadow-md">
+      {image && <div className="-mx-6 -mt-6 mb-5 flex h-52 items-center justify-center overflow-hidden bg-[linear-gradient(115deg,#fcfaf6,#eee8f8)]"><img src={image} alt="" className={`h-full w-full ${image.includes('collection') ? 'object-contain p-3' : 'object-cover'}`} /></div>}
       <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-lg bg-dream-50 text-dream-700 ring-1 ring-dream-100">{icon}</div>
       <h3 className="mb-2 text-lg font-semibold text-slate-950">{title}</h3>
       <p className="text-sm leading-6 text-slate-700">{desc}</p>

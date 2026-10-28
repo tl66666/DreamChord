@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { Archive, BookOpen, Edit3, Image as ImageIcon, Loader2, Mic2, Music2, Plus, RotateCcw, Save, SlidersHorizontal, Trash2, Upload, Users, X } from 'lucide-react'
 import { deleteAsset, getAssetLibrary, renameAsset, updateAssetDetails, uploadAsset, type Asset, type AudioLibraryMetadata } from '../api/client'
 import {
@@ -24,6 +24,7 @@ import VoiceLibrary from '../voice/VoiceLibrary'
 import CharacterGallery from '../library/CharacterGallery'
 import MusicLibrary from '../library/MusicLibrary'
 import AppHeader from '../components/AppHeader'
+import SceneCatalog from '../library/SceneCatalog'
 
 function getApiError(err: unknown, fallback = '操作失败'): string {
   if (typeof err === 'object' && err !== null && 'response' in err) {
@@ -35,14 +36,15 @@ function getApiError(err: unknown, fallback = '操作失败'): string {
 
 type LibraryTab = 'characters' | 'scenes' | 'stories' | 'voices' | 'music' | 'projectAssets'
 const AUDIO_ASSET_TYPES = ['BGM', 'SFX', 'VOICE', 'VOICE_SAMPLE']
+const assetTypeLabel = (type: string) => ({ CG: '插画与立绘', BACKGROUND: '背景图片', BGM: '背景音乐', SFX: '环境与剧情音效', VOICE: '对白配音成品', VOICE_SAMPLE: '声线参考录音', OTHER: '其他文件' })[type] || '其他文件'
 
 const tabs: { id: LibraryTab; label: string; icon: ReactNode }[] = [
-  { id: 'characters', label: '角色库', icon: <Users className="h-4 w-4" /> },
-  { id: 'scenes', label: '场景库', icon: <ImageIcon className="h-4 w-4" /> },
-  { id: 'stories', label: '剧情与模板', icon: <BookOpen className="h-4 w-4" /> },
-  { id: 'voices', label: '声音库', icon: <Mic2 className="h-4 w-4" /> },
-  { id: 'music', label: '音乐库', icon: <Music2 className="h-4 w-4" /> },
-  { id: 'projectAssets', label: '全局素材', icon: <Archive className="h-4 w-4" /> },
+  { id: 'characters', label: '角色立绘', icon: <Users className="h-4 w-4" /> },
+  { id: 'scenes', label: '背景场景', icon: <ImageIcon className="h-4 w-4" /> },
+  { id: 'stories', label: '剧情模板', icon: <BookOpen className="h-4 w-4" /> },
+  { id: 'voices', label: '角色音色', icon: <Mic2 className="h-4 w-4" /> },
+  { id: 'music', label: '音乐与音效', icon: <Music2 className="h-4 w-4" /> },
+  { id: 'projectAssets', label: '我的文件', icon: <Archive className="h-4 w-4" /> },
 ]
 
 export default function LibraryPage() {
@@ -51,7 +53,10 @@ export default function LibraryPage() {
   const toast = useToast()
   const confirm = useConfirm()
   const fileInputRef = useRef<HTMLInputElement | null>(null)
-  const [activeTab, setActiveTab] = useState<LibraryTab>('characters')
+  const [searchParams, setSearchParams] = useSearchParams()
+  const requestedTab = searchParams.get('tab') as LibraryTab | null
+  const activeTab: LibraryTab = tabs.some((tab) => tab.id === requestedTab) ? requestedTab! : 'characters'
+  const setActiveTab = (tab: LibraryTab) => setSearchParams((current) => { const next = new URLSearchParams(current); next.set('tab', tab); return next }, { replace: true })
   const [characters, setCharacters] = useStoredState(CHARACTER_KEY, defaultCharacters, loadLibraryCharacters)
   const [scenes, setScenes] = useStoredState(SCENE_KEY, defaultScenes, loadLibraryScenes)
   const [templates, setTemplates] = useStoredState(STORY_TEMPLATE_KEY, defaultTemplates, loadStoryTemplates)
@@ -140,19 +145,19 @@ export default function LibraryPage() {
 
   return (<>
     <main className="dc-page">
-      <div className="sticky top-0 z-40"><AppHeader title="素材库" wide actions={<button onClick={() => navigate('/')} className="dc-primary">选择故事</button>} /></div>
+      <div className="sticky top-0 z-40"><AppHeader title="素材库" wide actions={searchParams.get('project') ? <button onClick={() => navigate(`/editor/${searchParams.get('project')}`)} className="dc-secondary">返回编辑器</button> : undefined} /></div>
 
       <div data-testid="library-shell" className="mx-auto grid max-w-[1760px] gap-5 px-4 py-5 sm:px-6 lg:grid-cols-[232px_minmax(0,1fr)] lg:gap-8 lg:py-8">
-        <aside data-testid="library-navigation" className="flex h-fit gap-1 overflow-x-auto rounded-2xl border border-slate-200/90 bg-white p-2 shadow-sm lg:sticky lg:top-24 lg:block">
-          {tabs.map((tab) => (
-            <button key={tab.id} onClick={() => setActiveTab(tab.id)} className={`flex min-h-10 shrink-0 items-center gap-2 rounded-xl px-3 text-left text-sm font-medium transition lg:mb-1 lg:w-full ${activeTab === tab.id ? 'bg-dream-50 text-dream-700 shadow-sm' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-950'}`}>
+        <aside data-testid="library-navigation" className="grid h-fit grid-cols-3 gap-1 overflow-x-auto rounded-2xl border border-slate-200/90 bg-white p-2 shadow-sm lg:sticky lg:top-24 lg:block">
+          {tabs.map((tab, index) => (
+            <div key={tab.id} className="shrink-0">{[0, 3, 5].includes(index) && <p className="mb-2 mt-3 hidden px-3 text-[10px] font-semibold tracking-widest text-slate-400 lg:block">{index === 0 ? '视觉与剧情' : index === 3 ? '声音素材' : '文件管理'}</p>}<button key={tab.id} onClick={() => setActiveTab(tab.id)} className={`flex min-h-11 shrink-0 items-center justify-center gap-1.5 rounded-xl px-2 text-left text-xs font-medium sm:text-sm lg:justify-start lg:gap-2 lg:px-3 transition lg:mb-1 lg:w-full ${activeTab === tab.id ? 'bg-dream-50 text-dream-700 shadow-sm' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-950'}`}>
               {tab.icon}
               {tab.label}
-            </button>
+            </button></div>
           ))}
         </aside>
 
-        <section data-testid="library-content" className={`min-h-[680px] min-w-0 ${activeTab === 'characters' ? '' : 'rounded-2xl border border-slate-200/90 bg-white p-5 shadow-sm'}`}>
+        <section data-testid="library-content" className={`min-h-[680px] min-w-0 ${['characters', 'voices', 'music', 'scenes'].includes(activeTab) ? '' : 'rounded-2xl border border-slate-200/90 bg-white p-5 shadow-sm'}`}>
           {activeTab === 'characters' && (
             <CharacterGallery
               characters={characters}
@@ -174,7 +179,10 @@ export default function LibraryPage() {
               onChange={setEditingScene}
               onSave={saveScene}
               onCancel={() => setEditingScene(null)}
-              onDelete={(id) => setScenes((prev) => prev.filter((item) => item.id !== id))}
+              onDelete={async (id) => { if (await confirm({ message: '从背景库移除这个背景？原始图片文件不会删除。', danger: true })) setScenes((prev) => prev.filter((item) => item.id !== id)) }}
+              onUploaded={(asset) => setAssets((items) => [asset, ...items])}
+              onUse={(scene, projectId) => navigate(`/editor/${projectId}?libraryBackground=${encodeURIComponent(scene.id)}`)}
+              initialProjectId={searchParams.get('project') || ''}
               onReset={async () => { if (await confirm({ message: '确定恢复默认场景库吗？', danger: true })) setScenes(defaultScenes) }}
             />
           )}
@@ -191,7 +199,7 @@ export default function LibraryPage() {
               onUseConflict={useConflictTemplate}
             />
           )}
-          {activeTab === 'voices' && (user ? <VoiceLibrary /> : <div><SectionTitle title="声音库" desc="登录后管理私有音色、授权参考片段和角色绑定。" /><Link to="/login" className="mt-4 inline-flex rounded-lg bg-dream-600 px-4 py-2 text-sm font-medium text-white">登录后使用</Link></div>)}
+          {activeTab === 'voices' && (user ? <VoiceLibrary projectId={searchParams.get('project') || ''} onOpenProject={(id) => navigate(id ? `/editor/${id}?panel=voices` : '/')} /> : <div><SectionTitle title="声音库" desc="登录后管理私有音色、授权参考片段和角色绑定。" /><Link to="/login" className="mt-4 inline-flex rounded-lg bg-dream-600 px-4 py-2 text-sm font-medium text-white">登录后使用</Link></div>)}
           {activeTab === 'music' && (user ? <MusicLibrary assets={assets} loading={assetLoading} onUpload={(file, type) => handleUpload(file, type)} onUpdate={updateAudioAsset} onDelete={removeAsset} /> : <div><SectionTitle title="音乐库" desc="登录后管理 BGM 与音效素材。" /><Link to="/login" className="mt-4 inline-flex rounded-lg bg-dream-600 px-4 py-2 text-sm font-medium text-white">登录后使用</Link></div>)}
           {activeTab === 'projectAssets' && (
             <ProjectAssetLibrary
@@ -281,45 +289,35 @@ function CharacterEditor({ character, onChange, onSave, onCancel }: { character:
   )
 }
 
-function SceneLibrary(props: { scenes: LibraryScene[]; editingScene: LibraryScene | null; onCreate: () => void; onEdit: (scene: LibraryScene) => void; onChange: (scene: LibraryScene) => void; onSave: () => void; onCancel: () => void; onDelete: (id: string) => void; onReset: () => void }) {
-  const { scenes, editingScene, onCreate, onEdit, onChange, onSave, onCancel, onDelete, onReset } = props
-  return (
-    <div>
-      <ToolbarTitle title="场景库" desc="管理背景图、场景分类和剧情用途。编辑器背景节点会直接读取这里的场景。" createLabel="新增场景" onCreate={onCreate} onReset={onReset} />
-      {editingScene && (
-        <EditorShell title="编辑场景" onSave={onSave} onCancel={onCancel}>
-          <FormGrid>
-            <TextField label="场景 ID" value={editingScene.id} onChange={(value) => onChange({ ...editingScene, id: value })} />
-            <TextField label="名称" value={editingScene.name} onChange={(value) => onChange({ ...editingScene, name: value })} />
-            <TextField label="分类" value={editingScene.type} onChange={(value) => onChange({ ...editingScene, type: value })} />
-            <TextField label="图片路径" value={editingScene.url} onChange={(value) => onChange({ ...editingScene, url: value })} />
-          </FormGrid>
-          <TextArea label="场景说明" value={editingScene.description} onChange={(value) => onChange({ ...editingScene, description: value })} />
-          <TextArea label="项目用途" value={editingScene.usage} onChange={(value) => onChange({ ...editingScene, usage: value })} />
-        </EditorShell>
-      )}
-      <div className="grid gap-4 lg:grid-cols-2">
-        {scenes.map((scene) => (
-          <article key={scene.id} className="overflow-hidden rounded-lg border border-slate-200">
-            <button type="button" onClick={() => window.open(scene.url, '_blank')} className="block w-full bg-slate-100">
-              <img src={scene.url} alt={scene.name} className="h-56 w-full object-cover" />
-            </button>
-            <div className="p-4">
-              <div className="mb-2 flex items-start justify-between gap-3">
-                <div>
-                  <h3 className="text-lg font-semibold text-slate-950">{scene.name}</h3>
-                  <p className="text-xs text-slate-500">ID: {scene.id} · {scene.type} · 更新 {scene.updatedAt}</p>
-                </div>
-                <RowActions onEdit={() => onEdit(scene)} onDelete={() => onDelete(scene.id)} />
-              </div>
-              <p className="text-sm leading-6 text-slate-700">{scene.description}</p>
-              <p className="mt-3 rounded-md bg-slate-50 p-3 text-sm text-slate-600">项目用途：{scene.usage}</p>
-            </div>
-          </article>
-        ))}
-      </div>
-    </div>
-  )
+function SceneLibrary(props: { scenes: LibraryScene[]; editingScene: LibraryScene | null; onCreate: () => void; onEdit: (scene: LibraryScene) => void; onChange: (scene: LibraryScene) => void; onSave: () => void; onCancel: () => void; onDelete: (id: string) => void; onReset: () => void; onUse: (scene: LibraryScene, projectId: string) => void; initialProjectId?: string; onUploaded: (asset: Asset) => void }) {
+  const { scenes, editingScene, onCreate, onEdit, onChange, onSave, onCancel, onDelete, onReset, onUse, initialProjectId } = props
+  const [moodDraft, setMoodDraft] = useState<string | null>(null)
+  const [uploading, setUploading] = useState(false)
+  const [uploadError, setUploadError] = useState('')
+  useEffect(() => { setMoodDraft(null); setUploadError('') }, [editingScene?.id])
+  const latestScene = useRef(editingScene)
+  latestScene.current = editingScene
+  const replaceImage = async (file?: File) => {
+    if (!file || !editingScene) return
+    const id = editingScene.id
+    setUploading(true); setUploadError('')
+    try { const asset = await uploadAsset(file, 'BACKGROUND'); props.onUploaded(asset); if (latestScene.current?.id === id) onChange({ ...latestScene.current, url: asset.url }) }
+    catch { setUploadError('背景图片上传失败，请检查图片后重试。') }
+    finally { setUploading(false) }
+  }
+  return <SceneCatalog scenes={scenes} onCreate={onCreate} onEdit={onEdit} onDelete={onDelete} onReset={onReset} onUse={onUse} initialProjectId={initialProjectId} editor={editingScene && <EditorShell title="编辑背景" onSave={onSave} onCancel={onCancel} busy={uploading}>
+    <div className="flex flex-wrap items-center gap-4"><img src={editingScene.url} alt="背景构图预览" className="h-24 w-40 rounded-lg object-cover" /><label className="dc-secondary cursor-pointer">{uploading ? '正在上传…' : '上传或替换背景图'}<input aria-label="上传背景图片" type="file" accept="image/*" disabled={uploading} className="hidden" onChange={(event) => { void replaceImage(event.target.files?.[0]); event.target.value = '' }} /></label></div>
+    {uploadError && <p role="alert" className="text-sm text-rose-700">{uploadError}</p>}
+    <FormGrid>
+      <TextField label="背景名称" value={editingScene.name} onChange={(value) => onChange({ ...editingScene, name: value })} />
+      <TextField label="场所分类" value={editingScene.place || editingScene.type} onChange={(value) => onChange({ ...editingScene, place: value, type: value })} />
+      <TextField label="画面时间" value={editingScene.timeOfDay || ''} onChange={(value) => onChange({ ...editingScene, timeOfDay: value })} />
+      <TextField label="氛围标签（逗号分隔）" value={moodDraft ?? editingScene.moods?.join('，') ?? ''} onChange={(value) => { setMoodDraft(value); onChange({ ...editingScene, moods: value.split(/[,，]/).map((item) => item.trim()).filter(Boolean) }) }} />
+    </FormGrid>
+    <TextArea label="画面说明" value={editingScene.description} onChange={(value) => onChange({ ...editingScene, description: value })} />
+    <TextArea label="适合的剧情用途" value={editingScene.usage} onChange={(value) => onChange({ ...editingScene, usage: value })} />
+    <details className="mt-4 rounded-lg border border-slate-200 p-3"><summary className="cursor-pointer text-xs text-slate-500">高级素材信息</summary><div className="mt-3"><label className="block text-xs text-slate-500">素材标识（自动保存，保持故事引用稳定）<input readOnly value={editingScene.id} className="mt-1 h-9 w-full rounded-lg border border-slate-200 bg-slate-50 px-3" /></label><TextField label="背景图片地址" value={editingScene.url} onChange={(value) => onChange({ ...editingScene, url: value })} /></div></details>
+  </EditorShell>} />
 }
 
 function StoryLibrary(props: { templates: StoryTemplate[]; editingTemplate: StoryTemplate | null; onCreate: () => void; onEdit: (template: StoryTemplate) => void; onChange: (template: StoryTemplate) => void; onSave: () => void; onCancel: () => void; onDelete: (id: string) => void; onUseConflict: (title: string, content: string) => void }) {
@@ -373,22 +371,23 @@ function ProjectAssetLibrary(props: { user: unknown; assets: Asset[]; assetType:
   if (!user) {
     return (
       <div>
-        <SectionTitle title="全局素材" desc="登录后上传的素材归属于你的账号，可在所有故事项目中复用。" />
+        <SectionTitle title="我的素材文件" desc="登录后上传的素材归属于你的账号，可在所有故事项目中复用。" />
         <Link to="/login" className="inline-flex rounded-lg bg-dream-600 px-4 py-2 text-sm font-medium text-white hover:bg-dream-700">登录后管理素材</Link>
       </div>
     )
   }
   return (
     <div>
-      <SectionTitle title="全局素材" desc="上传一次即可在所有故事项目和章节中使用。可在这里重命名、处理或安全删除素材。" />
+      <SectionTitle title="我的素材文件" desc="上传一次即可在所有故事项目和章节中使用。可在这里重命名、处理或安全删除素材。" />
       <div className="mb-5 grid gap-3 rounded-lg border border-slate-200 bg-slate-50 p-4 md:grid-cols-[1fr_auto]">
         <select value={assetType} onChange={(event) => onAssetTypeChange(event.target.value)} className="rounded-md border border-slate-200 bg-white px-3 py-2 text-sm">
-          <option value="CG">角色立绘 / CG</option>
+          <option value="CG">插画与角色立绘</option>
           <option value="BACKGROUND">背景图</option>
           <option value="BGM">音乐</option>
           <option value="SFX">音效</option>
-          <option value="VOICE">配音</option>
-          <option value="OTHER">其他</option>
+          <option value="VOICE">对白配音成品</option>
+          <option value="VOICE_SAMPLE">声线参考录音</option>
+          <option value="OTHER">其他文件</option>
         </select>
         <label className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-md bg-dream-600 px-4 py-2 text-sm font-medium text-white hover:bg-dream-700">
           {assetLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
@@ -402,7 +401,7 @@ function ProjectAssetLibrary(props: { user: unknown; assets: Asset[]; assetType:
           <article key={asset.id} className="overflow-hidden rounded-lg border border-slate-200">
             {AUDIO_ASSET_TYPES.includes(asset.type) ? (
               <div className="flex h-40 flex-col items-center justify-center gap-3 bg-slate-100 px-3 text-sm text-slate-500">
-                <span>{asset.type}</span>
+                <span>{assetTypeLabel(asset.type)}</span>
                 <audio controls preload="metadata" className="max-w-full" src={asset.url}>你的浏览器不支持音频预览。</audio>
               </div>
             ) : <img src={asset.url} alt={asset.name} className="h-40 w-full object-contain bg-slate-100" />}
@@ -418,7 +417,7 @@ function ProjectAssetLibrary(props: { user: unknown; assets: Asset[]; assetType:
                   <div className="flex items-start justify-between gap-2">
                     <div className="min-w-0">
                       <h3 className="truncate text-sm font-semibold text-slate-900">{asset.name}</h3>
-                      <p className="text-xs text-slate-500">{asset.type === 'VOICE_SAMPLE' ? '角色声音样本 · 仅作声线参考' : `${asset.type} · ${new Date(asset.createdAt).toLocaleDateString()}`}</p>
+                      <p className="text-xs text-slate-500">{asset.type === 'VOICE_SAMPLE' ? '声线参考录音 · 用于克隆和音色设计' : `${assetTypeLabel(asset.type)} · ${new Date(asset.createdAt).toLocaleDateString()}`}</p>
                     </div>
                     <RowActions onEdit={() => onStartRename(asset)} onDelete={() => onDelete(asset)} />
                   </div>
@@ -456,14 +455,14 @@ function ToolbarTitle({ title, desc, createLabel, onCreate, onReset }: { title: 
   )
 }
 
-function EditorShell({ title, children, onSave, onCancel }: { title: string; children: ReactNode; onSave: () => void; onCancel: () => void }) {
+function EditorShell({ title, children, onSave, onCancel, busy = false }: { title: string; children: ReactNode; onSave: () => void; onCancel: () => void; busy?: boolean }) {
   return (
     <div className="mb-5 rounded-lg border border-dream-200 bg-dream-50/50 p-4">
       <div className="mb-3 flex items-center justify-between">
         <h3 className="font-semibold text-slate-950">{title}</h3>
         <div className="flex gap-2">
           <button onClick={onCancel} className="inline-flex items-center gap-2 rounded-md border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700"><X className="h-4 w-4" />取消</button>
-          <button onClick={onSave} className="inline-flex items-center gap-2 rounded-md bg-dream-600 px-3 py-2 text-sm font-medium text-white"><Save className="h-4 w-4" />保存</button>
+          <button disabled={busy} onClick={onSave} className="inline-flex items-center gap-2 rounded-md bg-dream-600 px-3 py-2 text-sm font-medium text-white disabled:opacity-40"><Save className="h-4 w-4" />保存</button>
         </div>
       </div>
       <div className="space-y-3">{children}</div>

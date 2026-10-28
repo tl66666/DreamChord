@@ -31,7 +31,7 @@ describe('global asset library', () => {
     api.upload.mockResolvedValue(uploaded)
     render(<MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}><FeedbackProvider><LibraryPage /></FeedbackProvider></MemoryRouter>)
 
-    fireEvent.click(screen.getByRole('button', { name: /全局素材/ }))
+    fireEvent.click(screen.getByRole('button', { name: /我的文件/ }))
     await waitFor(() => expect(api.list).toHaveBeenCalled())
     expect(screen.queryByLabelText('选择项目')).not.toBeInTheDocument()
     expect(screen.getAllByText(/所有故事项目/).length).toBeGreaterThan(0)
@@ -73,8 +73,8 @@ describe('global asset library', () => {
     api.list.mockResolvedValue([])
     render(<MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}><FeedbackProvider><LibraryPage /></FeedbackProvider></MemoryRouter>)
 
-    fireEvent.click(await screen.findByRole('button', { name: /音乐库/ }))
-    expect(screen.getByRole('heading', { name: '音乐库' })).toBeInTheDocument()
-    expect(screen.getByText(/BGM 与音效/)).toBeInTheDocument()
+    fireEvent.click(await screen.findByRole('button', { name: /音乐与音效/ }))
+    expect(screen.getByRole('heading', { name: '音乐与音效' })).toBeInTheDocument()
+    expect(screen.getByText(/按情绪和剧情用途/)).toBeInTheDocument()
   })
 })

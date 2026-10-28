@@ -37,6 +37,20 @@ describe('VoiceLibrary', () => {
     api.jobs.mockResolvedValue([])
   }
 
+  it('allows audition while engine health is still loading or unavailable', async () => {
+    common()
+    let rejectHealth!: (error: Error) => void
+    api.health.mockReturnValue(new Promise((_resolve, reject) => { rejectHealth = reject }))
+    api.assets.mockResolvedValue([])
+    api.list.mockResolvedValue([{ id: 'voice', name: '晴音', language: 'zh', description: '', tags: '[]', status: 'active', defaultEmotion: '自然', defaultSpeed: 1, references: [{ id: 'ref', language: 'zh', asset: { url: '/sample.wav' } }], bindings: [] }])
+    render(<VoiceLibrary />)
+    fireEvent.click(await screen.findByRole('button', { name: '试听晴音' }))
+    expect(screen.getByLabelText('音色持续播放器')).toHaveAttribute('src', '/sample.wav')
+    rejectHealth(new Error('engine unavailable'))
+    expect(await screen.findByText(/暂时无法读取配音服务状态/)).toBeInTheDocument()
+    expect(screen.getByLabelText('音色持续播放器')).toHaveAttribute('src', '/sample.wav')
+  })
+
   it('accepts only Chinese input and translates before generating Japanese speech', async () => {
     common()
     const binding = { id: 'binding', project: { id: 'project', title: '故事' }, character: { id: 'snow', name: '雪' } }
@@ -47,6 +61,7 @@ describe('VoiceLibrary', () => {
     api.translate.mockResolvedValue({ text: '一緒に帰ろう。' })
     api.generate.mockResolvedValue({ id: 'job', status: 'completed', text: '一緒に帰ろう。', language: 'ja', outputUrl: '/ja.wav' })
     render(<VoiceLibrary />)
+    fireEvent.click((await screen.findAllByRole('button', { name: '音色资料' }))[0])
     await screen.findByText('角色绑定与试听生成')
     fireEvent.change(screen.getByLabelText('选择项目'), { target: { value: 'project' } })
     fireEvent.change(screen.getByLabelText('选择角色'), { target: { value: 'snow' } })
@@ -76,6 +91,7 @@ describe('VoiceLibrary', () => {
     api.assets.mockResolvedValue([])
     render(<VoiceLibrary />)
 
+    fireEvent.click((await screen.findAllByRole('button', { name: '音色资料' }))[0])
     expect(await screen.findAllByText('梦弦内置 · 合成音')).not.toHaveLength(0)
     expect(screen.getByText(/Apache-2.0/)).toBeInTheDocument()
     expect(screen.getByText(/非真人声音克隆/)).toBeInTheDocument()
@@ -150,6 +166,7 @@ describe('VoiceLibrary', () => {
     api.accept.mockResolvedValue({ id: 'asset', name: '雪-对白', type: 'VOICE', url: '/uploads/generated.wav' })
     render(<VoiceLibrary />)
 
+    fireEvent.click((await screen.findAllByRole('button', { name: '音色资料' }))[0])
     await screen.findByText('角色绑定与试听生成')
     fireEvent.change(screen.getByLabelText('选择项目'), { target: { value: 'project' } })
     fireEvent.change(screen.getByLabelText('选择角色'), { target: { value: 'snow' } })

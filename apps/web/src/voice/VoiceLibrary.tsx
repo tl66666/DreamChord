@@ -1,6 +1,9 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { directVoiceLine, type VoiceEmotion } from '@dreamchord/story-domain'
 import AudioWorkspaceHeader from '../library/AudioWorkspaceHeader'
+import VoiceCatalogCard from './VoiceCatalogCard'
+import VoiceAssignmentDialog from './VoiceAssignmentDialog'
+import { hasVoiceReference, languageName, voiceLanguages, voicePresentation, voicePreviewUrl } from './voiceCatalog'
 import VoiceProfileEditor, { apiError } from './VoiceProfileEditor'
 import { VOICE_BINDINGS_CHANGED } from './characterVoicePlan'
 import { CheckCircle2, Headphones, Link2, Loader2, Mic2, Play, Plus, Search, ShieldCheck, Sparkles, Square, Wifi, WifiOff, X } from 'lucide-react'
@@ -38,13 +41,17 @@ const emotionLabels: Record<VoiceEmotion, string> = {
   angry: '愤怒', afraid: '害怕', resolve: '坚定', whisper: '耳语',
 }
 
-export default function VoiceLibrary() {
+export default function VoiceLibrary({ projectId = '', onOpenProject }: { projectId?: string; onOpenProject?: (projectId: string) => void } = {}) {
   const [profiles, setProfiles] = useState<VoiceProfile[]>([])
+  const [catalogLoading, setCatalogLoading] = useState(true)
   const [health, setHealth] = useState<VoiceProviderHealth | null>(null)
   const [samples, setSamples] = useState<Asset[]>([])
   const [projects, setProjects] = useState<ProjectDetail[]>([])
   const [jobs, setJobs] = useState<VoiceGenerationJob[]>([])
   const [selectedId, setSelectedId] = useState('')
+  const [detailsOpen, setDetailsOpen] = useState(false)
+  const [assigningProfile, setAssigningProfile] = useState<VoiceProfile | null>(null)
+  const [roleFilter, setRoleFilter] = useState('全部适用人物')
   const [query, setQuery] = useState('')
   const [genderFilter, setGenderFilter] = useState('全部声线')
   const [ageFilter, setAgeFilter] = useState('全部年龄感')
@@ -67,6 +74,8 @@ export default function VoiceLibrary() {
   const detailsRef = useRef<HTMLElement>(null)
   const openProfile = (profile: VoiceProfile) => {
     setSelectedId(profile.id)
+    setDetailsOpen(true)
+    setPreviewProfile(null)
     requestAnimationFrame(() => {
       detailsRef.current?.scrollIntoView?.({ behavior: 'smooth', block: 'start' })
       detailsRef.current?.focus({ preventScroll: true })
@@ -74,28 +83,33 @@ export default function VoiceLibrary() {
   }
 
   useEffect(() => {
-    void Promise.all([getVoiceProfiles(), getVoiceProviderHealth(), getAssetLibrary(), getMyProjects(), getVoiceGenerationJobs()])
-      .then(([nextProfiles, nextHealth, assets, nextProjects, nextJobs]) => {
+    let active = true
+    void getVoiceProfiles()
+      .then((nextProfiles) => {
+        if (!active) return
         const castOrder = ['cast-voice-yuki', 'cast-voice-ren', 'cast-voice-miya', 'cast-voice-sora', 'cast-voice-ghost']
         const ranked = [...nextProfiles].sort((first, second) => (castOrder.includes(first.id) ? castOrder.indexOf(first.id) : 99) - (castOrder.includes(second.id) ? castOrder.indexOf(second.id) : 99))
         setProfiles(ranked)
         setSelectedId(ranked[0]?.id || '')
-        setHealth(nextHealth)
-        setSamples(assets.filter((asset) => asset.type === 'VOICE_SAMPLE'))
-        setProjects(nextProjects)
-        setJobs(nextJobs)
       })
-      .catch(() => setError('声音库暂时无法加载，请确认已经登录并启动服务端。'))
+      .catch(() => { if (active) setError('声音库暂时无法加载，请确认已经登录并启动服务端。') })
+      .finally(() => { if (active) setCatalogLoading(false) })
+    void getVoiceProviderHealth().then((next) => { if (active) setHealth(next) }).catch(() => { if (active) setHealth({ ok: false, provider: 'none', message: '暂时无法读取配音服务状态，已有样音仍可试听。' }) })
+    void getAssetLibrary().then((assets) => { if (active) setSamples(assets.filter((asset) => asset.type === 'VOICE_SAMPLE')) }).catch(() => { if (active) setError('参考录音暂时无法读取，已有音色仍可试听。') })
+    void getMyProjects().then((next) => { if (active) setProjects(next) }).catch(() => { if (active) setError('故事列表暂时无法读取，请刷新后再分配角色。') })
+    void getVoiceGenerationJobs().then((next) => { if (active) setJobs(next) }).catch(() => { if (active) setError('配音记录暂时无法读取，已有样音仍可试听。') })
+    return () => { active = false }
   }, [])
 
   const filtered = useMemo(() => {
     const normalized = query.trim().toLowerCase()
-    return profiles.filter((profile) => (!normalized || `${profile.name} ${profile.description} ${profile.tags}`.toLowerCase().includes(normalized))
+    return profiles.filter((profile) => (!normalized || `${voicePresentation(profile).name} ${voicePresentation(profile).roles.join(" ")} ${profile.description} ${profile.tags}`.toLowerCase().includes(normalized))
       && (catalogFilter === 'all' || (catalogFilter === 'official' ? isStarterVoice(profile) : !isStarterVoice(profile)))
       && (languageFilter === 'all' || profile.language.split('-')[0] === languageFilter || profile.references.some((item) => item.language.split('-')[0] === languageFilter))
       && (genderFilter === '全部声线' || profile.genderTone === genderFilter)
-      && (ageFilter === '全部年龄感' || profile.ageTone === ageFilter))
-  }, [ageFilter, catalogFilter, genderFilter, languageFilter, profiles, query])
+      && (ageFilter === '全部年龄感' || profile.ageTone === ageFilter)
+      && (roleFilter === '全部适用人物' || voicePresentation(profile).roles.includes(roleFilter)))
+  }, [ageFilter, catalogFilter, genderFilter, languageFilter, profiles, query, roleFilter])
   const selected = filtered.find((profile) => profile.id === selectedId) || filtered[0]
   const selectedProfileId = selected?.id
   const selectedLanguage = selected?.language
@@ -113,8 +127,8 @@ export default function VoiceLibrary() {
   const chosenReferenceId = selected?.references.some((item) => item.id === generation.referenceId) ? generation.referenceId : selected?.references.find((item) => item.language.startsWith(generation.language))?.id || selected?.references[0]?.id || ''
   const hasCurrentBinding = Boolean(selected?.bindings.some((item) => item.character.id === binding.characterId && item.project.id === binding.projectId))
   const previewCandidate = previewProfile && !previewProfile.previewUrl ? jobs.find((job) => job.profile?.id === previewProfile.id && job.language.startsWith(previewLocale) && job.status === 'completed' && job.outputUrl) : undefined
-  const previewReference = previewProfile?.references.find((item) => item.language.startsWith(previewLocale))
-  const previewUrl = previewCandidate?.outputUrl || previewReference?.asset.url || previewProfile?.previewUrl || previewProfile?.references[0]?.asset.url
+  const previewReference = previewProfile?.references.find((item) => item.status !== 'disabled' && item.status !== 'revoked' && item.language.startsWith(previewLocale))
+  const previewUrl = previewCandidate?.outputUrl || previewReference?.asset.url || (previewProfile ? voicePreviewUrl(previewProfile, previewLocale) : undefined)
   const refreshProfile = (profile: VoiceProfile) => {
     setProfiles((current) => current.map((item) => item.id === profile.id ? profile : item))
     if (previewProfile?.id === profile.id) setPreviewProfile(profile)
@@ -145,7 +159,7 @@ export default function VoiceLibrary() {
         defaultEmotion: draft.defaultEmotion.trim() || '自然', defaultSpeed: draft.defaultSpeed,
         authorizationConfirmed: true, authorizationNote: draft.authorizationNote.trim(),
       })
-      setProfiles((current) => [created, ...current]); setSelectedId(created.id); setCreating(false); setDraft(emptyDraft)
+      setProfiles((current) => [created, ...current]); openProfile(created); setCreating(false); setDraft(emptyDraft)
     } catch { setError('音色创建失败，请检查必填项和授权说明。') } finally { setSubmitting(false) }
   }
 
@@ -246,49 +260,28 @@ export default function VoiceLibrary() {
   }
 
   return (
-    <div>
-      <AudioWorkspaceHeader kind="voice" count={profiles.length} action={<button onClick={() => setCreating(true)} className="inline-flex items-center gap-2 rounded-xl bg-amber-100 px-4 py-3 text-sm font-semibold text-slate-950 shadow-lg hover:bg-white"><Plus className="h-4 w-4" />创建角色音色</button>} />
-      <div className="mb-5 flex flex-wrap items-start justify-between gap-4">
-        <div><h2 className="text-2xl font-bold text-slate-950">声音库</h2><p className="mt-1 max-w-3xl text-sm leading-6 text-slate-600">集中管理私有音色、授权参考片段和项目角色绑定。生成的对白必须试听确认后才进入正式配音素材。</p></div>
-        <button onClick={() => setCreating(true)} className="inline-flex items-center gap-2 rounded-lg bg-dream-600 px-4 py-2 text-sm font-medium text-white hover:bg-dream-700"><Plus className="h-4 w-4" />新建音色</button>
-      </div>
-
-      <div className={`mb-5 flex flex-wrap items-start gap-3 rounded-lg border p-4 ${health?.ok ? 'border-emerald-200 bg-emerald-50 text-emerald-900' : 'border-amber-200 bg-amber-50 text-amber-900'}`}>
-        {health?.ok ? <Wifi className="mt-0.5 h-5 w-5 shrink-0" /> : <WifiOff className="mt-0.5 h-5 w-5 shrink-0" />}
-        <div className="min-w-[170px] flex-1"><p className="text-sm font-semibold">{health?.ok ? `内置 ${engineName} 已可用` : health?.engine?.state === 'starting' ? '正在加载声音模型' : '当前仅使用声音资产管理'}</p><p className="mt-1 text-xs leading-5">{health?.engine?.message || health?.message || '正在检查声音服务…'}；手动上传配音仍可使用。</p>{health?.capabilities && <p className="mt-1 text-xs leading-5">{health.capabilities.instructionEmotion ? '支持按台词情绪调整表演、语速与停顿' : '支持按台词调整语速；情绪表现主要取决于所选参考片段'}</p>}</div>
-        {health?.engine?.installed && !health.ok && <button disabled={engineBusy || health.engine.state === 'starting'} onClick={() => void startEngine()} className="inline-flex shrink-0 items-center gap-1.5 rounded-md bg-amber-900 px-3 py-2 text-xs font-medium text-white disabled:opacity-50"><Play className="h-3.5 w-3.5" />启动内置声音引擎</button>}
-        {health?.engine?.canManage && health.ok && <button disabled={engineBusy} onClick={() => void stopEngine()} className="inline-flex shrink-0 items-center gap-1.5 rounded-md border border-emerald-300 bg-white px-3 py-2 text-xs font-medium text-emerald-800 disabled:opacity-50"><Square className="h-3.5 w-3.5" />停止引擎</button>}
-      </div>
+    <div className="pb-52 sm:pb-36" onPlayCapture={(event) => { if (event.target instanceof HTMLAudioElement) document.querySelectorAll('audio').forEach((audio) => { if (audio !== event.target) audio.pause() }) }}>
+      <AudioWorkspaceHeader kind="voice" count={profiles.length} action={<button onClick={() => setCreating(true)} className="dc-primary"><Plus className="h-4 w-4" />新建音色</button>} />
       {error && <p className="mb-4 rounded-lg bg-rose-50 p-3 text-sm text-rose-700">{error}</p>}
 
-      <div role="group" aria-label="音色分类" className="mb-3 flex flex-wrap gap-2">{[['all', '全部音色'], ['official', '梦弦音色'], ['custom', '我的音色']].map(([value, label]) => <button key={value} aria-pressed={catalogFilter === value} onClick={() => setCatalogFilter(value)} className={`rounded-lg px-4 py-2 text-sm font-semibold ${catalogFilter === value ? 'bg-dream-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-dream-50'}`}>{label}</button>)}</div>
+      <div className="mb-3 flex flex-wrap items-center justify-between gap-3"><div role="group" aria-label="音色分类" className="mb-3 flex flex-wrap gap-2">{[['all', '全部音色'], ['official', '梦弦音色'], ['custom', '我的音色']].map(([value, label]) => <button key={value} aria-pressed={catalogFilter === value} onClick={() => setCatalogFilter(value)} className={`rounded-lg px-4 py-2 text-sm font-semibold ${catalogFilter === value ? 'bg-dream-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-dream-50'}`}>{label}</button>)}</div>
       <div role="group" aria-label="音色语言筛选" className="mb-3 flex flex-wrap gap-2">{[['all', '全部样音语言'], ['zh', '中文样音'], ['ja', '日语样音']].map(([value, label]) => <button key={value} aria-pressed={languageFilter === value} onClick={() => setLanguageFilter(value)} className={`rounded-full border px-3 py-1.5 text-xs ${languageFilter === value ? 'border-dream-200 bg-dream-50 text-dream-700' : 'border-slate-200 bg-white text-slate-600'}`}>{label}</button>)}</div>
 
-      <div role="group" aria-label="音色筛选" className="grid gap-3 rounded-2xl border border-slate-200 bg-slate-50/80 p-3 md:grid-cols-[minmax(220px,1.5fr)_1fr_1fr]">
+      </div>
+      <div role="group" aria-label="音色筛选" className="grid gap-3 rounded-2xl border border-slate-200 bg-slate-50/80 p-3 md:grid-cols-[minmax(150px,1.5fr)_1fr_1fr_1fr]">
         <label className="relative"><Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" /><span className="sr-only">搜索音色</span><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="搜索名称、标签、适用剧情" className="h-10 w-full rounded-xl border border-slate-200 bg-white py-2 pl-9 pr-3 text-sm outline-none focus:border-violet-500" /></label>
         <select aria-label="性别声线" value={genderFilter} onChange={(event) => setGenderFilter(event.target.value)} className="h-10 rounded-xl border border-slate-200 bg-white px-3 text-sm"><option>全部声线</option><option>女声</option><option>男声</option><option>中性</option></select>
         <select aria-label="年龄感" value={ageFilter} onChange={(event) => setAgeFilter(event.target.value)} className="h-10 rounded-xl border border-slate-200 bg-white px-3 text-sm"><option>全部年龄感</option><option>少女</option><option>少年</option><option>青年</option><option>成熟</option></select>
+        <select aria-label="音色适用人物" value={roleFilter} onChange={(event) => setRoleFilter(event.target.value)} className="h-10 min-w-0 rounded-xl border border-slate-200 bg-white px-3 text-xs"><option>全部适用人物</option>{[...new Set(profiles.flatMap((profile) => voicePresentation(profile).roles))].map((role) => <option key={role}>{role}</option>)}</select>
+      </div>
+      <p className="mb-3 mt-3 text-xs text-slate-400" role="status">{catalogLoading ? '正在加载音色…' : `找到 ${filtered.length} 个音色 · 先试听，再分配给角色`}</p>
+      <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+        {filtered.map((profile) => <VoiceCatalogCard key={profile.id} profile={profile} active={detailsOpen && selected?.id === profile.id} canPreview={Boolean(profile.previewUrl || profile.references[0]?.asset.url || jobs.some((job) => job.profile?.id === profile.id && job.status === 'completed' && job.outputUrl))} onPreview={() => { setPreviewProfile(profile); const preferred = languageFilter === 'all' ? previewLocale : languageFilter; setPreviewLocale(voiceLanguages(profile).includes(preferred) ? preferred : voiceLanguages(profile)[0] || 'zh') }} secondary={<button onClick={() => openProfile(profile)} className="min-h-9 text-xs font-medium text-slate-500 hover:text-dream-700">音色资料</button>} action={<button disabled={profile.status !== 'active'} onClick={() => { if (hasVoiceReference(profile)) { setAssigningProfile(profile); setPreviewProfile(null) } else openProfile(profile) }} className="dc-primary !min-h-9 !px-3 !text-xs">{hasVoiceReference(profile) ? '分配给角色' : '完善音色'}</button>} />)}
+        {!catalogLoading && !filtered.length && <div className="rounded-2xl border border-dashed border-slate-300 p-8 text-center text-sm text-slate-500 md:col-span-2 xl:col-span-3">没有符合条件的音色。<button onClick={() => { setQuery(''); setGenderFilter('全部声线'); setAgeFilter('全部年龄感'); setLanguageFilter('all'); setCatalogFilter('all'); setRoleFilter('全部适用人物') }} className="ml-2 text-dream-600 underline">清空筛选</button></div>}
       </div>
 
-      <div className="mt-5 grid gap-4 md:grid-cols-2 2xl:grid-cols-3">
-        {filtered.map((profile, index) => {
-          const tags = voiceTags(profile)
-          const canPreview = Boolean(profile.previewUrl || profile.references[0]?.asset.url || jobs.some((job) => job.profile?.id === profile.id && job.status === 'completed' && job.outputUrl))
-          return <article key={profile.id} className={`rounded-2xl border bg-white p-4 transition hover:-translate-y-0.5 hover:shadow-lg ${selected?.id === profile.id ? 'border-violet-300 shadow-md shadow-violet-100' : 'border-slate-200'}`}>
-            <div className="flex items-center gap-3">
-              <div className={`flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-gradient-to-br ${index % 3 === 0 ? 'from-fuchsia-200 to-violet-500' : index % 3 === 1 ? 'from-cyan-200 to-blue-500' : 'from-amber-200 to-rose-500'} text-lg font-black text-white ring-4 ring-white shadow`}>{profile.name.slice(0, 1)}</div>
-              <div className="min-w-0 flex-1"><div className="flex items-center gap-2"><h3 className="truncate font-bold text-slate-950">{profile.name}</h3><span className={`h-2 w-2 shrink-0 rounded-full ${profile.status === 'active' ? 'bg-emerald-500' : 'bg-slate-400'}`} /></div><p className="mt-1 text-xs text-slate-500">{profile.genderTone || '未设声线'} · {profile.ageTone || '未设年龄感'} · {profile.language}</p></div>
-              <button type="button" aria-label={`试听${profile.name}`} disabled={!canPreview} onClick={() => setPreviewProfile(profile)} className="rounded-full bg-slate-950 p-2.5 text-white transition hover:bg-violet-700 disabled:cursor-not-allowed disabled:bg-slate-200"><Play className="h-4 w-4 fill-current" /></button>
-            </div>
-            <p className="mt-4 line-clamp-2 min-h-10 text-sm leading-5 text-slate-600">{profile.description || '暂无音色说明'}</p>
-            <div className="mt-3 flex min-h-6 flex-wrap gap-1.5">{tags.slice(0, 3).map((tag) => <span key={tag} className="rounded-full border border-violet-100 bg-violet-50 px-2 py-0.5 text-[11px] font-medium text-violet-700">{tag}</span>)}{isStarterVoice(profile) && <span className="rounded-full border border-cyan-100 bg-cyan-50 px-2 py-0.5 text-[11px] font-semibold text-cyan-800">梦弦合成音</span>}</div>
-            <div className="mt-4 flex items-center justify-between border-t border-slate-100 pt-3"><span className="text-[11px] text-slate-400">{profile.references.length} 条参考 · {profile.bindings.length} 个角色</span><button onClick={() => openProfile(profile)} className="min-h-10 text-xs font-semibold text-violet-700 hover:text-violet-900">查看与使用</button></div>
-          </article>
-        })}
-        {!filtered.length && <div className="md:col-span-2 2xl:col-span-3 rounded-2xl border border-dashed border-slate-300 p-10 text-center text-sm text-slate-500">没有符合条件的音色，换个筛选条件试试。</div>}
-      </div>
-
-      <div className="mt-6 min-h-[560px]">
+      {detailsOpen && <div className="mt-6">
+        <button onClick={() => setDetailsOpen(false)} className="mb-2 text-xs text-slate-500 underline">收起音色资料与试制</button>
         <section ref={detailsRef} tabIndex={-1} aria-label="当前音色配置" className="scroll-mt-24 rounded-2xl border border-slate-200 p-5 outline-none">
           {selected ? <>
             <div className="flex flex-wrap items-start justify-between gap-3 border-b border-slate-100 pb-4">
@@ -296,7 +289,7 @@ export default function VoiceLibrary() {
               <div className="flex items-center gap-2"><span title="当前生成引擎" className="rounded-full bg-dream-50 px-3 py-1 text-xs font-medium text-dream-700">{engineName}</span><button onClick={() => setEditingProfile(selected)} className="rounded-lg border border-slate-200 px-3 py-2 text-xs font-semibold text-slate-700">编辑与配置</button></div>
             </div>
             {isStarterVoice(selected) && <div className="mt-4 flex items-start gap-3 rounded-xl border border-cyan-200 bg-cyan-50/70 p-4"><ShieldCheck className="mt-0.5 h-5 w-5 shrink-0 text-cyan-700" /><div><p className="text-sm font-semibold text-cyan-950">来源清晰的合成起始音色</p><p className="mt-1 text-xs leading-5 text-cyan-900">{selected.authorizationNote}</p></div></div>}
-            <div className="mt-4 grid gap-3 sm:grid-cols-3"><Info label="语言" value={selected.language} /><Info label="默认情绪" value={selected.defaultEmotion} /><Info label="默认语速" value={`${selected.defaultSpeed.toFixed(2)}×`} /></div>
+            <div className="mt-4 grid gap-3 sm:grid-cols-3"><Info label="语言" value={languageName(selected.language)} /><Info label="默认情绪" value={selected.defaultEmotion} /><Info label="默认语速" value={`${selected.defaultSpeed.toFixed(2)}×`} /></div>
             {selected.status !== 'active' && <p className="mt-3 rounded-lg bg-amber-50 p-3 text-sm text-amber-900">此音色已停用。参考片段和历史配音仍保留，恢复后可继续生成。</p>}
             {selected.bindings.length > 0 && <div className="mt-4 rounded-xl border border-slate-200 p-3"><p className="mb-2 text-xs font-semibold text-slate-500">正在使用此音色的角色</p>{selected.bindings.map((item) => <div key={item.id} className="flex items-center justify-between gap-3 py-2 text-sm"><span>{item.project.title} · {item.character.name}</span><button onClick={() => void unbind(item.id)} className="shrink-0 rounded-md border border-slate-200 px-2 py-1 text-xs text-slate-600">解除绑定</button></div>)}</div>}
             <div className="mt-6"><h4 className="font-semibold text-slate-900">授权参考片段</h4><p className="mt-1 text-xs leading-5 text-slate-500">推荐 3–15 秒单人干声，并填写与录音逐字一致的原文。</p>
@@ -333,20 +326,29 @@ export default function VoiceLibrary() {
               </div>
             </div>
             <div className="mt-6 rounded-lg border border-dream-100 bg-dream-50/50 p-4"><h4 className="flex items-center gap-2 font-semibold text-slate-900"><ShieldCheck className="h-4 w-4 text-dream-600" />登记已有声音样本</h4>
-              {samples.length ? <div className="mt-3 grid gap-3 sm:grid-cols-2"><label className="text-xs font-medium text-slate-700">声音样本<select value={reference.assetId} onChange={(event) => setReference((old) => ({ ...old, assetId: event.target.value }))} className="mt-1 w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm"><option value="">选择 VOICE_SAMPLE</option>{samples.map((sample) => <option key={sample.id} value={sample.id}>{sample.name}</option>)}</select></label><label className="text-xs font-medium text-slate-700">语言<select value={reference.language} onChange={(event) => setReference((old) => ({ ...old, language: event.target.value }))} className="mt-1 w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm"><option value="zh">中文</option><option value="ja">日语</option><option value="en">英语</option></select></label><label className="sm:col-span-2 text-xs font-medium text-slate-700">录音原文<textarea value={reference.transcript} onChange={(event) => setReference((old) => ({ ...old, transcript: event.target.value }))} rows={2} className="mt-1 w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm" /></label><label className="sm:col-span-2 flex items-start gap-2 text-xs leading-5 text-slate-600"><input type="checkbox" checked={reference.consent} onChange={(event) => setReference((old) => ({ ...old, consent: event.target.checked }))} className="mt-0.5" />再次确认该片段可用于声音生成</label><button disabled={!reference.assetId || !reference.transcript.trim() || !reference.consent || submitting} onClick={() => void submitReference()} className="sm:col-span-2 rounded-md bg-dream-600 px-3 py-2 text-sm font-medium text-white disabled:opacity-40">登记参考片段</button></div> : <p className="mt-3 text-sm text-slate-500">请先在项目编辑器的“声线样本”中上传带原文和授权的录音。</p>}
+              {samples.length ? <div className="mt-3 grid gap-3 sm:grid-cols-2"><label className="text-xs font-medium text-slate-700">声音样本<select value={reference.assetId} onChange={(event) => setReference((old) => ({ ...old, assetId: event.target.value }))} className="mt-1 w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm"><option value="">选择已上传的声线参考录音</option>{samples.map((sample) => <option key={sample.id} value={sample.id}>{sample.name}</option>)}</select></label><label className="text-xs font-medium text-slate-700">语言<select value={reference.language} onChange={(event) => setReference((old) => ({ ...old, language: event.target.value }))} className="mt-1 w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm"><option value="zh">中文</option><option value="ja">日语</option><option value="en">英语</option></select></label><label className="sm:col-span-2 text-xs font-medium text-slate-700">录音原文<textarea value={reference.transcript} onChange={(event) => setReference((old) => ({ ...old, transcript: event.target.value }))} rows={2} className="mt-1 w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm" /></label><label className="sm:col-span-2 flex items-start gap-2 text-xs leading-5 text-slate-600"><input type="checkbox" checked={reference.consent} onChange={(event) => setReference((old) => ({ ...old, consent: event.target.checked }))} className="mt-0.5" />再次确认该片段可用于声音生成</label><button disabled={!reference.assetId || !reference.transcript.trim() || !reference.consent || submitting} onClick={() => void submitReference()} className="sm:col-span-2 rounded-md bg-dream-600 px-3 py-2 text-sm font-medium text-white disabled:opacity-40">登记参考片段</button></div> : <p className="mt-3 text-sm text-slate-500">请先在项目编辑器的“声线样本”中上传带原文和授权的录音。</p>}
             </div>
           </> : <div className="flex h-full min-h-[420px] items-center justify-center px-5"><div className="w-full max-w-lg text-center"><Headphones className="mx-auto mb-3 h-10 w-10 text-violet-400" /><h3 className="text-lg font-bold text-slate-900">建立你的第一个角色声音</h3><p className="mt-2 text-sm leading-6 text-slate-500">不需要先训练模型。准备一段授权的清晰录音，按下面的顺序就能生成试听。</p><div className="mt-5 grid gap-2 text-left sm:grid-cols-3">{['上传 3–15 秒声线样本', '创建音色并绑定角色', '生成试听，满意后入库'].map((step, index) => <div key={step} className="rounded-lg border border-slate-200 bg-slate-50 p-3"><span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-violet-100 text-xs font-bold text-violet-700">{index + 1}</span><p className="mt-2 text-xs leading-5 text-slate-600">{step}</p></div>)}</div>{health?.engine?.state === 'not-installed' && <div className="mt-5 rounded-lg border border-amber-200 bg-amber-50 p-3 text-left"><p className="text-xs font-semibold text-amber-900">首次使用先在项目根目录执行一次</p><code className="mt-2 block rounded bg-slate-950 px-3 py-2 text-xs text-violet-200">pnpm voice:setup</code><p className="mt-2 text-xs leading-5 text-amber-800">安装完成后只启动 DreamChord 即可，不需要另开 GPT-SoVITS。</p></div>}<button onClick={() => setCreating(true)} className="mt-5 rounded-md bg-violet-600 px-4 py-2 text-sm font-semibold text-white">创建第一个音色</button></div></div>}
         </section>
-      </div>
+      </div>}
 
-      {previewProfile && previewUrl && <div data-testid="voice-player-tray" className="sticky bottom-4 z-20 mt-5 flex flex-wrap items-center gap-4 rounded-2xl border border-slate-700 bg-slate-950 p-3 text-white shadow-2xl shadow-slate-400/40">
-        <div className="flex h-11 w-11 items-center justify-center rounded-full bg-gradient-to-br from-fuchsia-300 to-violet-600 font-black">{previewProfile.name.slice(0, 1)}</div>
+      {previewProfile && previewUrl && <div data-testid="voice-player-tray" className="fixed bottom-4 left-4 right-4 z-50 flex flex-wrap lg:left-[max(288px,calc((100vw-1760px)/2+288px))] lg:right-[max(24px,calc((100vw-1760px)/2+24px))] items-center gap-3 rounded-2xl border border-dream-200 bg-white p-3 text-slate-900 shadow-xl shadow-slate-200/70">
+        <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-dream-50 font-black text-dream-600">{previewProfile.name.slice(0, 1)}</div>
         <div className="min-w-0 flex-1"><p className="truncate text-sm font-semibold">{previewProfile.name}</p><p className="text-xs text-slate-400">{previewCandidate ? `对白候选 · ${previewCandidate.text}` : `参考声音 · ${previewReference?.asset.name || '默认试听'}`}</p></div>
-        {previewProfile.references.some((item) => item.language.startsWith('ja')) && <select aria-label="试听语言" value={previewLocale} onChange={(event) => setPreviewLocale(event.target.value)} className="rounded-lg border border-slate-600 bg-slate-900 px-3 py-2 text-xs"><option value="zh">中文</option><option value="ja">日本語</option></select>}
-        <audio key={previewUrl} aria-label="音色持续播放器" controls autoPlay preload="metadata" src={previewUrl} className="h-10 w-full max-w-xl md:w-[420px]">你的浏览器不支持音频预览。</audio><button aria-label="关闭音色播放器" onClick={() => setPreviewProfile(null)} className="rounded-lg p-2 text-slate-400 hover:bg-white/10 hover:text-white"><X className="h-4 w-4" /></button>
+        {previewProfile.references.some((item) => item.language.startsWith('ja')) && <select aria-label="试听语言" value={previewLocale} onChange={(event) => setPreviewLocale(event.target.value)} className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs"><option value="zh">中文</option><option value="ja">日语</option></select>}
+        <button onClick={() => { setAssigningProfile(previewProfile); setPreviewProfile(null) }} className="dc-primary !min-h-9 !text-xs">分配给角色</button><audio key={previewUrl} aria-label="音色持续播放器" controls autoPlay preload="metadata" src={previewUrl} className="h-10 w-full max-w-xl md:w-[420px]">你的浏览器不支持音频预览。</audio><button aria-label="关闭音色播放器" onClick={() => setPreviewProfile(null)} className="absolute right-1 top-1 rounded-lg p-2 text-slate-400 hover:bg-slate-100 hover:text-slate-800 sm:static"><X className="h-4 w-4" /></button>
       </div>}
 
       {creating && <div className="fixed inset-0 z-[90] flex items-center justify-center bg-slate-950/50 p-4"><section role="dialog" aria-modal="true" aria-label="新建音色" className="w-full max-w-xl rounded-xl bg-white p-5 shadow-2xl"><div className="flex items-center justify-between"><div><h3 className="text-lg font-bold text-slate-950">新建私有音色</h3><p className="mt-1 text-sm text-slate-500">先建立档案，再登记一个或多个授权参考片段。</p></div><button onClick={() => setCreating(false)} aria-label="关闭"><X className="h-5 w-5" /></button></div><div className="mt-5 grid gap-4 sm:grid-cols-2"><Field label="音色名称" value={draft.name} onChange={(value) => setDraft((old) => ({ ...old, name: value }))} /><label className="text-sm font-medium text-slate-700">主要语言<select value={draft.language} onChange={(event) => setDraft((old) => ({ ...old, language: event.target.value }))} className="mt-1.5 w-full rounded-md border border-slate-300 bg-white px-3 py-2"><option value="zh">中文</option><option value="ja">日语</option><option value="en">英语</option></select></label><Field label="年龄感" value={draft.ageTone} onChange={(value) => setDraft((old) => ({ ...old, ageTone: value }))} placeholder="例如：青年、成熟" /><Field label="声音标签" value={draft.tags} onChange={(value) => setDraft((old) => ({ ...old, tags: value }))} placeholder="温柔，清亮，近距离" /><label className="sm:col-span-2 text-sm font-medium text-slate-700">说明<textarea value={draft.description} onChange={(event) => setDraft((old) => ({ ...old, description: event.target.value }))} rows={3} className="mt-1.5 w-full rounded-md border border-slate-300 px-3 py-2" /></label><label className="sm:col-span-2 flex items-start gap-2 rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm leading-6 text-amber-900"><input aria-label="我确认拥有本人同意或合法授权" type="checkbox" checked={draft.consent} onChange={(event) => setDraft((old) => ({ ...old, consent: event.target.checked }))} className="mt-1" /><span>我确认声音来自本人，或已获得声音所有者明确、可撤销的合法授权；不会用于冒充、欺骗或未经同意的克隆。</span></label></div><div className="mt-5 flex justify-end gap-2"><button onClick={() => setCreating(false)} className="rounded-md border border-slate-300 px-4 py-2 text-sm">取消</button><button disabled={!draft.name.trim() || !draft.consent || submitting} onClick={() => void submitProfile()} className="rounded-md bg-dream-600 px-4 py-2 text-sm font-medium text-white disabled:opacity-40">创建私有音色</button></div></section></div>}
+      <details className="mb-5 rounded-xl border border-slate-200 bg-slate-50/50 p-3"><summary className="cursor-pointer text-xs font-medium text-slate-600">配音服务设置 · {health?.ok ? '可生成对白' : '可试听已有样音'}</summary>
+      <div className={`mb-5 flex flex-wrap items-start gap-3 rounded-lg border p-4 ${health?.ok ? 'border-emerald-200 bg-emerald-50 text-emerald-900' : 'border-amber-200 bg-amber-50 text-amber-900'}`}>
+        {health?.ok ? <Wifi className="mt-0.5 h-5 w-5 shrink-0" /> : <WifiOff className="mt-0.5 h-5 w-5 shrink-0" />}
+        <div className="min-w-[170px] flex-1"><p className="text-sm font-semibold">{health?.ok ? `内置 ${engineName} 已可用` : health?.engine?.state === 'starting' ? '正在加载声音模型' : '当前仅使用声音资产管理'}</p><p className="mt-1 text-xs leading-5">{health?.engine?.message || health?.message || '正在检查声音服务…'}；手动上传配音仍可使用。</p>{health?.capabilities && <p className="mt-1 text-xs leading-5">{health.capabilities.instructionEmotion ? '支持按台词情绪调整表演、语速与停顿' : '支持按台词调整语速；情绪表现主要取决于所选参考片段'}</p>}</div>
+        {health?.engine?.installed && !health.ok && <button disabled={engineBusy || health.engine.state === 'starting'} onClick={() => void startEngine()} className="inline-flex shrink-0 items-center gap-1.5 rounded-md bg-amber-900 px-3 py-2 text-xs font-medium text-white disabled:opacity-50"><Play className="h-3.5 w-3.5" />启动内置声音引擎</button>}
+        {health?.engine?.canManage && health.ok && <button disabled={engineBusy} onClick={() => void stopEngine()} className="inline-flex shrink-0 items-center gap-1.5 rounded-md border border-emerald-300 bg-white px-3 py-2 text-xs font-medium text-emerald-800 disabled:opacity-50"><Square className="h-3.5 w-3.5" />停止引擎</button>}
+      </div>
+      </details>
+      {assigningProfile && <VoiceAssignmentDialog profile={assigningProfile} profiles={profiles} projects={projects} initialProjectId={projectId} onClose={() => setAssigningProfile(null)} onEditProject={(id) => { setAssigningProfile(null); if (onOpenProject) onOpenProject(id) }} onSaved={(binding) => { setProfiles((items) => items.map((profile) => ({ ...profile, bindings: [...profile.bindings.filter((item) => item.character.id !== binding.character.id), ...(profile.id === assigningProfile.id ? [binding] : [])] }))); window.dispatchEvent(new Event(VOICE_BINDINGS_CHANGED)) }} />}
       {editingProfile && <VoiceProfileEditor key={editingProfile.id} profile={editingProfile} onSaved={refreshProfile} onDeleted={(id) => { setProfiles((current) => current.filter((item) => item.id !== id)); if (previewProfile?.id === id) setPreviewProfile(null) }} onClose={() => setEditingProfile(null)} />}
     </div>
   )
@@ -358,11 +360,3 @@ function Field({ label, value, onChange, placeholder = '' }: { label: string; va
 function isStarterVoice(profile: VoiceProfile) {
   return profile.id.startsWith('starter-voice-profile-dreamchord-') || profile.id.startsWith('cast-voice-')
 }
-
-function voiceTags(profile: VoiceProfile): string[] {
-  try {
-    const parsed = JSON.parse(profile.tags)
-    return Array.isArray(parsed) ? parsed.filter((tag): tag is string => typeof tag === 'string') : []
-  } catch { return [] }
-}
-

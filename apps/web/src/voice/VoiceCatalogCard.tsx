@@ -1,0 +1,14 @@
+import { AudioLines, Play } from 'lucide-react'
+import type { ReactNode } from 'react'
+import type { VoiceProfile } from '../api/client'
+import { hasVoiceReference, languageName, voiceLanguages, voicePresentation } from './voiceCatalog'
+
+export default function VoiceCatalogCard({ profile, onPreview, action, secondary, active = false, canPreview = true }: { profile: VoiceProfile; onPreview: () => void; action: ReactNode; secondary?: ReactNode; active?: boolean; canPreview?: boolean }) {
+  const info = voicePresentation(profile)
+  return <article className={`flex min-w-0 flex-col rounded-2xl border bg-white p-4 transition duration-200 ${active ? 'border-dream-300 ring-1 ring-dream-100' : 'border-slate-200 hover:border-dream-200 hover:shadow-sm'}`}>
+    <div className="flex items-start gap-3"><div className={`grid h-12 w-12 shrink-0 place-items-center rounded-2xl ${profile.genderTone === '男声' ? 'bg-sky-50 text-sky-700' : 'bg-dream-50 text-dream-600'}`}><AudioLines className="h-6 w-6" /></div><div className="min-w-0 flex-1"><h3 className="text-sm font-bold leading-6 text-slate-950">{info.name}</h3><p className="mt-0.5 text-xs text-slate-500">{[profile.genderTone, profile.ageTone].filter(Boolean).join(' · ') || '自定义声线'}<span className="mx-1.5 text-slate-300">/</span>{voiceLanguages(profile).map(languageName).join('、')}</p></div><button type="button" aria-label={`试听${info.name}`} disabled={!canPreview} onClick={onPreview} className="grid h-10 w-10 shrink-0 place-items-center rounded-full border border-slate-200 bg-white text-dream-700 transition hover:border-dream-300 hover:bg-dream-50 disabled:opacity-30"><Play className="h-4 w-4 fill-current" /></button></div>
+    <p className="mt-3 line-clamp-2 min-h-10 text-xs leading-5 text-slate-600">{info.description}</p>
+    <div className="mt-3 flex flex-wrap gap-1.5">{info.traits.slice(0, 3).map((trait) => <span key={trait} className="rounded-md bg-slate-50 px-2 py-1 text-[11px] text-slate-600">{trait}</span>)}{profile.status !== 'active' ? <span className="rounded-md bg-amber-50 px-2 py-1 text-[11px] text-amber-800">已停用</span> : !hasVoiceReference(profile) && <span className="rounded-md bg-amber-50 px-2 py-1 text-[11px] text-amber-800">待添加参考录音</span>}</div>
+    <div className="mt-3 border-t border-slate-100 pt-3"><p className="mb-2 min-h-4 truncate text-[11px] text-slate-500" title={`适合${info.roles.join('、')}；${profile.bindings.map((binding) => `${binding.project.title} · ${binding.character.name}`).join('，')}`}>{profile.bindings.length ? `已分配：${profile.bindings.map((binding) => binding.character.name).join('、')}` : `适合：${info.roles.join('、') || '试听后决定'}`}{info.example && <span className="ml-2 text-dream-600">推荐给{info.example}</span>}</p><div className="flex items-center justify-between gap-3">{secondary}<div className="ml-auto">{action}</div></div></div>
+  </article>
+}

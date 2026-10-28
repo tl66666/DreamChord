@@ -65,11 +65,30 @@
 }
 
 @layer components {
-  .dc-page { @apply min-h-screen bg-slate-50 text-slate-800; }
+  .dc-page { @apply min-h-screen text-slate-800; background: #f8f7fb; }
   .dc-content { @apply mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:py-10; }
   .dc-panel { @apply rounded-2xl border border-slate-200 bg-white shadow-sm; }
   .dc-primary { @apply inline-flex min-h-10 items-center justify-center gap-2 rounded-lg bg-dream-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-dream-700 disabled:opacity-40; }
   .dc-secondary { @apply inline-flex min-h-10 items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-600 transition hover:border-dream-200 hover:bg-dream-50 hover:text-dream-700; }
+  .dc-studio-intro {
+    @apply relative isolate grid overflow-hidden rounded-2xl;
+    background: radial-gradient(ellipse at 90% 80%, #eae4f7 0%, transparent 62%), linear-gradient(110deg, #fcfaf6 8%, #f7f3fa 100%);
+    box-shadow: inset 0 0 0 1px rgb(125 105 158 / 8%);
+  }
+  .dc-studio-art { @apply relative min-h-40; }
+  .dc-studio-art img { @apply mx-auto h-44 w-full max-w-sm object-contain; }
+  .dc-studio-art-landscape img {
+    @apply h-full max-h-60 max-w-none object-cover;
+    mask-image: linear-gradient(to bottom, transparent, #000 25%);
+  }
+  @screen sm {
+    .dc-studio-intro { grid-template-columns: minmax(0, 1fr) minmax(260px, 36%); min-height: 232px; }
+    .dc-studio-art { @apply flex items-center justify-center; }
+    .dc-studio-art img { @apply h-52 w-full max-w-none px-3; }
+    .dc-studio-art-landscape { @apply absolute inset-y-0 right-0 w-[48%]; }
+    .dc-studio-art-landscape img { @apply h-full max-h-none p-0; mask-image: linear-gradient(to right, transparent, #000 48%); }
+    .dc-studio-intro:has(.dc-studio-art-landscape) { grid-template-columns: minmax(0, 1fr) 32%; }
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

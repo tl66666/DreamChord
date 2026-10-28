@@ -175,11 +175,12 @@ export function CardEditor({
             )}
           </div>
           <select
-            value={card.background}
-            onChange={(e) => onUpdate({ background: e.target.value })}
+            value={libraryScenes.find((scene) => scene.id === card.background || scene.url === card.background)?.id || card.background}
+            onChange={(e) => onUpdate({ background: libraryScenes.find((scene) => scene.id === e.target.value)?.url || e.target.value })}
             className="flex-1 rounded-lg border border-dream-200 bg-white px-2.5 py-1.5 text-sm text-slate-800 focus:border-dream-500 focus:outline-none"
           >
             <option value="">请选择背景...</option>
+            {card.background && !libraryScenes.some((scene) => scene.id === card.background || scene.url === card.background) && <option value={card.background}>已选择的背景图片</option>}
             {libraryScenes.map((scene) => (
               <option key={scene.id} value={scene.id}>{scene.name}</option>
             ))}

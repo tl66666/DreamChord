@@ -6,7 +6,7 @@
  */
 
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { useParams, useNavigate } from 'react-router-dom'
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom'
 import {
   type Edge,
   type Node,
@@ -49,10 +49,13 @@ import { editorPaneClasses } from './responsiveLayout'
 import { SaveCoordinator, type SaveState } from './saveCoordinator'
 import type { ProjectAssetTarget } from './ProjectAssetPicker'
 import { upsertAcceptedProjectCharacter } from './projectCharacters'
+import { loadLibraryScenes } from '../lib/libraryData'
+import { applyLibraryBackground } from './applyLibraryBackground'
 
 export default function FlowEditor() {
   const { projectId } = useParams<{ projectId: string }>()
   const navigate = useNavigate()
+  const [searchParams, setSearchParams] = useSearchParams()
   const toast = useToast()
   const confirm = useConfirm()
 
@@ -61,7 +64,7 @@ export default function FlowEditor() {
   const [showAssets, setShowAssets] = useState(false)
   const [showSettings, setShowSettings] = useState(false)
   const [showHealth, setShowHealth] = useState(false)
-  const [showVoices, setShowVoices] = useState(false)
+  const [showVoices, setShowVoices] = useState(() => searchParams.get('panel') === 'voices')
   const [shareCopied, setShareCopied] = useState(false)
   const [viewMode, setViewMode] = useState<'scene' | 'flow'>('scene')
   const [assetTarget, setAssetTarget] = useState<ProjectAssetTarget | null>(null)
@@ -658,9 +661,23 @@ export default function FlowEditor() {
   }
 
   const paneClasses = editorPaneClasses(showAssets || showAI)
+  const carriedBackgroundId = searchParams.get('libraryBackground')
+  const carriedBackground = carriedBackgroundId ? loadLibraryScenes().find((scene) => scene.id === carriedBackgroundId) : undefined
+  const clearCarriedBackground = () => setSearchParams((current) => { const next = new URLSearchParams(current); next.delete('libraryBackground'); return next }, { replace: true })
+  const applyCarriedBackground = () => {
+    if (!carriedBackground || !selectedSceneId) return
+    try {
+      const current = useEditorStore.getState()
+      const result = applyLibraryBackground(current.nodes, current.edges, selectedSceneId, carriedBackground.url)
+      current.commitGraph(result.nodes, result.edges)
+      toast.success(`已将“${carriedBackground.name}”设为所选场景的开场背景，可撤销。`)
+      clearCarriedBackground()
+    } catch (error) { toast.error(error instanceof Error ? error.message : '背景应用失败') }
+  }
 
   return (
     <div className="flex h-full flex-col">
+      {carriedBackgroundId && <div className="flex shrink-0 flex-wrap items-center gap-3 border-b border-dream-100 bg-dream-50 px-4 py-3"><img src={carriedBackground?.url || '/assets/hero.png'} alt="" className="h-11 w-20 rounded-lg object-cover" /><div className="min-w-0 flex-1"><p className="text-sm font-semibold text-slate-900">{carriedBackground ? `已带入背景：${carriedBackground.name}` : '这个背景已不在素材库中'}</p><p className="mt-0.5 text-xs text-slate-600">在左侧选择目标场景，再应用为开场背景。对白、分支和已有配音会保留。</p></div><button disabled={!selectedSceneId || !carriedBackground || store.isLoading} onClick={applyCarriedBackground} className="dc-primary !min-h-9 !text-xs">应用到所选场景</button><button onClick={clearCarriedBackground} className="dc-secondary !min-h-9 !text-xs">取消</button></div>}
       {/* === 顶部工具栏 === */}
       <div className="z-20 flex flex-wrap items-center justify-between gap-3 border-b border-dream-100 bg-white px-4 py-2.5 shadow-sm">
         <div className="flex min-w-0 items-center gap-3">
@@ -821,6 +838,12 @@ export default function FlowEditor() {
           <div className={paneClasses.side}>
             {showAssets ? (
               <AssetPanel
+                onBrowseLibrary={(type) => { void (async () => {
+                  await saveCoordinator.flush()
+                  if (saveCoordinator.isDirty) { toast.error('当前改动尚未保存，请先处理保存提示，再打开素材库。'); return }
+                  const tab = type === 'BACKGROUND' ? 'scenes' : type === 'VOICE' || type === 'VOICE_SAMPLE' ? 'voices' : type === 'BGM' || type === 'SFX' ? 'music' : type === 'CG' ? 'characters' : type === 'SETTING' ? 'stories' : 'projectAssets'
+                  navigate(`/library?tab=${tab}&project=${encodeURIComponent(projectId || '')}`)
+                })() }}
                 selectedType={assetTarget?.field === 'background' ? 'BACKGROUND' : assetTarget?.field === 'bgm' ? 'BGM' : assetTarget?.field === 'sfx' ? 'SFX' : assetTarget?.field === 'voice' ? 'VOICE' : 'CG'}
                 selectionTypes={assetTarget?.field === 'background' ? ['BACKGROUND', 'CG'] : assetTarget?.field === 'bgm' ? ['BGM'] : assetTarget?.field === 'sfx' ? ['SFX'] : assetTarget?.field === 'voice' ? ['VOICE'] : undefined}
                 onSelect={handleSelectAsset}
