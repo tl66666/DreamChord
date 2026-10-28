@@ -51,6 +51,7 @@ import type { ProjectAssetTarget } from './ProjectAssetPicker'
 import { upsertAcceptedProjectCharacter } from './projectCharacters'
 import { loadLibraryScenes } from '../lib/libraryData'
 import { applyLibraryBackground } from './applyLibraryBackground'
+import AutomaticVoiceBar from '../voice/AutomaticVoiceBar'
 
 export default function FlowEditor() {
   const { projectId } = useParams<{ projectId: string }>()
@@ -768,6 +769,7 @@ export default function FlowEditor() {
         </div>
       </div>
 
+      <AutomaticVoiceBar projectId={projectId || ''} preferredSceneId={selectedSceneId} suspended={showVoices} onApplied={triggerAutoSave} onManage={() => setShowVoices(true)} />
       {/* === 主体内容 === */}
       {viewMode === 'flow' ? (
         /* 剧情流程图视图 — galgame 风格总览 */

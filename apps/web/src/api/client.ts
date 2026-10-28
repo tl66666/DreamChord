@@ -2,6 +2,7 @@ import axios from 'axios'
 import { getDefaultProvider, resolveBaseUrl } from '../lib/aiConfig'
 import { useAuthStore } from '../stores/authStore'
 import { presentVoiceProfile } from '../voice/voiceCatalog'
+import { enableAutomaticVoiceForBinding } from '../voice/automaticVoicePreference'
 import type { AgentConversationDto, AgentMemoryDto, AgentMemoryInput, AgentMessageDto, AgentMessagePageDto, AgentProviderConfig, AgentRunDto, AppliedPatchDto, StartAgentRunInput } from '../agent/agentTypes'
 
 export const api = axios.create({
@@ -380,6 +381,12 @@ export interface VoiceProfile {
 
 export interface VoiceGenerationJob {
   id: string
+  projectId?: string
+  chapterId?: string | null
+  nodeId?: string | null
+  profileId?: string
+  referenceId?: string
+  providerMetadata?: string | null
   status: 'queued' | 'running' | 'completed' | 'failed'
   text: string
   language: string
@@ -460,11 +467,12 @@ export async function attachVoiceReference(profileId: string, payload: {
 
 export async function bindCharacterVoice(profileId: string, payload: { projectId: string; characterId: string }): Promise<CharacterVoiceBinding> {
   const { data } = await api.post(`/voices/profiles/${profileId}/bindings`, payload)
+  enableAutomaticVoiceForBinding(payload.projectId)
   return data
 }
 
-export async function getVoiceGenerationJobs(profileId?: string): Promise<VoiceGenerationJob[]> {
-  const { data } = await api.get('/voices/jobs', { params: profileId ? { profileId } : undefined })
+export async function getVoiceGenerationJobs(filter?: string | { projectId: string; chapterId: string }): Promise<VoiceGenerationJob[]> {
+  const { data } = await api.get('/voices/jobs', { params: typeof filter === 'string' ? { profileId: filter } : filter })
   return data
 }
 

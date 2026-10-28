@@ -40,6 +40,10 @@ export class EditorHistory {
   hydrate(next: EditorGraph): EditorHistory {
     return new EditorHistory(snapshot(next), [], [], this.limit)
   }
+
+  replaceCurrent(next: EditorGraph): EditorHistory {
+    return new EditorHistory(snapshot(next), this.past, this.future, this.limit)
+  }
 }
 
 export function createEditorHistory(initial: EditorGraph, limit = 50): EditorHistory {

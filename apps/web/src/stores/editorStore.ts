@@ -69,6 +69,7 @@ interface EditorState {
   setSaving: (saving: boolean) => void
   setLastSavedAt: (date: Date) => void
   commitGraph: (nodes: Node[], edges: Edge[]) => void
+  applyDerivedGraph: (nodes: Node[]) => void
   hydrateGraph: (nodes: Node[], edges: Edge[]) => void
   undo: () => void
   redo: () => void
@@ -154,6 +155,10 @@ export const useEditorStore = create<EditorState>((set, get) => ({
   hydrateGraph: (nodes, edges) => set((state) => {
     const history = state.history.hydrate({ nodes, edges })
     return { nodes: history.current.nodes, edges: history.current.edges, history, canUndo: false, canRedo: false }
+  }),
+  applyDerivedGraph: (nodes) => set((state) => {
+    const history = state.history.replaceCurrent({ nodes, edges: state.edges })
+    return { nodes: history.current.nodes, history, canUndo: history.canUndo, canRedo: history.canRedo }
   }),
   undo: () => set((state) => {
     const history = state.history.undo()

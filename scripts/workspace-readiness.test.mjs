@@ -188,8 +188,9 @@ for (const screenshot of [
   'editor-1440.png',
   'flowchart-1440.png',
   'agent-workspace-1440.png',
-  'agent-zero-config-1440.png',
-  'asset-processing-1440.png',
+  'voice-library-1440.png',
+  'automatic-voice-1440.png',
+  'music-library-1440.png',
   'home-1440.png',
 ]) {
   assert.ok(showcase.includes(`screenshots/${screenshot}`), `showcase must use the real ${screenshot} browser capture`)

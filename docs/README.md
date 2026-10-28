@@ -10,7 +10,7 @@
 | 理解项目价值和完成度 | [项目概览](PROJECT_OVERVIEW.md) | 5 分钟 |
 | 完成一段可玩的故事 | [创作者工作流](CREATOR_WORKFLOW.md) | 15 分钟 |
 | 理解系统如何工作 | [系统架构](ARCHITECTURE.md) | 15 分钟 |
-| 接手本轮 Agent 与文档更新 | [当前迭代交接](CURRENT_HANDOFF.md) | 12 分钟 |
+| 接手本轮声音、视觉与展示更新 | [当前迭代交接](CURRENT_HANDOFF.md) | 12 分钟 |
 | 接手维护或开发 | [贡献指南](../CONTRIBUTING.md) | 10 分钟 |
 | 判断 GitHub、CI 与下一次迭代 | [维护与迭代手册](MAINTAINER_PLAYBOOK.md) | 12 分钟 |
 
@@ -19,6 +19,8 @@
 - [新手入门](GETTING_STARTED.md)：安装、启动、登录和第一次完整体验。
 - [创作者工作流](CREATOR_WORKFLOW.md)：故事、舞台、素材和 Agent 如何配合。
 - [创作 Agent 使用指南](AGENT_GUIDE.md)：对话、章节绑定、记忆、工具和审批。
+- [角色声音库与自动配音](VOICE_WORKFLOW.md)：试听分配、自动合成、语言、缓存与安全更新规则。
+- [本机声音引擎安装](GPT_SOVITS_SETUP.md)：模型安装、引擎管理和授权参考样本。
 - [长篇创作与小说导入](LONG_STORY_WORKFLOW.md)：章节、场景和长文拆分方法。
 - [角色立绘规范](../SPRITE_ASSET_STANDARD.md)：上传图片和透明立绘的制作要求。
 - [角色资料](../CHARACTERS.md)：官方演示角色设定。
@@ -32,7 +34,7 @@
 - [术语表](GLOSSARY.md)：章节、场景、镜头卡、记忆、补丁等词的统一定义。
 - [场景编辑器设计](scene-editor-design.md)：场景与镜头卡编辑模型的详细设计。
 - [AI 与架构交接](AI_HANDOFF.md)：给后续维护者和编码 Agent 的实现级说明。
-- [当前迭代交接](CURRENT_HANDOFF.md)：本轮无 Key 降级、结构化剧本导入、启动器和展示材料的变更、边界与后续方向。
+- [当前迭代交接](CURRENT_HANDOFF.md)：本轮角色声音、自动中日配音、素材工作流、统一视觉和展示交付的实现与边界。
 - [维护与迭代手册](MAINTAINER_PLAYBOOK.md)：当前远端状态、首次验收、修改边界、质量检查、CI 判断和文档更新规则。
 - [交互架构图](dreamchord-architecture/dreamchord-architecture.html)：可视化系统关系。
 

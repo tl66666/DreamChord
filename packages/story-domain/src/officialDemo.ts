@@ -277,7 +277,7 @@ export const OFFICIAL_DEMO: { id: string; title: string; description: string; co
   id: 'dreamchord-first-thread',
   title: '第一根弦：消失的终页',
   description: '日落之前，雪必须找回被自己删除的终页，并决定作者是否有权替角色和共同创作者选择遗忘。',
-  cover: '/assets/hero.png',
+  cover: '/assets/covers/first-thread.webp',
   chapterTitle: '第一章：消失的终页',
   graph: { nodes: nodes.map(withOfficialJapanese), edges },
   characters: [

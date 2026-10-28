@@ -10,6 +10,7 @@
     "build": "pnpm -r build",
     "test": "pnpm -r test",
     "test:readiness": "node scripts/workspace-readiness.test.mjs",
+    "test:presentation": "node scripts/check-presentation-assets.mjs",
     "test:voice-runtime": "node --test scripts/voice-runtime-config.test.mjs scripts/cosyvoice-runtime-config.test.mjs scripts/starter-voice-manifest.test.mjs scripts/starter-music-manifest.test.mjs scripts/official-soundtrack-manifest.test.mjs scripts/bilingual-cast-manifest.test.mjs",
     "voice:setup": "pwsh -NoProfile -File scripts/setup-gpt-sovits.ps1",
     "voice:setup:cpu": "pwsh -NoProfile -File scripts/setup-gpt-sovits.ps1 -Device CPU",

@@ -65,6 +65,8 @@ Autosave is coordinated by `SaveCoordinator`:
 
 Do not add a second local graph copy inside editor components.
 
+Automatic voice tracks are derived metadata, not a new author edit. Use `applyDerivedGraph` / `EditorHistory.replaceCurrent` to link them without consuming the author's undo steps, and save through the existing coordinator. Recheck source text, scope, character binding, reference and original tracks after each asynchronous boundary. Read `docs/VOICE_WORKFLOW.md` before changing this flow.
+
 ## Agent Architecture
 
 Core server code is under `apps/server/src/agent` and the HTTP routes are in `apps/server/src/routes/agent.ts`.

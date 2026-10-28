@@ -4,6 +4,7 @@ import { Search, Loader2, RefreshCw } from 'lucide-react'
 import { getPublicProjects, type ProjectDetail } from '../api/client'
 import AppHeader from '../components/AppHeader'
 import StudioIntro from '../components/StudioIntro'
+import { projectCover } from '../lib/projectCover'
 
 export default function ExplorePage() {
   const navigate = useNavigate()
@@ -58,7 +59,7 @@ function ProjectCard({
     >
       <div className="relative aspect-[16/10] overflow-hidden">
         <img
-          src={project.cover || '/assets/covers/default-cover.png'}
+          src={projectCover(project)}
           alt={project.title}
           className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
         />

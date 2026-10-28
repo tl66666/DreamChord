@@ -21,7 +21,7 @@ describe('audition and assignment workflow', () => {
     await screen.findByText('已保存。角色后续台词将沿用这个音色。')
     expect(bind).toHaveBeenCalledWith('voice-new', { projectId: 'story', characterId: 'yuki' })
     expect(saved).toHaveBeenCalledOnce()
-    fireEvent.click(screen.getByText('去编辑器生成配音'))
+    fireEvent.click(screen.getByText('回到编辑器继续写'))
     expect(edit).toHaveBeenCalledWith('story')
   })
   it('keeps assignment unchanged when the server rejects a save', async () => {

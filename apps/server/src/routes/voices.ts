@@ -196,15 +196,17 @@ export function createVoiceRouter(
 
   router.get('/jobs', async (req: AuthRequest, res: Response) => {
     const profileId = typeof req.query.profileId === 'string' ? req.query.profileId : undefined
+    const projectId = typeof req.query.projectId === 'string' ? req.query.projectId : undefined
+    const chapterId = typeof req.query.chapterId === 'string' ? req.query.chapterId : undefined
     res.json(await client.voiceGenerationJob.findMany({
-      where: { ownerId: req.userId!, ...(profileId ? { profileId } : {}) },
+      where: { ownerId: req.userId!, ...(profileId ? { profileId } : {}), ...(projectId ? { projectId } : {}), ...(chapterId ? { chapterId } : {}) },
       include: {
         character: { select: { id: true, name: true } },
         profile: { select: { id: true, name: true } },
         acceptedAsset: true,
       },
       orderBy: { createdAt: 'desc' },
-      take: 40,
+      take: projectId && chapterId ? 200 : 40,
     }))
   })
 

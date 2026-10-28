@@ -1,12 +1,26 @@
 # 梦弦 DreamChord
 
-面向视觉小说创作者的本地故事工作台。作者可以用章节、场景和镜头卡组织故事，管理角色立绘、背景与 CG，通过分支流程图检查剧情，并让创作 Agent 读取项目上下文、调用受限工具、提出可审核的修改。
+面向视觉小说创作者的本地故事工房。用章节、场景和镜头卡组织剧情，试听音色后绑定角色，开启自动配音继续写作；中文显示与中日配音独立选择。背景、立绘、音乐、分支试玩和可审核的创作 Agent 都在同一个工作台里。
 
 [在线项目展示](https://tl66666.github.io/DreamChord/) | [新手入门](docs/GETTING_STARTED.md) | [项目概览](docs/PROJECT_OVERVIEW.md) | [维护与迭代手册](docs/MAINTAINER_PLAYBOOK.md) | [完整文档](docs/README.md)
 
 当前远端构建状态请查看 [GitHub Actions](https://github.com/tl66666/DreamChord/actions)：Actions 会保留历史失败记录，请以最新提交的 CI 与项目展示页部署结果为准。
 
-![DreamChord 故事编辑器](docs/screenshots/editor-stage-continuity-1440.png)
+![DreamChord 新版首页与故事书架](docs/screenshots/home-1440.png)
+
+## 声音库是怎样融入创作的
+
+**试听声线 → 分配到故事角色 → 开启自动配音 → 继续写中文 → 预览已保存的对白。**
+
+![角色音色库与角色分配](docs/screenshots/voice-library-1440.png)
+
+音色按特征命名，附适用人物、可用语言、来源与现有绑定。绑定一次后，后续对白沿用角色声线。编辑器停笔约 2.2 秒后会优先准备当前场景，再补齐本章；自动翻译、合成、关联并保存。新台词仍需合成，但作者不必逐句点生成。有效结果可复用，改一句只更新对应片段，也能暂停、重试或切到手动精修。
+
+![角色固定声线、自动配音与语言设置](docs/screenshots/automatic-voice-1440.png)
+
+游戏文字默认中文，日语配音不会把中文台词改掉。自动处理发生在编辑器打开期间；公开播放器使用已保存的音频。内置五个角色的双语合成声线、部分示例音轨与 13 首 TERNOX CC0 配乐，未宣称全剧情已预录。展示页可直接试听两条有来源记录的合成样音。
+
+[完整声音工作流](docs/VOICE_WORKFLOW.md) · [本机引擎安装](docs/GPT_SOVITS_SETUP.md) · [当前开发交接](docs/CURRENT_HANDOFF.md)
 
 ## 这个项目解决什么问题
 
@@ -28,7 +42,7 @@
 - **可视化检查**：剧情流程图、断路与死路检测、实时场景预览和完整试玩。
 - **创作 Agent**：多对话、章节可选绑定、分层记忆、项目上下文、工具调用、提案审核、应用与撤销。
 - **全局素材库与音频演出**：一次上传的立绘、背景、CG、BGM、音效和配音可跨故事复用；独立音乐库支持按情绪、风格、剧情场景筛选，记录循环方式与授权来源，镜头卡可手动绑定 BGM、一次性音效和台词/旁白配音。
-- **私有声音库**：把已授权的 `VOICE_SAMPLE` 整理为可跨项目复用的音色档案，按声线和年龄感筛选、持续试听并绑定角色；DreamChord 可后台管理本机 GPT-SoVITS，完成生成候选、试听确认与正式配音入库。
+- **角色声音库与自动配音**：授权参考录音组成可复用音色，先试听、再绑定；本机管理 GPT-SoVITS / CosyVoice3，后台按角色准备对白，支持中文输入、日语配音、暂停重试与手动精修。
 - **图片准备**：检查真实图片内容，保留原图，生成白底去除、透明裁边、立绘、CG 和背景候选。
 - **可靠保存**：串行自动保存、版本冲突保护、50 步撤销与重做、项目备份与恢复。
 - **本地优先**：故事、数据库和上传文件默认保存在本机；基础编辑不需要模型 API Key。
@@ -37,7 +51,7 @@
 
 DreamChord Agent 不是悬浮在编辑器旁的通用聊天框。它知道当前项目、故事圣经、角色、素材、章节、场景、剧情健康状态和作者确认过的记忆。
 
-![DreamChord 创作 Agent](docs/screenshots/agent-conversation-routing-1440.png)
+![DreamChord 创作 Agent](docs/screenshots/agent-workspace-1440.png)
 
 Agent 根据任务选择三种执行方式：
 
@@ -133,9 +147,12 @@ pnpm lint
 pnpm test
 pnpm build
 pnpm test:readiness
+pnpm test:presentation
 ```
 
 当前自动化测试覆盖剧情规则、分支舞台状态、保存冲突、Agent 路由与记忆隔离、工具调用、剧情补丁、图片处理、备份恢复和核心界面流程。高风险交互还需要使用真实浏览器检查桌面与移动布局、控制台错误和失败请求。
+
+Windows 开发服务运行时，`pnpm test` 的准备步骤可能因 Prisma 引擎 DLL 已加载而报 `EPERM`。已有 Client 可用且没有修改 schema 时，可用 `pnpm -r test` 验证所有工作区；需要重新生成 Client 时先正常停止后端，再执行准备命令。不要删除 DLL、数据库或上传目录来绕过占用。
 
 ## 当前边界
 

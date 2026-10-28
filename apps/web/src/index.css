@@ -75,6 +75,12 @@
     background: radial-gradient(ellipse at 90% 80%, #eae4f7 0%, transparent 62%), linear-gradient(110deg, #fcfaf6 8%, #f7f3fa 100%);
     box-shadow: inset 0 0 0 1px rgb(125 105 158 / 8%);
   }
+  .dc-home-hero { @apply relative isolate overflow-hidden; background: #fcf9f4; }
+  .dc-home-hero-art { @apply absolute bottom-0 left-0 w-full object-contain; height: auto; aspect-ratio: 1672 / 941; object-position: center; }
+  .dc-home-hero::after {
+    content: ''; position: absolute; inset: 0; z-index: 1; pointer-events: none;
+    background: linear-gradient(to bottom, #fcf9f4 0%, #fcf9f4f5 47%, #fcf9f426 75%, transparent), linear-gradient(to top, #f8f7fb, transparent 22%);
+  }
   .dc-studio-art { @apply relative min-h-40; }
   .dc-studio-art img { @apply mx-auto h-44 w-full max-w-sm object-contain; }
   .dc-studio-art-landscape img {
@@ -82,6 +88,9 @@
     mask-image: linear-gradient(to bottom, transparent, #000 25%);
   }
   @screen sm {
+    .dc-home-hero { min-height: clamp(530px, 43vw, 680px); }
+    .dc-home-hero-art { left: 50%; top: 0; bottom: auto; height: 100%; width: 100%; max-width: 1760px; transform: translateX(-50%); object-position: right center; }
+    .dc-home-hero::after { background: linear-gradient(90deg, #fcf9f4fa 0%, #fcf9f4ef 27%, #fcf9f488 46%, transparent 66%), linear-gradient(to top, #f8f7fb, transparent 20%); }
     .dc-studio-intro { grid-template-columns: minmax(0, 1fr) minmax(260px, 36%); min-height: 232px; }
     .dc-studio-art { @apply flex items-center justify-center; }
     .dc-studio-art img { @apply h-52 w-full max-w-none px-3; }

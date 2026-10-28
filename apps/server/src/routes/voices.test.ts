@@ -23,6 +23,14 @@ function appFor(client: PrismaClient, provider: VoiceProvider | null = null, sto
 describe('voice library routes', () => {
   beforeEach(() => { process.env.JWT_SECRET = secret })
 
+  it('recovers chapter jobs with scope filters while always restricting the owner', async () => {
+    const findMany = vi.fn().mockResolvedValue([])
+    const client = { voiceGenerationJob: { findMany } } as unknown as PrismaClient
+    const response = await request(appFor(client)).get('/api/voices/jobs?projectId=p&chapterId=c').set('Authorization', `Bearer ${token('owner')}`)
+    expect(response.status).toBe(200)
+    expect(findMany).toHaveBeenCalledWith(expect.objectContaining({ where: { ownerId: 'owner', projectId: 'p', chapterId: 'c' }, take: 200 }))
+  })
+
   it('translates Chinese for an authenticated author without requiring a Japanese source field', async () => {
     const translate = vi.fn().mockResolvedValue({ text: '一緒に帰ろう。', sourceLanguage: 'zh', targetLanguage: 'ja', sourceHash: '12345678', source: 'local-cpu' })
     const app = express(); app.use(express.json())

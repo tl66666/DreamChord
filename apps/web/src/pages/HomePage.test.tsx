@@ -31,6 +31,22 @@ describe('HomePage navigation', () => {
     expect(MAX_PROJECT_BACKUP_BYTES).toBeGreaterThanOrEqual(90 * 1024 * 1024)
   })
 
+  it('finds projects by title and publication status and gives icon actions explicit names', async () => {
+    const story = { description: '', cover: '', isPublic: false, author: { username: 'demo', nickname: null }, chapters: [], characters: [] }
+    vi.mocked(getMyProjects).mockResolvedValueOnce([{ ...story, id: 'a', title: '雨夜来信', isPublished: false }, { ...story, id: 'b', title: '星海终页', isPublished: true }])
+    render(<MemoryRouter><FeedbackProvider><HomePage /></FeedbackProvider></MemoryRouter>)
+    await screen.findByText('雨夜来信')
+    expect(screen.getByRole('button', { name: '重命名雨夜来信' })).toBeTruthy()
+    expect(screen.getByRole('button', { name: '删除雨夜来信' })).toBeTruthy()
+    fireEvent.click(screen.getByRole('button', { name: '已发布' }))
+    expect(screen.queryByText('雨夜来信')).toBeNull()
+    expect(screen.getByText('星海终页')).toBeTruthy()
+    fireEvent.change(screen.getByLabelText('搜索我的故事'), { target: { value: '不存在的故事' } })
+    expect(screen.getByText('没有找到符合条件的故事')).toBeTruthy()
+    fireEvent.click(screen.getByText('清空筛选'))
+    expect(screen.getByText('雨夜来信')).toBeTruthy()
+  })
+
   it('provides a compact mobile menu with the primary destinations', () => {
     render(<MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}><FeedbackProvider><HomePage /></FeedbackProvider></MemoryRouter>)
 

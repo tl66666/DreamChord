@@ -1,6 +1,17 @@
 import { describe, expect, it } from 'vitest'
 import { createEditorHistory } from './editorHistory'
 
+it('updates derived audio without adding an undo step or erasing the author’s history', () => {
+  const initial = { nodes: [{ id: 'line', position: { x: 0, y: 0 }, data: { text: '原文' } }], edges: [] }
+  const edited = { ...initial, nodes: [{ ...initial.nodes[0], data: { text: '新台词' } }] }
+  const history = createEditorHistory(initial).commit(edited)
+  const derived = history.replaceCurrent({ ...edited, nodes: [{ ...edited.nodes[0], data: { text: '新台词', voiceTracks: { zh: { url: '/new.wav' } } } }] })
+  expect(derived.current.nodes[0].data.voiceTracks).toBeDefined()
+  expect(derived.undo().current.nodes[0].data.text).toBe('原文')
+  expect(derived.undo().canUndo).toBe(false)
+  expect(derived.undo().redo().current.nodes[0].data.voiceTracks).toBeDefined()
+})
+
 const graph = (id: string) => ({ nodes: [{ id, type: 'dialogue', position: { x: 0, y: 0 }, data: {} }], edges: [] })
 
 describe('editor history', () => {

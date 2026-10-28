@@ -15,10 +15,12 @@ pnpm test:readiness
 
 本地 `HEAD` 与 `origin/main` 显示同一提交时，代码已经上传。GitHub Actions 页面会保留历史失败记录，判断当前版本时应只看最新提交对应的运行：CI 与 `pages-build-deployment` 都为绿色才表示当前提交通过。
 
-本轮 CI 修复提交 `d4f17ca` 后，工作流采用以下固定流程：
+工作流采用以下固定流程：
 
 - CI：构建共享剧情包、生成 Prisma Client、在隔离 SQLite 数据库执行迁移和演示数据种子、运行 lint、测试与构建。
 - GitHub Pages：部署项目展示页面；它和应用后端不是同一个服务。
+
+当前声音与视觉迭代以 [CURRENT_HANDOFF.md](CURRENT_HANDOFF.md) 和 [VOICE_WORKFLOW.md](VOICE_WORKFLOW.md) 为入口。展示资源审计执行 `pnpm test:presentation`；截图索引在 `docs/screenshots/README.md`。本地服务运行期间不要重新覆盖 Prisma Client，Windows DLL 占用时可用已有 Client 执行 `pnpm -r test`。
 
 ## 首次运行与验收
 
