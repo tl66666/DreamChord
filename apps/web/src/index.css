@@ -54,8 +54,26 @@
     @apply border-border;
   }
   body {
-    @apply bg-background text-foreground antialiased;
+    @apply bg-slate-50 font-sans text-slate-800 antialiased;
   }
+  button, a, input, textarea, select {
+    @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-dream-500/50 focus-visible:ring-offset-2;
+  }
+  button:disabled {
+    cursor: not-allowed;
+  }
+}
+
+@layer components {
+  .dc-page { @apply min-h-screen bg-slate-50 text-slate-800; }
+  .dc-content { @apply mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:py-10; }
+  .dc-panel { @apply rounded-2xl border border-slate-200 bg-white shadow-sm; }
+  .dc-primary { @apply inline-flex min-h-10 items-center justify-center gap-2 rounded-lg bg-dream-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-dream-700 disabled:opacity-40; }
+  .dc-secondary { @apply inline-flex min-h-10 items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-600 transition hover:border-dream-200 hover:bg-dream-50 hover:text-dream-700; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; }
 }
 
 /* React Flow 自定义样式 */

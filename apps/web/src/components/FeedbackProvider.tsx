@@ -10,6 +10,7 @@ import {
   createContext,
   useCallback,
   useContext,
+  useMemo,
   useState,
   type ReactNode,
   type MouseEvent,
@@ -90,11 +91,11 @@ export function FeedbackProvider({ children }: { children: ReactNode }) {
     setTimeout(() => dismissToast(id), 3500)
   }, [dismissToast])
 
-  const toast: ToastContextValue = {
+  const toast: ToastContextValue = useMemo(() => ({
     success: (msg) => pushToast('success', msg),
     error: (msg) => pushToast('error', msg),
     info: (msg) => pushToast('info', msg),
-  }
+  }), [pushToast])
 
   // --- Confirm ---
   const confirm = useCallback((options: ConfirmOptions | string) => {
@@ -141,6 +142,7 @@ export function FeedbackProvider({ children }: { children: ReactNode }) {
                 <Icon className="mt-0.5 h-5 w-5 shrink-0" />
                 <span className="text-sm leading-5">{t.message}</span>
                 <button
+                  aria-label="关闭通知"
                   onClick={() => dismissToast(t.id)}
                   className="ml-2 shrink-0 opacity-50 transition hover:opacity-100"
                 >

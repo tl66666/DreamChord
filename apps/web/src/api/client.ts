@@ -1,4 +1,5 @@
 import axios from 'axios'
+import { getDefaultProvider, resolveBaseUrl } from '../lib/aiConfig'
 import { useAuthStore } from '../stores/authStore'
 import type { AgentConversationDto, AgentMemoryDto, AgentMemoryInput, AgentMessageDto, AgentMessagePageDto, AgentProviderConfig, AgentRunDto, AppliedPatchDto, StartAgentRunInput } from '../agent/agentTypes'
 
@@ -21,8 +22,10 @@ api.interceptors.request.use((config) => {
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response?.status === 401 || error.response?.status === 403) {
-      // 清除本地认证状态，让应用跳转到登录页
+    const failedToken = error.config?.headers?.Authorization
+    const currentToken = localStorage.getItem('dreamchord_token')
+    if (error.response?.status === 401 && (!failedToken || failedToken === `Bearer ${currentToken}`)) {
+      // A forbidden resource or an old request must not invalidate the current login.
       localStorage.removeItem('dreamchord_token')
       useAuthStore.getState().setUser(null)
       useAuthStore.getState().setToken(null)
@@ -395,6 +398,23 @@ export async function getVoiceProfiles(): Promise<VoiceProfile[]> {
   return data
 }
 
+export async function updateVoiceProfile(profileId: string, payload: Partial<Pick<VoiceProfile, 'name' | 'description' | 'language' | 'ageTone' | 'genderTone' | 'defaultEmotion' | 'defaultSpeed' | 'status'>> & { tags?: string[] }): Promise<VoiceProfile> {
+  const { data } = await api.patch(`/voices/profiles/${profileId}`, payload)
+  return data
+}
+
+export async function deleteVoiceProfile(profileId: string): Promise<void> {
+  await api.delete(`/voices/profiles/${profileId}`)
+}
+
+export async function unbindCharacterVoice(bindingId: string): Promise<void> {
+  await api.delete(`/voices/bindings/${bindingId}`)
+}
+
+export async function removeVoiceReference(profileId: string, referenceId: string): Promise<void> {
+  await api.delete(`/voices/profiles/${profileId}/references/${referenceId}`)
+}
+
 export async function getVoiceProviderHealth(): Promise<VoiceProviderHealth> {
   const { data } = await api.get('/voices/provider/health')
   return data
@@ -455,6 +475,10 @@ export async function getVoiceGenerationJob(jobId: string): Promise<VoiceGenerat
 export async function createVoiceGeneration(payload: {
   projectId: string
   characterId: string
+  chapterId?: string
+  nodeId?: string
+  sourceText?: string
+  sourceLanguage?: string
   referenceId: string
   directionMode?: 'auto' | 'manual'
   text: string
@@ -468,6 +492,12 @@ export async function createVoiceGeneration(payload: {
 
 export async function acceptVoiceGeneration(jobId: string, payload: { name?: string }): Promise<Asset> {
   const { data } = await api.post(`/voices/jobs/${jobId}/accept`, payload)
+  return data
+}
+
+export async function translateVoiceText(text: string): Promise<{ text: string; sourceHash: string; sourceLanguage: 'zh'; targetLanguage: 'ja'; source: string }> {
+  const model = getDefaultProvider()
+  const { data } = await api.post('/voices/translate', { text, targetLanguage: 'ja', ...(model ? { provider: { provider: model.provider, model: model.model, apiKey: model.apiKey, baseUrl: resolveBaseUrl(model.provider, model.baseUrl) } } : {}) }, { timeout: 200000 })
   return data
 }
 

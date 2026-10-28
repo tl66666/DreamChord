@@ -2,6 +2,11 @@ import { describe, expect, it } from 'vitest'
 import { directVoiceLine, voiceTextHash } from './voiceDirection.js'
 
 describe('directVoiceLine', () => {
+  it('directs Japanese dialogue using the same emotion vocabulary', () => {
+    expect(directVoiceLine({ role: 'yuki', text: '絶対に、あきらめない。' }).emotion).toBe('resolve')
+    expect(directVoiceLine({ role: 'miya', text: 'ありがとう。一緒に帰ろう。' }).emotion).toBe('warm')
+    expect(directVoiceLine({ role: 'sora', text: '怖いよ、どうしよう。' }).emotion).toBe('afraid')
+  })
   it('directs hesitation without exaggerating it into anger or grief', () => {
     expect(directVoiceLine({ role: 'yuki', text: '我……真的还能重新写吗？' })).toMatchObject({
       emotion: 'afraid',
@@ -24,7 +29,7 @@ describe('directVoiceLine', () => {
     expect(directVoiceLine({ role: 'ghost', text: '距离审查还有十三分钟。' })).toMatchObject({
       emotion: 'neutral',
       intensity: 0.24,
-      delivery: '无性别、清晰、像系统播报，但不要拖长句尾',
+      delivery: '低声清晰，像安静的守门人，保留呼吸，不用电子音或播音腔',
     })
   })
 

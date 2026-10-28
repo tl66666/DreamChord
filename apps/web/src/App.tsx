@@ -15,7 +15,7 @@ const SettingsPage = lazy(() => import('./pages/SettingsPage'))
 const LibraryPage = lazy(() => import('./pages/LibraryPage'))
 const AIWriterPage = lazy(() => import('./pages/AIWriterPage'))
 
-function AuthInitializer() {
+export function AuthInitializer() {
   const { token, setUser, setLoading, logout } = useAuthStore()
 
   useEffect(() => {
@@ -24,10 +24,15 @@ function AuthInitializer() {
       return
     }
 
+    let active = true
     getMe()
-      .then((user) => setUser(user))
-      .catch(() => logout())
-      .finally(() => setLoading(false))
+      .then((user) => { if (active) setUser(user) })
+      .catch((error: unknown) => {
+        const status = (error as { response?: { status?: number } })?.response?.status
+        if (active && (status === 401 || status === 403)) logout()
+      })
+      .finally(() => { if (active) setLoading(false) })
+    return () => { active = false }
   }, [token, setUser, setLoading, logout])
 
   return null

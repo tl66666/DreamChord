@@ -10,6 +10,6 @@ describe('SettingsPage', () => {
   it('returns to the originating Agent workspace after model configuration', () => {
     render(<MemoryRouter initialEntries={['/settings?returnTo=%2Feditor%2Fsakura-story']}><SettingsPage /></MemoryRouter>)
 
-    expect(screen.getByRole('link', { name: '返回创作 Agent' }).getAttribute('href')).toBe('/editor/sakura-story')
+    expect(screen.getByRole('link', { name: '返回编辑器' }).getAttribute('href')).toBe('/editor/sakura-story')
   })
 })

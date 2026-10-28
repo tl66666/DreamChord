@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { Sparkles, Loader2 } from 'lucide-react'
 import { login } from '../api/client'
 import { useAuthStore } from '../stores/authStore'
+import AuthLayout from '../components/AuthLayout'
 
 function getApiError(err: unknown, fallback = '操作失败'): string {
   if (typeof err === 'object' && err !== null && 'response' in err) {
@@ -37,21 +38,22 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center px-4">
+    <AuthLayout>
       <div className="w-full max-w-md rounded-2xl border border-dream-100 bg-white/80 p-8 shadow-xl backdrop-blur-sm">
         <div className="mb-6 flex items-center justify-center gap-2">
           <Sparkles className="h-6 w-6 text-dream-600" />
-          <h1 className="text-2xl font-bold text-dream-900">登录梦弦</h1>
+          <h1 className="text-2xl font-bold text-slate-950">登录梦弦</h1>
         </div>
 
         {error && (
-          <div className="mb-4 rounded-lg bg-red-50 px-4 py-2 text-sm text-red-600">{error}</div>
+          <div role="alert" className="mb-4 rounded-lg bg-red-50 px-4 py-2 text-sm text-red-600">{error}</div>
         )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="mb-1.5 block text-sm font-medium text-dream-700">用户名</label>
+            <label htmlFor="login-username" className="mb-1.5 block text-sm font-medium text-slate-700">用户名</label>
             <input
+              id="login-username" autoComplete="username"
               type="text"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
@@ -60,8 +62,9 @@ export default function LoginPage() {
             />
           </div>
           <div>
-            <label className="mb-1.5 block text-sm font-medium text-dream-700">密码</label>
+            <label htmlFor="login-password" className="mb-1.5 block text-sm font-medium text-slate-700">密码</label>
             <input
+              id="login-password" autoComplete="current-password"
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
@@ -85,6 +88,6 @@ export default function LoginPage() {
           </Link>
         </p>
       </div>
-    </div>
+    </AuthLayout>
   )
 }

@@ -113,6 +113,12 @@ export default function ShotCardEditor({
 
     const updateKeys = Object.keys(updates)
 
+    // Language edits only touch the playable node; staging and routing keep their IDs.
+    if (updateKeys.length > 0 && updateKeys.every((key) => key === 'localizations' || key === 'voiceTracks')) {
+      onUpdateGraph(nodes.map((node) => node.id === existingText.id ? { ...node, data: { ...node.data, ...updates } } : node), edges)
+      return
+    }
+
     // ── 快速路径 1：仅修改文本 ──
     // 直接更新 text 节点的 data.text，不重建边、不重新布局
     if (updateKeys.length === 1 && 'text' in updates) {
@@ -840,9 +846,9 @@ export default function ShotCardEditor({
     return (
       <div className="flex h-full items-center justify-center bg-dream-50/30">
         <div className="text-center">
-          <ImageIcon className="mx-auto mb-3 h-12 w-12 text-dream-300" />
-          <p className="text-sm text-dream-400">从左侧选择一个场景开始编辑</p>
-          <p className="mt-1 text-xs text-dream-300">或点击左侧"新建场景"按钮</p>
+          <ImageIcon className="mx-auto mb-3 h-12 w-12 text-slate-400" />
+          <p className="text-sm text-slate-500">从左侧选择一个场景开始编辑</p>
+          <p className="mt-1 text-xs text-slate-400">或点击左侧"新建场景"按钮</p>
         </div>
       </div>
     )
@@ -853,8 +859,8 @@ export default function ShotCardEditor({
       <div className="flex h-full flex-col bg-dream-50/30">
         <div className="flex-1 flex items-center justify-center">
           <div className="text-center">
-            <MessageSquare className="mx-auto mb-3 h-12 w-12 text-dream-300" />
-            <p className="text-sm text-dream-400">这个场景还没有镜头</p>
+            <MessageSquare className="mx-auto mb-3 h-12 w-12 text-slate-400" />
+            <p className="text-sm text-slate-500">这个场景还没有镜头</p>
             <div className="mt-4 flex justify-center gap-2">
               <button onClick={() => addCard('dialogue')} className="rounded-lg bg-dream-600 px-4 py-2 text-sm text-white transition hover:bg-dream-700">
                 + 对话
@@ -906,13 +912,13 @@ export default function ShotCardEditor({
                 <select
                   value={selectedSceneId || ''}
                   onChange={(e) => { if (e.target.value) onNavigateToScene(e.target.value) }}
-                  className="w-full cursor-pointer appearance-none rounded-md border border-dream-200 bg-white px-2 py-1 pr-6 text-xs text-dream-700 focus:border-dream-400 focus:outline-none"
+                  className="w-full cursor-pointer appearance-none rounded-md border border-dream-200 bg-white px-2 py-1 pr-6 text-xs text-slate-700 focus:border-dream-400 focus:outline-none"
                 >
                   {scenes.map((s) => (
                     <option key={s.id} value={s.id}>{s.code} · {s.title}</option>
                   ))}
                 </select>
-                <MapIcon className="pointer-events-none absolute right-2 top-1/2 h-3 w-3 -translate-y-1/2 text-dream-300" />
+                <MapIcon className="pointer-events-none absolute right-2 top-1/2 h-3 w-3 -translate-y-1/2 text-slate-400" />
               </div>
               <button
                 onClick={() => sceneNav.next && onNavigateToScene(sceneNav.next.id)}
@@ -968,7 +974,7 @@ export default function ShotCardEditor({
                   </>
                 ) : sceneExitInfo.targetScene ? (
                   <>
-                    <span className="font-medium text-dream-700">
+                    <span className="font-medium text-slate-700">
                       {sceneExitInfo.targetScene.title || sceneExitInfo.targetScene.code}
                     </span>
                     {sceneExitInfo.isConvergence && (
@@ -1035,14 +1041,14 @@ export default function ShotCardEditor({
                             <span className="hidden shrink-0 text-green-700 sm:inline">{target.targetSceneTitle}</span>
                             <button
                               onClick={() => onNavigateToScene(target.targetSceneId)}
-                              className="shrink-0 rounded-md px-1.5 py-0.5 text-[10px] text-dream-500 transition hover:bg-dream-50 hover:text-dream-700"
+                              className="shrink-0 rounded-md px-1.5 py-0.5 text-[10px] text-dream-500 transition hover:bg-dream-50 hover:text-slate-700"
                               title="前往编辑"
                             >
                               前往
                             </button>
                             <button
                               onClick={() => choiceCard && setChoiceTarget(choiceCard.id, target.index, '')}
-                              className="shrink-0 rounded-md px-1.5 py-0.5 text-[10px] text-dream-300 transition hover:bg-red-50 hover:text-red-500"
+                              className="shrink-0 rounded-md px-1.5 py-0.5 text-[10px] text-slate-400 transition hover:bg-red-50 hover:text-red-500"
                               title="断开连接"
                             >
                               断开
@@ -1071,7 +1077,7 @@ export default function ShotCardEditor({
                                   <option key={s.id} value={s.id}>{s.code} · {s.title}</option>
                                 ))}
                               </select>
-                              <ArrowRight className="pointer-events-none absolute right-1 top-1/2 h-2.5 w-2.5 -translate-y-1/2 text-dream-400" />
+                              <ArrowRight className="pointer-events-none absolute right-1 top-1/2 h-2.5 w-2.5 -translate-y-1/2 text-slate-500" />
                             </div>
                           </>
                         )}
@@ -1123,7 +1129,7 @@ export default function ShotCardEditor({
             if (stageChars.length === 0 && lastCard.type !== 'choice') return null
             return (
               <>
-                <span className="text-xs text-dream-400">快速续接：</span>
+                <span className="text-xs text-slate-500">快速续接：</span>
                 {stageChars.map((slot) => {
                   const char = characters.find(c => c.id === slot.characterId)
                   if (!char) return null
@@ -1161,7 +1167,7 @@ export default function ShotCardEditor({
               onChange={(e) => setQuickInput(e.target.value)}
               onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleQuickInputSubmit() } }}
               placeholder="角色名：台词（回车续接）"
-              className="min-w-[200px] flex-1 rounded-lg border border-dream-200 bg-white px-3 py-1.5 text-xs text-dream-700 placeholder:text-dream-300 focus:border-dream-400 focus:outline-none"
+              className="min-w-[200px] flex-1 rounded-lg border border-dream-200 bg-white px-3 py-1.5 text-xs text-slate-700 placeholder:text-slate-400 focus:border-dream-400 focus:outline-none"
             />
           )}
           {cards.length > 0 && quickInput.trim() && (
@@ -1174,7 +1180,7 @@ export default function ShotCardEditor({
             </button>
           )}
           <span className="mx-1 h-5 w-px bg-dream-100" />
-          <span className="text-xs text-dream-400">添加镜头：</span>
+          <span className="text-xs text-slate-500">添加镜头：</span>
           <button onClick={() => addCard('dialogue')} className="flex items-center gap-1.5 rounded-lg bg-dream-600 px-3 py-1.5 text-xs text-white transition hover:bg-dream-700">
             <MessageSquare className="h-3 w-3" /> 对话
           </button>

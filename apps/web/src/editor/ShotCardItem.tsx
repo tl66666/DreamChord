@@ -7,7 +7,7 @@
 import type { Edge } from '@xyflow/react'
 import {
   Trash2, ChevronUp, ChevronDown, MessageSquare, GitBranch,
-  Copy, Eye, ArrowRight, ChevronRight, AlertTriangle,
+  Copy, Eye, ArrowRight, ChevronRight, AlertTriangle, ImageIcon,
 } from 'lucide-react'
 import type { ShotCard, Scene } from './sceneGraph'
 import { loadLibraryCharacters, loadLibraryScenes, type StoryTemplate } from '../lib/libraryData'
@@ -78,7 +78,7 @@ export function ShotCardItem({
       onClick={onSelect}
       onDoubleClick={(e) => { e.stopPropagation(); if (!isEditing) onEdit() }}
       className={`group rounded-xl border transition ${
-        isSelected ? 'border-dream-400 bg-white shadow-md ring-1 ring-dream-200' : 'border-dream-150 bg-white/60 hover:border-dream-200'
+        isSelected ? 'border-dream-400 bg-white shadow-md ring-1 ring-dream-200' : 'border-slate-200 bg-white hover:border-dream-200'
       } ${isContinuation ? 'ml-3 border-l-2' : ''}`}
       style={isContinuation ? { borderLeftColor: characters.find((c) => c.id === card.speaker)?.color || '#c4b5fd' } : undefined}
     >
@@ -86,15 +86,15 @@ export function ShotCardItem({
         <div className="flex items-center gap-2">
           {isContinuation ? (
             <>
-              <ChevronRight className="h-3 w-3 text-dream-300" />
-              <span className="text-xs text-dream-400">续</span>
+              <ChevronRight className="h-3 w-3 text-slate-400" />
+              <span className="text-xs text-slate-500">续</span>
             </>
           ) : (
             <>
               <span className="flex h-6 w-6 items-center justify-center rounded-full bg-dream-100 text-xs font-bold text-dream-600">
                 {index + 1}
               </span>
-              <span className="flex items-center gap-1 text-sm font-medium text-dream-700">
+              <span className="flex items-center gap-1 text-sm font-medium text-slate-700">
                 {typeIcon} {typeLabel}
               </span>
               {untargetedCount > 0 && (
@@ -102,25 +102,25 @@ export function ShotCardItem({
                   <AlertTriangle className="h-2.5 w-2.5" /> {untargetedCount} 未设置
                 </span>
               )}
-              <span className="text-xs text-dream-300">·</span>
-              <span className="text-xs font-mono text-dream-400">{card.sceneCode}</span>
+              <span className="text-xs text-slate-400">·</span>
+              <span className="text-xs font-mono text-slate-500">{card.sceneCode}</span>
             </>
           )}
         </div>
-        <div className="flex items-center gap-1 opacity-0 transition group-hover:opacity-100">
-          <button onClick={(e) => { e.stopPropagation(); onMove('up') }} disabled={index === 0} title="上移" className="rounded p-1 text-dream-400 transition hover:bg-dream-50 disabled:opacity-30">
+        <div className="flex items-center gap-1 opacity-100 transition focus-within:opacity-100 sm:opacity-0 sm:group-hover:opacity-100">
+          <button onClick={(e) => { e.stopPropagation(); onMove('up') }} disabled={index === 0} title="上移" className="rounded p-1 text-slate-500 transition hover:bg-dream-50 disabled:opacity-30">
             <ChevronUp className="h-3.5 w-3.5" />
           </button>
-          <button onClick={(e) => { e.stopPropagation(); onMove('down') }} disabled={index === total - 1} title="下移" className="rounded p-1 text-dream-400 transition hover:bg-dream-50 disabled:opacity-30">
+          <button onClick={(e) => { e.stopPropagation(); onMove('down') }} disabled={index === total - 1} title="下移" className="rounded p-1 text-slate-500 transition hover:bg-dream-50 disabled:opacity-30">
             <ChevronDown className="h-3.5 w-3.5" />
           </button>
-          <button onClick={(e) => { e.stopPropagation(); onDuplicate() }} title="复制卡片" className="rounded p-1 text-dream-400 transition hover:bg-dream-50">
+          <button onClick={(e) => { e.stopPropagation(); onDuplicate() }} title="复制卡片" className="rounded p-1 text-slate-500 transition hover:bg-dream-50">
             <Copy className="h-3.5 w-3.5" />
           </button>
-          <button onClick={(e) => { e.stopPropagation(); onEdit() }} title="展开/折叠" className={`rounded p-1 transition hover:bg-dream-50 ${isEditing ? 'text-dream-600 bg-dream-50' : 'text-dream-400'}`}>
+          <button onClick={(e) => { e.stopPropagation(); onEdit() }} title="展开/折叠" className={`rounded p-1 transition hover:bg-dream-50 ${isEditing ? 'text-dream-600 bg-dream-50' : 'text-slate-500'}`}>
             <Eye className="h-3.5 w-3.5" />
           </button>
-          <button onClick={(e) => { e.stopPropagation(); onDelete() }} title="删除" className="rounded p-1 text-dream-400 transition hover:bg-red-50 hover:text-red-500">
+          <button onClick={(e) => { e.stopPropagation(); onDelete() }} title="删除" className="rounded p-1 text-slate-500 transition hover:bg-red-50 hover:text-red-500">
             <Trash2 className="h-3.5 w-3.5" />
           </button>
         </div>
@@ -136,7 +136,7 @@ export function ShotCardItem({
                   {characters.find((c) => c.id === card.speaker)?.name || card.speaker}：
                 </span>
               )}
-              <span className={`text-sm text-dream-600 ${card.text ? '' : 'text-dream-300'}`}>
+              <span className={`text-sm text-slate-700 ${card.text ? '' : 'text-slate-400'}`}>
                 {card.text || '（空台词）'}
               </span>
             </div>
@@ -144,7 +144,7 @@ export function ShotCardItem({
         ) : (
         <div className={compactMode ? 'flex gap-2 px-3 py-2' : 'flex gap-3 px-4 py-3'}>
           <div className={compactMode ? 'h-10 w-16 shrink-0 overflow-hidden rounded-md border border-dream-100' : 'h-16 w-24 shrink-0 overflow-hidden rounded-lg border border-dream-100'}>
-            <img src={resolveBgUrl(card.background, libraryScenes)} alt="" className="h-full w-full object-cover" onError={(e) => { (e.target as HTMLImageElement).style.opacity = '0.2' }} />
+            {card.background ? <img src={resolveBgUrl(card.background, libraryScenes)} alt="" className="h-full w-full object-cover" onError={(e) => { (e.target as HTMLImageElement).style.opacity = '0.2' }} /> : <span className="grid h-full w-full place-items-center bg-slate-50 text-slate-300"><ImageIcon className="h-5 w-5" /></span>}
           </div>
           <div className="min-w-0 flex-1">
             {card.characters.some((character) => character.action !== 'hide') && (
@@ -188,7 +188,7 @@ export function ShotCardItem({
                   return (
                     <div key={`choice-${i}`} className="flex items-center gap-1.5 text-xs">
                       <span className={`flex h-4 w-4 shrink-0 items-center justify-center rounded text-[9px] font-bold ${
-                        targetInfo.hasTarget ? 'bg-green-100 text-green-600' : 'bg-dream-100 text-dream-400'
+                        targetInfo.hasTarget ? 'bg-green-100 text-green-600' : 'bg-dream-100 text-slate-500'
                       }`}>
                         {String.fromCharCode(65 + i)}
                       </span>
@@ -209,9 +209,9 @@ export function ShotCardItem({
                 })}
               </div>
             ) : (
-              <div className="text-sm text-dream-700">
+              <div className="text-sm text-slate-700">
                 {card.speaker !== '旁白' && <span className="font-medium" style={{ color: characters.find((c) => c.id === card.speaker)?.color }}>{characters.find((c) => c.id === card.speaker)?.name || card.speaker}：</span>}
-                <span className={card.text ? '' : 'text-dream-300'}>{card.text || '（空台词）'}</span>
+                <span className={card.text ? '' : 'text-slate-400'}>{card.text || '（空台词）'}</span>
               </div>
             )}
           </div>

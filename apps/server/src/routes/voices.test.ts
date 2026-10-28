@@ -23,6 +23,56 @@ function appFor(client: PrismaClient, provider: VoiceProvider | null = null, sto
 describe('voice library routes', () => {
   beforeEach(() => { process.env.JWT_SECRET = secret })
 
+  it('translates Chinese for an authenticated author without requiring a Japanese source field', async () => {
+    const translate = vi.fn().mockResolvedValue({ text: '一緒に帰ろう。', sourceLanguage: 'zh', targetLanguage: 'ja', sourceHash: '12345678', source: 'local-cpu' })
+    const app = express(); app.use(express.json())
+    app.use('/api/voices', createVoiceRouter({} as PrismaClient, null, { translator: { translate } }))
+    const response = await request(app).post('/api/voices/translate').set('Authorization', `Bearer ${token('owner')}`).send({ text: '一起回家吧。', targetLanguage: 'ja' })
+    expect(response.status).toBe(200)
+    expect(response.body.text).toBe('一緒に帰ろう。')
+    expect(translate).toHaveBeenCalledWith({ text: '一起回家吧。', targetLanguage: 'ja' })
+    expect((await request(app).post('/api/voices/translate').send({ text: '一起回家吧。', targetLanguage: 'ja' })).status).toBe(401)
+  })
+
+  it.each([{ bindings: 1, generationJobs: 0 }, { bindings: 0, generationJobs: 2 }])('protects referenced profiles from deletion: %j', async (counts) => {
+    const remove = vi.fn()
+    const tx = { voiceProfile: { findFirst: vi.fn().mockResolvedValue({ id: 'voice', _count: counts }), delete: remove } }
+    const client = { $transaction: (operation: (value: unknown) => unknown) => operation(tx) } as unknown as PrismaClient
+    const response = await request(appFor(client)).delete('/api/voices/profiles/voice').set('Authorization', `Bearer ${token('owner')}`)
+    expect(response.status).toBe(409)
+    expect(remove).not.toHaveBeenCalled()
+  })
+
+  it('deletes an unused owned profile and its associations without deleting audio assets', async () => {
+    const findFirst = vi.fn().mockResolvedValue({ id: 'voice', _count: { bindings: 0, generationJobs: 0 } })
+    const remove = vi.fn(), removeReferences = vi.fn(), removeAssets = vi.fn()
+    const tx = { voiceProfile: { findFirst, delete: remove }, voiceReference: { deleteMany: removeReferences }, asset: { deleteMany: removeAssets } }
+    const client = { $transaction: (operation: (value: unknown) => unknown) => operation(tx) } as unknown as PrismaClient
+    const response = await request(appFor(client)).delete('/api/voices/profiles/voice').set('Authorization', `Bearer ${token('owner')}`)
+    expect(response.status).toBe(204)
+    expect(findFirst).toHaveBeenCalledWith(expect.objectContaining({ where: { id: 'voice', ownerId: 'owner' } }))
+    expect(removeReferences).toHaveBeenCalledWith({ where: { profileId: 'voice' } })
+    expect(remove).toHaveBeenCalledWith({ where: { id: 'voice' } })
+    expect(removeAssets).not.toHaveBeenCalled()
+  })
+
+  it('returns 404 without deleting a missing or unowned profile', async () => {
+    const remove = vi.fn()
+    const tx = { voiceProfile: { findFirst: vi.fn().mockResolvedValue(null), delete: remove } }
+    const client = { $transaction: (operation: (value: unknown) => unknown) => operation(tx) } as unknown as PrismaClient
+    const response = await request(appFor(client)).delete('/api/voices/profiles/other').set('Authorization', `Bearer ${token('owner')}`)
+    expect(response.status).toBe(404)
+    expect(remove).not.toHaveBeenCalled()
+  })
+
+  it('keeps reference clips that have generated dialogue history', async () => {
+    const remove = vi.fn()
+    const client = { voiceReference: { findFirst: vi.fn().mockResolvedValue({ id: 'reference', _count: { generationJobs: 1 } }), delete: remove } } as unknown as PrismaClient
+    const response = await request(appFor(client)).delete('/api/voices/profiles/voice/references/reference').set('Authorization', `Bearer ${token('owner')}`)
+    expect(response.status).toBe(409)
+    expect(remove).not.toHaveBeenCalled()
+  })
+
   it('lists only the authenticated owner profiles', async () => {
     const findMany = vi.fn().mockResolvedValue([{ id: 'voice', ownerId: 'owner', name: '雪·轻声' }])
     const client = { voiceProfile: { findMany } } as unknown as PrismaClient

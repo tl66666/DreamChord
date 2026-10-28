@@ -43,7 +43,7 @@ dotenv.config({ path: path.join(serverRoot, '.env') })
 async function main() {
   const manifestPath = path.join(workspaceRoot, 'assets', 'music-packs', 'ternox-vn', 'manifest.json')
   const manifest = JSON.parse(readFileSync(manifestPath, 'utf8')) as Manifest
-  if (manifest.sourceLicense !== 'CC0-1.0' || manifest.generativeAiUsed || manifest.tracks.length !== 9) {
+  if (manifest.sourceLicense !== 'CC0-1.0' || manifest.generativeAiUsed || manifest.tracks.length < 9) {
     throw new Error('官方原声清单不完整，请先运行 pnpm music:official:install')
   }
   const user = await prisma.user.findUnique({ where: { username: 'demo' } })

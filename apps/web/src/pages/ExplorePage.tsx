@@ -1,62 +1,45 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
-import { ArrowLeft } from 'lucide-react'
+import { Search, Loader2, RefreshCw } from 'lucide-react'
 import { getPublicProjects, type ProjectDetail } from '../api/client'
+import AppHeader from '../components/AppHeader'
 
 export default function ExplorePage() {
   const navigate = useNavigate()
   const [projects, setProjects] = useState<ProjectDetail[]>([])
   const [loading, setLoading] = useState(true)
+  const [query, setQuery] = useState('')
+  const [category, setCategory] = useState('all')
+  const [error, setError] = useState('')
 
-  useEffect(() => {
-    getPublicProjects()
-      .then(setProjects)
-      .catch(console.error)
-      .finally(() => setLoading(false))
+  const load = useCallback(async () => {
+    setLoading(true); setError('')
+    try { setProjects(await getPublicProjects()) }
+    catch { setError('作品暂时无法加载，请重试。') }
+    finally { setLoading(false) }
   }, [])
-
-  if (loading) {
-    return (
-      <div className="container mx-auto px-6 py-12">
-        <p className="text-dream-600">加载中...</p>
-      </div>
-    )
-  }
-
-  if (projects.length === 0) {
-    return (
-      <div className="container mx-auto flex flex-col items-center justify-center px-6 py-24 text-center">
-        <img
-          src="/assets/illustrations/empty-projects.png"
-          alt="暂无作品"
-          className="mb-6 h-40 w-40 object-contain opacity-70"
-        />
-        <h1 className="mb-2 text-2xl font-bold text-dream-900">还没有公开作品</h1>
-        <p className="text-dream-600">成为第一个创作者吧</p>
-      </div>
-    )
-  }
+  useEffect(() => { void load() }, [load])
+  const filtered = useMemo(() => projects.filter((project) => {
+    const official = project.id === 'dreamchord-first-thread'
+    const matches = `${project.title} ${project.description || ''} ${project.author.nickname || project.author.username}`.toLowerCase().includes(query.trim().toLowerCase())
+    return matches && (category === 'all' || (category === 'official' ? official : !official))
+  }), [category, projects, query])
 
   return (
-    <div className="container mx-auto px-6 py-12">
-      <div className="mb-8 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <Link
-            to="/"
-            className="inline-flex items-center gap-1.5 rounded-lg border border-dream-200 bg-white/70 px-3 py-1.5 text-sm font-medium text-dream-700 transition hover:bg-dream-50"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            返回首页
-          </Link>
-          <h1 className="text-3xl font-bold text-dream-900">发现作品</h1>
-        </div>
-      </div>
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-        {projects.map((project) => (
+    <main className="dc-page">
+      <AppHeader />
+      <div className="dc-content">
+      <section className="mb-8 overflow-hidden rounded-2xl border border-dream-100 bg-white md:grid md:grid-cols-[1.1fr_0.9fr]"><div className="p-6 sm:p-8"><p className="text-xs font-semibold tracking-[0.18em] text-dream-600">DREAMCHORD · GALLERY</p><h1 className="mt-3 text-3xl font-bold tracking-tight text-slate-950">发现作品</h1><p className="mt-3 max-w-md text-sm leading-7 text-slate-500">走进别人的故事，找到自己的下一次灵感。从官方示例开始，也可以看看创作者们留下的不同结局。</p><Link to="/play/dreamchord-first-thread" className="dc-primary mt-5">试玩官方示例</Link></div><img src="/assets/ui/writing-nook.webp" alt="" className="hidden h-full max-h-72 w-full object-cover md:block" /></section>
+      <div className="mb-6 flex flex-wrap items-center justify-between gap-4"><div role="group" aria-label="作品分类" className="flex gap-1 rounded-xl bg-white p-1 ring-1 ring-slate-200">{[['all', '全部作品'], ['official', '官方示例'], ['community', '创作者作品']].map(([value, label]) => <button key={value} aria-pressed={category === value} onClick={() => setCategory(value)} className={`rounded-lg px-4 py-2 text-sm font-medium ${category === value ? 'bg-dream-600 text-white' : 'text-slate-600 hover:bg-dream-50'}`}>{label}</button>)}</div><label className="relative w-full sm:max-w-sm"><Search className="absolute left-3 top-3 h-4 w-4 text-slate-400" /><input aria-label="搜索作品" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="搜索作品、作者或故事简介" className="h-10 w-full rounded-xl border border-slate-200 bg-white pl-9 pr-3 text-sm" /></label></div>
+      {error && <div role="alert" className="dc-panel mb-6 flex flex-wrap items-center justify-between gap-3 p-4 text-sm text-rose-700">{error}<button onClick={() => void load()} className="dc-secondary"><RefreshCw className="h-4 w-4" />重新加载</button></div>}
+      {loading ? <div className="dc-panel flex justify-center gap-2 py-20 text-sm text-slate-500"><Loader2 className="h-5 w-5 animate-spin" />正在整理故事书架…</div> : <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
+        {filtered.map((project) => (
           <ProjectCard key={project.id} project={project} onClick={() => navigate(`/play/${project.id}`)} />
         ))}
+      </div>}
+      {!loading && !error && !filtered.length && <div className="dc-panel px-6 py-14 text-center"><img src="/assets/illustrations/empty-projects.png" alt="" className="mx-auto h-32 w-32 object-contain" /><h2 className="mt-4 text-lg font-bold text-slate-950">{projects.length ? '没有找到符合条件的故事' : '书架上还没有公开作品'}</h2><p className="mt-2 text-sm text-slate-500">{projects.length ? '换一个关键词，或查看全部作品。' : '先试玩官方示例，或回到首页创作自己的故事。'}</p><button onClick={() => { setQuery(''); setCategory('all') }} className="dc-secondary mt-5">查看全部作品</button></div>}
       </div>
-    </div>
+    </main>
   )
 }
 

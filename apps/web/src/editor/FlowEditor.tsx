@@ -14,13 +14,14 @@ import {
 import '@xyflow/react/dist/style.css'
 import {
   Play, Save, Sparkles, Image, Settings, Eye, EyeOff, ArrowLeft,
-  LayoutGrid, GitBranch, Copy, Check, ListChecks, Plus, Trash2, Undo2, Redo2,
+  LayoutGrid, GitBranch, Copy, Check, ListChecks, Plus, Trash2, Undo2, Redo2, Mic2,
 } from 'lucide-react'
 import AgentWorkspace from '../agent/AgentWorkspace'
 import type { AgentScope, AppliedPatchDto } from '../agent/agentTypes'
 import type { StoryNodeType } from '@dreamchord/story-domain'
 import AssetPanel from './AssetPanel'
 import ProjectSettingsModal from './ProjectSettingsModal'
+import ProjectVoicePanel from './ProjectVoicePanel'
 import SceneTree from './SceneTree'
 import ShotCardEditor from './ShotCardEditor'
 import MiniPreview from './MiniPreview'
@@ -60,6 +61,7 @@ export default function FlowEditor() {
   const [showAssets, setShowAssets] = useState(false)
   const [showSettings, setShowSettings] = useState(false)
   const [showHealth, setShowHealth] = useState(false)
+  const [showVoices, setShowVoices] = useState(false)
   const [shareCopied, setShareCopied] = useState(false)
   const [viewMode, setViewMode] = useState<'scene' | 'flow'>('scene')
   const [assetTarget, setAssetTarget] = useState<ProjectAssetTarget | null>(null)
@@ -662,10 +664,10 @@ export default function FlowEditor() {
       {/* === 顶部工具栏 === */}
       <div className="z-20 flex flex-wrap items-center justify-between gap-3 border-b border-dream-100 bg-white px-4 py-2.5 shadow-sm">
         <div className="flex min-w-0 items-center gap-3">
-          <button onClick={() => void navigateHome()} title="返回首页" className="inline-flex items-center gap-1 rounded-lg border border-dream-200 bg-white px-2.5 py-1.5 text-sm font-medium text-dream-700 transition hover:bg-dream-50">
+          <button onClick={() => void navigateHome()} title="返回首页" className="inline-flex items-center gap-1 rounded-lg border border-dream-200 bg-white px-2.5 py-1.5 text-sm font-medium text-slate-700 transition hover:bg-dream-50">
             <ArrowLeft className="h-4 w-4" /> 首页
           </button>
-          <h1 className="min-w-0 max-w-[200px] truncate font-semibold text-dream-900" title={store.project?.title || '未命名项目'}>
+          <h1 className="min-w-0 max-w-[200px] truncate font-semibold text-slate-950" title={store.project?.title || '未命名项目'}>
             {store.project?.title || '未命名项目'}
           </h1>
           {projectId === 'new' && <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs text-amber-700">未保存草稿</span>}
@@ -675,8 +677,8 @@ export default function FlowEditor() {
 
         <div className="flex flex-wrap items-center gap-2">
           <div className="flex border border-dream-200 bg-white p-0.5">
-            <button type="button" aria-label="撤销图谱修改" title="撤销 (Ctrl/Cmd+Z)" disabled={!store.canUndo} onClick={undoGraph} className="flex h-7 w-7 items-center justify-center text-dream-700 hover:bg-dream-50 disabled:opacity-30"><Undo2 className="h-4 w-4" /></button>
-            <button type="button" aria-label="重做图谱修改" title="重做 (Ctrl/Cmd+Shift+Z)" disabled={!store.canRedo} onClick={redoGraph} className="flex h-7 w-7 items-center justify-center text-dream-700 hover:bg-dream-50 disabled:opacity-30"><Redo2 className="h-4 w-4" /></button>
+            <button type="button" aria-label="撤销图谱修改" title="撤销 (Ctrl/Cmd+Z)" disabled={!store.canUndo} onClick={undoGraph} className="flex h-7 w-7 items-center justify-center text-slate-700 hover:bg-dream-50 disabled:opacity-30"><Undo2 className="h-4 w-4" /></button>
+            <button type="button" aria-label="重做图谱修改" title="重做 (Ctrl/Cmd+Shift+Z)" disabled={!store.canRedo} onClick={redoGraph} className="flex h-7 w-7 items-center justify-center text-slate-700 hover:bg-dream-50 disabled:opacity-30"><Redo2 className="h-4 w-4" /></button>
           </div>
           {/* 章节切换 */}
           {project && project.chapters.length > 0 && (
@@ -693,7 +695,7 @@ export default function FlowEditor() {
                     <button
                       onClick={() => handleDeleteChapter(chapter.id)}
                       title="删除章节"
-                      className="ml-0.5 rounded p-0.5 text-dream-300 opacity-60 transition hover:bg-red-50 hover:text-red-500 hover:opacity-100"
+                      className="ml-0.5 rounded p-0.5 text-slate-400 opacity-60 transition hover:bg-red-50 hover:text-red-500 hover:opacity-100"
                     >
                       <Trash2 className="h-3 w-3" />
                     </button>
@@ -716,13 +718,14 @@ export default function FlowEditor() {
             </button>
           </div>
 
-          <button onClick={() => setShowSettings(true)} className="inline-flex items-center gap-1.5 rounded-lg border border-dream-200 bg-white px-3 py-1.5 text-sm font-medium text-dream-700 transition hover:bg-dream-50">
+          <button onClick={() => setShowSettings(true)} className="inline-flex items-center gap-1.5 rounded-lg border border-dream-200 bg-white px-3 py-1.5 text-sm font-medium text-slate-700 transition hover:bg-dream-50">
             <Settings className="h-4 w-4" />
           </button>
-          <button onClick={() => setShowHealth(true)} className="inline-flex items-center gap-1.5 rounded-lg border border-dream-200 bg-white px-3 py-1.5 text-sm font-medium text-dream-700 transition hover:bg-dream-50" title="项目体检">
+          <button onClick={() => setShowVoices(true)} className="inline-flex items-center gap-1.5 rounded-lg border border-dream-200 bg-white px-3 py-1.5 text-sm font-medium text-slate-700 transition hover:bg-dream-50"><Mic2 className="h-4 w-4" />角色配音</button>
+          <button onClick={() => setShowHealth(true)} className="inline-flex items-center gap-1.5 rounded-lg border border-dream-200 bg-white px-3 py-1.5 text-sm font-medium text-slate-700 transition hover:bg-dream-50" title="项目体检">
             <ListChecks className="h-4 w-4" />
           </button>
-          <button onClick={handleTogglePublish} className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium transition ${store.project?.isPublished ? 'border border-dream-200 bg-white text-dream-700 hover:bg-dream-50' : 'bg-dream-600 text-white hover:bg-dream-700'}`}>
+          <button onClick={handleTogglePublish} className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium transition ${store.project?.isPublished ? 'border border-dream-200 bg-white text-slate-700 hover:bg-dream-50' : 'bg-dream-600 text-white hover:bg-dream-700'}`}>
             {store.project?.isPublished ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
             {store.project?.isPublished ? '取消发布' : '发布'}
           </button>
@@ -732,16 +735,16 @@ export default function FlowEditor() {
               {shareCopied ? '已复制' : '分享'}
             </button>
           )}
-          <button onClick={() => { const next = !showAssets; setShowAssets(next); if (next) setShowAI(false) }} className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium transition ${showAssets ? 'bg-dream-600 text-white' : 'border border-dream-200 bg-white text-dream-700 hover:bg-dream-50'}`}>
+          <button onClick={() => { const next = !showAssets; setShowAssets(next); if (next) setShowAI(false) }} className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium transition ${showAssets ? 'bg-dream-600 text-white' : 'border border-dream-200 bg-white text-slate-700 hover:bg-dream-50'}`}>
             <Image className="h-4 w-4" /> 素材库
           </button>
-          <button onClick={() => { const next = !showAI; setShowAI(next); if (next) setShowAssets(false) }} className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium transition ${showAI ? 'bg-dream-600 text-white' : 'border border-dream-200 bg-white text-dream-700 hover:bg-dream-50'}`}>
+          <button onClick={() => { const next = !showAI; setShowAI(next); if (next) setShowAssets(false) }} className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium transition ${showAI ? 'bg-dream-600 text-white' : 'border border-dream-200 bg-white text-slate-700 hover:bg-dream-50'}`}>
             <Sparkles className="h-4 w-4" /> 创作 Agent
           </button>
           <button onClick={handlePreview} className="inline-flex items-center gap-1.5 rounded-lg bg-dream-600 px-3 py-1.5 text-sm font-medium text-white transition hover:bg-dream-700">
             <Play className="h-4 w-4" /> 预览
           </button>
-          <button onClick={handleSave} disabled={store.isSaving} className="inline-flex items-center gap-1.5 rounded-lg border border-dream-200 bg-white px-3 py-1.5 text-sm font-medium text-dream-700 transition hover:bg-dream-50 disabled:opacity-50">
+          <button onClick={handleSave} disabled={store.isSaving} className="inline-flex items-center gap-1.5 rounded-lg border border-dream-200 bg-white px-3 py-1.5 text-sm font-medium text-slate-700 transition hover:bg-dream-50 disabled:opacity-50">
             <Save className={`h-4 w-4 ${store.isSaving ? 'animate-spin' : ''}`} />
             {saveState === 'saving' ? '保存中' : saveState === 'conflict' ? '版本冲突' : saveState === 'error' ? '重试保存' : store.lastSavedAt ? '已保存' : '保存'}
           </button>
@@ -864,6 +867,7 @@ export default function FlowEditor() {
         </section>
       </div>}
 
+      <ProjectVoicePanel open={showVoices} onClose={() => setShowVoices(false)} characters={project?.characters || []} />
       {/* === 模态浮层（设置/体检） === */}
       {showSettings && (
         <ProjectSettingsModal

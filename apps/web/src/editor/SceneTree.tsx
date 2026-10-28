@@ -108,14 +108,14 @@ export default function SceneTree({
     <div className="flex h-full flex-col bg-white/80 backdrop-blur-sm">
       {/* 标题栏 */}
       <div className="flex items-center justify-between border-b border-dream-100 px-4 py-3">
-        <div className="flex items-center gap-2 text-sm font-semibold text-dream-800">
+        <div className="flex items-center gap-2 text-sm font-semibold text-slate-800">
           <BookOpen className="h-4 w-4 text-dream-500" />
           章节 / 场景
         </div>
         <button
           onClick={onAddChapter}
           title="新建章节"
-          className="rounded-md p-1 text-dream-400 transition hover:bg-dream-50 hover:text-dream-600"
+          className="rounded-md p-1 text-slate-500 transition hover:bg-dream-50 hover:text-dream-600"
         >
           <FolderPlus className="h-4 w-4" />
         </button>
@@ -129,7 +129,7 @@ export default function SceneTree({
           const currentChapter = chapters[0]
           if (!currentChapter || scenes.length === 0) {
             return (
-              <div className="px-4 py-8 text-center text-sm text-dream-400">
+              <div className="px-4 py-8 text-center text-sm text-slate-500">
                 <Film className="mx-auto mb-2 h-8 w-8 opacity-40" />
                 {currentChapter ? `${currentChapter.label} · 还没有场景` : '还没有场景'}
                 <button
@@ -171,25 +171,25 @@ export default function SceneTree({
                   </div>
                 ) : (
                   <>
-                    <BookOpen className="h-3.5 w-3.5 text-dream-400" />
+                    <BookOpen className="h-3.5 w-3.5 text-slate-500" />
                     <span
-                      className="flex-1 cursor-text text-sm font-semibold text-dream-700"
+                      className="flex-1 cursor-text text-sm font-semibold text-slate-700"
                       onDoubleClick={() => startEditChapter(chapter.id)}
                     >
                       {chapter.label}
-                      <span className="ml-1 text-xs text-dream-400">({chapterScenes.length})</span>
+                      <span className="ml-1 text-xs text-slate-500">({chapterScenes.length})</span>
                     </span>
                     <button
                       onClick={() => startEditChapter(chapter.id)}
                       title="重命名章节"
-                      className="rounded p-0.5 text-dream-400 transition hover:bg-dream-100 hover:text-dream-600"
+                      className="rounded p-0.5 text-slate-500 transition hover:bg-dream-100 hover:text-dream-600"
                     >
                       <Pencil className="h-3 w-3" />
                     </button>
                     <button
                       onClick={() => onAddScene(chapter.id)}
                       title={`在${chapter.label}新建场景`}
-                      className="rounded p-0.5 text-dream-400 transition hover:bg-dream-100 hover:text-dream-600"
+                      className="rounded p-0.5 text-slate-500 transition hover:bg-dream-100 hover:text-dream-600"
                     >
                       <Plus className="h-3.5 w-3.5" />
                     </button>
@@ -197,7 +197,7 @@ export default function SceneTree({
                       <button
                         onClick={() => onDeleteChapter(chapter.id)}
                         title="删除章节"
-                        className="rounded p-0.5 text-dream-400 transition hover:bg-red-50 hover:text-red-500"
+                        className="rounded p-0.5 text-slate-500 transition hover:bg-red-50 hover:text-red-500"
                       >
                         <Trash2 className="h-3 w-3" />
                       </button>
@@ -261,9 +261,9 @@ export default function SceneTree({
                         ) : (
                           <>
                             <div className="flex items-center gap-1">
-                              <span className="text-xs font-mono text-dream-400">{scene.code}</span>
+                              <span className="text-xs font-mono text-slate-500">{scene.code}</span>
                               <span
-                                className="cursor-text truncate text-sm font-medium text-dream-700"
+                                className="cursor-text truncate text-sm font-medium text-slate-700"
                                 onDoubleClick={(e) => {
                                   e.stopPropagation()
                                   startEditScene(scene.id, scene.title)
@@ -272,7 +272,7 @@ export default function SceneTree({
                                 {scene.title}
                               </span>
                             </div>
-                            <div className="truncate text-xs text-dream-400">
+                            <div className="truncate text-xs text-slate-500">
                               {scene.preview || `${scene.cardCount} 个镜头`}
                             </div>
                           </>
@@ -287,7 +287,7 @@ export default function SceneTree({
                               startEditScene(scene.id, scene.title)
                             }}
                             title="重命名（或双击标题）"
-                            className="rounded p-1 text-dream-300 transition hover:bg-dream-50 hover:text-dream-600"
+                            className="rounded p-1 text-slate-400 transition hover:bg-dream-50 hover:text-dream-600"
                           >
                             <Pencil className="h-3.5 w-3.5" />
                           </button>
@@ -300,7 +300,7 @@ export default function SceneTree({
                               }
                             }}
                             title="删除场景"
-                            className="rounded p-1 text-dream-300 transition hover:bg-red-50 hover:text-red-500"
+                            className="rounded p-1 text-slate-400 transition hover:bg-red-50 hover:text-red-500"
                           >
                             <Trash2 className="h-3.5 w-3.5" />
                           </button>
@@ -311,7 +311,7 @@ export default function SceneTree({
                 })}
                 <button
                   onClick={() => onAddScene(chapter.id)}
-                  className="mt-1 w-full rounded-lg border border-dashed border-dream-200 px-2 py-1.5 text-xs text-dream-400 transition hover:border-dream-300 hover:bg-dream-50 hover:text-dream-500"
+                  className="mt-1 w-full rounded-lg border border-dashed border-dream-200 px-2 py-1.5 text-xs text-slate-500 transition hover:border-dream-300 hover:bg-dream-50 hover:text-dream-500"
                 >
                   + 新建场景
                 </button>
@@ -322,7 +322,7 @@ export default function SceneTree({
       </div>
 
       {/* 底部统计 */}
-      <div className="border-t border-dream-100 px-4 py-2 text-xs text-dream-400">
+      <div className="border-t border-dream-100 px-4 py-2 text-xs text-slate-500">
         {chapters.length > 0 ? `${chapters[0].label} · ${scenes.length} 场景 · ${nodes.length} 节点` : `${nodes.length} 节点`}
       </div>
     </div>

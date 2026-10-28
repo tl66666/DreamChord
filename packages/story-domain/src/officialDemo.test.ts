@@ -2,6 +2,14 @@ import { describe, expect, it } from 'vitest'
 import { analyzeStoryGraph, OFFICIAL_DEMO } from './index.js'
 
 describe('official demo graph', () => {
+  it('translates every spoken line, caption and choice without changing branch order', () => {
+    for (const node of OFFICIAL_DEMO.graph.nodes.filter((node) => ['dialogue', 'subtitle', 'choice'].includes(node.type))) {
+      const ja = (node.data.localizations as { ja: { text?: string; choices?: string[]; sourceHash: string } }).ja
+      expect(ja.sourceHash).toBeTruthy()
+      if (node.type === 'choice') expect(ja.choices?.length).toBe((node.data.choices as string[]).length)
+      else expect(ja.text?.trim()).toBeTruthy()
+    }
+  })
   it('contains nine named and connected scenes', () => {
     const groups = new Set(OFFICIAL_DEMO.graph.nodes.map((node) => node.data.sceneGroupId))
     expect(groups.size).toBe(9)

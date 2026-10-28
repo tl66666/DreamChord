@@ -1,4 +1,5 @@
 import type { Edge, Node } from '@xyflow/react'
+import NodeLocalizationEditor from '../NodeLocalizationEditor'
 import { ArrowDown, ArrowUp, Image as ImageIcon, Trash2 } from 'lucide-react'
 import { loadLibraryCharacters, loadLibraryScenes } from '../../lib/libraryData'
 import { getNodeData } from '../sceneGraph'
@@ -492,12 +493,13 @@ export function EditableSummary({
             )}
           </div>
         ))}
+        <NodeLocalizationEditor nodeId={node.id} data={data} onUpdate={onUpdate} />
       </div>
     )
   }
   if (node.type === 'dialogue') {
     return (
-      <div className="grid gap-2 md:grid-cols-[120px_1fr]">
+      <div className="space-y-2"><div className="grid gap-2 md:grid-cols-[120px_1fr]">
         <select value={String(data.role || '')} onChange={(event) => onUpdate({ role: event.target.value })} className="rounded-lg border border-dream-200 px-3 py-1.5 text-sm">
           <option value="旁白">旁白</option>
           {libraryCharacters.map((character) => (
@@ -505,11 +507,11 @@ export function EditableSummary({
           ))}
         </select>
         <input value={String(data.text || '')} onChange={(event) => onUpdate({ text: event.target.value })} className="rounded-lg border border-dream-200 px-3 py-1.5 text-sm" />
-      </div>
+      </div><NodeLocalizationEditor nodeId={node.id} data={data} onUpdate={onUpdate} /></div>
     )
   }
   if (node.type === 'subtitle') {
-    return <input value={String(data.text || '')} onChange={(event) => onUpdate({ text: event.target.value })} className="w-full rounded-lg border border-dream-200 px-3 py-1.5 text-sm" />
+    return <div><input value={String(data.text || '')} onChange={(event) => onUpdate({ text: event.target.value })} className="w-full rounded-lg border border-dream-200 px-3 py-1.5 text-sm" /><NodeLocalizationEditor nodeId={node.id} data={data} onUpdate={onUpdate} /></div>
   }
   if (node.type === 'background') {
     return (

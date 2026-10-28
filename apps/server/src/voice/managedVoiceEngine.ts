@@ -162,12 +162,60 @@ export class ManagedVoiceEngine {
     if (child) child.kill('SIGTERM')
     return this.status()
   }
+
+  async stopAndWait(): Promise<void> {
+    const child = this.child
+    if (!child) { this.stop(); return }
+    await new Promise<void>((resolve, reject) => {
+      const timer = setTimeout(() => reject(new Error('声音进程尚未退出，已取消加载另一套模型。')), 10000)
+      child.on('exit', () => { clearTimeout(timer); resolve() })
+      this.stop()
+    })
+  }
+}
+
+/** Only one GPU model is resident; changing dialogue language switches the managed child. */
+export class LanguageManagedVoiceEngine extends ManagedVoiceEngine {
+  private active: 'cosyvoice' | 'gpt-sovits' = 'cosyvoice'
+  readonly japanese: ManagedVoiceEngine
+  constructor(primary: ManagedVoiceEngineConfig, japanese: ManagedVoiceEngineConfig) {
+    super(primary)
+    this.japanese = new ManagedVoiceEngine(japanese)
+  }
+  get activeProviderId() { return this.active }
+  async selectLanguage(language: string) {
+    const next = /^(ja|jp)(-|$)/i.test(language) ? 'gpt-sovits' : 'cosyvoice'
+    if (next === 'gpt-sovits' && !this.japanese.status().installed) throw new Error('日文配音需要本机 GPT-SoVITS，请先完成声音引擎安装。')
+    if (next !== this.active) {
+      if (this.active === 'gpt-sovits') await this.japanese.stopAndWait()
+      else await super.stopAndWait()
+      this.active = next
+    }
+    const status = this.status()
+    if (status.state === 'stopped' || status.state === 'failed') this.start()
+  }
+  override status(): ManagedVoiceEngineStatus {
+    const status = this.active === 'gpt-sovits' ? this.japanese.status() : super.status()
+    return { ...status, message: `${status.message} ${this.active === 'gpt-sovits' ? '当前使用日文参考配音；切换到中文时会自动加载情感引擎。' : '日文生成会自动切换参考配音引擎，首次切换需加载模型。'}` }
+  }
+  override start() { return this.active === 'gpt-sovits' ? this.japanese.start() : super.start() }
+  override markRunning() { if (this.active === 'gpt-sovits') this.japanese.markRunning(); else super.markRunning() }
+  override stop() {
+    this.japanese.stop()
+    super.stop()
+    return this.status()
+  }
 }
 
 let sharedEngine: ManagedVoiceEngine | null = null
 
 /** Created lazily so dotenv has loaded before environment-based paths are read. */
 export function getManagedVoiceEngine(): ManagedVoiceEngine {
-  sharedEngine ||= new ManagedVoiceEngine()
+  if (!sharedEngine) {
+    const config = readManagedVoiceEngineConfig()
+    sharedEngine = config.provider === 'cosyvoice' && process.env.COSYVOICE_JAPANESE_FALLBACK !== 'false'
+      ? new LanguageManagedVoiceEngine(config, readManagedVoiceEngineConfig({ ...process.env, VOICE_PROVIDER: 'gpt-sovits' }))
+      : new ManagedVoiceEngine(config)
+  }
   return sharedEngine
 }

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { Save, ExternalLink, Check, AlertCircle, ArrowLeft } from 'lucide-react'
 import { loadAIConfigs, saveAIConfigs, PROVIDER_META, type AIProviderConfig } from '../lib/aiConfig'
+import AppHeader from '../components/AppHeader'
 
 export default function SettingsPage() {
   const location = useLocation()
@@ -10,7 +11,7 @@ export default function SettingsPage() {
   const [customModels, setCustomModels] = useState<Record<string, string>>({})
   const requestedReturn = new URLSearchParams(location.search).get('returnTo')
   const returnTo = requestedReturn?.startsWith('/') && !requestedReturn.startsWith('//') ? requestedReturn : '/'
-  const returnLabel = returnTo === '/' ? '返回首页' : '返回创作 Agent'
+  const returnLabel = returnTo === '/' ? '返回首页' : returnTo.startsWith('/library') ? '返回素材库' : returnTo.startsWith('/editor') ? '返回编辑器' : '返回创作 Agent'
 
   useEffect(() => {
     const loaded = loadAIConfigs()
@@ -63,8 +64,10 @@ export default function SettingsPage() {
   }
 
   return (
-    <div className="container mx-auto max-w-3xl px-6 py-12">
-      <div className="mb-8 flex items-center justify-between">
+    <div className="dc-page">
+      <AppHeader />
+      <main className="mx-auto max-w-5xl px-4 py-8 sm:px-6 lg:py-10">
+      <div className="mb-8 flex flex-wrap items-start justify-between gap-5">
         <div>
           <div className="mb-2 flex items-center gap-3">
             <Link
@@ -74,21 +77,22 @@ export default function SettingsPage() {
               <ArrowLeft className="h-4 w-4" />
               {returnLabel}
             </Link>
-            <h1 className="text-3xl font-bold text-dream-900">设置</h1>
+            <h1 className="text-3xl font-bold tracking-tight text-slate-950">设置</h1>
           </div>
-          <p className="text-dream-600">
-            配置 AI 提供商 API Key。所有密钥仅保存在浏览器本地，不会上传到服务端。
+          <p className="max-w-xl text-sm leading-6 text-slate-500">
+            配置创作与翻译使用的模型。密钥保存在当前浏览器，调用时经本机服务转发给所选提供商。
           </p>
         </div>
         <button
           onClick={handleSave}
-          className="inline-flex items-center gap-2 rounded-full bg-dream-600 px-6 py-2.5 text-sm font-medium text-white shadow-lg shadow-dream-500/30 transition hover:bg-dream-700"
+          className="dc-primary"
         >
           {saved ? <Check className="h-4 w-4" /> : <Save className="h-4 w-4" />}
           {saved ? '已保存' : '保存配置'}
         </button>
       </div>
 
+      <section className="mb-6 overflow-hidden rounded-2xl border border-dream-100 bg-white sm:grid sm:grid-cols-[1fr_200px]"><div className="p-5"><p className="text-xs font-semibold text-dream-600">创作设置</p><h2 className="mt-2 text-lg font-bold text-slate-950">让工具配合你的写作习惯</h2><p className="mt-2 max-w-xl text-sm leading-6 text-slate-500">创作助手与日语配音翻译共用已启用的模型。未配置在线模型时，配音可使用本机翻译组件。</p></div><img src="/assets/ui/writing-nook.webp" alt="" className="hidden h-full w-full object-cover sm:block" /></section>
       <div className="mb-6 flex items-start gap-3 rounded-xl border border-dream-200 bg-dream-50/50 p-4 text-sm text-dream-700">
         <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-dream-500" />
         <p>同一时间只能启用一个 AI 提供商。启用新的提供商会自动停用当前的。切换后编辑器中的 AI 功能将立即使用新模型。</p>
@@ -102,23 +106,23 @@ export default function SettingsPage() {
           return (
             <div
               key={meta.provider}
-              className="rounded-2xl border border-dream-100 bg-white/70 p-6 shadow-sm"
+              className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6"
             >
-              <div className="mb-4 flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div><h2 className="text-lg font-semibold text-dream-900">{meta.name}</h2><p className={`mt-0.5 text-xs ${cfg.enabled && cfg.apiKey.trim() ? 'text-emerald-700' : 'text-dream-500'}`}>{cfg.enabled && cfg.apiKey.trim() ? '已启用 · 密钥已保存在本机' : cfg.enabled ? '已启用 · 请填写 API Key' : '未启用'}</p></div>
+              <div className="mb-4 flex flex-wrap items-start justify-between gap-4">
+                <div className="min-w-0 flex-1 space-y-2">
+                  <div><h2 className="text-lg font-semibold text-slate-950">{meta.name}</h2><p className={`mt-0.5 text-xs ${cfg.enabled && cfg.apiKey.trim() ? 'text-emerald-700' : 'text-slate-500'}`}>{cfg.enabled && cfg.apiKey.trim() ? '已启用 · 密钥已保存在本机' : cfg.enabled ? '已启用 · 请填写 API Key' : '未启用'}</p></div>
                   {meta.url && (
                     <a
                       href={meta.url}
                       target="_blank"
                       rel="noreferrer"
-                      className="inline-flex items-center gap-1 text-sm text-dream-500 hover:text-dream-700"
+                      className="inline-flex items-center gap-1 text-xs text-dream-600 hover:text-dream-800"
                     >
                       申请 API Key <ExternalLink className="h-3 w-3" />
                     </a>
                   )}
                 </div>
-                <label className="flex items-center gap-2 cursor-pointer">
+                <label className="flex shrink-0 cursor-pointer items-center gap-2 rounded-lg bg-slate-50 px-3 py-2">
                   <input
                     type="radio"
                     name="active-provider"
@@ -126,28 +130,30 @@ export default function SettingsPage() {
                     onChange={(e) => updateConfig(meta.provider, 'enabled', e.target.checked)}
                     className="h-4 w-4 border-dream-300 text-dream-600 focus:ring-dream-500"
                   />
-                  <span className="text-sm text-dream-700">{cfg.enabled ? '使用中' : '启用'}</span>
+                  <span className="whitespace-nowrap text-sm text-slate-700">{cfg.enabled ? '使用中' : '启用'}</span>
                 </label>
               </div>
 
               <div className="space-y-4">
                 <div>
-                  <label className="mb-1.5 block text-sm font-medium text-dream-700">API Key</label>
+                  <label htmlFor={`key-${meta.provider}`} className="mb-1.5 block text-sm font-medium text-slate-700">API Key</label>
                   <input
+                    id={`key-${meta.provider}`}
                     type="password"
                     value={cfg.apiKey}
                     onChange={(e) => updateConfig(meta.provider, 'apiKey', e.target.value)}
                     placeholder={`输入 ${meta.name} API Key`}
-                    className="w-full rounded-xl border border-dream-200 bg-white px-4 py-2 text-sm text-dream-900 placeholder:text-dream-400 focus:border-dream-500 focus:outline-none focus:ring-2 focus:ring-dream-500/20"
+                    className="w-full rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-dream-500 focus:outline-none focus:ring-2 focus:ring-dream-500/20"
                   />
                 </div>
 
                 <div>
-                  <label className="mb-1.5 block text-sm font-medium text-dream-700">默认模型</label>
+                  <label htmlFor={`model-${meta.provider}`} className="mb-1.5 block text-sm font-medium text-slate-700">默认模型</label>
                   <select
+                    id={`model-${meta.provider}`}
                     value={isCustomModel ? '__custom__' : cfg.model}
                     onChange={(e) => handleModelChange(meta.provider, e.target.value)}
-                    className="w-full rounded-xl border border-dream-200 bg-white px-4 py-2 text-sm text-dream-900 focus:border-dream-500 focus:outline-none focus:ring-2 focus:ring-dream-500/20"
+                    className="w-full rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm text-slate-900 focus:border-dream-500 focus:outline-none focus:ring-2 focus:ring-dream-500/20"
                   >
                     {meta.models.map((model) => (
                       <option key={model} value={model}>
@@ -160,28 +166,30 @@ export default function SettingsPage() {
 
                 {isCustomModel && (
                   <div>
-                    <label className="mb-1.5 block text-sm font-medium text-dream-700">自定义模型名</label>
+                    <label htmlFor={`custom-model-${meta.provider}`} className="mb-1.5 block text-sm font-medium text-slate-700">自定义模型名</label>
                     <input
+                      id={`custom-model-${meta.provider}`}
                       type="text"
                       value={customModels[meta.provider] || cfg.model}
                       onChange={(e) => handleCustomModelChange(meta.provider, e.target.value)}
                       placeholder="例如：kimi-2-7-preview"
-                      className="w-full rounded-xl border border-dream-200 bg-white px-4 py-2 text-sm text-dream-900 placeholder:text-dream-400 focus:border-dream-500 focus:outline-none focus:ring-2 focus:ring-dream-500/20"
+                      className="w-full rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-dream-500 focus:outline-none focus:ring-2 focus:ring-dream-500/20"
                     />
                   </div>
                 )}
 
                 {meta.allowCustomBaseUrl && (
                   <div>
-                    <label className="mb-1.5 block text-sm font-medium text-dream-700">自定义 Base URL</label>
+                    <label htmlFor={`base-${meta.provider}`} className="mb-1.5 block text-sm font-medium text-slate-700">自定义 Base URL</label>
                     <input
+                      id={`base-${meta.provider}`}
                       type="text"
                       value={cfg.baseUrl || ''}
                       onChange={(e) => updateConfig(meta.provider, 'baseUrl', e.target.value)}
                       placeholder="https://api.example.com/v1"
-                      className="w-full rounded-xl border border-dream-200 bg-white px-4 py-2 text-sm text-dream-900 placeholder:text-dream-400 focus:border-dream-500 focus:outline-none focus:ring-2 focus:ring-dream-500/20"
+                      className="w-full rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-dream-500 focus:outline-none focus:ring-2 focus:ring-dream-500/20"
                     />
-                    <p className="mt-1 text-xs text-dream-500">OpenAI 兼容接口，需支持 /chat/completions</p>
+                    <p className="mt-1 text-xs text-slate-500">OpenAI 兼容接口，需支持 /chat/completions</p>
                   </div>
                 )}
               </div>
@@ -189,6 +197,7 @@ export default function SettingsPage() {
           )
         })}
       </div>
+      </main>
     </div>
   )
 }

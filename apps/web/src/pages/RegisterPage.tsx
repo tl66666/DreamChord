@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { Sparkles, Loader2 } from 'lucide-react'
 import { register } from '../api/client'
 import { useAuthStore } from '../stores/authStore'
+import AuthLayout from '../components/AuthLayout'
 
 function getApiError(err: unknown, fallback = '操作失败'): string {
   if (typeof err === 'object' && err !== null && 'response' in err) {
@@ -57,21 +58,22 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center px-4">
+    <AuthLayout register>
       <div className="w-full max-w-md rounded-2xl border border-dream-100 bg-white/80 p-8 shadow-xl backdrop-blur-sm">
         <div className="mb-6 flex items-center justify-center gap-2">
           <Sparkles className="h-6 w-6 text-dream-600" />
-          <h1 className="text-2xl font-bold text-dream-900">注册梦弦</h1>
+          <h1 className="text-2xl font-bold text-slate-950">注册梦弦</h1>
         </div>
 
         {error && (
-          <div className="mb-4 rounded-lg bg-red-50 px-4 py-2 text-sm text-red-600">{error}</div>
+          <div role="alert" className="mb-4 rounded-lg bg-red-50 px-4 py-2 text-sm text-red-600">{error}</div>
         )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="mb-1.5 block text-sm font-medium text-dream-700">用户名</label>
+            <label htmlFor="register-username" className="mb-1.5 block text-sm font-medium text-slate-700">用户名</label>
             <input
+              id="register-username" autoComplete="username"
               type="text"
               value={form.username}
               onChange={(e) => handleChange('username', e.target.value)}
@@ -80,8 +82,9 @@ export default function RegisterPage() {
             />
           </div>
           <div>
-            <label className="mb-1.5 block text-sm font-medium text-dream-700">邮箱</label>
+            <label htmlFor="register-email" className="mb-1.5 block text-sm font-medium text-slate-700">邮箱</label>
             <input
+              id="register-email" autoComplete="email"
               type="email"
               value={form.email}
               onChange={(e) => handleChange('email', e.target.value)}
@@ -90,8 +93,9 @@ export default function RegisterPage() {
             />
           </div>
           <div>
-            <label className="mb-1.5 block text-sm font-medium text-dream-700">昵称（可选）</label>
+            <label htmlFor="register-nickname" className="mb-1.5 block text-sm font-medium text-slate-700">昵称（可选）</label>
             <input
+              id="register-nickname" autoComplete="nickname"
               type="text"
               value={form.nickname}
               onChange={(e) => handleChange('nickname', e.target.value)}
@@ -100,8 +104,9 @@ export default function RegisterPage() {
             />
           </div>
           <div>
-            <label className="mb-1.5 block text-sm font-medium text-dream-700">密码</label>
+            <label htmlFor="register-password" className="mb-1.5 block text-sm font-medium text-slate-700">密码</label>
             <input
+              id="register-password" autoComplete="new-password"
               type="password"
               value={form.password}
               onChange={(e) => handleChange('password', e.target.value)}
@@ -111,8 +116,9 @@ export default function RegisterPage() {
             />
           </div>
           <div>
-            <label className="mb-1.5 block text-sm font-medium text-dream-700">确认密码</label>
+            <label htmlFor="register-password-confirmation" className="mb-1.5 block text-sm font-medium text-slate-700">确认密码</label>
             <input
+              id="register-password-confirmation" autoComplete="new-password"
               type="password"
               value={form.confirmPassword}
               onChange={(e) => handleChange('confirmPassword', e.target.value)}
@@ -136,6 +142,6 @@ export default function RegisterPage() {
           </Link>
         </p>
       </div>
-    </div>
+    </AuthLayout>
   )
 }

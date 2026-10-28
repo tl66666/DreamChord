@@ -1,5 +1,21 @@
 import { z } from 'zod'
 
+const localizedTextSchema = z.object({
+  text: z.string().max(20_000).optional(),
+  choices: z.array(z.string().max(200)).max(12).optional(),
+  speaker: z.string().max(100).optional(),
+  sourceHash: z.string().regex(/^[a-f0-9]{8}$/).optional(),
+}).strict()
+const localizedVoiceSchema = z.object({
+  url: z.string().trim().min(1).max(2_000), volume: z.number().min(0).max(1).optional(),
+  textHash: z.string().regex(/^[a-f0-9]{8}$/).optional(),
+  profileId: z.string().min(1).max(200).optional(),
+}).strict()
+const localizationFields = {
+  localizations: z.object({ zh: localizedTextSchema.optional(), ja: localizedTextSchema.optional() }).strict().optional(),
+  voiceTracks: z.object({ zh: localizedVoiceSchema.optional(), ja: localizedVoiceSchema.optional() }).strict().optional(),
+}
+
 const sceneFields = {
   sceneGroupId: z.string().min(1).optional(),
   sceneCode: z.string().min(1).optional(),
@@ -43,6 +59,7 @@ const choiceEffectSchema = z.object({
 }).strict()
 
 const dialogueDataSchema = z.object({
+  ...localizationFields,
   ...sceneFields,
   role: z.string().max(100),
   text: z.string().max(20_000),
@@ -51,6 +68,7 @@ const dialogueDataSchema = z.object({
 }).strict()
 
 const subtitleDataSchema = z.object({
+  ...localizationFields,
   ...sceneFields,
   role: z.string().max(100).optional(),
   text: z.string().max(20_000),
@@ -59,6 +77,7 @@ const subtitleDataSchema = z.object({
 }).strict()
 
 const choiceDataSchema = z.object({
+  ...localizationFields,
   ...sceneFields,
   choices: z.array(z.string().max(200)).min(1).max(12),
   effects: z.array(z.array(choiceEffectSchema).max(12)).max(12).optional(),
@@ -113,6 +132,7 @@ export const proposedNodeSchema = z.discriminatedUnion('type', [
 ])
 
 const allowedChangesSchema = z.object({
+  ...localizationFields,
   role: z.string().max(100).optional(),
   text: z.string().max(20_000).optional(),
   choices: z.array(z.string().max(200)).min(1).max(12).optional(),

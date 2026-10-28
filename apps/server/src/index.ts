@@ -3,6 +3,8 @@ import { createApp } from './app.js'
 import { prismaAgentRunService } from './agent/runService.js'
 import { prismaLongImportService } from './imports/longImportService.js'
 import { getManagedVoiceEngine } from './voice/managedVoiceEngine.js'
+import { recoverInterruptedVoiceJobs } from './voice/recoverVoiceJobs.js'
+import { prisma } from './lib/prisma.js'
 
 dotenv.config()
 
@@ -18,6 +20,7 @@ for (const key of REQUIRED_ENV) {
 const PORT = Number(process.env.PORT) || 3001
 await prismaAgentRunService.recoverInterruptedRuns()
 await prismaLongImportService.recoverInterruptedRuns()
+await recoverInterruptedVoiceJobs(prisma)
 const managedVoiceEngine = getManagedVoiceEngine()
 const configuredAutoStart = process.env.VOICE_PROVIDER === 'cosyvoice'
   ? process.env.COSYVOICE_AUTO_START

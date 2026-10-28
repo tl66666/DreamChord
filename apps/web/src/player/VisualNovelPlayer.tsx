@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState, useCallback } from 'react'
+import { resolveLocalizedContent, type StoryLocale } from '@dreamchord/story-domain'
 import { useToast } from '../components/FeedbackProvider'
 import { useLocation, useNavigate, useParams } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -20,6 +21,8 @@ interface HistoryItem {
 }
 
 interface PlayerSettings {
+  subtitleLocale: StoryLocale
+  voiceLocale: StoryLocale
   textSpeed: number
   autoAdvance: boolean
   skipRead: boolean
@@ -29,12 +32,27 @@ interface PlayerSettings {
 }
 
 const DEFAULT_SETTINGS: PlayerSettings = {
+  subtitleLocale: 'zh',
+  voiceLocale: 'zh',
   textSpeed: 35,
   autoAdvance: false,
   skipRead: false,
   bgmVolume: 0.5,
   sfxVolume: 0.7,
   voiceVolume: 0.8,
+}
+
+export function parsePlayerSettings(saved: string | null): PlayerSettings {
+  try {
+    const value = JSON.parse(saved || '{}') as Partial<PlayerSettings>
+    if (!value || typeof value !== 'object') return { ...DEFAULT_SETTINGS }
+    const number = (key: keyof PlayerSettings, min: number, max: number) => typeof value[key] === 'number' && Number.isFinite(value[key]) ? Math.max(min, Math.min(max, value[key] as number)) : DEFAULT_SETTINGS[key] as number
+    return { ...DEFAULT_SETTINGS,
+      subtitleLocale: value.subtitleLocale === 'ja' ? 'ja' : 'zh', voiceLocale: value.voiceLocale === 'ja' ? 'ja' : 'zh',
+      textSpeed: number('textSpeed', 10, 80), bgmVolume: number('bgmVolume', 0, 1), sfxVolume: number('sfxVolume', 0, 1), voiceVolume: number('voiceVolume', 0, 1),
+      autoAdvance: value.autoAdvance === true, skipRead: value.skipRead === true,
+    }
+  } catch { return { ...DEFAULT_SETTINGS } }
 }
 
 export interface AutoAdvanceState {
@@ -69,7 +87,10 @@ export default function VisualNovelPlayer() {
   const [isAuto, setIsAuto] = useState(false)
   const [isSkip, setIsSkip] = useState(false)
   const [finished, setFinished] = useState(false)
-  const [settings, setSettings] = useState<PlayerSettings>(DEFAULT_SETTINGS)
+  const [settings, setSettings] = useState<PlayerSettings>(() => {
+    try { return parsePlayerSettings(localStorage.getItem('dreamchord_player_settings')) }
+    catch { return { ...DEFAULT_SETTINGS } }
+  })
   const [audioDirectorGeneration, setAudioDirectorGeneration] = useState(0)
   const [voiceEndedSceneId, setVoiceEndedSceneId] = useState<string | null>(null)
   const [voiceLifecycleTick, setVoiceLifecycleTick] = useState(0)
@@ -121,17 +142,6 @@ export default function VisualNovelPlayer() {
   )
 
   useEffect(() => {
-    const saved = localStorage.getItem('dreamchord_player_settings')
-    if (saved) {
-      try {
-        setSettings({ ...DEFAULT_SETTINGS, ...JSON.parse(saved) })
-      } catch {
-        // Ignore invalid local settings.
-      }
-    }
-  }, [])
-
-  useEffect(() => {
     localStorage.setItem('dreamchord_player_settings', JSON.stringify(settings))
   }, [settings])
 
@@ -153,7 +163,17 @@ export default function VisualNovelPlayer() {
       .finally(() => setLoading(false))
   }, [location.search, projectId, toast])
 
-  const currentScene = engine?.currentScene() || null
+  const sourceScene = engine?.currentScene() || null
+  const localized = useMemo(() => resolveLocalizedContent({
+    text: sourceScene?.dialogue?.text, role: sourceScene?.dialogue?.role, choices: sourceScene?.choices,
+    localizations: sourceScene?.localizations, voiceTracks: sourceScene?.voiceTracks, originalVoice: sourceScene?.audio?.voice,
+  }, settings.subtitleLocale, settings.voiceLocale), [sourceScene, settings.subtitleLocale, settings.voiceLocale])
+  const currentScene = useMemo(() => sourceScene ? {
+    ...sourceScene,
+    ...(sourceScene.dialogue ? { dialogue: { ...sourceScene.dialogue, text: localized.text } } : {}),
+    ...(sourceScene.choices ? { choices: localized.choices } : {}),
+    audio: { ...sourceScene.audio, voice: localized.voice },
+  } : null, [sourceScene, localized])
   activeSceneIdRef.current = currentScene?.id || null
 
   useEffect(() => {
@@ -165,15 +185,18 @@ export default function VisualNovelPlayer() {
     })
   }, [audioDirectorGeneration])
 
-  // A scene ID identifies an immutable runtime snapshot; volume changes are handled below.
+  const lastAudioScene = useRef<string | null>(null)
   useEffect(() => {
-    audioDirectorRef.current?.playScene(currentScene?.audio, {
+    const switchingVoice = lastAudioScene.current === currentScene?.id
+    if (switchingVoice) audioDirectorRef.current?.stopTransient()
+    audioDirectorRef.current?.playScene(switchingVoice ? { bgm: { action: 'keep' }, voice: currentScene?.audio?.voice } : currentScene?.audio, {
       bgm: settings.bgmVolume,
       sfx: settings.sfxVolume,
       voice: settings.voiceVolume,
     })
+    lastAudioScene.current = currentScene?.id || null
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentScene?.id])
+  }, [currentScene?.id, settings.voiceLocale, audioDirectorGeneration])
 
   useEffect(() => {
     audioDirectorRef.current?.updateMix({
@@ -196,7 +219,7 @@ export default function VisualNovelPlayer() {
   }, [currentScene])
 
   const characters = useMemo(() => currentScene?.characters || [], [currentScene])
-  const speakerName = useMemo(() => resolveCharacterName(currentScene?.dialogue?.role || ''), [currentScene])
+  const speakerName = useMemo(() => resolveCharacterName(localized.role), [localized.role])
   const speakerColor = useMemo(() => resolveCharacterColor(currentScene?.dialogue?.role || ''), [currentScene])
 
   const stopTyping = useCallback(() => {
@@ -210,16 +233,17 @@ export default function VisualNovelPlayer() {
   const pushHistory = useCallback((scene: RuntimeScene) => {
     const dialogue = scene.dialogue
     if (!dialogue?.text) return
+    const content = resolveLocalizedContent({ text: dialogue.text, role: dialogue.role, localizations: scene.localizations }, settings.subtitleLocale, settings.voiceLocale)
     setHistory((prev) => [
       ...prev,
       {
         sceneId: scene.id,
-        role: resolveCharacterName(dialogue.role),
-        text: dialogue.text,
+        role: resolveCharacterName(content.role),
+        text: content.text,
         speakerColor: resolveCharacterColor(dialogue.role),
       },
     ])
-  }, [])
+  }, [settings.subtitleLocale, settings.voiceLocale])
 
   const advance = useCallback(() => {
     if (!engine) return
@@ -319,6 +343,7 @@ export default function VisualNovelPlayer() {
     if (!engine) return
     audioDirectorRef.current?.dispose()
     audioDirectorRef.current = createAudioDirector()
+    lastAudioScene.current = null
     setAudioDirectorGeneration((value) => value + 1)
     setVoiceEndedSceneId(null)
     setHistory([])
@@ -489,7 +514,8 @@ export default function VisualNovelPlayer() {
                       className="rounded-full px-3 py-1 text-sm font-semibold md:text-base"
                       style={{
                         background: `${speakerColor}22`,
-                        color: speakerColor,
+                        color: 'rgba(255,255,255,0.96)',
+                        border: `1px solid ${speakerColor}66`,
                         boxShadow: `0 0 12px ${speakerColor}30`,
                       }}
                     >
@@ -618,9 +644,12 @@ export default function VisualNovelPlayer() {
             className="absolute inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-md"
             onClick={(event) => event.stopPropagation()}
           >
-            <div className="w-full max-w-sm rounded-2xl border border-white/10 bg-black/82 p-6 shadow-2xl">
+            <div role="dialog" aria-modal="true" aria-label="播放设置" className="max-h-[90dvh] w-full max-w-sm overflow-y-auto rounded-2xl border border-white/10 bg-black/82 p-6 shadow-2xl">
               <h3 className="mb-4 text-lg font-semibold text-white">播放设置</h3>
               <div className="space-y-5">
+                <label className="block text-sm text-white/80">字幕语言<select aria-label="字幕语言" value={settings.subtitleLocale} onChange={(event) => setSettings((old) => ({ ...old, subtitleLocale: event.target.value as StoryLocale }))} className="mt-2 w-full rounded-lg border border-white/15 bg-slate-900 px-3 py-2 text-white"><option value="zh">简体中文</option><option value="ja">日本語</option></select></label>
+                <label className="block text-sm text-white/80">配音语言<select aria-label="配音语言" value={settings.voiceLocale} onChange={(event) => setSettings((old) => ({ ...old, voiceLocale: event.target.value as StoryLocale }))} className="mt-2 w-full rounded-lg border border-white/15 bg-slate-900 px-3 py-2 text-white"><option value="zh">中文配音</option><option value="ja">日本語音声</option></select></label>
+                <p className="text-xs leading-5 text-white/50">字幕和配音可自由组合，切换不会重置剧情。{localized.fallback ? '本句尚无完整译文，暂显示中文。' : ''}{localized.missingVoice ? '本句暂无所选语言的有效配音。' : ''}</p>
                 <RangeControl
                   label="文字速度"
                   value={settings.textSpeed}

@@ -4,6 +4,19 @@ import { describe, expect, it, vi } from 'vitest'
 import { ManagedVoiceEngine } from './managedVoiceEngine.js'
 
 describe('ManagedVoiceEngine', () => {
+  it('waits for process exit before another GPU model may start', async () => {
+    const child = Object.assign(new EventEmitter(), { pid: 1234, kill: vi.fn().mockReturnValue(true) })
+    const engine = new ManagedVoiceEngine({ home: path.resolve('runtime'), python: 'python', port: 9880 }, { exists: () => true, spawnProcess: vi.fn().mockReturnValue(child) })
+    engine.start()
+    let stopped = false
+    const waiting = engine.stopAndWait().then(() => { stopped = true })
+    await Promise.resolve()
+    expect(stopped).toBe(false)
+    expect(child.kill).toHaveBeenCalledWith('SIGTERM')
+    child.emit('exit', 0, null)
+    await waiting
+    expect(stopped).toBe(true)
+  })
   it('reports an actionable uninstalled state without spawning anything', () => {
     const spawnProcess = vi.fn()
     const engine = new ManagedVoiceEngine({

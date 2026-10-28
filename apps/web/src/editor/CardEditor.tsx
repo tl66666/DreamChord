@@ -5,6 +5,7 @@
  */
 
 import { useState, useEffect } from 'react'
+import { voiceTextHash } from '@dreamchord/story-domain'
 import type { Edge } from '@xyflow/react'
 import {
   ImageIcon, Users, X, Wand2, ArrowRight, GitMerge, Plus, Sparkles, GitBranch, AlertTriangle, FolderOpen, Music, Volume2, Mic, RotateCcw,
@@ -16,6 +17,7 @@ import {
 import { loadLibraryCharacters, loadLibraryScenes, type StoryTemplate } from '../lib/libraryData'
 import { resolveBgUrl } from './storyFlowchart/bgUrl'
 import { TemplateSelect, extractChoicesFromTemplate } from './manuscriptUtils'
+import NodeLocalizationEditor from './NodeLocalizationEditor'
 
 export function CardEditor({
   card, characters, libraryScenes, storyTemplates, allScenes, allEdges, convergenceMap,
@@ -131,7 +133,7 @@ export function CardEditor({
   }
 
   const updateAudio = (updates: Partial<NonNullable<ShotCard['audio']>>) => {
-    onUpdate({ audio: { ...card.audio, ...updates } })
+    onUpdate({ audio: { ...card.audio, ...updates }, ...(Object.prototype.hasOwnProperty.call(updates, 'voice') ? { voiceTracks: { ...card.voiceTracks, zh: updates.voice?.url ? { ...updates.voice, textHash: voiceTextHash(localText) } : undefined } } : {}) })
   }
 
   const setBgmAction = (action: 'keep' | 'play' | 'stop') => {
@@ -168,14 +170,14 @@ export function CardEditor({
               <img src={resolveBgUrl(card.background, libraryScenes)} alt="" className="h-full w-full object-cover" onError={(e) => { (e.target as HTMLImageElement).style.opacity = '0.2' }} />
             ) : (
               <div className="flex h-full w-full items-center justify-center bg-dream-50">
-                <ImageIcon className="h-4 w-4 text-dream-300" />
+                <ImageIcon className="h-4 w-4 text-slate-400" />
               </div>
             )}
           </div>
           <select
             value={card.background}
             onChange={(e) => onUpdate({ background: e.target.value })}
-            className="flex-1 rounded-lg border border-dream-200 bg-white px-2.5 py-1.5 text-sm text-dream-800 focus:border-dream-500 focus:outline-none"
+            className="flex-1 rounded-lg border border-dream-200 bg-white px-2.5 py-1.5 text-sm text-slate-800 focus:border-dream-500 focus:outline-none"
           >
             <option value="">请选择背景...</option>
             {libraryScenes.map((scene) => (
@@ -227,7 +229,7 @@ export function CardEditor({
                     <option value="keep">保持在场</option>
                     <option value="hide">退场</option>
                   </select>
-                  <button onClick={() => removeCharacter(i)} className="text-dream-300 hover:text-red-500" title={char.action === 'keep' ? '让角色退场' : '移除这项舞台变化'}>
+                  <button onClick={() => removeCharacter(i)} className="text-slate-400 hover:text-red-500" title={char.action === 'keep' ? '让角色退场' : '移除这项舞台变化'}>
                     <X className="h-3 w-3" />
                   </button>
                 </div>
@@ -239,7 +241,7 @@ export function CardEditor({
                 setNewCharId(e.target.value)
                 if (e.target.value) addCharacter(e.target.value)
               }}
-              className="rounded-lg border border-dashed border-dream-200 bg-white px-2 py-1.5 text-xs text-dream-400"
+              className="rounded-lg border border-dashed border-dream-200 bg-white px-2 py-1.5 text-xs text-slate-500"
             >
               <option value="">+ 添加角色</option>
               {characters
@@ -261,7 +263,7 @@ export function CardEditor({
               <select
                 value={card.speaker}
                 onChange={(e) => onUpdate({ speaker: e.target.value, autoStageSpeaker: e.target.value !== '旁白' })}
-                className="w-full rounded-lg border border-dream-200 bg-white px-2.5 py-1.5 text-sm text-dream-800 focus:border-dream-500 focus:outline-none"
+                className="w-full rounded-lg border border-dream-200 bg-white px-2.5 py-1.5 text-sm text-slate-800 focus:border-dream-500 focus:outline-none"
               >
                 {speakerOptions.map((opt) => (
                   <option key={opt.id} value={opt.id}>{opt.name}</option>
@@ -275,7 +277,7 @@ export function CardEditor({
                   <select
                     value={card.speakerPosition}
                     onChange={(e) => onUpdate({ speakerPosition: e.target.value as ShotCard['speakerPosition'] })}
-                    className="w-full rounded-lg border border-dream-200 bg-white px-2.5 py-1.5 text-sm text-dream-800 focus:border-dream-500 focus:outline-none"
+                    className="w-full rounded-lg border border-dream-200 bg-white px-2.5 py-1.5 text-sm text-slate-800 focus:border-dream-500 focus:outline-none"
                   >
                     <option value="left">左</option>
                     <option value="center">中</option>
@@ -287,7 +289,7 @@ export function CardEditor({
                   <select
                     value={card.speakerExpression === '__random' ? '__random' : card.speakerExpression}
                     onChange={(e) => onUpdate({ speakerExpression: e.target.value })}
-                    className="w-full rounded-lg border border-dream-200 bg-white px-2.5 py-1.5 text-sm text-dream-800 focus:border-dream-500 focus:outline-none"
+                    className="w-full rounded-lg border border-dream-200 bg-white px-2.5 py-1.5 text-sm text-slate-800 focus:border-dream-500 focus:outline-none"
                   >
                     <option value="__random">随机表情</option>
                     {characters.find((c) => c.id === card.speaker)?.expressions.map((expr) => (
@@ -317,17 +319,17 @@ export function CardEditor({
         <div className="mb-2 flex items-center justify-between gap-2">
           <div>
             <h3 className="text-xs font-medium text-dream-600">音频演出</h3>
-            <p className="mt-0.5 text-[11px] text-dream-400">仅在进入此镜头时触发；BGM 可延续、切换或停止。</p>
+            <p className="mt-0.5 text-[11px] text-slate-500">仅在进入此镜头时触发；BGM 可延续、切换或停止。</p>
           </div>
           {(card.audio?.bgm || card.audio?.sfx?.length || card.audio?.voice) && (
-            <button type="button" onClick={() => onUpdate({ audio: undefined })} className="flex h-7 w-7 items-center justify-center rounded border border-dream-200 bg-white text-dream-400 hover:text-red-500" title="清除本镜头音频" aria-label="清除本镜头音频"><RotateCcw className="h-3.5 w-3.5" /></button>
+            <button type="button" onClick={() => onUpdate({ audio: undefined, voiceTracks: {} })} className="flex h-7 w-7 items-center justify-center rounded border border-dream-200 bg-white text-slate-500 hover:text-red-500" title="清除本镜头音频" aria-label="清除本镜头音频"><RotateCcw className="h-3.5 w-3.5" /></button>
           )}
         </div>
         <div className="space-y-2">
           <div className="flex items-center gap-2">
             <Music className="h-3.5 w-3.5 shrink-0 text-dream-500" />
             <span className="w-8 shrink-0 text-xs text-dream-500">BGM</span>
-            <select aria-label="BGM 动作" value={card.audio?.bgm?.action || 'keep'} onChange={(event) => setBgmAction(event.target.value as 'keep' | 'play' | 'stop')} className="min-w-0 flex-1 rounded border border-dream-200 bg-white px-2 py-1 text-xs text-dream-700">
+            <select aria-label="BGM 动作" value={card.audio?.bgm?.action || 'keep'} onChange={(event) => setBgmAction(event.target.value as 'keep' | 'play' | 'stop')} className="min-w-0 flex-1 rounded border border-dream-200 bg-white px-2 py-1 text-xs text-slate-700">
               <option value="keep">延续上一首</option>
               <option value="play">播放或切换</option>
               <option value="stop">停止 BGM</option>
@@ -339,14 +341,14 @@ export function CardEditor({
             <Volume2 className="h-3.5 w-3.5 shrink-0 text-dream-500" />
             <span className="w-8 shrink-0 text-xs text-dream-500">音效</span>
             <span className="min-w-0 flex-1 truncate text-xs text-dream-600" title={card.audio?.sfx?.map((effect) => effect.url).join('\n')}>{card.audio?.sfx?.length ? `${card.audio.sfx.length} 个音效` : '未设置'}</span>
-            {card.audio?.sfx?.length ? <button type="button" onClick={() => updateAudio({ sfx: [] })} className="text-[11px] text-dream-400 hover:text-red-500">移除</button> : null}
+            {card.audio?.sfx?.length ? <button type="button" onClick={() => updateAudio({ sfx: [] })} className="text-[11px] text-slate-500 hover:text-red-500">移除</button> : null}
             <button type="button" aria-label="从项目素材选择音效" title="从项目素材选择音效" onClick={() => onOpenAssetPicker(card.id, 'sfx')} className="flex h-7 w-7 shrink-0 items-center justify-center rounded border border-dream-200 bg-white text-dream-600 hover:bg-dream-50"><FolderOpen className="h-3.5 w-3.5" /></button>
           </div>
           <div className="flex items-center gap-2">
             <Mic className="h-3.5 w-3.5 shrink-0 text-dream-500" />
             <span className="w-8 shrink-0 text-xs text-dream-500">配音</span>
             <span className="min-w-0 flex-1 truncate text-xs text-dream-600" title={card.audio?.voice?.url}>{card.audio?.voice?.url ? card.audio.voice.url.split('/').pop() : '未设置'}</span>
-            {card.audio?.voice ? <button type="button" onClick={() => updateAudio({ voice: undefined })} className="text-[11px] text-dream-400 hover:text-red-500">移除</button> : null}
+            {card.audio?.voice ? <button type="button" onClick={() => updateAudio({ voice: undefined })} className="text-[11px] text-slate-500 hover:text-red-500">移除</button> : null}
             <button type="button" aria-label="从项目素材选择配音" title="从项目素材选择配音" onClick={() => onOpenAssetPicker(card.id, 'voice')} className="flex h-7 w-7 shrink-0 items-center justify-center rounded border border-dream-200 bg-white text-dream-600 hover:bg-dream-50"><FolderOpen className="h-3.5 w-3.5" /></button>
           </div>
         </div>
@@ -433,7 +435,7 @@ export function CardEditor({
                       placeholder={`选项 ${i + 1}`}
                       className="flex-1 rounded-lg border border-dream-200 bg-white px-2.5 py-1.5 text-sm focus:border-dream-500 focus:outline-none"
                     />
-                    <button onClick={() => removeChoice(i)} className="text-dream-300 hover:text-red-500">
+                    <button onClick={() => removeChoice(i)} className="text-slate-400 hover:text-red-500">
                       <X className="h-3.5 w-3.5" />
                     </button>
                   </div>
@@ -452,13 +454,13 @@ export function CardEditor({
                       </div>
                       <button
                         onClick={() => onNavigateToScene(targetScene.id)}
-                        className="rounded-md px-2 py-1 text-xs text-dream-500 transition hover:bg-dream-50 hover:text-dream-700"
+                        className="rounded-md px-2 py-1 text-xs text-dream-500 transition hover:bg-dream-50 hover:text-slate-700"
                       >
                         前往编辑
                       </button>
                       <button
                         onClick={() => onSetChoiceTarget(i, '')}
-                        className="rounded-md px-2 py-1 text-xs text-dream-300 transition hover:bg-red-50 hover:text-red-500"
+                        className="rounded-md px-2 py-1 text-xs text-slate-400 transition hover:bg-red-50 hover:text-red-500"
                       >
                         断开
                       </button>
@@ -487,7 +489,7 @@ export function CardEditor({
                                 <option key={s.id} value={s.id}>{s.code} · {s.title}</option>
                               ))}
                           </select>
-                          <ArrowRight className="pointer-events-none absolute right-2 top-1/2 h-3 w-3 -translate-y-1/2 text-dream-400" />
+                          <ArrowRight className="pointer-events-none absolute right-2 top-1/2 h-3 w-3 -translate-y-1/2 text-slate-500" />
                         </div>
                       </div>
                     </div>
@@ -495,21 +497,21 @@ export function CardEditor({
                 </div>
               )
             })}
-            <button onClick={addChoice} className="w-full rounded-lg border border-dashed border-dream-200 py-1.5 text-xs text-dream-400 transition hover:border-dream-300 hover:bg-dream-50">
+            <button onClick={addChoice} className="w-full rounded-lg border border-dashed border-dream-200 py-1.5 text-xs text-slate-500 transition hover:border-dream-300 hover:bg-dream-50">
               + 添加选项
             </button>
           </div>
           <div className="mt-1.5 flex items-center gap-1.5">
             <button
               onClick={() => onRequestAI('choices')}
-              className="flex items-center gap-1 rounded-md bg-dream-100 px-2 py-1 text-xs text-dream-700 transition hover:bg-dream-200"
+              className="flex items-center gap-1 rounded-md bg-dream-100 px-2 py-1 text-xs text-slate-700 transition hover:bg-dream-200"
               title="使用 AI 生成选项"
             >
               <Sparkles className="h-3 w-3" /> AI 生成选项
             </button>
             <button
               onClick={() => onRequestAI('branchReplies')}
-              className="flex items-center gap-1 rounded-md bg-dream-100 px-2 py-1 text-xs text-dream-700 transition hover:bg-dream-200"
+              className="flex items-center gap-1 rounded-md bg-dream-100 px-2 py-1 text-xs text-slate-700 transition hover:bg-dream-200"
               title="使用 AI 为每个选项生成后续剧情"
             >
               <GitBranch className="h-3 w-3" /> AI 分支回应
@@ -532,7 +534,7 @@ export function CardEditor({
             }}
             rows={3}
             placeholder="输入台词内容..."
-            className="w-full resize-none rounded-lg border border-dream-200 bg-white px-3 py-2 text-sm text-dream-800 focus:border-dream-500 focus:outline-none"
+            className="w-full resize-none rounded-lg border border-dream-200 bg-white px-3 py-2 text-sm text-slate-800 focus:border-dream-500 focus:outline-none"
           />
           <div className="mt-1.5 flex items-center gap-1.5">
             <button
@@ -540,14 +542,14 @@ export function CardEditor({
                 if (localText !== card.text) onUpdate({ text: localText })
                 onRequestAI('polish')
               }}
-              className="flex items-center gap-1 rounded-md bg-dream-100 px-2 py-1 text-xs text-dream-700 transition hover:bg-dream-200"
+              className="flex items-center gap-1 rounded-md bg-dream-100 px-2 py-1 text-xs text-slate-700 transition hover:bg-dream-200"
               title="使用 AI 润色当前台词"
             >
               <Wand2 className="h-3 w-3" /> AI 润色
             </button>
             <button
               onClick={() => onRequestAI('continue')}
-              className="flex items-center gap-1 rounded-md bg-dream-100 px-2 py-1 text-xs text-dream-700 transition hover:bg-dream-200"
+              className="flex items-center gap-1 rounded-md bg-dream-100 px-2 py-1 text-xs text-slate-700 transition hover:bg-dream-200"
               title="使用 AI 续写下一句"
             >
               <Sparkles className="h-3 w-3" /> AI 续写
@@ -555,6 +557,7 @@ export function CardEditor({
           </div>
         </div>
       )}
+      <NodeLocalizationEditor nodeId={card.id} data={{ role: card.speaker, ...(card.type === 'choice' ? { choices: localChoices } : { text: localText }), localizations: card.localizations, voiceTracks: card.voiceTracks }} onUpdate={(patch) => onUpdate(patch as Partial<ShotCard>)} />
     </div>
   )
 }

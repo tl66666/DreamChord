@@ -1,13 +1,13 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { Bot, ChevronRight, Library, Loader2, Settings } from 'lucide-react'
-import { Link, useNavigate, useSearchParams } from 'react-router-dom'
+import { Bot, ChevronRight, Loader2 } from 'lucide-react'
+import { Link, useSearchParams } from 'react-router-dom'
 import type { StoryGraph, StoryNodeType } from '@dreamchord/story-domain'
 import AgentWorkspace from '../agent/AgentWorkspace'
+import AppHeader from '../components/AppHeader'
 import type { AppliedPatchDto } from '../agent/agentTypes'
 import { getMyProjects, getProject, type Chapter, type ProjectDetail } from '../api/client'
 
 export default function AIWriterPage() {
-  const navigate = useNavigate()
   const [searchParams, setSearchParams] = useSearchParams()
   const [projects, setProjects] = useState<ProjectDetail[]>([])
   const [selectedProject, setSelectedProject] = useState<ProjectDetail | null>(null)
@@ -92,22 +92,8 @@ export default function AIWriterPage() {
   }, [selectedChapterId, selectedProjectId, setSearchParams])
 
   return (
-    <main className="flex h-dvh min-h-0 flex-col overflow-hidden bg-slate-100 text-slate-950">
-      <header className="border-b border-slate-200 bg-white px-4 py-3 sm:px-6">
-        <div className="mx-auto flex max-w-[1500px] flex-wrap items-center justify-between gap-3">
-          <Link to="/" className="flex min-w-0 items-center gap-3">
-            <img src="/assets/logo.png" alt="DreamChord" className="h-9 w-9 rounded-lg" />
-            <div className="min-w-0">
-              <p className="text-[11px] font-semibold uppercase text-slate-500">DreamChord / Narrative Control</p>
-              <h1 className="truncate text-lg font-bold">创作 Agent</h1>
-            </div>
-          </Link>
-          <nav className="flex items-center gap-1" aria-label="工作区导航">
-            <button title="素材库" onClick={() => navigate('/library')} className="grid h-10 w-10 place-items-center rounded-md text-slate-600 hover:bg-slate-100"><Library className="h-4 w-4" /></button>
-            <button title="模型设置" onClick={() => navigate('/settings')} className="grid h-10 w-10 place-items-center rounded-md text-slate-600 hover:bg-slate-100"><Settings className="h-4 w-4" /></button>
-          </nav>
-        </div>
-      </header>
+    <main className="flex h-dvh min-h-0 flex-col overflow-hidden bg-slate-50 text-slate-950">
+      <AppHeader title="创作 Agent" wide compact />
 
       <section className="border-b border-slate-200 bg-slate-50 px-4 py-3 sm:px-6">
         <div className="mx-auto flex max-w-[1500px] flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">

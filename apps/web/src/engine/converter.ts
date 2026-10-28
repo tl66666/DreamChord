@@ -1,4 +1,5 @@
 import type { Node, Edge } from '@xyflow/react'
+import { readLocalizationFields } from '@dreamchord/story-domain'
 import type { RuntimeStory, RuntimeScene, RuntimeEvent, CharacterOnStage, CharacterId, CharacterState, RuntimeCharacterCatalogEntry, RuntimeAudioDirection, RuntimeBgmDirection, RuntimeOneShotAudio, RuntimeConditionTarget, RuntimeEffect, RuntimeValue } from './types'
 import { CHARACTER_REGISTRY, resolveCharacterUrl } from './characters'
 import { loadLibraryCharacters } from '../lib/libraryData'
@@ -259,6 +260,7 @@ export function convertFlowToRuntime(
     })
 
     const scene: RuntimeScene = {
+      ...readLocalizationFields(data),
       id: node.id,
       event: inferEvent(node),
       background: stage.backgroundId,

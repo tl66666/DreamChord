@@ -71,7 +71,7 @@ export type RuntimeEvent =
   | 'ON_REALITY_CHANGE'
   | 'ON_REALITY_SAVE'
 
-export interface RuntimeScene {
+export interface RuntimeScene extends Pick<LocalizableContent, 'localizations' | 'voiceTracks'> {
   id: string
   event: RuntimeEvent
   eventTarget?: string
@@ -117,3 +117,4 @@ export interface RuntimeEngine {
   emit: (event: RuntimeEvent, target?: string) => void
   currentScene: () => RuntimeScene | null
 }
+import type { LocalizableContent } from '@dreamchord/story-domain'

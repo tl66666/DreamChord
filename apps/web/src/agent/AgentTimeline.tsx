@@ -38,12 +38,12 @@ export default function AgentTimeline({ run }: { run: AgentRunDto }) {
         <span>待确认记忆：{run.usage.memorySuggestions} 条</span>
       </div>
       <div className="flex items-center gap-2 text-sm font-semibold text-slate-900">
-        <StatusIcon className={`h-4 w-4 ${active ? 'animate-spin text-cyan-600' : run.status === 'failed' ? 'text-amber-600' : 'text-emerald-600'}`} />
+        <StatusIcon className={`h-4 w-4 ${active ? 'animate-spin text-dream-600' : run.status === 'failed' ? 'text-amber-600' : 'text-emerald-600'}`} />
         {run.status === 'awaiting_approval' ? '草案等待确认' : statusLabels[run.status] || run.status}
       </div>
       {run.status === 'failed' && run.errorMessage && <p className="mt-2 rounded-md bg-amber-50 px-3 py-2 text-xs leading-5 text-amber-800">{run.errorMessage}</p>}
       {run.plan.length > 0 && <ol className="mt-3 space-y-2">{run.plan.map((step, index) => <li key={`${index}-${step}`} className="flex gap-2 text-xs leading-5 text-slate-600"><Circle className="mt-1 h-2.5 w-2.5 shrink-0 fill-slate-200 text-slate-300" />{step}</li>)}</ol>}
-      {run.timeline.length > 0 && <div className="mt-3 border-t border-slate-100 pt-2">{run.timeline.slice(-5).map((item, index) => { const Icon = item.type === 'response_fallback' ? ShieldCheck : Wrench; return <div key={`${item.at || index}-${item.tool || item.type}`} className="flex items-center gap-2 py-1 text-[11px] text-slate-500"><Icon className="h-3 w-3 text-cyan-600" />{eventText(item)}</div> })}</div>}
+      {run.timeline.length > 0 && <div className="mt-3 border-t border-slate-100 pt-2">{run.timeline.slice(-5).map((item, index) => { const Icon = item.type === 'response_fallback' ? ShieldCheck : Wrench; return <div key={`${item.at || index}-${item.tool || item.type}`} className="flex items-center gap-2 py-1 text-[11px] text-slate-500"><Icon className="h-3 w-3 text-dream-600" />{eventText(item)}</div> })}</div>}
     </section>
   )
 }

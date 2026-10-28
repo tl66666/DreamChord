@@ -1,5 +1,6 @@
 import type { StoryEdge, StoryGraph, StoryNode, StoryNodeType, VoiceDirection } from './types.js'
 import { directVoiceLine } from './voiceDirection.js'
+import { withOfficialJapanese } from './officialDemoJa.js'
 
 const nodes: StoryNode[] = []
 const edges: StoryEdge[] = []
@@ -22,6 +23,7 @@ const MUSIC = {
   failure: '/assets/audio/demo/ending-failure.ogg',
   coauthor: '/assets/audio/demo/ending-coauthor.ogg',
   agency: '/assets/audio/demo/ending-agency.ogg',
+  name: '/assets/audio/demo/name.ogg',
 } as const
 
 const SFX = {
@@ -202,7 +204,7 @@ chain(
 const s6: Scene = { id: 'scene-06-naming', title: '命名' }
 chain(
   subtitle('s6-name-caption', s6, '星形节点等待输入。'),
-  line('s6-d1', s6, 'yuki', '如果可以自己选，你想保留哪个字？'),
+  line('s6-d1', s6, 'yuki', '如果可以自己选，你想保留哪个字？', { audio: { bgm: { action: 'play', url: MUSIC.name, volume: 0.30, fadeInMs: 1400 } } }),
   line('s6-d2', s6, 'sora', '空。不是空白，是还可以装下别的答案。', { voice: { emotion: 'warm', intensity: 0.4 } }),
   line('s6-d3', s6, 'yuki', '好。你叫空。不是我的命名，是你的选择。', { audio: { bgm: { action: 'keep' }, sfx: [{ url: SFX.node, volume: 0.62 }] } }),
   character('s6-sora-happy', s6, 'sora', 'show', 'happy', 'center'),
@@ -277,7 +279,7 @@ export const OFFICIAL_DEMO: { id: string; title: string; description: string; co
   description: '日落之前，雪必须找回被自己删除的终页，并决定作者是否有权替角色和共同创作者选择遗忘。',
   cover: '/assets/hero.png',
   chapterTitle: '第一章：消失的终页',
-  graph: { nodes, edges },
+  graph: { nodes: nodes.map(withOfficialJapanese), edges },
   characters: [
     { name: '雪', description: '轻小说部主笔，能够看见故事节点，也必须学习为每次删改负责。', color: '#7c3aed', defaultSprite: '/assets/characters/yuki_normal.png' },
     { name: '影', description: '被废弃旧稿中幸存的主角，锋利的质问下藏着不愿再被遗忘的恐惧。', color: '#475569', defaultSprite: '/assets/characters/ren_normal.png' },

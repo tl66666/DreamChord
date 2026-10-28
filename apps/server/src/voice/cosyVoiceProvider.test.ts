@@ -2,6 +2,12 @@ import { describe, expect, it, vi } from 'vitest'
 import { CosyVoiceProvider } from './cosyVoiceProvider.js'
 
 describe('CosyVoice provider', () => {
+  it('rejects unchecked Japanese synthesis rather than returning mispronounced dialogue', async () => {
+    const fetcher = vi.fn()
+    const provider = new CosyVoiceProvider({ baseUrl: 'http://127.0.0.1:50000', timeoutMs: 5000, sampleRate: 24000 }, fetcher)
+    await expect(provider.synthesize({ text: '大丈夫。', textLanguage: 'ja', referencePath: '/sample.wav', promptText: 'こんにちは。', promptLanguage: 'ja', speed: 1 })).rejects.toThrow('GPT-SoVITS')
+    expect(fetcher).not.toHaveBeenCalled()
+  })
   it('does not mistake another HTTP service for a ready voice model', async () => {
     const provider = new CosyVoiceProvider(
       { baseUrl: 'http://127.0.0.1:50000', timeoutMs: 5000, sampleRate: 24000 },

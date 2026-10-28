@@ -6,6 +6,7 @@
  */
 
 import type { Node, Edge } from '@xyflow/react'
+import { readLocalizationFields, voiceTextHash, type LocalizableContent } from '@dreamchord/story-domain'
 import { loadLibraryCharacters } from '../lib/libraryData'
 
 // ============================================================
@@ -54,10 +55,10 @@ export function applyAudioAssetToShotCard(
   const audio = card.audio || {}
   if (field === 'bgm') return { ...card, audio: { ...audio, bgm: { action: 'play', url } } }
   if (field === 'sfx') return { ...card, audio: { ...audio, sfx: [...(audio.sfx || []), { url }] } }
-  return { ...card, audio: { ...audio, voice: { url } } }
+  return { ...card, audio: { ...audio, voice: { url } }, voiceTracks: { ...card.voiceTracks, zh: { url, textHash: voiceTextHash(card.text) } } }
 }
 
-export interface ShotCard {
+export interface ShotCard extends Pick<LocalizableContent, 'localizations' | 'voiceTracks'> {
   id: string
   sceneId: string
   type: 'dialogue' | 'choice' | 'narration' | 'subtitle'
@@ -557,6 +558,7 @@ export function draftFromSceneNodes(sceneNodes: Node[]): ShotCard {
     autoStageSpeaker: Boolean(textData.autoStageSpeaker ?? true),
     text: String(textData.text || ''),
     audio: textData.audio as ShotCardAudioDirection | undefined,
+    ...readLocalizationFields(textData),
     choices: textNode?.type === 'choice' ? getChoices(textNode) : undefined,
     sceneCode: getNodeSceneCode(sceneNodes[0]!) || '1-1',
     sceneGroupId,
@@ -622,12 +624,14 @@ export function createSceneNodes(card: ShotCard, reuseGroupId?: string): { nodes
 
   // 文本节点
   const text = card.text
+  const localized = { localizations: card.localizations, voiceTracks: card.voiceTracks }
   if (card.type === 'choice') {
     nodes.push({
       id: card.id || `scene-choice-${stamp}-${rnd}`,
       type: 'choice',
       position: { x: 260, y: 120 + (visibleCharacters.length + 1) * 130 },
       data: {
+        ...localized,
         choices: card.choices || ['选项 1', '选项 2'],
         sceneGroupId,
         sceneCode,
@@ -648,8 +652,8 @@ export function createSceneNodes(card: ShotCard, reuseGroupId?: string): { nodes
       type: isSubtitle ? 'subtitle' : 'dialogue',
       position: { x: 260, y: 120 + (visibleCharacters.length + 1) * 130 },
       data: isSubtitle
-        ? { role, text, position: 'bottom', duration: 0, sceneGroupId, sceneCode, lensType: card.lensType, autoStageSpeaker: card.autoStageSpeaker ?? true, audio: card.audio }
-        : { role, text, sceneGroupId, sceneCode, lensType: card.lensType, autoStageSpeaker: card.autoStageSpeaker ?? true, audio: card.audio },
+        ? { ...localized, role, text, position: 'bottom', duration: 0, sceneGroupId, sceneCode, lensType: card.lensType, autoStageSpeaker: card.autoStageSpeaker ?? true, audio: card.audio }
+        : { ...localized, role, text, sceneGroupId, sceneCode, lensType: card.lensType, autoStageSpeaker: card.autoStageSpeaker ?? true, audio: card.audio },
     })
   }
 

@@ -40,6 +40,7 @@ export class CosyVoiceProvider implements VoiceProvider {
   }
 
   async synthesize(input: VoiceSynthesisInput): Promise<VoiceSynthesisResult> {
+    if (/^(ja|jp)(-|$)/i.test(input.textLanguage)) throw new Error('日文请使用本机 GPT-SoVITS 参考配音；当前 CosyVoice 指令模式未通过日文校验。')
     const controller = new AbortController()
     const timeout = setTimeout(() => controller.abort(), this.config.timeoutMs)
     const endpoint = input.direction ? 'inference_instruct2' : 'inference_zero_shot'
@@ -49,7 +50,7 @@ export class CosyVoiceProvider implements VoiceProvider {
       body.set('tts_text', input.text)
       body.set('speed', String(input.speed))
       body.set('prompt_wav', new Blob([new Uint8Array(reference)], { type: 'audio/wav' }), 'reference.wav')
-      if (input.direction) body.set('instruct_text', cosyVoiceInstruction(input.direction, input.speed))
+      if (input.direction) body.set('instruct_text', cosyVoiceInstruction(input.direction, input.speed, input.textLanguage))
       else body.set('prompt_text', input.promptText)
 
       const response = await this.fetcher(`${this.config.baseUrl}/${endpoint}`, {
@@ -79,7 +80,7 @@ export class CosyVoiceProvider implements VoiceProvider {
   }
 }
 
-export function cosyVoiceInstruction(direction: VoiceDirection, requestedSpeed = direction.pace): string {
+export function cosyVoiceInstruction(direction: VoiceDirection, requestedSpeed = direction.pace, language = 'zh'): string {
   const emotions: Record<VoiceDirection['emotion'], string> = {
     neutral: '自然、生活化', warm: '温柔、有亲近感', joy: '带着真实的喜悦', sad: '悲伤但不过度哭腔',
     tense: '紧张、呼吸略急', angry: '愤怒但不要吼叫', afraid: '害怕且带一点迟疑', resolve: '坚定、有决心', whisper: '贴近耳语、气声克制',
@@ -89,7 +90,8 @@ export function cosyVoiceInstruction(direction: VoiceDirection, requestedSpeed =
     ? '关键语义前后有短暂停顿'
     : direction.pauseProfile === 'short' ? '停顿紧凑，不拖长尾音' : '停顿自然'
   const intensity = direction.intensity >= 0.72 ? '情绪较明显' : direction.intensity <= 0.35 ? '情绪克制' : '情绪适中'
-  return `${direction.delivery || '自然对白'}；${emotions[direction.emotion]}；${intensity}；${pace}；${pauses}。像角色在当下真实说话，避免播音腔和夸张表演。`
+  const languageHint = language.toLowerCase().startsWith('ja') ? '日本語で自然に話してください。' : language.toLowerCase().startsWith('en') ? 'Speak naturally in English. ' : '用自然的中文对白表达。'
+  return `${languageHint}${direction.delivery || '自然对白'}；${emotions[direction.emotion]}；${intensity}；${pace}；${pauses}。像角色在当下真实说话，避免播音腔和夸张表演。`
 }
 
 function isWave(bytes: Buffer): boolean {

@@ -51,7 +51,7 @@ pnpm voice:seed
 
 第一条命令会在同一个项目声音环境里补装轻量生成组件，生成三段本地参考 WAV，并把时长与 SHA256 写回清单；第二条命令会校验哈希并把它们导入 demo 账号的声音库。两条命令都可以安全重复执行，不会创建重复音色。
 
-官方示例现使用 TERNOX 的真人作曲视觉小说配乐包，从 21 首中选择 9 首，覆盖日常、抹除危机、角色主题和三个结局。来源页明确标注 CC0 和未使用生成式 AI。需要重新安装或导入时执行：
+官方示例现使用 TERNOX 的真人作曲视觉小说配乐包，从 21 首中选择 13 首，覆盖日常、抹除危机、角色主题和三个结局。来源页明确标注 CC0 和未使用生成式 AI。需要重新安装或导入时执行：
 
 ```powershell
 pnpm music:official:install
@@ -115,3 +115,49 @@ pnpm voice:cosy:auditions
 每次生成会记录台词哈希、实际表演参数、引擎能力和参考片段。自动适配是确定性规则建议，仍可能误判上下文；作者可关闭后手动调整。它不会把输入的每个字分别拼接成语音，而是对整句台词重新合成。
 
 官方技术参考：[CosyVoice](https://github.com/QwenAudio/CosyVoice)、[官方模型](https://huggingface.co/FunAudioLLM/Fun-CosyVoice3-0.5B-2512)、[TERNOX 配乐来源](https://ternox.itch.io/vn-music)。
+
+## 中日双语角色库
+
+素材库的声音卡片支持编辑名称、人物说明、默认情绪/语速、停用与恢复、解除绑定。没有引用的档案可以删除；已有配音历史的档案保留来源，可停用。音乐库支持多标签筛选、持续试听和信息编辑，删除取消时会保留播放器。
+
+官方示例的 90 个对白、字幕及选择节点配有日文文本。播放设置分别选择字幕语言和配音语言，可以用中文字幕搭配日文配音，切换时保留当前剧情位置。缺少译文时回退中文，缺少对应语言的配音时保持静音。旧配音的文本哈希不匹配时不会误播。
+
+编辑器顶部的“角色配音”可以给各角色绑定固定音色。绑定一次后，本章节及后续台词按说话角色沿用，不需要逐句选择音色或文件。选择“日语配音”后，作者仍只输入中文；后台自动翻译，再合成日语。生成缺失台词、集中试听后，点击一次应用即可自动关联各句。支持停止后续提交、失败重试、排除不满意的候选，以及按当前音色重录。改稿、换角色或手动更换音轨后，不会被旧候选覆盖；整批应用可一次撤销。
+
+镜头卡内保留单句重录入口；高级区域可以调整译文与显示名、选择已有音轨。游戏文字默认中文，字幕和配音在播放设置中独立切换；日语配音不会把中文字幕改成日文。
+
+这轮示例角色使用 Qwen3-TTS CustomVoice 的五种预置声线和不同表演指令生成，保留同一角色的中日文参考片段。它们是合成声音，听感与语义仍需试听判断。开场和关键台词已提供双语音频，其余台词可继续在编辑器生成；并非整部示例已经全配音。
+
+```powershell
+# 已有本机音色文件时，只需同步文本和导入素材
+pnpm demo:localize
+pnpm voice:cast:seed
+
+# 需要重新设计样音时，再安装隔离环境
+pnpm voice:cast:setup
+# 先在声音库停止 CosyVoice，释放显存，然后运行
+D:\DreamChordRuntime\qwen-cast\.venv\Scripts\python.exe scripts/generate-qwen-cast.py --opening
+# 生成完后可在声音库重新启动 CosyVoice
+```
+
+生成脚本需要当前官方剧本快照 `.runtime/official-demo-audio-script.json`，可用下面命令导出：
+
+```powershell
+node --input-type=module -e 'import {writeFileSync,mkdirSync} from "node:fs";import {OFFICIAL_DEMO} from "./packages/story-domain/dist/index.js";mkdirSync(".runtime",{recursive:true});writeFileSync(".runtime/official-demo-audio-script.json",JSON.stringify(OFFICIAL_DEMO.graph.nodes.filter(n=>n.type==="dialogue").map(n=>({id:n.id,...n.data}))))'
+```
+
+模型目录不进 Git；随项目保存的音频及来源清单见 `assets/voice-packs/dreamchord-cast`。Qwen3-TTS 环境用于设计起始音色；日常中文合成由 CosyVoice 完成，日文由 GPT-SoVITS 的日文前端和对应参考片段完成，后台自动切换，等待旧进程退出后才加载下一模型。官方说明：[Qwen3-TTS](https://github.com/QwenLM/Qwen3-TTS)。
+
+## 中文输入自动生成日语
+
+已配置并启用在线创作模型时，翻译优先使用该模型；未配置时使用本机 Qwen3 4B Q4。官方示例中的相同原文优先复用已校订的日语稿。输入新句子时才调用翻译，不要求作者自己写日文。
+
+```powershell
+pnpm voice:translation:setup
+```
+
+安装器校验官方 GGUF 模型与固定版本 llama.cpp 的 SHA-256，默认保存到 `D:\DreamChordRuntime\voice-translation`。翻译按需在 CPU 运行，结束即释放；不与配音争抢显存，也无需打开独立界面。`VOICE_TRANSLATION_PYTHON`、`VOICE_TRANSLATION_MODEL`、`VOICE_TRANSLATION_BINARY` 可指定部署路径。运行器的临时文件放在运行目录，兼容中文 Windows 用户名。
+
+翻译模型来源：[Qwen/Qwen3-4B-GGUF](https://huggingface.co/Qwen/Qwen3-4B-GGUF)（Apache-2.0）；运行器来源：[llama.cpp b11946](https://github.com/ggml-org/llama.cpp/releases/tag/b11946)（MIT）。本机译文可在试听区查看和调整；人名、敬语和上下文表达仍需要作者校对。
+
+`node scripts/bilingual-voice-smoke.mjs` 会实际验证中文输入、自动翻译、中文/日文生成、模型切换和音频服务；报告保存在 `.runtime/voice-auditions/bilingual-flow-report.json`。`scripts/review-bilingual-audio.py` 使用独立 ASR 做内容抽查，识别结果是辅助证据，不能当作人工试听结论。

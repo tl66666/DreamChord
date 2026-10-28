@@ -25,6 +25,10 @@ test('official soundtrack is human-composed, CC0, hashed, and role-complete', ()
     'failure',
     'coauthor',
     'agency',
+    'afternoon',
+    'daily',
+    'name',
+    'mischief',
   ]))
   assert.equal(new Set(manifest.tracks.map((track) => track.id)).size, manifest.tracks.length)
   for (const track of manifest.tracks) {

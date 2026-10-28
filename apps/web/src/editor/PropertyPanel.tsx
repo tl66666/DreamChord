@@ -2,6 +2,7 @@ import { useMemo } from 'react'
 import { useEditorStore } from '../stores/editorStore'
 import { loadLibraryCharacters, loadLibraryScenes, loadStoryTemplates } from '../lib/libraryData'
 import { getNodeData } from './sceneGraph'
+import NodeLocalizationEditor from './NodeLocalizationEditor'
 
 interface PropertyPanelProps {
   onOpenAssetPicker?: (
@@ -142,6 +143,7 @@ export default function PropertyPanel({ onOpenAssetPicker }: PropertyPanelProps)
         </div>
       )}
 
+      {['dialogue', 'choice', 'subtitle'].includes(type || '') && <NodeLocalizationEditor nodeId={selectedNode.id} data={data} onUpdate={(patch) => updateNodeData(selectedNode.id, patch)} />}
       {!['dialogue', 'choice', 'background', 'character', 'subtitle'].includes(type || '') && <GenericEditor data={getNodeData(selectedNode)} onUpdate={(patch) => updateNodeData(selectedNode.id, patch)} />}
     </div>
   )

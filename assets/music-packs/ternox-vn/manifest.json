@@ -24,7 +24,9 @@
       "outputFile": "runtime/twilight.ogg",
       "role": "twilight",
       "mood": "温柔 / 黄昏 / 隐约不安",
-      "scenes": ["1-1 消失的第七码"],
+      "scenes": [
+        "1-1 消失的第七码"
+      ],
       "tempoBpm": 76,
       "musicalKey": "G major",
       "durationSeconds": 112.27,
@@ -43,7 +45,10 @@
       "outputFile": "runtime/erasure.ogg",
       "role": "erasure",
       "mood": "紧张 / 异变 / 追逼",
-      "scenes": ["1-2 被恢复的节点", "1-6 名字开始闪烁"],
+      "scenes": [
+        "1-2 被恢复的节点",
+        "1-6 名字开始闪烁"
+      ],
       "tempoBpm": 136,
       "musicalKey": "G# minor",
       "durationSeconds": 77.01,
@@ -62,7 +67,9 @@
       "outputFile": "runtime/ren.ogg",
       "role": "ren",
       "mood": "果断 / 推进 / 逆光",
-      "scenes": ["1-3 旧草稿的证词"],
+      "scenes": [
+        "1-3 旧草稿的证词"
+      ],
       "tempoBpm": 136,
       "musicalKey": "G# major",
       "durationSeconds": 158.88,
@@ -81,7 +88,9 @@
       "outputFile": "runtime/miya.ogg",
       "role": "miya",
       "mood": "克制 / 怅然 / 回忆",
-      "scenes": ["1-4 两种笔迹"],
+      "scenes": [
+        "1-4 两种笔迹"
+      ],
       "tempoBpm": 76,
       "musicalKey": "B major",
       "durationSeconds": 69.43,
@@ -100,7 +109,10 @@
       "outputFile": "runtime/sora.ogg",
       "role": "sora",
       "mood": "哀伤 / 温柔 / 自我意志",
-      "scenes": ["1-5 被删掉的结局", "1-7 选择的回声"],
+      "scenes": [
+        "1-5 被删掉的结局",
+        "1-7 选择的回声"
+      ],
       "tempoBpm": 89.1,
       "musicalKey": "A minor",
       "durationSeconds": 85.73,
@@ -119,7 +131,9 @@
       "outputFile": "runtime/finale.ogg",
       "role": "finale",
       "mood": "真相 / 希望 / 汇流",
-      "scenes": ["1-8 第四百一十七次保存"],
+      "scenes": [
+        "1-8 第四百一十七次保存"
+      ],
       "tempoBpm": 129.2,
       "musicalKey": "E major",
       "durationSeconds": 99.1,
@@ -138,7 +152,9 @@
       "outputFile": "runtime/ending-failure.ogg",
       "role": "failure",
       "mood": "冷寂 / 遗憾 / 归档",
-      "scenes": ["1-9A 静默归档"],
+      "scenes": [
+        "1-9A 静默归档"
+      ],
       "tempoBpm": 86.1,
       "musicalKey": "E minor",
       "durationSeconds": 67.84,
@@ -157,7 +173,9 @@
       "outputFile": "runtime/ending-coauthor.ogg",
       "role": "coauthor",
       "mood": "释然 / 团圆 / 署名",
-      "scenes": ["1-9B 共同署名"],
+      "scenes": [
+        "1-9B 共同署名"
+      ],
       "tempoBpm": 76,
       "musicalKey": "D major",
       "durationSeconds": 126.56,
@@ -176,7 +194,9 @@
       "outputFile": "runtime/ending-agency.ogg",
       "role": "agency",
       "mood": "坚定 / 昂扬 / 自我选择",
-      "scenes": ["1-9C 把明天写回来"],
+      "scenes": [
+        "1-9C 把明天写回来"
+      ],
       "tempoBpm": 161.5,
       "musicalKey": "A major",
       "durationSeconds": 93.94,
@@ -185,6 +205,94 @@
       "sourceUrl": "https://ternox.itch.io/vn-music",
       "license": "CC0-1.0",
       "sha256": "00f15f665985eb9118bc0927535f0e2d5bd1a1974c439b5d8902a279a0115c83"
+    },
+    {
+      "id": "ternox-afternoon",
+      "name": "午后余白",
+      "description": "较缓的日常备选，适合不需要强调冲突的闲谈和章节间歇。",
+      "originalFile": "vntrack01.mp3",
+      "originalSha256": "7cfa5d7bfd58d064c0581f50962b48664359d551ff5d566cefef069b5d43c8e5",
+      "outputFile": "runtime/afternoon.ogg",
+      "role": "afternoon",
+      "mood": "日常 / 温柔 / 放松",
+      "scenes": [
+        "部室闲谈",
+        "章节间歇"
+      ],
+      "tempoBpm": 89,
+      "musicalKey": "未标注",
+      "durationSeconds": 107.39,
+      "loop": true,
+      "author": "TERNOX",
+      "sourceUrl": "https://ternox.itch.io/vn-music",
+      "license": "CC0-1.0",
+      "sha256": "5beb3d68cd6056356743f560409c653464f606e760b8be13e5a0126c6ab145b5"
+    },
+    {
+      "id": "ternox-daily",
+      "name": "走廊里的脚步",
+      "description": "中速的日常备选，适合校园小插曲，避免紧张配乐贯穿所有对话。",
+      "originalFile": "vntrack04.mp3",
+      "originalSha256": "fe4364dd21caa4239ab2d1378b28c98d18e1bc6cfb5cbebdcaf6ab365666862d",
+      "outputFile": "runtime/daily.ogg",
+      "role": "daily",
+      "mood": "轻快 / 日常 / 活泼",
+      "scenes": [
+        "校园日常",
+        "轻松插曲"
+      ],
+      "tempoBpm": 108,
+      "musicalKey": "未标注",
+      "durationSeconds": 105.74,
+      "loop": true,
+      "author": "TERNOX",
+      "sourceUrl": "https://ternox.itch.io/vn-music",
+      "license": "CC0-1.0",
+      "sha256": "68007d407226c7b1f50bb48041700556ff2a6e60ad2b973a4db4168f626d62fe"
+    },
+    {
+      "id": "ternox-name",
+      "name": "名字落在掌心",
+      "description": "较慢、频谱较柔和的命名段落备选，让角色回答前留出空间。",
+      "originalFile": "vntrack08.mp3",
+      "originalSha256": "d80c184227e59f150cf594793c03f47996fd57df0a697f35d8f208fca5c124eb",
+      "outputFile": "runtime/name.ogg",
+      "role": "name",
+      "mood": "温柔 / 回忆 / 治愈",
+      "scenes": [
+        "1-6 自己选择的名字",
+        "安静独白"
+      ],
+      "tempoBpm": 78,
+      "musicalKey": "未标注",
+      "durationSeconds": 74.11,
+      "loop": true,
+      "author": "TERNOX",
+      "sourceUrl": "https://ternox.itch.io/vn-music",
+      "license": "CC0-1.0",
+      "sha256": "0884e9e347917010f054453bf826feef0d54c57ca415b5d97114eb60f0f749b9"
+    },
+    {
+      "id": "ternox-mischief",
+      "name": "课间小插曲",
+      "description": "较快的番外日常备选；不放进主线沉重的转折场景。",
+      "originalFile": "vntrack14.mp3",
+      "originalSha256": "ec24e4d2d1fa3f493701ffe95f4eff2e72ac585418404c4dfb68baaebe68eead",
+      "outputFile": "runtime/mischief.ogg",
+      "role": "mischief",
+      "mood": "轻快 / 日常 / 俏皮",
+      "scenes": [
+        "轻松插曲",
+        "番外日常"
+      ],
+      "tempoBpm": 161,
+      "musicalKey": "未标注",
+      "durationSeconds": 48.07,
+      "loop": true,
+      "author": "TERNOX",
+      "sourceUrl": "https://ternox.itch.io/vn-music",
+      "license": "CC0-1.0",
+      "sha256": "53e81b50931f7abbe758788d0b2770a7f391bb9556afc0f2160fb9d10fc50837"
     }
   ]
 }

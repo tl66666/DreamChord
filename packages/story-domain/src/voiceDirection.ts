@@ -14,7 +14,7 @@ const ROLE_DEFAULTS: Record<string, Pick<DirectionPreset, 'intensity' | 'pace' |
   ren: { intensity: 0.4, pace: 0.9, delivery: '年轻偏低、压住怒意，短句不要故作深沉' },
   miya: { intensity: 0.34, pace: 0.96, delivery: '温暖可靠，语气稳定，保留轻微笑意' },
   sora: { intensity: 0.32, pace: 0.94, delivery: '轻而通透，像刚学会表达，但不要机械断字' },
-  ghost: { intensity: 0.24, pace: 1, delivery: '无性别、清晰、像系统播报，但不要拖长句尾' },
+  ghost: { intensity: 0.24, pace: 1, delivery: '低声清晰，像安静的守门人，保留呼吸，不用电子音或播音腔' },
 }
 
 const DELIVERY: Record<VoiceEmotion, string> = {
@@ -40,14 +40,15 @@ function normalizeRole(role: string) {
 }
 
 function inferEmotion(text: string): { emotion: VoiceEmotion; intensity: number; pace: number } {
-  if (/(低声|耳语|别让.*听见|嘘)/.test(text)) return { emotion: 'whisper', intensity: 0.32, pace: 0.84 }
-  if (/(这一次|我会|我决定|一定|不会再|必须|留下)/.test(text)) return { emotion: 'resolve', intensity: 0.68, pace: 0.96 }
-  if (/(凭什么|闭嘴|够了|住手|你没有资格|！{2,})/.test(text)) return { emotion: 'angry', intensity: 0.76, pace: 1.04 }
+  if (/(低声|耳语|别让.*听见|嘘|小声で|ささや|静かに)/.test(text)) return { emotion: 'whisper', intensity: 0.32, pace: 0.84 }
+  if (/(这一次|我会|我决定|一定|不会再|必须|留下|絶対|必ず|決めた|二度と|守る|あきらめない)/.test(text)) return { emotion: 'resolve', intensity: 0.68, pace: 0.96 }
+  if (/(凭什么|闭嘴|够了|住手|你没有资格|ふざけるな|黙れ|いい加減に|許さない|！{2,})/.test(text)) return { emotion: 'angry', intensity: 0.76, pace: 1.04 }
+  if (/(怖い|どうしよう|本当に.*[？?]|…….*[？?])/.test(text)) return { emotion: 'afraid', intensity: 0.45, pace: 0.92 }
   if (/(……|…|不可能|怎么办|害怕|怕).*[？?]|(真的|还能|会不会).*[？?]/.test(text)) return { emotion: 'afraid', intensity: 0.45, pace: 0.92 }
-  if (/(对不起|失去|忘记|消失|退稿|没能|再也)/.test(text)) return { emotion: 'sad', intensity: 0.56, pace: 0.88 }
-  if (/(快|来不及|倒计时|危险|立刻|马上|只剩)/.test(text)) return { emotion: 'tense', intensity: 0.58, pace: 1.06 }
-  if (/(太好了|成功了|终于|真好|喜欢)/.test(text)) return { emotion: 'joy', intensity: 0.55, pace: 1.02 }
-  if (/(谢谢|一起|陪你|没关系|相信你)/.test(text)) return { emotion: 'warm', intensity: 0.42, pace: 0.96 }
+  if (/(对不起|失去|忘记|消失|退稿|没能|再也|ごめん|消えて|失った|さようなら)/.test(text)) return { emotion: 'sad', intensity: 0.56, pace: 0.88 }
+  if (/(快|来不及|倒计时|危险|立刻|马上|只剩|急いで|間に合わ|危ない|あと.*秒)/.test(text)) return { emotion: 'tense', intensity: 0.58, pace: 1.06 }
+  if (/(太好了|成功了|终于|真好|喜欢|やった|よかった|うれしい|大好き)/.test(text)) return { emotion: 'joy', intensity: 0.55, pace: 1.02 }
+  if (/(谢谢|一起|陪你|没关系|相信你|ありがとう|一緒に|大丈夫|信じて)/.test(text)) return { emotion: 'warm', intensity: 0.42, pace: 0.96 }
   return { emotion: 'neutral', intensity: 0.34, pace: 1 }
 }
 

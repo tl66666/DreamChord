@@ -6,7 +6,7 @@ import VoiceLibrary from './VoiceLibrary'
 
 const api = vi.hoisted(() => ({
   list: vi.fn(), health: vi.fn(), create: vi.fn(), assets: vi.fn(), attach: vi.fn(), projects: vi.fn(),
-  bind: vi.fn(), generate: vi.fn(), getJob: vi.fn(), jobs: vi.fn(), accept: vi.fn(), startEngine: vi.fn(), stopEngine: vi.fn(),
+  bind: vi.fn(), generate: vi.fn(), getJob: vi.fn(), jobs: vi.fn(), accept: vi.fn(), startEngine: vi.fn(), stopEngine: vi.fn(), translate: vi.fn(),
 }))
 vi.mock('../api/client', async (importOriginal) => {
   const original = await importOriginal<typeof import('../api/client')>()
@@ -25,6 +25,7 @@ vi.mock('../api/client', async (importOriginal) => {
     acceptVoiceGeneration: (...args: unknown[]) => api.accept(...args),
     startVoiceEngine: (...args: unknown[]) => api.startEngine(...args),
     stopVoiceEngine: (...args: unknown[]) => api.stopEngine(...args),
+    translateVoiceText: (...args: unknown[]) => api.translate(...args),
   }
 })
 
@@ -35,6 +36,26 @@ describe('VoiceLibrary', () => {
     api.projects.mockResolvedValue([])
     api.jobs.mockResolvedValue([])
   }
+
+  it('accepts only Chinese input and translates before generating Japanese speech', async () => {
+    common()
+    const binding = { id: 'binding', project: { id: 'project', title: '故事' }, character: { id: 'snow', name: '雪' } }
+    api.list.mockResolvedValue([{ id: 'voice', name: '雪', description: '', language: 'zh', tags: '[]', status: 'active', defaultEmotion: '自然', defaultSpeed: 1, references: [{ id: 'reference', language: 'ja', transcript: 'こんにちは。', asset: { id: 'sample', url: '/sample.wav' } }], bindings: [binding] }])
+    api.projects.mockResolvedValue([{ id: 'project', title: '故事', characters: [{ id: 'snow', name: '雪' }] }])
+    api.health.mockResolvedValue({ ok: true, provider: 'gpt-sovits', message: 'ready' })
+    api.assets.mockResolvedValue([])
+    api.translate.mockResolvedValue({ text: '一緒に帰ろう。' })
+    api.generate.mockResolvedValue({ id: 'job', status: 'completed', text: '一緒に帰ろう。', language: 'ja', outputUrl: '/ja.wav' })
+    render(<VoiceLibrary />)
+    await screen.findByText('角色绑定与试听生成')
+    fireEvent.change(screen.getByLabelText('选择项目'), { target: { value: 'project' } })
+    fireEvent.change(screen.getByLabelText('选择角色'), { target: { value: 'snow' } })
+    fireEvent.change(screen.getByLabelText('试听台词'), { target: { value: '一起回家吧。' } })
+    fireEvent.change(screen.getByLabelText('配音语言'), { target: { value: 'ja' } })
+    fireEvent.click(screen.getByRole('button', { name: '生成试听' }))
+    await waitFor(() => expect(api.generate).toHaveBeenCalledWith(expect.objectContaining({ text: '一緒に帰ろう。', language: 'ja', sourceText: '一起回家吧。', sourceLanguage: 'zh' })))
+    expect(api.translate).toHaveBeenCalledWith('一起回家吧。')
+  })
 
   it('shows reusable profiles and a clear offline fallback', async () => {
     common()

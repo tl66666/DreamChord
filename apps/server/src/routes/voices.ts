@@ -9,7 +9,10 @@ import { prisma } from '../lib/prisma.js'
 import { authenticateToken, type AuthRequest } from '../middleware/auth.js'
 import { GptSovitsProvider } from '../voice/gptSovitsProvider.js'
 import { CosyVoiceProvider } from '../voice/cosyVoiceProvider.js'
-import { getManagedVoiceEngine, type ManagedVoiceEngine } from '../voice/managedVoiceEngine.js'
+import { getManagedVoiceEngine, LanguageManagedVoiceEngine, type ManagedVoiceEngine } from '../voice/managedVoiceEngine.js'
+import { LanguageVoiceProvider } from '../voice/languageVoiceProvider.js'
+import { voiceTranslation, type VoiceTranslationService } from '../voice/voiceTranslation.js'
+import { z } from 'zod'
 import type { VoiceProvider } from '../voice/provider.js'
 import { readVoiceProviderConfig } from '../voice/providerConfig.js'
 import { SerialVoiceQueue } from '../voice/voiceQueue.js'
@@ -27,7 +30,13 @@ const defaultVoiceQueue = new SerialVoiceQueue()
 function configuredProvider(): VoiceProvider | null {
   const config = readVoiceProviderConfig()
   if (!config.enabled) return null
-  return config.provider === 'cosyvoice' ? new CosyVoiceProvider(config) : new GptSovitsProvider(config)
+  if (config.provider !== 'cosyvoice') return new GptSovitsProvider(config)
+  const primary = new CosyVoiceProvider(config)
+  const engine = getManagedVoiceEngine()
+  const japaneseConfig = readVoiceProviderConfig({ ...process.env, VOICE_PROVIDER: 'gpt-sovits' })
+  return engine instanceof LanguageManagedVoiceEngine && japaneseConfig.enabled
+    ? new LanguageVoiceProvider(primary, new GptSovitsProvider(japaneseConfig), engine)
+    : primary
 }
 
 const includeProfileDetails = {
@@ -38,13 +47,20 @@ const includeProfileDetails = {
 export function createVoiceRouter(
   client: PrismaClient = prisma,
   provider: VoiceProvider | null = configuredProvider(),
-  options: { storageRoot?: string; queue?: SerialVoiceQueue; engine?: ManagedVoiceEngine } = {},
+  options: { storageRoot?: string; queue?: SerialVoiceQueue; engine?: ManagedVoiceEngine; translator?: Pick<VoiceTranslationService, 'translate'> } = {},
 ): ExpressRouter {
   const router: ExpressRouter = Router()
   const storageRoot = options.storageRoot || process.env.UPLOAD_DIR || './uploads'
   const queue = options.queue || defaultVoiceQueue
   const engine = options.engine || getManagedVoiceEngine()
   router.use(authenticateToken)
+
+  router.post('/translate', async (req: AuthRequest, res: Response) => {
+    const parsed = z.object({ text: z.string().trim().min(1).max(2000), targetLanguage: z.literal('ja'), provider: z.object({ provider: z.string().max(80), model: z.string().max(160), apiKey: z.string().max(10000), baseUrl: z.string().url().optional() }).strict().optional() }).strict().safeParse(req.body)
+    if (!parsed.success) return res.status(400).json({ error: '请输入中文台词，并选择日语配音。' })
+    try { res.json(await (options.translator || voiceTranslation).translate(parsed.data)) }
+    catch (error) { res.status(503).json({ error: error instanceof Error ? error.message : '翻译暂时不可用，请重试。' }) }
+  })
 
   router.get('/provider/health', async (_req: AuthRequest, res: Response) => {
     if (!provider) {
@@ -100,6 +116,40 @@ export function createVoiceRouter(
       data: { ...input, ...(tags ? { tags: JSON.stringify(tags) } : {}) },
       include: includeProfileDetails,
     }))
+  })
+
+  router.delete('/profiles/:profileId', async (req: AuthRequest, res: Response) => {
+    try {
+      const result = await client.$transaction(async (tx) => {
+        const profile = await tx.voiceProfile.findFirst({
+          where: { id: req.params.profileId, ownerId: req.userId! },
+          include: { _count: { select: { bindings: true, generationJobs: true } } },
+        })
+        if (!profile) return { status: 404, error: '音色档案不存在' }
+        if (profile._count.bindings || profile._count.generationJobs) return {
+          status: 409,
+          error: `该音色仍有 ${profile._count.bindings} 个角色绑定和 ${profile._count.generationJobs} 条配音记录。可先停用音色；历史配音会保留。`,
+        }
+        await tx.voiceReference.deleteMany({ where: { profileId: profile.id } })
+        await tx.voiceProfile.delete({ where: { id: profile.id } })
+        return { status: 204, error: '' }
+      })
+      if (result.status === 204) return res.status(204).end()
+      return res.status(result.status).json({ error: result.error })
+    } catch { return res.status(409).json({ error: '音色仍被引用，无法删除。请先停用或解除角色绑定。' }) }
+  })
+
+  router.delete('/profiles/:profileId/references/:referenceId', async (req: AuthRequest, res: Response) => {
+    const reference = await client.voiceReference.findFirst({
+      where: { id: req.params.referenceId, profileId: req.params.profileId, profile: { ownerId: req.userId! } },
+      include: { _count: { select: { generationJobs: true } } },
+    })
+    if (!reference) return res.status(404).json({ error: '参考片段不存在' })
+    if (reference._count.generationJobs) return res.status(409).json({ error: '该片段已有配音记录，保留来源用于追溯。' })
+    try {
+      await client.voiceReference.delete({ where: { id: reference.id } })
+      return res.status(204).end()
+    } catch { return res.status(409).json({ error: '该参考片段已被使用，无法解除。' }) }
   })
 
   router.post('/profiles/:profileId/references', async (req: AuthRequest, res: Response) => {
@@ -200,6 +250,7 @@ export function createVoiceRouter(
     catch { return res.status(400).json({ error: '参考音频路径无效，请重新上传' }) }
 
     const direction = resolveVoiceDirection({ role: character.name, text: input.text, mode: input.directionMode, emotion: input.emotion, speed: input.speed })
+    const sourceMetadata = input.sourceText ? { sourceText: input.sourceText, sourceLanguage: input.sourceLanguage || 'zh' } : {}
     const job = await client.voiceGenerationJob.create({ data: {
       ownerId: userId, projectId: project.id, characterId: character.id,
       ...(input.chapterId ? { chapterId: input.chapterId } : {}),
@@ -207,7 +258,7 @@ export function createVoiceRouter(
       profileId: binding.profileId, referenceId: reference.id,
       text: input.text, language: input.language, emotion: VOICE_EMOTION_LABELS[direction.emotion],
       speed: direction.pace, ...(input.seed !== undefined ? { seed: input.seed } : {}), status: 'queued',
-      providerMetadata: JSON.stringify({ provider: provider.id, direction, textHash: direction.textHash, referenceId: reference.id }),
+      providerMetadata: JSON.stringify({ provider: provider.id, direction, textHash: direction.textHash, referenceId: reference.id, ...sourceMetadata }),
     } })
 
     void queue.enqueue(async () => {
@@ -228,6 +279,7 @@ export function createVoiceRouter(
           provider: provider.id,
           capabilities: provider.capabilities,
           direction, textHash: direction.textHash, referenceId: reference.id,
+          ...sourceMetadata,
           ...result.providerMetadata,
         }),
       } })
@@ -259,7 +311,7 @@ export function createVoiceRouter(
       type: 'VOICE', url: job.outputUrl, mimeType: job.outputMimeType,
       metadata: JSON.stringify({ voiceGeneration: {
         jobId: job.id, profileId: job.profileId, profileName: job.profile.name,
-        characterId: job.characterId, text: job.text, emotion: job.emotion, speed: job.speed,
+        characterId: job.characterId, text: job.text, language: job.language, emotion: job.emotion, speed: job.speed,
         ...JSON.parse(job.providerMetadata || '{}'),
       } }),
     } })

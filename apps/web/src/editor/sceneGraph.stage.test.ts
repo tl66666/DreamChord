@@ -9,6 +9,12 @@ const card: ShotCard = {
 }
 
 describe('shot-card effective stage', () => {
+  it('keeps bilingual text and voice tracks when cards are rebuilt or duplicated', () => {
+    const bilingual = { ...card, localizations: { ja: { text: '来たよ。' } }, voiceTracks: { ja: { url: '/ja.wav', textHash: '12345678' } } }
+    const { nodes } = createSceneNodes(bilingual, 'scene')
+    const draft = draftFromSceneNodes(nodes)
+    expect(draft).toMatchObject({ localizations: bilingual.localizations, voiceTracks: bilingual.voiceTracks })
+  })
   it('shows inherited characters together with a newly arriving character', () => {
     const result = applyStageToShotCard(card, {
       backgroundId: '/room.png',
@@ -61,5 +67,6 @@ describe('shot-card effective stage', () => {
       sfx: [{ url: '/uploads/thunder.ogg' }, { url: '/uploads/chime.ogg' }],
       voice: { url: '/uploads/narration.wav' },
     })
+    expect(withVoice.voiceTracks?.zh?.url).toBe('/uploads/narration.wav')
   })
 })

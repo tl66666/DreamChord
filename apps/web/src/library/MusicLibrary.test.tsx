@@ -46,4 +46,24 @@ describe('MusicLibrary', () => {
       audioLibrary: expect.objectContaining({ scene: '悬疑调查', loop: false }),
     })))
   })
+
+  it('matches individual soundtrack mood tags and reads the official duration', () => {
+    render(<MusicLibrary assets={[{ ...assets[0], metadata: JSON.stringify({ audioLibrary: { mood: '温柔 / 黄昏', style: '视觉小说原声' }, officialSoundtrack: { durationSeconds: 112 } }) }]} loading={false} onUpload={vi.fn()} onUpdate={vi.fn()} onDelete={vi.fn()} />)
+    fireEvent.change(screen.getByLabelText('音乐情绪'), { target: { value: '温柔' } })
+    expect(screen.getByText('雨夜手记.wav')).toBeInTheDocument()
+    expect(screen.getByText('01:52')).toBeInTheDocument()
+    fireEvent.change(screen.getByLabelText('音乐风格'), { target: { value: '视觉小说原声' } })
+    expect(screen.getByText('雨夜手记.wav')).toBeInTheDocument()
+  })
+
+  it('preserves the player and editor when deletion is cancelled', async () => {
+    const onDelete = vi.fn().mockResolvedValue(false)
+    render(<MusicLibrary assets={assets} loading={false} onUpload={vi.fn()} onUpdate={vi.fn()} onDelete={onDelete} />)
+    fireEvent.click(screen.getByRole('button', { name: '试听雨夜手记.wav' }))
+    fireEvent.click(screen.getByRole('button', { name: '编辑雨夜手记.wav' }))
+    fireEvent.click(screen.getByRole('button', { name: '删除' }))
+    await waitFor(() => expect(onDelete).toHaveBeenCalled())
+    expect(screen.getByLabelText('音乐库持续播放器')).toBeInTheDocument()
+    expect(screen.getByLabelText('素材名称')).toBeInTheDocument()
+  })
 })

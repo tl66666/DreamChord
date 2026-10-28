@@ -49,6 +49,8 @@ export const createVoiceGenerationSchema = z.object({
   referenceId: z.string().min(1),
   directionMode: z.enum(['auto', 'manual']).optional().default('manual'),
   text: z.string().trim().min(1).max(5000),
+  sourceText: z.string().trim().min(1).max(5000).optional(),
+  sourceLanguage: language.optional(),
   language,
   emotion: z.string().trim().max(80).optional().default('自然'),
   speed: z.number().min(0.5).max(1.5).optional().default(1),

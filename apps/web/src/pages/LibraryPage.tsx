@@ -23,6 +23,7 @@ import AssetProcessingSheet from '../assets/AssetProcessingSheet'
 import VoiceLibrary from '../voice/VoiceLibrary'
 import CharacterGallery from '../library/CharacterGallery'
 import MusicLibrary from '../library/MusicLibrary'
+import AppHeader from '../components/AppHeader'
 
 function getApiError(err: unknown, fallback = '操作失败'): string {
   if (typeof err === 'object' && err !== null && 'response' in err) {
@@ -125,9 +126,10 @@ export default function LibraryPage() {
   }
 
   const removeAsset = async (asset: Asset) => {
-    if (!await confirm({ message: `确定删除素材"${asset.name}"吗？`, danger: true })) return
+    if (!await confirm({ message: `确定删除素材"${asset.name}"吗？`, danger: true })) return false
     await deleteAsset(asset.id)
     setAssets((prev) => prev.filter((item) => item.id !== asset.id))
+    return true
   }
 
   const updateAudioAsset = async (assetId: string, details: { name?: string; audioLibrary?: AudioLibraryMetadata }) => {
@@ -137,22 +139,8 @@ export default function LibraryPage() {
   }
 
   return (<>
-    <main className="min-h-screen bg-[#f5f6f8]">
-      <header className="sticky top-0 z-40 border-b border-slate-200/80 bg-white/90 px-4 py-3 backdrop-blur-xl sm:px-6 sm:py-4">
-        <div className="mx-auto flex max-w-[1760px] items-center justify-between gap-3">
-          <Link to="/" className="flex items-center gap-3">
-            <img src="/assets/logo.png" alt="DreamChord" className="h-9 w-9 rounded-lg" />
-            <div>
-              <p className="text-sm font-semibold text-slate-500">DreamChord</p>
-              <h1 className="text-xl font-bold text-slate-950">素材库</h1>
-            </div>
-          </Link>
-          <div className="flex items-center gap-2">
-            <button onClick={() => navigate('/agent')} className="hidden min-h-10 rounded-xl border border-slate-200 bg-white px-4 text-sm font-medium text-slate-700 hover:bg-slate-50 sm:block">创作 Agent</button>
-            <button onClick={() => navigate('/')} className="min-h-10 rounded-xl bg-slate-950 px-3 text-sm font-semibold text-white hover:bg-dream-700 sm:px-4">去编辑器使用</button>
-          </div>
-        </div>
-      </header>
+    <main className="dc-page">
+      <div className="sticky top-0 z-40"><AppHeader title="素材库" wide actions={<button onClick={() => navigate('/')} className="dc-primary">选择故事</button>} /></div>
 
       <div data-testid="library-shell" className="mx-auto grid max-w-[1760px] gap-5 px-4 py-5 sm:px-6 lg:grid-cols-[232px_minmax(0,1fr)] lg:gap-8 lg:py-8">
         <aside data-testid="library-navigation" className="flex h-fit gap-1 overflow-x-auto rounded-2xl border border-slate-200/90 bg-white p-2 shadow-sm lg:sticky lg:top-24 lg:block">
