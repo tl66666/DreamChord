@@ -4,6 +4,12 @@ type Fetcher = typeof fetch
 
 export class GptSovitsProvider implements VoiceProvider {
   readonly id = 'gpt-sovits'
+  readonly capabilities = {
+    voiceClone: true,
+    instructionEmotion: false,
+    emotionReference: true,
+    speedControl: true,
+  } as const
 
   constructor(
     private readonly config: { baseUrl: string; timeoutMs: number },
@@ -53,6 +59,10 @@ export class GptSovitsProvider implements VoiceProvider {
         bytes: Buffer.from(await response.arrayBuffer()),
         mimeType: response.headers.get('content-type')?.split(';')[0] || 'audio/wav',
         ...(seedHeader && Number.isFinite(Number(seedHeader)) ? { seed: Number(seedHeader) } : {}),
+        providerMetadata: {
+          directionMode: 'emotion-reference',
+          requestedEmotion: input.direction?.emotion || 'neutral',
+        },
       }
     } catch (error) {
       if (error instanceof Error && error.name === 'AbortError') throw new Error('GPT-SoVITS 生成超时')

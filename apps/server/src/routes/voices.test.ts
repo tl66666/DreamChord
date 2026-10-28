@@ -87,6 +87,7 @@ describe('voice library routes', () => {
   it('reports provider availability without exposing the configured URL', async () => {
     const provider: VoiceProvider = {
       id: 'gpt-sovits',
+      capabilities: { voiceClone: true, instructionEmotion: false, emotionReference: true, speedControl: true },
       health: vi.fn().mockResolvedValue({ ok: true, provider: 'gpt-sovits', message: '服务可访问' }),
       synthesize: vi.fn(),
     }
@@ -117,6 +118,7 @@ describe('voice library routes', () => {
     const update = vi.fn().mockImplementation(async ({ data }) => ({ id: 'job', ...data }))
     const provider: VoiceProvider = {
       id: 'gpt-sovits',
+      capabilities: { voiceClone: true, instructionEmotion: false, emotionReference: true, speedControl: true },
       health: vi.fn(),
       synthesize: vi.fn().mockResolvedValue({ bytes: Buffer.from('RIFF-test'), mimeType: 'audio/wav', seed: 42 }),
     }
@@ -134,7 +136,7 @@ describe('voice library routes', () => {
     try {
       const response = await request(appFor(client, provider, root)).post('/api/voices/generate')
         .set('Authorization', `Bearer ${token('owner')}`)
-        .send({ projectId: 'project', characterId: 'character', referenceId: 'reference', text: '今晚也要继续写下去。', language: 'zh', speed: 1 })
+        .send({ projectId: 'project', characterId: 'character', referenceId: 'reference', text: '我……真的还能重新写吗？', language: 'zh', speed: 1.2, emotion: '愤怒', directionMode: 'auto' })
 
       expect(response.status).toBe(202)
       expect(create).toHaveBeenCalledWith(expect.objectContaining({ data: expect.objectContaining({ ownerId: 'owner', profileId: 'voice', status: 'queued' }) }))
@@ -142,6 +144,12 @@ describe('voice library routes', () => {
         where: { id: 'job' }, data: expect.objectContaining({ status: 'completed', outputMimeType: 'audio/wav' }),
       })))
       const completed = update.mock.calls.find(([arg]) => arg.data.status === 'completed')?.[0].data
+      expect(provider.synthesize).toHaveBeenCalledWith(expect.objectContaining({
+        speed: 0.92, direction: expect.objectContaining({ emotion: 'afraid', source: 'auto' }),
+      }))
+      expect(JSON.parse(completed.providerMetadata)).toMatchObject({
+        direction: { emotion: 'afraid' }, referenceId: 'reference', textHash: expect.any(String),
+      })
       expect(completed.outputUrl).toMatch(/^\/uploads\/library\/owner\/voice-generated\/.+\.wav$/)
       expect(existsSync(path.join(root, completed.outputUrl.slice('/uploads/'.length)))).toBe(true)
     } finally {
@@ -152,7 +160,9 @@ describe('voice library routes', () => {
   it('rejects a chapter from another project before queuing synthesis', async () => {
     const create = vi.fn()
     const provider: VoiceProvider = {
-      id: 'gpt-sovits', health: vi.fn(), synthesize: vi.fn(),
+      id: 'gpt-sovits',
+      capabilities: { voiceClone: true, instructionEmotion: false, emotionReference: true, speedControl: true },
+      health: vi.fn(), synthesize: vi.fn(),
     }
     const client = {
       project: { findFirst: vi.fn().mockResolvedValue({ id: 'project', authorId: 'owner' }) },

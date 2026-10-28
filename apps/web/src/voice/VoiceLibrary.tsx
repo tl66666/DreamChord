@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
+import { directVoiceLine, type VoiceEmotion } from '@dreamchord/story-domain'
 import { CheckCircle2, Headphones, Link2, Loader2, Mic2, Play, Plus, Search, ShieldCheck, Sparkles, Square, Wifi, WifiOff, X } from 'lucide-react'
 import {
   acceptVoiceGeneration,
@@ -26,6 +27,11 @@ const emptyDraft = {
   defaultEmotion: '自然', defaultSpeed: 1, authorizationNote: '本人录制或已获得声音所有者的明确授权', consent: false,
 }
 
+const emotionLabels: Record<VoiceEmotion, string> = {
+  neutral: '自然', warm: '温柔', joy: '喜悦', sad: '悲伤', tense: '紧张',
+  angry: '愤怒', afraid: '害怕', resolve: '坚定', whisper: '耳语',
+}
+
 export default function VoiceLibrary() {
   const [profiles, setProfiles] = useState<VoiceProfile[]>([])
   const [health, setHealth] = useState<VoiceProviderHealth | null>(null)
@@ -45,6 +51,7 @@ export default function VoiceLibrary() {
   const [reference, setReference] = useState({ assetId: '', transcript: '', language: 'zh', emotion: '自然', consent: false })
   const [binding, setBinding] = useState({ projectId: '', characterId: '' })
   const [generation, setGeneration] = useState({ referenceId: '', text: '', language: 'zh', emotion: '自然', speed: 1 })
+  const [automaticDirection, setAutomaticDirection] = useState(true)
   const [currentJob, setCurrentJob] = useState<VoiceGenerationJob | null>(null)
 
   useEffect(() => {
@@ -68,8 +75,13 @@ export default function VoiceLibrary() {
   }, [ageFilter, genderFilter, profiles, query])
   const selected = filtered.find((profile) => profile.id === selectedId) || filtered[0]
   const selectedProject = projects.find((project) => project.id === binding.projectId)
+  const characterName = selectedProject?.characters.find((character) => character.id === binding.characterId)?.name || '雪'
+  const directedLine = useMemo(() => directVoiceLine({ role: characterName, text: generation.text }), [characterName, generation.text])
+  const engineName = health?.provider === 'cosyvoice' ? 'CosyVoice 情感配音' : health?.provider === 'gpt-sovits' ? 'GPT-SoVITS' : '声音引擎'
   const chosenReferenceId = generation.referenceId || selected?.references[0]?.id || ''
   const hasCurrentBinding = Boolean(selected?.bindings.some((item) => item.character.id === binding.characterId && item.project.id === binding.projectId))
+  const previewCandidate = previewProfile && jobs.find((job) => job.profile?.id === previewProfile.id && job.status === 'completed' && job.outputUrl)
+  const previewUrl = previewCandidate?.outputUrl || previewProfile?.previewUrl || previewProfile?.references[0]?.asset.url
 
   const submitProfile = async () => {
     if (!draft.name.trim() || !draft.consent || submitting) return
@@ -128,11 +140,12 @@ export default function VoiceLibrary() {
       const created = await createVoiceGeneration({
         projectId: binding.projectId, characterId: binding.characterId, referenceId: chosenReferenceId,
         text: generation.text.trim(), language: generation.language, emotion: generation.emotion, speed: generation.speed,
+        directionMode: automaticDirection ? 'auto' : 'manual',
       })
       setCurrentJob(created)
       setJobs((current) => [created, ...current.filter((item) => item.id !== created.id)])
       if (created.status === 'queued' || created.status === 'running') void pollGeneration(created.id).catch(() => setError('生成状态读取失败，可稍后回到声音库查看。'))
-    } catch { setError('无法开始生成，请检查 GPT-SoVITS 是否已启动、角色是否已绑定。') } finally { setSubmitting(false) }
+    } catch { setError('无法开始生成，请检查声音引擎是否已启动、角色是否已绑定。') } finally { setSubmitting(false) }
   }
 
   const acceptCandidate = async () => {
@@ -161,7 +174,7 @@ export default function VoiceLibrary() {
     setEngineBusy(true); setError('')
     try {
       const engine = await startVoiceEngine()
-      setHealth((current) => ({ ...current, ok: false, provider: 'gpt-sovits', message: engine.message, engine }))
+      setHealth((current) => ({ ...current, ok: false, provider: current?.provider || 'none', message: engine.message, engine }))
       void refreshEngineUntilReady().catch(() => setError('声音引擎状态检查失败，请稍后刷新。'))
     } catch { setError('内置声音引擎无法启动，请先按安装向导完成一次性安装。') } finally { setEngineBusy(false) }
   }
@@ -171,7 +184,7 @@ export default function VoiceLibrary() {
     setEngineBusy(true); setError('')
     try {
       const engine = await stopVoiceEngine()
-      setHealth((current) => ({ ...current, ok: false, provider: 'gpt-sovits', message: engine.message, engine }))
+      setHealth((current) => ({ ...current, ok: false, provider: current?.provider || 'none', message: engine.message, engine }))
     } catch { setError('声音引擎停止失败。') } finally { setEngineBusy(false) }
   }
 
@@ -184,7 +197,7 @@ export default function VoiceLibrary() {
 
       <div className={`mb-5 flex items-start gap-3 rounded-lg border p-4 ${health?.ok ? 'border-emerald-200 bg-emerald-50 text-emerald-900' : 'border-amber-200 bg-amber-50 text-amber-900'}`}>
         {health?.ok ? <Wifi className="mt-0.5 h-5 w-5 shrink-0" /> : <WifiOff className="mt-0.5 h-5 w-5 shrink-0" />}
-        <div className="min-w-0 flex-1"><p className="text-sm font-semibold">{health?.ok ? '内置 GPT-SoVITS 已可用' : health?.engine?.state === 'starting' ? '正在加载声音模型' : '当前仅使用声音资产管理'}</p><p className="mt-1 text-xs leading-5">{health?.engine?.message || health?.message || '正在检查声音服务…'}；手动上传配音仍可使用。</p></div>
+        <div className="min-w-0 flex-1"><p className="text-sm font-semibold">{health?.ok ? `内置 ${engineName} 已可用` : health?.engine?.state === 'starting' ? '正在加载声音模型' : '当前仅使用声音资产管理'}</p><p className="mt-1 text-xs leading-5">{health?.engine?.message || health?.message || '正在检查声音服务…'}；手动上传配音仍可使用。</p>{health?.capabilities && <p className="mt-1 text-xs leading-5">{health.capabilities.instructionEmotion ? '支持按台词情绪调整表演、语速与停顿' : '支持按台词调整语速；情绪表现主要取决于所选参考片段'}</p>}</div>
         {health?.engine?.installed && !health.ok && <button disabled={engineBusy || health.engine.state === 'starting'} onClick={() => void startEngine()} className="inline-flex shrink-0 items-center gap-1.5 rounded-md bg-amber-900 px-3 py-2 text-xs font-medium text-white disabled:opacity-50"><Play className="h-3.5 w-3.5" />启动内置声音引擎</button>}
         {health?.engine?.canManage && health.ok && <button disabled={engineBusy} onClick={() => void stopEngine()} className="inline-flex shrink-0 items-center gap-1.5 rounded-md border border-emerald-300 bg-white px-3 py-2 text-xs font-medium text-emerald-800 disabled:opacity-50"><Square className="h-3.5 w-3.5" />停止引擎</button>}
       </div>
@@ -199,7 +212,7 @@ export default function VoiceLibrary() {
       <div className="mt-5 grid gap-4 md:grid-cols-2 2xl:grid-cols-3">
         {filtered.map((profile, index) => {
           const tags = voiceTags(profile)
-          const canPreview = Boolean(profile.references[0]?.asset.url)
+          const canPreview = Boolean(profile.previewUrl || profile.references[0]?.asset.url || jobs.some((job) => job.profile?.id === profile.id && job.status === 'completed' && job.outputUrl))
           return <article key={profile.id} className={`rounded-2xl border bg-white p-4 transition hover:-translate-y-0.5 hover:shadow-lg ${selected?.id === profile.id ? 'border-violet-300 shadow-md shadow-violet-100' : 'border-slate-200'}`}>
             <div className="flex items-center gap-3">
               <div className={`flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-gradient-to-br ${index % 3 === 0 ? 'from-fuchsia-200 to-violet-500' : index % 3 === 1 ? 'from-cyan-200 to-blue-500' : 'from-amber-200 to-rose-500'} text-lg font-black text-white ring-4 ring-white shadow`}>{profile.name.slice(0, 1)}</div>
@@ -219,7 +232,7 @@ export default function VoiceLibrary() {
           {selected ? <>
             <div className="flex flex-wrap items-start justify-between gap-3 border-b border-slate-100 pb-4">
               <div><div className="flex flex-wrap items-center gap-2"><Mic2 className="h-5 w-5 text-dream-600" /><h3 className="text-xl font-bold text-slate-950">{selected.name}</h3><span className={`rounded-full px-2 py-0.5 text-xs font-semibold ${isStarterVoice(selected) ? 'border border-cyan-200 bg-cyan-50 text-cyan-800' : 'bg-slate-100 text-slate-600'}`}>{isStarterVoice(selected) ? '梦弦内置 · 合成音' : '私有'}</span></div><p className="mt-2 text-sm leading-6 text-slate-600">{selected.description || '为这个音色补充年龄感、情绪范围和适用角色，会更容易稳定复用。'}</p></div>
-              <span className="rounded-full bg-dream-50 px-3 py-1 text-xs font-medium text-dream-700">{selected.provider}</span>
+              <span title="当前生成引擎" className="rounded-full bg-dream-50 px-3 py-1 text-xs font-medium text-dream-700">{engineName}</span>
             </div>
             {isStarterVoice(selected) && <div className="mt-4 flex items-start gap-3 rounded-xl border border-cyan-200 bg-cyan-50/70 p-4"><ShieldCheck className="mt-0.5 h-5 w-5 shrink-0 text-cyan-700" /><div><p className="text-sm font-semibold text-cyan-950">来源清晰的合成起始音色</p><p className="mt-1 text-xs leading-5 text-cyan-900">{selected.authorizationNote}</p></div></div>}
             <div className="mt-4 grid gap-3 sm:grid-cols-3"><Info label="语言" value={selected.language} /><Info label="默认情绪" value={selected.defaultEmotion} /><Info label="默认语速" value={`${selected.defaultSpeed.toFixed(2)}×`} /></div>
@@ -235,14 +248,16 @@ export default function VoiceLibrary() {
               <button disabled={!binding.projectId || !binding.characterId || hasCurrentBinding || submitting} onClick={() => void submitBinding()} className="mt-3 inline-flex items-center gap-2 rounded-md border border-violet-200 bg-white px-3 py-2 text-sm font-medium text-violet-700 disabled:opacity-50"><Link2 className="h-4 w-4" />{hasCurrentBinding ? '角色已绑定当前音色' : '绑定这个音色'}</button>
 
               <div className="mt-4 border-t border-violet-100 pt-4">
+                <label className="mb-3 flex cursor-pointer items-center gap-2 text-sm font-semibold text-violet-900"><input type="checkbox" checked={automaticDirection} onChange={(event) => setAutomaticDirection(event.target.checked)} className="accent-violet-600" />自动适配台词情绪与节奏</label>
+                {automaticDirection && generation.text.trim() && <div role="status" aria-label="台词表演建议" className="mb-4 rounded-lg border border-violet-200 bg-white p-3"><p className="text-sm font-semibold text-violet-900">{emotionLabels[directedLine.emotion]} · {directedLine.pace.toFixed(2)}× · {directedLine.pauseProfile === 'dramatic' ? '关键处留白' : directedLine.pauseProfile === 'short' ? '短句紧凑' : '自然停顿'}</p><p className="mt-1 text-xs leading-5 text-slate-600">{directedLine.delivery}</p><p className="mt-1 text-xs text-slate-400">建议随台词变化；关闭自动适配可手动指定。</p></div>}
                 <div className="grid gap-3 sm:grid-cols-2">
                   <label className="text-xs font-medium text-slate-700">参考片段<select value={chosenReferenceId} onChange={(event) => setGeneration((old) => ({ ...old, referenceId: event.target.value }))} className="mt-1 w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm"><option value="">请选择参考片段</option>{selected.references.map((item) => <option key={item.id} value={item.id}>{item.asset.name} · {item.emotion}</option>)}</select></label>
-                  <label className="text-xs font-medium text-slate-700">表达情绪<input value={generation.emotion} onChange={(event) => setGeneration((old) => ({ ...old, emotion: event.target.value }))} className="mt-1 w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm" /></label>
+                  <label className="text-xs font-medium text-slate-700">表达情绪<select aria-label="表达情绪" disabled={automaticDirection} value={automaticDirection ? emotionLabels[directedLine.emotion] : generation.emotion} onChange={(event) => setGeneration((old) => ({ ...old, emotion: event.target.value }))} className="mt-1 w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm disabled:bg-slate-100">{Object.values(emotionLabels).map((emotion) => <option key={emotion}>{emotion}</option>)}</select></label>
                   <label className="sm:col-span-2 text-xs font-medium text-slate-700">试听台词<textarea aria-label="试听台词" value={generation.text} onChange={(event) => setGeneration((old) => ({ ...old, text: event.target.value }))} rows={3} maxLength={5000} placeholder="例如：我们把这一刻写下来吧。" className="mt-1 w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm" /></label>
-                  <label className="text-xs font-medium text-slate-700">语速 {generation.speed.toFixed(2)}×<input type="range" min="0.5" max="1.5" step="0.05" value={generation.speed} onChange={(event) => setGeneration((old) => ({ ...old, speed: Number(event.target.value) }))} className="mt-2 w-full accent-violet-600" /></label>
+                  <label className="text-xs font-medium text-slate-700">语速 {(automaticDirection ? directedLine.pace : generation.speed).toFixed(2)}×<input aria-label="配音语速" disabled={automaticDirection} type="range" min="0.75" max="1.2" step="0.01" value={automaticDirection ? directedLine.pace : generation.speed} onChange={(event) => setGeneration((old) => ({ ...old, speed: Number(event.target.value) }))} className="mt-2 w-full accent-violet-600" /></label>
                   <button disabled={!health?.ok || !hasCurrentBinding || !chosenReferenceId || !generation.text.trim() || submitting} onClick={() => void submitGeneration()} className="self-end rounded-md bg-violet-600 px-4 py-2 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-40">生成试听</button>
                 </div>
-                {!health?.ok && <p className="mt-3 rounded-md bg-amber-50 px-3 py-2 text-xs leading-5 text-amber-800">GPT-SoVITS 尚未连接。你可以先完成音色和角色绑定，启动本机声音服务后再生成。</p>}
+                {!health?.ok && <p className="mt-3 rounded-md bg-amber-50 px-3 py-2 text-xs leading-5 text-amber-800">声音引擎尚未连接。你可以先完成音色和角色绑定，启动声音引擎后再生成。</p>}
                 {currentJob && <div className="mt-4 rounded-lg border border-slate-200 bg-white p-3">
                   <div className="flex items-center justify-between gap-3"><p className="text-sm font-semibold text-slate-900">{currentJob.status === 'completed' ? '试听候选已完成' : currentJob.status === 'failed' ? '这次生成失败' : '正在排队生成试听'}</p>{currentJob.status === 'completed' ? <CheckCircle2 className="h-5 w-5 text-emerald-500" /> : currentJob.status !== 'failed' ? <Loader2 className="h-5 w-5 animate-spin text-violet-500" /> : null}</div>
                   <p className="mt-1 text-xs leading-5 text-slate-500">{currentJob.text}</p>
@@ -260,7 +275,7 @@ export default function VoiceLibrary() {
         </section>
       </div>
 
-      {previewProfile?.references[0] && <div data-testid="voice-player-tray" className="sticky bottom-4 z-20 mt-5 flex flex-wrap items-center gap-4 rounded-2xl border border-slate-700 bg-slate-950 p-3 text-white shadow-2xl shadow-slate-400/40"><div className="flex h-11 w-11 items-center justify-center rounded-full bg-gradient-to-br from-fuchsia-300 to-violet-600 font-black">{previewProfile.name.slice(0, 1)}</div><div className="min-w-0 flex-1"><p className="truncate text-sm font-semibold">{previewProfile.name}</p><p className="text-xs text-slate-400">{previewProfile.references[0].emotion} · {previewProfile.references[0].asset.name}</p></div><audio key={previewProfile.references[0].asset.url} aria-label="音色持续播放器" controls autoPlay preload="metadata" src={previewProfile.references[0].asset.url} className="h-10 w-full max-w-xl md:w-[420px]">你的浏览器不支持音频预览。</audio><button aria-label="关闭音色播放器" onClick={() => setPreviewProfile(null)} className="rounded-lg p-2 text-slate-400 hover:bg-white/10 hover:text-white"><X className="h-4 w-4" /></button></div>}
+      {previewProfile && previewUrl && <div data-testid="voice-player-tray" className="sticky bottom-4 z-20 mt-5 flex flex-wrap items-center gap-4 rounded-2xl border border-slate-700 bg-slate-950 p-3 text-white shadow-2xl shadow-slate-400/40"><div className="flex h-11 w-11 items-center justify-center rounded-full bg-gradient-to-br from-fuchsia-300 to-violet-600 font-black">{previewProfile.name.slice(0, 1)}</div><div className="min-w-0 flex-1"><p className="truncate text-sm font-semibold">{previewProfile.name}</p><p className="text-xs text-slate-400">{previewCandidate ? `对白候选 · ${previewCandidate.text}` : `参考声音 · ${previewProfile.references[0]?.asset.name || '默认试听'}`}</p></div><audio key={previewUrl} aria-label="音色持续播放器" controls autoPlay preload="metadata" src={previewUrl} className="h-10 w-full max-w-xl md:w-[420px]">你的浏览器不支持音频预览。</audio><button aria-label="关闭音色播放器" onClick={() => setPreviewProfile(null)} className="rounded-lg p-2 text-slate-400 hover:bg-white/10 hover:text-white"><X className="h-4 w-4" /></button></div>}
 
       {creating && <div className="fixed inset-0 z-[90] flex items-center justify-center bg-slate-950/50 p-4"><section role="dialog" aria-modal="true" aria-label="新建音色" className="w-full max-w-xl rounded-xl bg-white p-5 shadow-2xl"><div className="flex items-center justify-between"><div><h3 className="text-lg font-bold text-slate-950">新建私有音色</h3><p className="mt-1 text-sm text-slate-500">先建立档案，再登记一个或多个授权参考片段。</p></div><button onClick={() => setCreating(false)} aria-label="关闭"><X className="h-5 w-5" /></button></div><div className="mt-5 grid gap-4 sm:grid-cols-2"><Field label="音色名称" value={draft.name} onChange={(value) => setDraft((old) => ({ ...old, name: value }))} /><label className="text-sm font-medium text-slate-700">主要语言<select value={draft.language} onChange={(event) => setDraft((old) => ({ ...old, language: event.target.value }))} className="mt-1.5 w-full rounded-md border border-slate-300 bg-white px-3 py-2"><option value="zh">中文</option><option value="ja">日语</option><option value="en">英语</option></select></label><Field label="年龄感" value={draft.ageTone} onChange={(value) => setDraft((old) => ({ ...old, ageTone: value }))} placeholder="例如：青年、成熟" /><Field label="声音标签" value={draft.tags} onChange={(value) => setDraft((old) => ({ ...old, tags: value }))} placeholder="温柔，清亮，近距离" /><label className="sm:col-span-2 text-sm font-medium text-slate-700">说明<textarea value={draft.description} onChange={(event) => setDraft((old) => ({ ...old, description: event.target.value }))} rows={3} className="mt-1.5 w-full rounded-md border border-slate-300 px-3 py-2" /></label><label className="sm:col-span-2 flex items-start gap-2 rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm leading-6 text-amber-900"><input aria-label="我确认拥有本人同意或合法授权" type="checkbox" checked={draft.consent} onChange={(event) => setDraft((old) => ({ ...old, consent: event.target.checked }))} className="mt-1" /><span>我确认声音来自本人，或已获得声音所有者明确、可撤销的合法授权；不会用于冒充、欺骗或未经同意的克隆。</span></label></div><div className="mt-5 flex justify-end gap-2"><button onClick={() => setCreating(false)} className="rounded-md border border-slate-300 px-4 py-2 text-sm">取消</button><button disabled={!draft.name.trim() || !draft.consent || submitting} onClick={() => void submitProfile()} className="rounded-md bg-dream-600 px-4 py-2 text-sm font-medium text-white disabled:opacity-40">创建私有音色</button></div></section></div>}
     </div>

@@ -73,6 +73,8 @@
 
 ## Phase 1 — story, direction, and playback
 
+Execution status (2026-10-28): Tasks 1–5 are committed. Task 6 is installed and verified by three real CosyVoice generations plus one GPT-SoVITS fallback generation. Task 7 currently has shared direction mapping, manual/automatic library controls, provenance and stale-hash service; chapter batch APIs/UI remain. Task 8 remains pending. See `docs/VOICE_RUNTIME_VERIFICATION.md` for evidence and remaining work. Individual checkboxes below retain the original implementation recipe.
+
 ### Task 1: Pure automatic voice director
 
 **Files:**

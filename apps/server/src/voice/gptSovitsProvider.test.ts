@@ -3,6 +3,16 @@ import { GptSovitsProvider } from './gptSovitsProvider.js'
 import { readVoiceProviderConfig } from './providerConfig.js'
 
 describe('GPT-SoVITS provider', () => {
+  it('declares cloning through emotion-matched references instead of free-form instructions', () => {
+    const provider = new GptSovitsProvider({ baseUrl: 'http://127.0.0.1:9880', timeoutMs: 5000 })
+    expect(provider.capabilities).toMatchObject({
+      voiceClone: true,
+      instructionEmotion: false,
+      emotionReference: true,
+      speedControl: true,
+    })
+  })
+
   it('maps DreamChord synthesis input to the official /tts contract', async () => {
     const fetcher = vi.fn().mockResolvedValue(new Response(new Uint8Array([1, 2, 3]), {
       status: 200,
@@ -18,6 +28,10 @@ describe('GPT-SoVITS provider', () => {
       promptLanguage: 'zh',
       speed: 0.95,
       seed: 42,
+      direction: {
+        emotion: 'resolve', intensity: 0.65, pace: 0.95, pauseProfile: 'natural',
+        delivery: '克制但坚定', lockedFields: [], source: 'auto', textHash: 'abc',
+      },
     })
 
     expect(result.bytes).toEqual(Buffer.from([1, 2, 3]))
@@ -29,6 +43,7 @@ describe('GPT-SoVITS provider', () => {
       prompt_text: '这是一段参考音频。', prompt_lang: 'zh', speed_factor: 0.95, seed: 42,
       media_type: 'wav', streaming_mode: false,
     })
+    expect(result.providerMetadata).toMatchObject({ directionMode: 'emotion-reference', requestedEmotion: 'resolve' })
   })
 
   it('returns a bounded provider error without exposing the reference path', async () => {
@@ -55,6 +70,8 @@ describe('GPT-SoVITS provider', () => {
   it('accepts only a server-configured loopback endpoint in the first release', () => {
     expect(readVoiceProviderConfig({ VOICE_PROVIDER: 'gpt-sovits', GPT_SOVITS_BASE_URL: 'http://localhost:9880' })).toMatchObject({ enabled: true })
     expect(readVoiceProviderConfig({ VOICE_PROVIDER: 'gpt-sovits', GPT_SOVITS_BASE_URL: 'https://example.com' })).toMatchObject({ enabled: false, reason: expect.stringContaining('本机') })
+    expect(readVoiceProviderConfig({ VOICE_PROVIDER: 'cosyvoice', COSYVOICE_BASE_URL: 'http://127.0.0.1:50000' })).toMatchObject({ enabled: true, provider: 'cosyvoice' })
+    expect(readVoiceProviderConfig({ VOICE_PROVIDER: 'cosyvoice', COSYVOICE_BASE_URL: 'https://example.com' })).toMatchObject({ enabled: false, reason: expect.stringContaining('本机') })
     expect(readVoiceProviderConfig({})).toMatchObject({ enabled: true, provider: 'gpt-sovits' })
     expect(readVoiceProviderConfig({ VOICE_PROVIDER: 'none' })).toMatchObject({ enabled: false, reason: expect.stringContaining('停用') })
   })

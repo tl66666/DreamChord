@@ -31,15 +31,33 @@ interface EngineDependencies {
 }
 
 export interface ManagedVoiceEngineConfig {
+  provider?: 'gpt-sovits' | 'cosyvoice'
   home: string
   python: string
   port: number
+  entrypoint?: string
+  modelDirectory?: string
 }
 
 export function readManagedVoiceEngineConfig(
   env: Record<string, string | undefined> = process.env,
   workingDirectory = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..', '..', '..'),
 ): ManagedVoiceEngineConfig {
+  if (env.VOICE_PROVIDER?.trim() === 'cosyvoice') {
+    const home = path.resolve(env.COSYVOICE_HOME || path.join(workingDirectory, '.runtime', 'cosyvoice'))
+    const python = env.COSYVOICE_PYTHON || (process.platform === 'win32'
+      ? path.join(home, '.conda', 'python.exe')
+      : path.join(home, '.conda', 'bin', 'python'))
+    const parsedPort = Number(env.COSYVOICE_PORT || 50_000)
+    return {
+      provider: 'cosyvoice',
+      home,
+      python,
+      port: Number.isInteger(parsedPort) && parsedPort >= 1024 && parsedPort <= 65535 ? parsedPort : 50_000,
+      entrypoint: path.resolve(env.COSYVOICE_BRIDGE || path.join(home, 'dreamchord_bridge.py')),
+      modelDirectory: path.resolve(env.COSYVOICE_MODEL_HOME || path.join(home, 'pretrained_models', 'Fun-CosyVoice3-0.5B')),
+    }
+  }
   const home = path.resolve(env.GPT_SOVITS_HOME || path.join(workingDirectory, '.runtime', 'gpt-sovits'))
   const embeddedPython = process.platform === 'win32'
     ? path.join(home, 'runtime', 'python.exe')
@@ -49,6 +67,7 @@ export function readManagedVoiceEngineConfig(
     : path.join(home, '.conda', 'bin', 'python')
   const parsedPort = Number(env.GPT_SOVITS_PORT || 9880)
   return {
+    provider: 'gpt-sovits',
     home,
     python: env.GPT_SOVITS_PYTHON || (existsSync(embeddedPython) ? embeddedPython : existsSync(condaPython) ? condaPython : 'python'),
     port: Number.isInteger(parsedPort) && parsedPort >= 1024 && parsedPort <= 65535 ? parsedPort : 9880,
@@ -70,6 +89,15 @@ export class ManagedVoiceEngine {
   ) {}
 
   private installed(): boolean {
+    if (this.config.provider === 'cosyvoice') {
+      const pythonReady = !path.isAbsolute(this.config.python) || this.dependencies.exists(this.config.python)
+      return Boolean(
+        this.config.entrypoint && this.dependencies.exists(this.config.entrypoint)
+        && this.config.modelDirectory && this.dependencies.exists(this.config.modelDirectory)
+        && ['cosyvoice3.yaml', 'llm.pt', 'flow.pt', 'hift.pt'].every((file) => this.dependencies.exists(path.join(this.config.modelDirectory!, file)))
+        && pythonReady,
+      )
+    }
     const api = path.join(this.config.home, 'api_v2.py')
     const inferenceConfig = path.join(this.config.home, 'GPT_SoVITS', 'configs', 'tts_infer.yaml')
     const pythonReady = !path.isAbsolute(this.config.python) || this.dependencies.exists(this.config.python)
@@ -81,10 +109,11 @@ export class ManagedVoiceEngine {
       installed: false, canManage: false, state: 'not-installed',
       message: '内置声音引擎尚未安装，请先运行项目提供的安装向导。',
     }
+    const engineName = this.config.provider === 'cosyvoice' ? 'CosyVoice' : 'GPT-SoVITS'
     const messages: Record<Exclude<ManagedVoiceEngineState, 'not-installed'>, string> = {
       stopped: '声音引擎已安装，当前未启动。',
-      starting: '正在加载 GPT-SoVITS 模型，首次启动可能需要较长时间。',
-      running: '内置 GPT-SoVITS 已可用。',
+      starting: `正在加载 ${engineName} 模型，首次启动可能需要较长时间。`,
+      running: `内置 ${engineName} 已可用。`,
       failed: this.lastError || '声音引擎启动失败，请查看服务端日志。',
     }
     return { installed: true, canManage: true, state: this.state, message: messages[this.state === 'not-installed' ? 'stopped' : this.state] }
@@ -95,10 +124,10 @@ export class ManagedVoiceEngine {
     if (this.child) return this.status()
     this.state = 'starting'
     this.lastError = ''
-    const child = this.dependencies.spawnProcess(this.config.python, [
-      'api_v2.py', '-a', '127.0.0.1', '-p', String(this.config.port),
-      '-c', 'GPT_SoVITS/configs/tts_infer.yaml',
-    ], {
+    const args = this.config.provider === 'cosyvoice'
+      ? [this.config.entrypoint!, '--port', String(this.config.port)]
+      : ['api_v2.py', '-a', '127.0.0.1', '-p', String(this.config.port), '-c', 'GPT_SoVITS/configs/tts_infer.yaml']
+    const child = this.dependencies.spawnProcess(this.config.python, args, {
       cwd: this.config.home,
       windowsHide: true,
       shell: false,

@@ -1,3 +1,12 @@
+import type { VoiceDirection } from '@dreamchord/story-domain'
+
+export interface VoiceProviderCapabilities {
+  voiceClone: boolean
+  instructionEmotion: boolean
+  emotionReference: boolean
+  speedControl: boolean
+}
+
 export interface VoiceSynthesisInput {
   text: string
   textLanguage: string
@@ -6,12 +15,14 @@ export interface VoiceSynthesisInput {
   promptLanguage: string
   speed: number
   seed?: number
+  direction?: VoiceDirection
 }
 
 export interface VoiceSynthesisResult {
   bytes: Buffer
   mimeType: string
   seed?: number
+  providerMetadata?: Record<string, unknown>
 }
 
 export interface VoiceProviderHealth {
@@ -22,6 +33,7 @@ export interface VoiceProviderHealth {
 
 export interface VoiceProvider {
   readonly id: string
+  readonly capabilities: VoiceProviderCapabilities
   health(): Promise<VoiceProviderHealth>
   synthesize(input: VoiceSynthesisInput): Promise<VoiceSynthesisResult>
 }

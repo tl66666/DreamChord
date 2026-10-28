@@ -47,6 +47,7 @@ export const createVoiceGenerationSchema = z.object({
   chapterId: z.string().min(1).optional(),
   nodeId: z.string().min(1).max(200).optional(),
   referenceId: z.string().min(1),
+  directionMode: z.enum(['auto', 'manual']).optional().default('manual'),
   text: z.string().trim().min(1).max(5000),
   language,
   emotion: z.string().trim().max(80).optional().default('自然'),

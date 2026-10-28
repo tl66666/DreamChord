@@ -39,6 +39,24 @@ describe('ManagedVoiceEngine', () => {
     ], expect.objectContaining({ cwd: home, windowsHide: true, shell: false }))
   })
 
+  it('starts the DreamChord CosyVoice bridge without a public listener argument', () => {
+    const child = Object.assign(new EventEmitter(), { pid: 4321, kill: vi.fn() })
+    const spawnProcess = vi.fn().mockReturnValue(child)
+    const home = path.resolve('runtime', 'cosyvoice')
+    const bridge = path.join(home, 'dreamchord_bridge.py')
+    const modelDirectory = path.join(home, 'pretrained_models', 'Fun-CosyVoice3-0.5B')
+    const engine = new ManagedVoiceEngine({
+      provider: 'cosyvoice', home, python: path.join(home, '.conda', 'python.exe'),
+      port: 50000, entrypoint: bridge, modelDirectory,
+    }, { exists: () => true, spawnProcess })
+
+    expect(engine.start()).toEqual(expect.objectContaining({ installed: true, state: 'starting' }))
+    expect(spawnProcess).toHaveBeenCalledWith(path.join(home, '.conda', 'python.exe'), [
+      bridge, '--port', '50000',
+    ], expect.objectContaining({ cwd: home, windowsHide: true, shell: false }))
+    expect(JSON.stringify(spawnProcess.mock.calls[0]?.[1])).not.toContain('0.0.0.0')
+  })
+
   it('can stop only the child process it started', () => {
     const child = Object.assign(new EventEmitter(), { pid: 1234, kill: vi.fn().mockReturnValue(true) })
     const engine = new ManagedVoiceEngine({ home: path.resolve('runtime'), python: 'python', port: 9880 }, {

@@ -19,7 +19,10 @@ const PORT = Number(process.env.PORT) || 3001
 await prismaAgentRunService.recoverInterruptedRuns()
 await prismaLongImportService.recoverInterruptedRuns()
 const managedVoiceEngine = getManagedVoiceEngine()
-if (process.env.GPT_SOVITS_AUTO_START !== 'false' && managedVoiceEngine.status().installed) {
+const configuredAutoStart = process.env.VOICE_PROVIDER === 'cosyvoice'
+  ? process.env.COSYVOICE_AUTO_START
+  : process.env.GPT_SOVITS_AUTO_START
+if (configuredAutoStart !== 'false' && managedVoiceEngine.status().installed) {
   try {
     managedVoiceEngine.start()
     console.log('正在后台启动 DreamChord 内置声音引擎…')

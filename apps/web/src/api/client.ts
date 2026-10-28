@@ -327,6 +327,12 @@ export interface VoiceProviderHealth {
   ok: boolean
   provider: string
   message: string
+  capabilities?: {
+    voiceClone: boolean
+    instructionEmotion: boolean
+    emotionReference: boolean
+    speedControl: boolean
+  }
   engine?: {
     installed: boolean
     canManage: boolean
@@ -450,6 +456,7 @@ export async function createVoiceGeneration(payload: {
   projectId: string
   characterId: string
   referenceId: string
+  directionMode?: 'auto' | 'manual'
   text: string
   language: string
   emotion?: string

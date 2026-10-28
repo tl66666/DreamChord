@@ -62,6 +62,7 @@ describe('VoiceLibrary', () => {
 
   it('presents voices as a filterable audition catalog with a persistent preview tray', async () => {
     common()
+    api.jobs.mockResolvedValue([{ id: 'take', status: 'completed', text: '新的角色对白。', language: 'zh', emotion: '自然', speed: 1, outputUrl: '/uploads/xingli-take.wav', profile: { id: 'girl', name: '星璃・清澈' } }])
     api.list.mockResolvedValue([
       { id: 'girl', name: '星璃・清澈', description: '校园少女', language: 'zh-CN', ageTone: '少女', genderTone: '女声', tags: '["清澈","校园"]', status: 'active', provider: 'gpt-sovits', defaultEmotion: '自然', defaultSpeed: 1, authorizationNote: '合成音', references: [{ id: 'ref', transcript: '你好。', language: 'zh-CN', emotion: '自然', status: 'active', asset: { id: 'sample', name: '星璃试听', type: 'VOICE_SAMPLE', url: '/uploads/xingli.wav', createdAt: '2026-10-27' } }], bindings: [] },
       { id: 'man', name: '暮川・沉稳', description: '可靠青年', language: 'zh-CN', ageTone: '青年', genderTone: '男声', tags: '["沉稳"]', status: 'active', provider: 'gpt-sovits', defaultEmotion: '自然', defaultSpeed: 1, authorizationNote: '合成音', references: [], bindings: [] },
@@ -78,8 +79,9 @@ describe('VoiceLibrary', () => {
     expect(screen.getAllByText('星璃・清澈').length).toBeGreaterThan(0)
     expect(screen.queryByText('暮川・沉稳')).not.toBeInTheDocument()
     fireEvent.click(screen.getByRole('button', { name: '试听星璃・清澈' }))
-    expect(screen.getByLabelText('音色持续播放器')).toHaveAttribute('src', '/uploads/xingli.wav')
+    expect(screen.getByLabelText('音色持续播放器')).toHaveAttribute('src', '/uploads/xingli-take.wav')
     expect(screen.getByTestId('voice-player-tray')).toHaveTextContent('星璃・清澈')
+    expect(screen.getByTestId('voice-player-tray')).toHaveTextContent('对白候选')
   })
 
   it('requires rights confirmation before creating a private profile', async () => {
@@ -134,7 +136,13 @@ describe('VoiceLibrary', () => {
     await waitFor(() => expect(api.bind).toHaveBeenCalledWith('voice', { projectId: 'project', characterId: 'snow' }))
 
     fireEvent.change(screen.getByLabelText('试听台词'), { target: { value: '我们把这一刻写下来吧。' } })
+    expect(screen.getByLabelText('自动适配台词情绪与节奏')).toBeChecked()
+    expect(screen.getByLabelText('台词表演建议')).toBeInTheDocument()
+    fireEvent.change(screen.getByLabelText('试听台词'), { target: { value: '我……真的还能重新写吗？' } })
+    expect(screen.getByLabelText('台词表演建议')).toHaveTextContent('害怕')
+    expect(screen.getByLabelText('台词表演建议')).toHaveTextContent('0.92×')
     fireEvent.click(screen.getByRole('button', { name: '生成试听' }))
+    await waitFor(() => expect(api.generate).toHaveBeenCalledWith(expect.objectContaining({ directionMode: 'auto', text: '我……真的还能重新写吗？' })))
     expect(await screen.findByText('试听候选已完成')).toBeInTheDocument()
     expect(screen.getByLabelText('生成的配音试听')).toHaveAttribute('src', '/uploads/generated.wav')
     fireEvent.click(screen.getByRole('button', { name: '收入配音素材库' }))

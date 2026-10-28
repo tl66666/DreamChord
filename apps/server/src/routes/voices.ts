@@ -3,10 +3,12 @@ import fs from 'node:fs/promises'
 import path from 'node:path'
 import { randomUUID } from 'node:crypto'
 import type { PrismaClient } from '@prisma/client'
+import { resolveVoiceDirection, VOICE_EMOTION_LABELS } from '../voice/voiceDirectionService.js'
 import { storagePathFromUrl, uploadUrl } from '../assets/storagePaths.js'
 import { prisma } from '../lib/prisma.js'
 import { authenticateToken, type AuthRequest } from '../middleware/auth.js'
 import { GptSovitsProvider } from '../voice/gptSovitsProvider.js'
+import { CosyVoiceProvider } from '../voice/cosyVoiceProvider.js'
 import { getManagedVoiceEngine, type ManagedVoiceEngine } from '../voice/managedVoiceEngine.js'
 import type { VoiceProvider } from '../voice/provider.js'
 import { readVoiceProviderConfig } from '../voice/providerConfig.js'
@@ -24,7 +26,8 @@ const defaultVoiceQueue = new SerialVoiceQueue()
 
 function configuredProvider(): VoiceProvider | null {
   const config = readVoiceProviderConfig()
-  return config.enabled ? new GptSovitsProvider(config) : null
+  if (!config.enabled) return null
+  return config.provider === 'cosyvoice' ? new CosyVoiceProvider(config) : new GptSovitsProvider(config)
 }
 
 const includeProfileDetails = {
@@ -50,7 +53,7 @@ export function createVoiceRouter(
     }
     const health = await provider.health()
     if (health.ok) engine.markRunning()
-    res.json({ ...health, engine: engine.status() })
+    res.json({ ...health, capabilities: provider.capabilities, engine: engine.status() })
   })
 
   router.post('/provider/start', (_req: AuthRequest, res: Response) => {
@@ -76,7 +79,7 @@ export function createVoiceRouter(
     const input = parsed.data
     const profile = await client.voiceProfile.create({
       data: {
-        ownerId: req.userId!, provider: 'gpt-sovits', name: input.name, description: input.description,
+        ownerId: req.userId!, provider: provider?.id || 'gpt-sovits', name: input.name, description: input.description,
         language: input.language, ageTone: input.ageTone, genderTone: input.genderTone,
         tags: JSON.stringify(input.tags), defaultEmotion: input.defaultEmotion,
         defaultSpeed: input.defaultSpeed, authorizationNote: input.authorizationNote,
@@ -169,7 +172,7 @@ export function createVoiceRouter(
   })
 
   router.post('/generate', async (req: AuthRequest, res: Response) => {
-    if (!provider) return res.status(503).json({ error: '请先在服务端配置并启动本机 GPT-SoVITS' })
+    if (!provider) return res.status(503).json({ error: '请先配置并启动 DreamChord 本机声音引擎' })
     const parsed = createVoiceGenerationSchema.safeParse(req.body)
     if (!parsed.success) return res.status(400).json({ error: parsed.error.issues[0]?.message || '配音生成参数无效' })
     const input = parsed.data
@@ -179,7 +182,7 @@ export function createVoiceRouter(
       client.character.findFirst({ where: { id: input.characterId, projectId: input.projectId } }),
       client.characterVoiceBinding.findFirst({ where: { characterId: input.characterId, projectId: input.projectId } }),
       client.voiceReference.findFirst({
-        where: { id: input.referenceId, status: 'active', profile: { ownerId: userId, status: 'active' } },
+        where: { id: input.referenceId, status: 'active', authorizationConfirmed: true, profile: { ownerId: userId, status: 'active' }, asset: { ownerId: userId, type: 'VOICE_SAMPLE' } },
         include: { asset: true },
       }),
     ])
@@ -196,13 +199,15 @@ export function createVoiceRouter(
     try { referencePath = storagePathFromUrl(storageRoot, reference.asset.url) }
     catch { return res.status(400).json({ error: '参考音频路径无效，请重新上传' }) }
 
+    const direction = resolveVoiceDirection({ role: character.name, text: input.text, mode: input.directionMode, emotion: input.emotion, speed: input.speed })
     const job = await client.voiceGenerationJob.create({ data: {
       ownerId: userId, projectId: project.id, characterId: character.id,
       ...(input.chapterId ? { chapterId: input.chapterId } : {}),
       ...(input.nodeId ? { nodeId: input.nodeId } : {}),
       profileId: binding.profileId, referenceId: reference.id,
-      text: input.text, language: input.language, emotion: input.emotion,
-      speed: input.speed, ...(input.seed !== undefined ? { seed: input.seed } : {}), status: 'queued',
+      text: input.text, language: input.language, emotion: VOICE_EMOTION_LABELS[direction.emotion],
+      speed: direction.pace, ...(input.seed !== undefined ? { seed: input.seed } : {}), status: 'queued',
+      providerMetadata: JSON.stringify({ provider: provider.id, direction, textHash: direction.textHash, referenceId: reference.id }),
     } })
 
     void queue.enqueue(async () => {
@@ -210,7 +215,7 @@ export function createVoiceRouter(
       const result = await provider.synthesize({
         text: input.text, textLanguage: input.language, referencePath,
         promptText: reference.transcript, promptLanguage: reference.language,
-        speed: input.speed, ...(input.seed !== undefined ? { seed: input.seed } : {}),
+        speed: direction.pace, ...(input.seed !== undefined ? { seed: input.seed } : {}), direction,
       })
       const relative = path.join('library', userId, 'voice-generated', `${randomUUID()}.wav`)
       const outputPath = path.resolve(storageRoot, relative)
@@ -219,7 +224,12 @@ export function createVoiceRouter(
       await client.voiceGenerationJob.update({ where: { id: job.id }, data: {
         status: 'completed', outputUrl: uploadUrl(relative), outputMimeType: result.mimeType,
         seed: result.seed ?? input.seed, completedAt: new Date(),
-        providerMetadata: JSON.stringify({ provider: provider.id }),
+        providerMetadata: JSON.stringify({
+          provider: provider.id,
+          capabilities: provider.capabilities,
+          direction, textHash: direction.textHash, referenceId: reference.id,
+          ...result.providerMetadata,
+        }),
       } })
     }).catch(async (error: unknown) => {
       const message = error instanceof Error ? error.message : '配音生成失败'
@@ -250,6 +260,7 @@ export function createVoiceRouter(
       metadata: JSON.stringify({ voiceGeneration: {
         jobId: job.id, profileId: job.profileId, profileName: job.profile.name,
         characterId: job.characterId, text: job.text, emotion: job.emotion, speed: job.speed,
+        ...JSON.parse(job.providerMetadata || '{}'),
       } }),
     } })
     await client.voiceGenerationJob.update({ where: { id: job.id }, data: { acceptedAssetId: asset.id } })

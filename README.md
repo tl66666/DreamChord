@@ -79,6 +79,8 @@ powershell -ExecutionPolicy Bypass -File .\scripts\doctor.ps1
 
 完整安装说明和常见故障处理见 [新手入门](docs/GETTING_STARTED.md)。
 
+声音库支持 GPT-SoVITS 克隆和 CosyVoice3 情感配音，输入新台词可自动建议情绪与节奏。模型在后台运行，试听与角色绑定都在项目内完成。安装与真实台词自检见 [声音库与配音](docs/GPT_SOVITS_SETUP.md)。
+
 ## 技术栈
 
 | 层 | 技术 |

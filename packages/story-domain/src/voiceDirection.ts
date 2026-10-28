@@ -84,6 +84,7 @@ export function directVoiceLine(input: DirectVoiceLineInput): VoiceDirection {
 
   const withOverrides: VoiceDirection = {
     ...automatic,
+    ...(input.overrides?.emotion ? { delivery: DELIVERY[input.overrides.emotion] } : {}),
     ...input.overrides,
     intensity: clamp(input.overrides?.intensity ?? automatic.intensity, 0, 1),
     pace: clamp(input.overrides?.pace ?? automatic.pace, 0.75, 1.2),
