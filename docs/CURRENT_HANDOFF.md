@@ -25,7 +25,7 @@
 | 串行保存与历史 | `SaveCoordinator`、`editorStore.applyDerivedGraph`、`EditorHistory.replaceCurrent` |
 | 声音 API / 队列 | `apps/server/src/routes/voices.ts`、`apps/server/src/voice` |
 | 视觉与封面 | `index.css`、`StudioIntro.tsx`、`lib/projectCover.ts` |
-| 展示源文件 | `docs/showcase.html`；根 `index.html` 重定向到这里 |
+| 展示源文件 | `docs/showcase.html`；GitHub Pages 部署 `/docs`，`docs/index.html` 是线上入口，根 `index.html` 供仓库根目录预览 |
 | 当前截图与音频来源 | [截图索引](screenshots/README.md)、[样音说明](assets/audio/README.md) |
 | 页面插画来源 | `apps/web/public/assets/ui/PROVENANCE.md` |
 

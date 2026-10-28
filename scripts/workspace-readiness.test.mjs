@@ -184,6 +184,7 @@ assert.match(batchLauncher, /powershell\.exe[^\r\n]*-File "%~dp0start-dreamchord
 const showcase = readFileSync(new URL('../docs/showcase.html', import.meta.url), 'utf8').replace(/\s+/g, ' ')
 assert.ok(existsSync(fileURLToPath(new URL('../index.html', import.meta.url))), 'project root must expose an obvious showcase entrypoint')
 assert.match(readFileSync(new URL('../index.html', import.meta.url), 'utf8'), /docs\/showcase\.html/, 'root showcase entrypoint must redirect to the canonical docs showcase')
+assert.match(readFileSync(new URL('../docs/index.html', import.meta.url), 'utf8'), /url=showcase\.html/, 'Pages deploys the docs directory and must expose its own index')
 for (const screenshot of [
   'editor-1440.png',
   'flowchart-1440.png',
