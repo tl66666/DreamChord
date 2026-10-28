@@ -181,7 +181,7 @@ assert.ok(
 )
 assert.match(batchLauncher, /powershell\.exe[^\r\n]*-File "%~dp0start-dreamchord\.ps1"/, 'batch launcher must delegate to the colocated PowerShell script')
 
-const showcase = readFileSync(new URL('../docs/showcase.html', import.meta.url), 'utf8')
+const showcase = readFileSync(new URL('../docs/showcase.html', import.meta.url), 'utf8').replace(/\s+/g, ' ')
 assert.ok(existsSync(fileURLToPath(new URL('../index.html', import.meta.url))), 'project root must expose an obvious showcase entrypoint')
 assert.match(readFileSync(new URL('../index.html', import.meta.url), 'utf8'), /docs\/showcase\.html/, 'root showcase entrypoint must redirect to the canonical docs showcase')
 for (const screenshot of [
