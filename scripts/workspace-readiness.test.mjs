@@ -61,11 +61,12 @@ assert.doesNotMatch(launcher, /dreamchord-web dev -- --host/, 'launcher must not
 assert.match(launcher, /dreamchord-web dev --host 127\.0\.0\.1/, 'launcher must bind Vite to IPv4 localhost')
 
 const tempRoot = mkdtempSync(join(tmpdir(), 'dreamchord-readiness-'))
+const powershell = process.platform === 'win32' ? 'powershell' : 'pwsh'
 try {
   const envPath = join(tempRoot, '.env')
   writeFileSync(envPath, 'UPLOAD_DIR="./素材目录"\nGLM_API_KEY="keep-me"\n', 'utf8')
   const environmentScript = fileURLToPath(new URL('./ensure-environment.ps1', import.meta.url))
-  const result = spawnSync('powershell', [
+  const result = spawnSync(powershell, [
     '-NoProfile',
     '-ExecutionPolicy',
     'Bypass',
@@ -98,7 +99,7 @@ try {
   const databaseEnvPath = join(tempRoot, 'database.env')
   writeFileSync(databaseEnvPath, 'DATABASE_URL="file:./custom data/writer.db"\n', 'utf8')
   const backupScript = fileURLToPath(new URL('./backup-local-database.ps1', import.meta.url))
-  const runBackup = () => spawnSync('powershell', [
+  const runBackup = () => spawnSync(powershell, [
       '-NoProfile',
       '-ExecutionPolicy',
       'Bypass',
