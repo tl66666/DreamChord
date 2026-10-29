@@ -598,3 +598,62 @@ Midjourney / Stable Diffusion / 通义万相 / 即梦 / DALL·E
 3. 按 DEMO_STORY.md 创建官方示例项目（seed.ts 已内置）。
 4. 用户可复制该项目作为模板进行改编，替换成自己的角色和场景。
 ```
+
+---
+
+## 音频素材（内置曲库与音效）
+
+音频不走 `apps/web/public/assets/`，而是按「素材包」管理，经 seed 命令导入 demo 账号的素材库：
+
+```
+项目仓库/
+├── assets/music-packs/
+│   ├── ternox-vn/                  # TERNOX CC0 视觉小说配乐（13 首，pnpm music:official:install 安装）
+│   └── community-vn/               # 社区原声集（23 首 BGM + 8 条音效，随仓库分发）
+│       ├── manifest.json           # 逐曲作者/许可/来源/SHA-256
+│       ├── LICENSE-SOURCE.md       # 来源与署名要求
+│       └── runtime/                # 标准化后的 OGG（-18 LUFS / TP-1 / LRA 11）
+├── assets/voice-packs/
+│   ├── dreamchord-starter/         # 内置合成起始音色（Kokoro，Apache-2.0）
+│   ├── dreamchord-human/           # OtoLogic 真人语气声线（日语 3 组 13 条，CC BY 4.0）
+│   │   ├── manifest.json
+│   │   ├── LICENSE-SOURCE.md
+│   │   └── runtime/
+│   └── dreamchord-dialogue/        # 台词配音声线集（Qwen3-TTS 本地合成，4 声线 × 中日各 3 句原创台词）
+│       ├── manifest.json
+│       ├── LICENSE-SOURCE.md
+│       └── generated/
+└── apps/web/public/assets/audio/demo/   # 官方 Demo 剧情 BGM + 5 个 OtoLogic 音效
+```
+
+### 曲目来源一览
+
+| 来源 | 类型 | 数量 | 许可 | 署名要求 |
+|---|---|---|---|---|
+| [TERNOX](https://ternox.itch.io/vn-music) | BGM | 13 | CC0 | 希望出现昵称（已保留） |
+| [甘茶の音楽工房](https://amachamusic.chagasi.com/) | 和风 BGM | 6 | 站点条款（可商用） | 非强制，已保留 |
+| [TAM Music Factory](https://www.tam-music.com/) | 和风 BGM | 5 | 站点条款 | **商用须表示出处** |
+| [魔王魂](https://maou.audio/) | BGM | 8 | 商用/改変 OK | 任意，已保留 |
+| [龍的交響楽](http://d-symphony.com/) | 古风 BGM | 4 | 营利可 | **须表记『龍的交響楽』** |
+| [OtoLogic](https://otologic.jp/) | SFX + 真人语音 | 8 + 13 | CC BY 4.0 | 署名『OtoLogic』 |
+
+情绪覆盖：治愈/日常（緩やかな風、やさしい雨、アトリエの日常、朝露、ヒーリング15）、悬疑/紧张（平安ノ宵、宿命のシナリオ、夜半ノ月）、恐怖（夜道）、恋爱（はらり…、The Milky Way）、忧郁/离别（夏の霧、いつかの秋空）、热血/史诗（四彩躍動、白虎豪勇）、祭典（揺れる提灯）、古风夜景（燈火）、幻想/神秘（ファンタジー15）、内省独白（ピアノ12）、明快日常（アコースティック29）。全部为真人作曲/演奏，未使用生成式 AI。
+
+### 相关命令
+
+```powershell
+pnpm music:seed            # 导入全部 BGM + SFX 到素材库（ternox 严格校验 + community-vn）
+pnpm voice:human:seed      # 导入 OtoLogic 真人声线到声音库
+pnpm voice:dialogue:seed   # 导入 Qwen3-TTS 台词配音声线到声音库
+pnpm test:voice-runtime    # 校验各包 manifest 与文件哈希（CI 也会执行）
+```
+
+许可细节与再分发边界见 `assets/music-packs/community-vn/LICENSE-SOURCE.md`、`assets/voice-packs/dreamchord-human/LICENSE-SOURCE.md` 与 `assets/voice-packs/dreamchord-dialogue/LICENSE-SOURCE.md`。
+
+
+## 第七排，空座（2026-10-29）
+
+- `apps/web/public/assets/seventh-row/`：内置 image_gen 原创场景三张、角色三位各三表情，统一透明全身源图与正式舞台半身显示；来源哈希见 `provenance.json`。
+- `assets/voice-packs/seventh-row/`：Qwen3-TTS CustomVoice 预置合成角色录音 70 条（中日各 35），Apache-2.0 基础模型，非真人克隆、未宣称重新训练专属权重。每条文本、speaker、生成指令、处理记录、WAV/Ogg 哈希均可追溯。运行时在 `/assets/audio/seventh-row/`。
+- 五条配乐为 TERNOX 真人作曲 CC0 素材的重新选用；曲目对应、哈希与用途见该运行时目录的 `music-credits.json`。不使用用户所列商业作品的角色、美术、台词或 OST。
+- [完整剧情、来源与配音工作流](docs/SEVENTH_ROW_DEMO.md)。

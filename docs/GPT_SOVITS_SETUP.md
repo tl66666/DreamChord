@@ -62,6 +62,18 @@ pnpm music:seed
 
 它们会进入“素材库 → 音乐库”，携带情绪、剧情用途、作者和 CC0 来源。来源与哈希记录在 `assets/music-packs/ternox-vn/manifest.json`；官方剧情读取经过响度统一的 OGG。旧的程序化音乐生成脚本仍可单独用于实验。
 
+另有社区原声集 `assets/music-packs/community-vn/`（23 首真人作曲 BGM + 8 条 OtoLogic CC BY 4.0 音效），覆盖日语和风（甘茶の音楽工房、TAM Music Factory、魔王魂）与中文古风（龍的交響楽）情绪场景，同样经过两遍响度标准化（-18 LUFS）。`pnpm music:seed` 会一并导入 demo 账号的素材库（BGM 与 SFX 分开），各曲目的作者、许可与来源记录在同目录 `manifest.json`。官方 Demo 剧情使用的 5 个音效（抹除、翻页、节点、时钟、保存）来自 OtoLogic，随仓库发布在 `apps/web/public/assets/audio/demo/`。
+
+真人语气声线包 `assets/voice-packs/dreamchord-human/` 提供 3 组 OtoLogic 真人语音（叹息、灵光一闪、语气短语，日语，共 13 条样本，CC BY 4.0，署名『OtoLogic』）。执行 `pnpm voice:human:seed` 导入声音库。注意：这些素材仅作真人语音直接播放使用，未获声音本人对 AI 声音克隆的单独同意，不应被用作克隆参考；中文真人语音因未找到许可干净且允许再分发的来源暂未收录。
+
+台词配音声线包 `assets/voice-packs/dreamchord-dialogue/` 提供 4 条台词型声线（海斗·沉稳青年、奏·温柔姐姐、阳奈·元气少女、深·低语叙述），每条声线带中文与日文各 3 句原创示例台词（共 24 段 WAV），由本机 RTX 4060 用 Qwen3-TTS CustomVoice 的预置 speaker 生成，可追溯记录见同目录 `manifest.json` 与 `LICENSE-SOURCE.md`。执行 `pnpm voice:dialogue:seed` 导入声音库（可安全重复执行）。重新生成前先在声音库停止引擎释放显存，再运行：
+
+```powershell
+D:\DreamChordRuntime\qwen-cast\.venv\Scripts\python.exe scripts/generate-dialogue-pack.py
+```
+
+生成脚本需要本机模型（`D:/DreamChordRuntime/qwen-cast/model`）。它会跳过已存在且哈希一致的样音；如果启动时显存被占用，accelerate 可能把层卸载到 CPU 导致速度不可用，脚本会主动报错，释放显存后重试即可。pysox 在本机 import 时会挂起，脚本内置了等价的峰值归一化替代。
+
 这三款属于开箱即用的零样本音色，不应被描述成“训练出来的真人音色”。以后如果加入真正的角色微调，应另建训练任务、独立模型权重和清晰的授权记录，不能覆盖这里的来源信息。
 
 ## 在 DreamChord 里的完整流程
