@@ -1,11 +1,20 @@
 import { Router, type Request, type Response, type Router as ExpressRouter } from 'express'
 import { rm } from 'node:fs/promises'
 import jwt from 'jsonwebtoken'
+import { z } from 'zod'
 import { resolveStoragePath, storagePathFromUrl } from '../assets/storagePaths.js'
 import { prisma } from '../lib/prisma.js'
 import { authenticateToken, type AuthRequest } from '../middleware/auth.js'
 
 const router: ExpressRouter = Router()
+const metadataSchema = z.object({
+  title: z.string().trim().min(1, '请填写故事名称').max(200),
+  description: z.string().max(10_000),
+  cover: z.string().trim().max(2048).refine((value) => /^(?:\/assets\/|\/uploads\/|https?:\/\/)/.test(value), '请选择或上传封面图片'),
+  defaultSubtitleLocale: z.enum(['zh', 'ja']),
+  defaultVoiceLocale: z.enum(['zh', 'ja']),
+  isPublic: z.boolean(), isPublished: z.boolean(),
+}).partial().strict()
 
 export async function removeProjectUploadFiles(projectId: string, urls: string[], storageRoot = process.env.UPLOAD_DIR || './uploads'): Promise<void> {
   for (const url of new Set(urls)) {
@@ -123,7 +132,8 @@ router.post('/', async (req: AuthRequest, res: Response) => {
 // 更新项目元数据 / 发布状态
 router.patch('/:id', async (req: AuthRequest, res: Response) => {
   const { id } = req.params
-  const { title, description, cover, isPublic, isPublished } = req.body
+  const parsed = metadataSchema.safeParse(req.body)
+  if (!parsed.success) return res.status(400).json({ error: parsed.error.issues[0]?.message || '故事设置无效' })
 
   const project = await prisma.project.findUnique({ where: { id } })
   if (!project) return res.status(404).json({ error: '项目不存在' })
@@ -131,13 +141,7 @@ router.patch('/:id', async (req: AuthRequest, res: Response) => {
 
   const updated = await prisma.project.update({
     where: { id },
-    data: {
-      ...(title !== undefined && { title }),
-      ...(description !== undefined && { description }),
-      ...(cover !== undefined && { cover }),
-      ...(isPublic !== undefined && { isPublic }),
-      ...(isPublished !== undefined && { isPublished }),
-    },
+    data: parsed.data,
     include: {
       author: { select: { username: true, nickname: true } },
       chapters: { orderBy: { order: 'asc' }, include: { nodes: true, edges: true } },

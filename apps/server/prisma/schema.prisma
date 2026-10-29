@@ -35,6 +35,8 @@ model Project {
   title         String
   description   String?
   cover         String    @default("/assets/covers/default-cover.png")
+  defaultSubtitleLocale String @default("zh") @map("default_subtitle_locale")
+  defaultVoiceLocale String @default("zh") @map("default_voice_locale")
   isPublic      Boolean   @default(false) @map("is_public")
   isPublished   Boolean   @default(false) @map("is_published")
   playCount     Int       @default(0) @map("play_count")

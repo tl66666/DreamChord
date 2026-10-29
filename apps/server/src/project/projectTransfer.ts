@@ -24,7 +24,7 @@ const base64Schema = z.string().max(Math.ceil(PROJECT_FILE_MAX_BYTES / 3) * 4 + 
 
 export const projectManifestSchema = z.object({
   format: z.literal('dreamchord-project'), version: z.literal(2), exportedAt: z.string().datetime(),
-  project: z.object({ id: z.string().min(1), title: z.string().min(1).max(200), description: z.string().max(10_000), cover: resourceSchema }).strict(),
+  project: z.object({ id: z.string().min(1), title: z.string().min(1).max(200), description: z.string().max(10_000), cover: resourceSchema, defaultVoiceLocale: z.enum(['zh', 'ja']).default('zh'), defaultSubtitleLocale: z.enum(['zh', 'ja']).default('zh') }).strict(),
   storyBible: z.unknown().nullable(),
   chapters: z.array(z.object({ id: z.string().min(1), title: z.string().min(1).max(200), order: z.number().int(), version: z.number().int().min(1), nodes: z.array(nodeSchema).max(20_000), edges: z.array(edgeSchema).max(30_000) }).strict()).max(1_000),
   characters: z.array(z.object({ id: z.string().min(1), name: z.string().min(1).max(100), description: z.string().max(10_000), color: z.string().max(50), defaultSprite: resourceSchema, sprites: z.array(z.object({ id: z.string().min(1), name: z.string().min(1).max(100), resource: resourceSchema }).strict()).max(500) }).strict()).max(2_000),
@@ -180,7 +180,7 @@ export async function exportProject(projectId: string, userId: string, client: P
   const characters = await Promise.all(project.characters.map(async (character) => ({ id: character.id, name: character.name, description: character.description ?? '', color: character.color, defaultSprite: await embed(character.defaultSprite), sprites: await Promise.all(character.sprites.map(async (sprite) => ({ id: sprite.id, name: sprite.name, resource: await embed(sprite.url) }))) })))
   return projectManifestSchema.parse({
     format: 'dreamchord-project', version: 2, exportedAt: new Date().toISOString(),
-    project: { id: project.id, title: project.title, description: project.description ?? '', cover }, storyBible: project.storyBible ? parseJson(project.storyBible.content) : null,
+    project: { id: project.id, title: project.title, description: project.description ?? '', cover, defaultVoiceLocale: project.defaultVoiceLocale === 'ja' ? 'ja' : 'zh', defaultSubtitleLocale: project.defaultSubtitleLocale === 'ja' ? 'ja' : 'zh' }, storyBible: project.storyBible ? parseJson(project.storyBible.content) : null,
     chapters: project.chapters.map((chapter) => ({ id: chapter.id, title: chapter.title, order: chapter.order, version: chapter.version, nodes: chapter.nodes.map((node) => ({ nodeId: node.nodeId, type: node.type, positionX: node.positionX, positionY: node.positionY, data: parseObject(node.data) })), edges: chapter.edges.map((edge) => ({ edgeId: edge.edgeId, source: edge.source, target: edge.target, label: edge.label, sourceHandle: edge.sourceHandle, animated: edge.animated })) })),
     characters, assets, files,
     memories: project.agentMemories.map((memory) => ({ kind: memory.kind, title: memory.title, content: memory.content, tags: parseTags(memory.tags), importance: memory.importance, isPinned: memory.isPinned, sourceType: memory.sourceType })),
@@ -233,7 +233,7 @@ export async function importProject(input: unknown, userId: string, client: Pris
     sourceResources.forEach((url, fileId) => replacements.set(fileId, url))
 
     const result = await client.$transaction(async (tx) => {
-      const project = await tx.project.create({ data: { id: projectId, title: `${manifest.project.title}（导入）`, description: manifest.project.description, cover: resourceUrl(manifest.project.cover, fileUrls), authorId: userId } })
+      const project = await tx.project.create({ data: { id: projectId, title: `${manifest.project.title}（导入）`, description: manifest.project.description, cover: resourceUrl(manifest.project.cover, fileUrls), defaultVoiceLocale: manifest.project.defaultVoiceLocale, defaultSubtitleLocale: manifest.project.defaultSubtitleLocale, authorId: userId } })
       if (manifest.storyBible !== null) await tx.storyBible.create({ data: { projectId, content: JSON.stringify(remapJson(manifest.storyBible, replacements)) } })
       for (const chapter of manifest.chapters) {
         uniqueIds(chapter.nodes.map((node) => node.nodeId), '节点')

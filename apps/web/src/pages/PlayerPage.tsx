@@ -10,7 +10,7 @@ export default function PlayerPage() {
     <div className="relative h-screen w-screen overflow-hidden bg-black">
       <div className="absolute left-4 top-4 z-50 flex items-center gap-2">
         <button
-          onClick={() => navigate(-1)}
+          onClick={() => { if (window.history.state?.idx > 0) navigate(-1); else navigate('/') }}
           title="返回上一页"
           className="inline-flex items-center gap-1.5 rounded-lg border border-white/20 bg-black/40 px-3 py-1.5 text-sm font-medium text-white/90 backdrop-blur-md transition hover:bg-white/10"
         >

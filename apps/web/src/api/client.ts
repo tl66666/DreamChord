@@ -71,6 +71,8 @@ export interface ProjectDetail {
   title: string
   description: string | null
   cover: string
+  defaultSubtitleLocale?: 'zh' | 'ja'
+  defaultVoiceLocale?: 'zh' | 'ja'
   isPublic: boolean
   isPublished: boolean
   author: {
@@ -192,6 +194,8 @@ export async function updateProject(
     title: string
     description: string
     cover: string
+    defaultSubtitleLocale: 'zh' | 'ja'
+    defaultVoiceLocale: 'zh' | 'ja'
     isPublic: boolean
     isPublished: boolean
   }>,

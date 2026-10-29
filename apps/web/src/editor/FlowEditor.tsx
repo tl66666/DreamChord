@@ -140,7 +140,7 @@ export default function FlowEditor() {
     const chapter = project.chapters.find((item) => item.id === activeChapterId) || project.chapters[0]
     store.setProject({
       id: project.id, title: project.title, description: project.description || undefined,
-      cover: project.cover, isPublic: project.isPublic, isPublished: project.isPublished,
+      cover: project.cover, defaultVoiceLocale: project.defaultVoiceLocale, defaultSubtitleLocale: project.defaultSubtitleLocale, isPublic: project.isPublic, isPublished: project.isPublished,
     })
     if (chapter) loadChapterIntoEditor(chapter)
   }
@@ -604,7 +604,7 @@ export default function FlowEditor() {
       const saved = await handleSave()
       if (!saved) return
       const updated = await updateProject(projectId, { isPublished: !store.project?.isPublished, isPublic: !store.project?.isPublished ? true : store.project?.isPublic })
-      store.setProject({ id: updated.id, title: updated.title, description: updated.description || undefined, cover: updated.cover, isPublic: updated.isPublic, isPublished: updated.isPublished })
+      store.setProject({ id: updated.id, title: updated.title, description: updated.description || undefined, cover: updated.cover, defaultVoiceLocale: updated.defaultVoiceLocale, defaultSubtitleLocale: updated.defaultSubtitleLocale, isPublic: updated.isPublic, isPublished: updated.isPublished })
     } catch (err: unknown) { toast.error(getApiError(err, '操作失败')) }
   }
 
@@ -899,14 +899,13 @@ export default function FlowEditor() {
           project={store.project}
           characters={project?.characters.map((character) => ({ id: character.id, name: character.name }))}
           onClose={() => setShowSettings(false)}
-          onUpdate={(data) => {
-            if (!projectId || projectId === 'new') return
-            updateProject(projectId, data)
-              .then((updated) => {
-                store.setProject({ id: updated.id, title: updated.title, description: updated.description || undefined, cover: updated.cover, isPublic: updated.isPublic, isPublished: updated.isPublished })
-                setShowSettings(false)
-              })
-              .catch((err: unknown) => toast.error(getApiError(err, '更新失败')))
+          onUpdate={async (data) => {
+            if (!projectId || projectId === 'new') throw new Error('请先保存故事')
+            const updated = await updateProject(projectId, data)
+            store.setProject({ ...updated, description: updated.description || undefined })
+            setProject(updated)
+            setShowSettings(false)
+            toast.success('故事设置已保存')
           }}
         />
       )}

@@ -5,8 +5,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { useEditorStore } from '../stores/editorStore'
 import ProjectVoicePanel from './ProjectVoicePanel'
 
-const api = vi.hoisted(() => ({ profiles: vi.fn(), generate: vi.fn(), accept: vi.fn(), translate: vi.fn(), bind: vi.fn() }))
-vi.mock('../api/client', async (original) => ({ ...await original<typeof import('../api/client')>(), getVoiceProfiles: api.profiles, createVoiceGeneration: api.generate, acceptVoiceGeneration: api.accept, translateVoiceText: api.translate, bindCharacterVoice: api.bind }))
+const api = vi.hoisted(() => ({ profiles: vi.fn(), generate: vi.fn(), accept: vi.fn(), translate: vi.fn(), bind: vi.fn(), update: vi.fn() }))
+vi.mock('../api/client', async (original) => ({ ...await original<typeof import('../api/client')>(), getVoiceProfiles: api.profiles, createVoiceGeneration: api.generate, acceptVoiceGeneration: api.accept, translateVoiceText: api.translate, bindCharacterVoice: api.bind, updateProject: api.update }))
 const characters = [{ id: 'yuki-id', name: '雪' }, { id: 'ren-id', name: '影' }]
 describe('chapter character voice workflow', () => {
   beforeEach(() => {
@@ -17,12 +17,15 @@ describe('chapter character voice workflow', () => {
     api.translate.mockImplementation(async (text: string) => ({ text: text === '请别走。' ? '行かないで。' : 'ここに残る。' }))
     api.generate.mockImplementation(async (input) => ({ id: `job-${input.nodeId}`, status: 'completed', text: input.text, language: input.language, outputUrl: `/${input.nodeId}.wav` }))
     api.accept.mockImplementation(async (jobId: string) => ({ id: `asset-${jobId}`, url: `/${jobId}.wav` }))
+    api.update.mockResolvedValue({ id: 'project', defaultVoiceLocale: 'ja' })
   })
   afterEach(() => { cleanup(); localStorage.clear() })
   it('generates all lines from fixed character voices and applies them together without changing Chinese text', async () => {
     render(<ProjectVoicePanel open onClose={() => undefined} characters={characters} />)
     await waitFor(() => expect(screen.getByLabelText('雪的固定音色')).toHaveValue('voice-0'))
     fireEvent.change(screen.getByLabelText('批量配音语言'), { target: { value: 'ja' } })
+    await waitFor(() => expect(screen.getByLabelText('批量配音语言')).toHaveValue('ja'))
+    expect(api.update).toHaveBeenCalledWith('project', { defaultVoiceLocale: 'ja' })
     fireEvent.click(screen.getByText('生成缺失台词'))
     await screen.findByText('本轮生成结束，可试听后统一应用。')
     expect(api.generate).toHaveBeenNthCalledWith(1, expect.objectContaining({ characterId: 'yuki-id', referenceId: 'ref-0', text: '行かないで。', sourceText: '请别走。', language: 'ja' }))

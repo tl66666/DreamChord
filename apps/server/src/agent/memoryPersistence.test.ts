@@ -10,7 +10,7 @@ const databasePath = path.resolve('prisma', `memory-service-test-${process.pid}-
 const databaseUrl = `file:${databasePath.replaceAll('\\', '/')}`
 const prismaCli = path.resolve('node_modules/prisma/build/index.js')
 const schemaPath = path.resolve('prisma/schema.prisma')
-const migrations = ['20260629065808_init', '20260629104058_add_source_handle', '20260711000000_add_creative_agent', '20260712010000_expand_agent_conversations', '20260712020000_add_agent_memory']
+const migrations = ['20260629065808_init', '20260629104058_add_source_handle', '20260711000000_add_creative_agent', '20260712010000_expand_agent_conversations', '20260712020000_add_agent_memory', '20261029000000_project_languages']
 const client = new PrismaClient({ datasources: { db: { url: databaseUrl } } })
 const service = new PrismaMemoryService(client)
 

@@ -1,132 +1,53 @@
-import { useEffect, useState, useCallback } from 'react'
-import { BookOpen, Settings2, X } from 'lucide-react'
+import { useEffect, useState } from 'react'
 import { getStoryBible, updateStoryBible, type StoryBibleContent } from '../api/client'
 import type { ProjectData } from '../stores/editorStore'
+import { useConfirm } from '../components/FeedbackProvider'
+import LibraryDialog from '../library/LibraryDialog'
+import ProjectDetailsForm from './ProjectDetailsForm'
 import StoryBiblePanel from './StoryBiblePanel'
 
-interface ProjectSettingsModalProps {
-  project: ProjectData | null
-  characters?: Array<{ id: string; name: string }>
-  onClose: () => void
-  onUpdate: (data: Partial<ProjectData>) => void
-}
-
-export default function ProjectSettingsModal({ project, characters = [], onClose, onUpdate }: ProjectSettingsModalProps) {
+export default function ProjectSettingsModal({ project, characters = [], onClose, onUpdate }: {
+  project: ProjectData | null; characters?: Array<{ id: string; name: string }>
+  onClose: () => void; onUpdate: (data: Partial<ProjectData>) => Promise<void> | void
+}) {
+  const confirm = useConfirm()
   const [tab, setTab] = useState<'project' | 'storyBible'>('project')
+  const [dirty, setDirty] = useState(false)
+  const [busy, setBusy] = useState(false)
   const [storyBible, setStoryBible] = useState<StoryBibleContent | null>(null)
   const [loadingBible, setLoadingBible] = useState(false)
   const [savingBible, setSavingBible] = useState(false)
-  const [savingProject, setSavingProject] = useState(false)
-  const [bibleMessage, setBibleMessage] = useState('')
-  const [bibleStatus, setBibleStatus] = useState<'success' | 'error' | ''>('')
-
-  // Escape 键关闭弹窗
-  const handleKeyDown = useCallback((e: KeyboardEvent) => {
-    if (e.key === 'Escape') onClose()
-  }, [onClose])
-  useEffect(() => {
-    window.addEventListener('keydown', handleKeyDown)
-    return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [handleKeyDown])
-
-  useEffect(() => {
-    if (tab !== 'storyBible' || !project?.id || storyBible || loadingBible) return
-    setLoadingBible(true)
-    setBibleMessage('')
-    setBibleStatus('')
-    getStoryBible(project.id)
-      .then((response) => setStoryBible(response.content))
-      .catch((error: unknown) => { setBibleMessage(error instanceof Error ? error.message : '故事圣经加载失败'); setBibleStatus('error') })
-      .finally(() => setLoadingBible(false))
-  }, [tab, project?.id, storyBible, loadingBible])
-
-  const handleProjectSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault()
-    if (savingProject) return
-    setSavingProject(true)
-    const formData = new FormData(event.currentTarget)
-    onUpdate({
-      title: String(formData.get('title') || ''),
-      description: String(formData.get('description') || ''),
-      cover: String(formData.get('cover') || ''),
-      isPublic: formData.get('isPublic') === 'on',
-    })
-    // 等待一小段时间让父组件处理更新，然后恢复按钮状态
-    setTimeout(() => setSavingProject(false), 800)
+  const [message, setMessage] = useState('')
+  const [error, setError] = useState(false)
+  const [retry, setRetry] = useState(0)
+  const requestClose = async () => {
+    if (busy || savingBible) return
+    if (dirty && !await confirm({ message: '还有未保存的故事设置，要放弃修改并返回吗？' })) return
+    onClose()
   }
-
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm">
-      <div className="max-h-[90vh] w-full max-w-2xl overflow-hidden rounded-lg border border-dream-100 bg-white shadow-2xl">
-        <header className="flex items-center justify-between border-b border-slate-200 px-6 py-4">
-          <h3 className="text-lg font-semibold text-dream-900">项目设置</h3>
-          <button onClick={onClose} title="关闭" className="rounded-lg p-1.5 text-dream-500 hover:bg-dream-50"><X className="h-5 w-5" /></button>
-        </header>
-
-        <nav className="flex border-b border-slate-200 px-6">
-          <TabButton active={tab === 'project'} onClick={() => setTab('project')} icon={Settings2} label="项目信息" />
-          <TabButton active={tab === 'storyBible'} onClick={() => setTab('storyBible')} icon={BookOpen} label="故事圣经" />
-        </nav>
-
-        <div className="max-h-[calc(90vh-122px)] overflow-y-auto p-6">
-          {tab === 'project' ? (
-            <form onSubmit={handleProjectSubmit} className="space-y-4">
-              <Field label="项目名称"><input name="title" defaultValue={project?.title} required className={inputClass} /></Field>
-              <Field label="简介"><textarea name="description" defaultValue={project?.description} rows={3} className={inputClass} /></Field>
-              <Field label="封面 URL">
-                <input name="cover" defaultValue={project?.cover} placeholder="/assets/covers/default-cover.png" className={inputClass} />
-                {project?.cover && <img src={project.cover} alt="封面预览" className="mt-2 h-32 w-full rounded-lg object-cover" />}
-              </Field>
-              <label className="flex items-center gap-2 text-sm text-dream-700">
-                <input name="isPublic" type="checkbox" defaultChecked={project?.isPublic} className="h-4 w-4 rounded border-dream-300 text-dream-600" />
-                发布后允许他人查看
-              </label>
-              <div className="flex justify-end gap-2 pt-2">
-                <button type="button" onClick={onClose} className="rounded-lg border border-dream-200 px-4 py-2 text-sm font-medium text-dream-700 hover:bg-dream-50">取消</button>
-                <button type="submit" disabled={savingProject} className="rounded-lg bg-dream-600 px-4 py-2 text-sm font-medium text-white hover:bg-dream-700 disabled:opacity-60">{savingProject ? '保存中...' : '保存项目信息'}</button>
-              </div>
-            </form>
-          ) : (
-            <div>
-              {bibleMessage && <p className={`mb-4 rounded-lg px-3 py-2 text-sm ${bibleStatus === 'success' ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'}`}>{bibleMessage}</p>}
-              {loadingBible && <p className="py-10 text-center text-sm text-slate-500">正在加载故事圣经...</p>}
-              {storyBible && project?.id && (
-                <StoryBiblePanel
-                  initialValue={storyBible}
-                  characters={characters}
-                  isSaving={savingBible}
-                  onSave={async (content) => {
-                    setSavingBible(true)
-                    setBibleMessage('')
-                    setBibleStatus('')
-                    try {
-                      const saved = await updateStoryBible(project.id, content)
-                      setStoryBible(saved.content)
-                      setBibleMessage('故事圣经已保存')
-                      setBibleStatus('success')
-                    } catch (error: unknown) {
-                      setBibleMessage(error instanceof Error ? error.message : '故事圣经保存失败')
-                      setBibleStatus('error')
-                    } finally {
-                      setSavingBible(false)
-                    }
-                  }}
-                />
-              )}
-            </div>
-          )}
-        </div>
-      </div>
-    </div>
-  )
-}
-
-const inputClass = 'mt-1.5 w-full rounded-lg border border-dream-200 px-3 py-2 text-sm focus:border-dream-500 focus:outline-none focus:ring-2 focus:ring-dream-500/20'
-
-function Field({ label, children }: { label: string; children: React.ReactNode }) {
-  return <label className="block text-sm font-medium text-dream-700">{label}{children}</label>
-}
-
-function TabButton({ active, onClick, icon: Icon, label }: { active: boolean; onClick: () => void; icon: React.ComponentType<{ className?: string }>; label: string }) {
-  return <button onClick={onClick} className={`inline-flex items-center gap-2 border-b-2 px-4 py-3 text-sm font-medium ${active ? 'border-dream-600 text-dream-700' : 'border-transparent text-slate-500 hover:text-slate-700'}`}><Icon className="h-4 w-4" />{label}</button>
+  useEffect(() => {
+    if (tab !== 'storyBible' || !project?.id) return
+    let active = true
+    setLoadingBible(true); setMessage('')
+    getStoryBible(project.id).then((response) => { if (active) setStoryBible(response.content) }).catch(() => { if (active) { setMessage('故事圣经暂时无法读取，请重试。'); setError(true) } }).finally(() => { if (active) setLoadingBible(false) })
+    return () => { active = false }
+  }, [tab, project?.id, retry])
+  if (!project) return null
+  return <LibraryDialog wide title="故事设置" description="整理故事信息、挑选封面，并为作品设置默认的文字和配音语言。" busy={busy || savingBible} onClose={() => void requestClose()}>
+    <div role="tablist" aria-label="故事设置分类" className="mb-6 flex gap-2 border-b border-slate-100 pb-3">{(['project', 'storyBible'] as const).map((value) => <button key={value} type="button" role="tab" aria-selected={tab === value} disabled={busy || savingBible} onClick={async () => {
+      if (tab === value) return
+      if (dirty && !await confirm({ message: '切换分类会放弃未保存的故事设置，继续吗？' })) return
+      setDirty(false); setTab(value)
+    }} className={`min-h-10 rounded-xl px-4 text-sm font-medium ${tab === value ? 'bg-dream-50 text-dream-700' : 'text-slate-500 hover:bg-slate-50'}`}>{value === 'project' ? '封面与语言' : '故事圣经'}</button>)}</div>
+    {tab === 'project' ? <ProjectDetailsForm project={project} onDirtyChange={setDirty} onBusyChange={setBusy} onCancel={() => void requestClose()} onSave={onUpdate} /> : <div>
+      {message && <p role={error ? 'alert' : 'status'} className={`mb-4 rounded-xl p-3 text-sm ${error ? 'bg-rose-50 text-rose-700' : 'bg-green-50 text-green-700'}`}>{message}{error && !storyBible && <button onClick={() => setRetry((value) => value + 1)} className="ml-3 underline">重试</button>}</p>}
+      {loadingBible && <p className="py-10 text-center text-sm text-slate-500">正在读取故事圣经…</p>}
+      {!loadingBible && storyBible && <StoryBiblePanel initialValue={storyBible} characters={characters} isSaving={savingBible} onSave={async (content) => {
+        setSavingBible(true); setMessage('')
+        try { const saved = await updateStoryBible(project.id, content); setStoryBible(saved.content); setMessage('故事圣经已保存'); setError(false) }
+        catch { setMessage('保存失败，修改仍保留在当前表单中，请重试。'); setError(true) }
+        finally { setSavingBible(false) }
+      }} />}
+    </div>}
+  </LibraryDialog>
 }

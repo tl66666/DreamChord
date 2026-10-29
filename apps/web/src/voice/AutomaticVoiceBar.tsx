@@ -13,10 +13,12 @@ export default function AutomaticVoiceBar({ projectId, preferredSceneId, suspend
   const nodes = useEditorStore((state) => state.nodes)
   const chapterId = useEditorStore((state) => state.chapterId)
   const loading = useEditorStore((state) => state.isLoading)
+  const defaultLocale = useEditorStore((state) => state.project?.defaultVoiceLocale)
   const [enabled, setEnabled] = useState(() => automaticVoiceEnabled(projectId))
   const [profiles, setProfiles] = useState<VoiceProfile[]>([])
   const [profilesReady, setProfilesReady] = useState(false)
-  const [locale, setLocale] = useState(() => projectVoiceLocale(projectId))
+  const [locale, setLocale] = useState(() => defaultLocale || projectVoiceLocale(projectId))
+  useEffect(() => { setLocale(defaultLocale || projectVoiceLocale(projectId)) }, [defaultLocale, projectId])
   const [status, setStatus] = useState<AutomaticVoiceStatus>({ state: 'waiting', message: '写完后会自动准备配音' })
   const sourceKey = useMemo(() => writingKey(nodes), [nodes])
   const settled = useRef('')
@@ -36,7 +38,7 @@ export default function AutomaticVoiceBar({ projectId, preferredSceneId, suspend
     let active = true
     setProfilesReady(false)
     const load = () => { void getVoiceProfiles().then((items) => { if (active) { setProfiles(items); setProfilesReady(true); controller.retry() } }).catch(() => { if (active) setStatus({ state: 'error', message: '无法读取角色音色，请稍后重试。' }) }) }
-    const prefs = () => { setEnabled(automaticVoiceEnabled(projectId)); setLocale(projectVoiceLocale(projectId)) }
+    const prefs = () => { setEnabled(automaticVoiceEnabled(projectId)); setLocale(useEditorStore.getState().project?.defaultVoiceLocale || projectVoiceLocale(projectId)) }
     prefs(); load()
     window.addEventListener(VOICE_BINDINGS_CHANGED, load)
     window.addEventListener(VOICE_PREFERENCE_CHANGED, prefs)

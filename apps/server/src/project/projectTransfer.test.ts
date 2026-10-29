@@ -16,7 +16,7 @@ const sourceImagePath = path.join(databaseProjectRoot, 'snow.png')
 const databaseAssetUrl = '/uploads/project/snow.png'
 const prismaCli = path.resolve('node_modules/prisma/build/index.js')
 const schemaPath = path.resolve('prisma/schema.prisma')
-const migrations = ['20260629065808_init', '20260629104058_add_source_handle', '20260711000000_add_creative_agent', '20260712010000_expand_agent_conversations', '20260712020000_add_agent_memory', '20260712030000_add_asset_variants', '20260712040000_global_asset_library']
+const migrations = ['20260629065808_init', '20260629104058_add_source_handle', '20260711000000_add_creative_agent', '20260712010000_expand_agent_conversations', '20260712020000_add_agent_memory', '20260712030000_add_asset_variants', '20260712040000_global_asset_library', '20261029000000_project_languages']
 const client = new PrismaClient({ datasources: { db: { url: databaseUrl } } })
 let sourceImage: Buffer
 
@@ -31,7 +31,7 @@ describe('project transfer', () => {
     await client.$connect()
     await client.user.create({ data: { id: 'owner', email: 'transfer@example.com', username: 'transfer', password: 'secret-hash' } })
     await client.project.create({ data: {
-      id: 'project', title: '冬夜', description: '测试', cover: databaseAssetUrl, authorId: 'owner',
+      id: 'project', title: '冬夜', description: '测试', cover: databaseAssetUrl, authorId: 'owner', defaultVoiceLocale: 'ja', defaultSubtitleLocale: 'zh',
       chapters: { create: { id: 'chapter', title: '第一章', nodes: { create: [
         { nodeId: 'node-a', type: 'character', positionX: 1, positionY: 2, data: JSON.stringify({ characterId: 'character', assetId: 'asset', spriteId: 'sprite', backgroundId: databaseAssetUrl, nested: { url: databaseAssetUrl } }) },
         { nodeId: 'node-b', type: 'dialogue', positionX: 3, positionY: 4, data: JSON.stringify({ text: '雪' }) },
@@ -58,6 +58,7 @@ describe('project transfer', () => {
     expect(imported.id).not.toBe('project')
     const copy = await client.project.findUniqueOrThrow({ where: { id: imported.id }, include: { chapters: { include: { nodes: true, edges: true } }, characters: { include: { sprites: true } }, assets: true, storyBible: true, agentMemories: true } })
     const character = copy.characters[0]!
+    expect(copy).toMatchObject({ defaultVoiceLocale: 'ja', defaultSubtitleLocale: 'zh' })
     const asset = copy.assets[0]!
     const sprite = character.sprites[0]!
     const node = copy.chapters[0]!.nodes.find((item) => JSON.parse(item.data).characterId)!

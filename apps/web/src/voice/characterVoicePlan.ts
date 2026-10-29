@@ -38,6 +38,6 @@ export function projectVoiceLocale(projectId?: string): StoryLocale {
   try { return localStorage.getItem(`dreamchord_voice_locale_${projectId}`) === 'ja' ? 'ja' : 'zh' } catch { return 'zh' }
 }
 export function saveProjectVoiceLocale(projectId: string, locale: StoryLocale) {
-  localStorage.setItem(`dreamchord_voice_locale_${projectId}`, locale)
+  try { localStorage.setItem(`dreamchord_voice_locale_${projectId}`, locale) } catch { /* Saved story defaults remain available when storage is blocked. */ }
   window.dispatchEvent(new Event(VOICE_PREFERENCE_CHANGED))
 }

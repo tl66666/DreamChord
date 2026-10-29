@@ -15,12 +15,16 @@ import {
   Download,
   Upload,
   X,
+  Settings2,
 } from 'lucide-react'
 import { createProject, deleteProject, exportProjectBackup, getMyProjects, importProjectBackup, updateProject, type ProjectDetail } from '../api/client'
 import { useAuthStore } from '../stores/authStore'
 import { useToast, useConfirm } from '../components/FeedbackProvider'
 import AppHeader from '../components/AppHeader'
 import { projectCover } from '../lib/projectCover'
+import ProjectSettingsModal from '../editor/ProjectSettingsModal'
+import HomeShowcase from '../components/HomeShowcase'
+import { saveProjectVoiceLocale } from '../voice/characterVoicePlan'
 
 export const MAX_PROJECT_BACKUP_BYTES = 90 * 1024 * 1024
 
@@ -48,6 +52,7 @@ export default function HomePage() {
   const [editingId, setEditingId] = useState<string | null>(null)
   const [editingTitle, setEditingTitle] = useState('')
   const [deletingId, setDeletingId] = useState<string | null>(null)
+  const [settingsProject, setSettingsProject] = useState<ProjectDetail | null>(null)
   const importInputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
@@ -169,7 +174,7 @@ export default function HomePage() {
             <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
               {visibleProjects.map((project) => (
                 <article key={project.id} className="group overflow-hidden rounded-2xl border border-slate-200 bg-white transition hover:-translate-y-0.5 hover:border-dream-200 hover:shadow-lg hover:shadow-dream-100/30">
-                  <Link to={`/editor/${project.id}`} aria-label={`编辑${project.title}`} className="relative block aspect-[16/9] overflow-hidden"><img src={projectCover(project)} alt="" loading="lazy" className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.03]" /><span className="absolute bottom-3 left-3 rounded-full border border-white/50 bg-white/85 px-2.5 py-1 text-[11px] font-medium text-slate-700 backdrop-blur-sm">{project.isPublished ? '已发布' : '创作中'}</span></Link>
+                  <div className="relative"><Link to={`/editor/${project.id}`} aria-label={`编辑${project.title}`} className="relative block aspect-[16/9] overflow-hidden"><img src={projectCover(project)} alt="" loading="lazy" className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.03]" /><span className="absolute bottom-3 left-3 rounded-full border border-white/50 bg-white/85 px-2.5 py-1 text-[11px] font-medium text-slate-700 backdrop-blur-sm">{project.isPublished ? '已发布' : '创作中'}</span></Link><button aria-label={`更换${project.title}的封面`} onClick={() => setSettingsProject(project)} className="absolute right-3 top-3 inline-flex min-h-9 items-center gap-1.5 rounded-full border border-white/70 bg-white/90 px-3 text-xs font-medium text-slate-700 shadow-sm backdrop-blur hover:bg-white"><Pencil className="h-3.5 w-3.5" />封面</button></div>
                   <div className="p-5">
                     <div className="mb-2 flex items-start justify-between gap-2">
                       {editingId === project.id ? (
@@ -192,6 +197,7 @@ export default function HomePage() {
                       )}
                       {editingId !== project.id && (
                         <div className="flex items-center gap-1">
+                          <button aria-label={`设置${project.title}`} title="封面、简介与配音语言" onClick={() => setSettingsProject(project)} className="grid h-9 w-9 place-items-center rounded-lg text-dream-600 hover:bg-dream-50"><Settings2 className="h-4 w-4" /></button>
                           <button aria-label={`导出${project.title}的备份`} onClick={() => void handleExport(project)} className="grid h-9 w-9 place-items-center rounded-lg text-slate-500 hover:bg-dream-50 hover:text-dream-700" title="导出备份"><Download className="h-3.5 w-3.5" /></button>
                           <button aria-label={`重命名${project.title}`} title="重命名" onClick={() => { setEditingId(project.id); setEditingTitle(project.title) }} className="grid h-9 w-9 place-items-center rounded-lg text-slate-500 hover:bg-slate-100"><Pencil className="h-3.5 w-3.5" /></button>
                           <button aria-label={`删除${project.title}`} title="删除故事" onClick={() => handleDelete(project.id)} disabled={deletingId === project.id} className="grid h-9 w-9 place-items-center rounded-lg text-slate-400 hover:bg-red-50 hover:text-red-500 disabled:opacity-50">
@@ -201,6 +207,7 @@ export default function HomePage() {
                       )}
                     </div>
                     <p className="mb-4 min-h-12 line-clamp-2 text-sm leading-6 text-slate-500">{project.description || '还没有简介，可以从角色与第一幕开始。'}</p>
+                    <p className="mb-4 text-xs text-slate-400">{project.defaultVoiceLocale === 'ja' ? '日语配音' : '中文配音'}<span className="mx-2">·</span>{project.defaultSubtitleLocale === 'ja' ? '日文字幕' : '中文字幕'}</p>
                     <div className="grid grid-cols-2 gap-2">
                       <Link to={`/editor/${project.id}`} className="rounded-md bg-dream-600 py-2 text-center text-sm font-medium text-white hover:bg-dream-700">继续编辑</Link>
                       <Link to={`/agent?project=${project.id}`} className="inline-flex items-center justify-center gap-1 rounded-md bg-slate-950 py-2 text-center text-sm font-medium text-white hover:bg-dream-800"><Bot className="h-3.5 w-3.5" />问 Agent</Link>
@@ -216,6 +223,13 @@ export default function HomePage() {
         </section>
       )}
 
+      {settingsProject && <ProjectSettingsModal project={{ ...settingsProject, description: settingsProject.description || undefined }} characters={settingsProject.characters || []} onClose={() => setSettingsProject(null)} onUpdate={async (data) => {
+        const updated = await updateProject(settingsProject.id, data)
+        setMyProjects((items) => items.map((item) => item.id === updated.id ? { ...item, ...updated } : item))
+        if (updated.defaultVoiceLocale) saveProjectVoiceLocale(updated.id, updated.defaultVoiceLocale)
+        setSettingsProject(null); toast.success('故事设置已保存')
+      }} />}
+
       <section className="mx-auto max-w-7xl px-6 py-16">
         <div className="mb-8">
           <p className="text-sm font-semibold text-dream-600">完整创作闭环</p>
@@ -227,7 +241,7 @@ export default function HomePage() {
             title="故事工作台"
             image="/assets/ui/story-outline-collection.webp"
             desc="新建或编辑故事项目，在线性工作台里上下移动节点，也可以切到节点图检查分支连线。"
-            items={['故事可新建、重命名、删除', '选项会生成独立剧情出口', '播放器按选择进入对应后续']}
+            items={['故事名称、简介与封面随时修改', '选项会生成独立剧情出口', '播放器按选择进入对应后续']}
             action="新建故事"
             onClick={handleCreate}
           />
@@ -251,6 +265,7 @@ export default function HomePage() {
           />
         </div>
       </section>
+      <HomeShowcase />
     </div>
   )
 }

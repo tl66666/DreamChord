@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { Headphones, Loader2, Mic2, X } from 'lucide-react'
 import { readLocalizationFields, voiceTextHash, type StoryLocale } from '@dreamchord/story-domain'
-import { acceptVoiceGeneration, bindCharacterVoice, createVoiceGeneration, getVoiceGenerationJob, getVoiceProfiles, translateVoiceText, unbindCharacterVoice, type Asset, type VoiceGenerationJob, type VoiceProfile } from '../api/client'
+import { acceptVoiceGeneration, bindCharacterVoice, createVoiceGeneration, getVoiceGenerationJob, getVoiceProfiles, translateVoiceText, unbindCharacterVoice, updateProject, type Asset, type VoiceGenerationJob, type VoiceProfile } from '../api/client'
 import { useEditorStore } from '../stores/editorStore'
 import { planCharacterVoices, projectVoiceLocale, saveProjectVoiceLocale, VOICE_BINDINGS_CHANGED, type PlannedVoiceLine } from '../voice/characterVoicePlan'
 import { apiError } from '../voice/VoiceProfileEditor'
@@ -15,7 +15,9 @@ export default function ProjectVoicePanel({ open, onClose, characters }: { open:
   const nodes = useEditorStore((state) => state.nodes)
   const [profiles, setProfiles] = useState<VoiceProfile[]>([])
   const [automatic, setAutomatic] = useState(() => automaticVoiceEnabled(projectId))
-  const [locale, setLocale] = useState<StoryLocale>(() => projectVoiceLocale(projectId))
+  const defaultLocale = useEditorStore((state) => state.project?.defaultVoiceLocale)
+  const [locale, setLocale] = useState<StoryLocale>(() => defaultLocale || projectVoiceLocale(projectId))
+  useEffect(() => { setLocale(defaultLocale || projectVoiceLocale(projectId)) }, [defaultLocale, projectId])
   const [regenerate, setRegenerate] = useState(false)
   const [loading, setLoading] = useState(false)
   const [bindingBusy, setBindingBusy] = useState('')
@@ -40,7 +42,7 @@ export default function ProjectVoicePanel({ open, onClose, characters }: { open:
   useEffect(() => { alive.current = true; return () => { alive.current = false; stopped.current = true } }, [])
   useEffect(() => {
     stopped.current = true
-    setTakes([]); setBusy(false); setLocale(projectVoiceLocale(projectId)); setError(''); setProgress('')
+    setTakes([]); setBusy(false); setLocale(useEditorStore.getState().project?.defaultVoiceLocale || projectVoiceLocale(projectId)); setError(''); setProgress('')
   }, [projectId, chapterId])
   useEffect(() => {
     if (!open) { stopped.current = true; return }
@@ -153,7 +155,17 @@ export default function ProjectVoicePanel({ open, onClose, characters }: { open:
       <div className="flex-1 space-y-5 overflow-y-auto p-5 sm:p-6">
         <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-dream-200 bg-[#faf8fd] p-4"><input aria-label="自动准备角色配音" type="checkbox" checked={automatic} disabled={busy || applying} onChange={(event) => saveAutomaticVoice(projectId, event.target.checked)} className="mt-1 h-4 w-4 accent-dream-600" /><span><span className="block text-sm font-semibold text-slate-900">自动配音，写完后自动关联</span><span className="mt-1 block text-xs leading-6 text-slate-500">绑定角色后继续写中文即可。关闭此面板，系统会优先准备当前场景，再补齐本章；修改台词只更新对应片段。关闭开关可手动试听、精修。</span></span></label>
         <div className="rounded-xl border border-dream-100 bg-dream-50 p-4 text-sm leading-6 text-slate-700">游戏文字默认显示中文。配音语言独立选择，玩家可在播放设置里切换字幕；生成日语不会把中文台词改成日文。</div>
-        <div className="flex flex-wrap items-end justify-between gap-4 rounded-xl bg-slate-50 p-4"><label className="text-sm font-medium text-slate-700">配音语言<select aria-label="批量配音语言" disabled={busy || applying} value={locale} onChange={(event) => { const next = event.target.value as StoryLocale; setLocale(next); saveProjectVoiceLocale(projectId, next) }} className="mt-2 block min-h-10 rounded-lg border border-slate-200 bg-white px-3"><option value="zh">中文配音</option><option value="ja">日语配音 · 自动翻译中文</option></select></label><div className="text-xs leading-6 text-slate-500"><p>已有有效配音 {plan.ready} 句 · 待生成 {plan.pending.length} 句</p><p>{plan.unbound ? `${plan.unbound} 句缺少音色或参考样本，会保留无声` : '已有配音会保留，仅生成缺失或已修改的台词'}</p></div></div>
+        <div className="flex flex-wrap items-end justify-between gap-4 rounded-xl bg-slate-50 p-4"><label className="text-sm font-medium text-slate-700">配音语言<select aria-label="批量配音语言" disabled={busy || applying || Boolean(bindingBusy)} value={locale} onChange={async (event) => {
+          const next = event.target.value as StoryLocale
+          setBindingBusy('language'); setError('')
+          try {
+            await updateProject(projectId, { defaultVoiceLocale: next })
+            const project = useEditorStore.getState().project
+            if (project?.id === projectId) useEditorStore.getState().setProject({ ...project, defaultVoiceLocale: next })
+            setLocale(next); saveProjectVoiceLocale(projectId, next)
+          } catch { setError('配音语言保存失败，请重试') }
+          finally { setBindingBusy('') }
+        }} className="mt-2 block min-h-10 rounded-lg border border-slate-200 bg-white px-3"><option value="zh">中文配音</option><option value="ja">日语配音 · 自动翻译中文</option></select></label><div className="text-xs leading-6 text-slate-500"><p>已有有效配音 {plan.ready} 句 · 待生成 {plan.pending.length} 句</p><p>{plan.unbound ? `${plan.unbound} 句缺少音色或参考样本，会保留无声` : '已有配音会保留，仅生成缺失或已修改的台词'}</p></div></div>
         {loading ? <p className="text-sm text-slate-500">正在读取音色…</p> : <div className="grid gap-3 sm:grid-cols-2">{characters.map((character) => {
           const profile = profiles.find((item) => item.bindings.some((binding) => binding.project.id === projectId && binding.character.id === character.id))
           return <div key={character.id} className="rounded-xl border border-slate-200 p-4 text-sm font-semibold text-slate-900"><div className="flex items-center justify-between gap-2"><span>{character.name}</span><button aria-label={`试听并更换${character.name}的音色`} disabled={busy || applying || Boolean(bindingBusy)} onClick={() => setPickingCharacter(character)} className="min-h-9 text-xs font-medium text-dream-700">试听选音色</button></div><select aria-label={`${character.name}的固定音色`} disabled={busy || applying || Boolean(bindingBusy)} value={profile?.id || ''} onChange={(event) => void changeBinding(character.id, event.target.value)} className="mt-2 min-h-10 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm font-normal"><option value="">不配音／暂不绑定</option>{profiles.filter((item) => item.status === 'active' || item.id === profile?.id).map((item) => <option key={item.id} value={item.id}>{item.name}{item.status !== 'active' ? '（已停用）' : ''}</option>)}</select><span className="mt-2 block text-xs font-normal text-slate-500">{profile ? '这个角色的后续台词都会沿用此音色' : '点击“试听选音色”，比较声线后再分配'}</span></div>

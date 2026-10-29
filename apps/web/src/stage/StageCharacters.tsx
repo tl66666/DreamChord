@@ -35,7 +35,7 @@ export default function StageCharacters({
   const [failedImages, setFailedImages] = useState<Record<string, boolean>>({})
 
   return (
-    <div className={`pointer-events-none absolute inset-0 overflow-hidden ${className}`} data-stage-mode={mode}>
+    <div className={`pointer-events-none absolute inset-0 overflow-hidden ${className}`} style={{ containerType: 'size' }} data-stage-mode={mode}>
       <AnimatePresence mode="popLayout">
         {characters.map((character, index) => {
           const key = `${character.id}-${character.state}-${character.position || 'center'}`
@@ -70,7 +70,7 @@ export default function StageCharacters({
               className={`absolute ${mobileStageClass}`}
               style={{
                 left: `${presentation.anchorPercent}%`,
-                width: `${presentation.widthPercent}%`,
+                width: mode === 'stage' && presentation.framing === 'bust' ? `max(${presentation.widthPercent}%, ${presentation.heightPercent * 2 / 3}cqh)` : `${presentation.widthPercent}%`,
                 height: `${presentation.heightPercent}%`,
                 bottom: `${presentation.bottomPercent}%`,
                 zIndex: presentation.zIndex + index,

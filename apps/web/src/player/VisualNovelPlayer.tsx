@@ -12,6 +12,7 @@ import { createAudioDirector } from './audioDirector'
 import { resolveCharacterColor, resolveCharacterName } from '../engine/characters'
 import type { RuntimeScene } from '../engine/types'
 import StageCharacters from '../stage/StageCharacters'
+import { projectLanguageSettings } from './projectLanguage'
 
 interface HistoryItem {
   sceneId: string
@@ -142,25 +143,35 @@ export default function VisualNovelPlayer() {
   )
 
   useEffect(() => {
-    localStorage.setItem('dreamchord_player_settings', JSON.stringify(settings))
-  }, [settings])
+    try {
+      localStorage.setItem('dreamchord_player_settings', JSON.stringify(settings))
+      if (project && project.id === projectId && !loading) localStorage.setItem(`dreamchord_player_language_${project.id}`, JSON.stringify({ defaultVoiceLocale: project.defaultVoiceLocale || 'zh', defaultSubtitleLocale: project.defaultSubtitleLocale || 'zh', voiceLocale: settings.voiceLocale, subtitleLocale: settings.subtitleLocale }))
+    } catch { /* Playback stays usable with browser storage disabled. */ }
+  }, [settings, project, projectId, loading])
 
   useEffect(() => {
     if (!projectId) return
+    let active = true
     setLoading(true)
 
     getProject(projectId)
       .then((data) => {
+        if (!active) return
         setProject(data)
+        let savedLanguage: string | null = null
+        try { savedLanguage = localStorage.getItem(`dreamchord_player_language_${data.id}`) } catch { /* Use author defaults. */ }
+        setSettings((previous) => ({ ...previous, ...projectLanguageSettings(data, savedLanguage) }))
         const { nodes, edges } = mergeChaptersForPreview(data)
         const runtimeStory = convertFlowToRuntime(data.id, data.title, nodes, edges, data.characters)
         setEngine(createRuntimeEngine(runtimeStory))
       })
       .catch((err) => {
+        if (!active) return
         console.error(err)
         toast.error('加载项目失败')
       })
-      .finally(() => setLoading(false))
+      .finally(() => { if (active) setLoading(false) })
+    return () => { active = false }
   }, [location.search, projectId, toast])
 
   const sourceScene = engine?.currentScene() || null

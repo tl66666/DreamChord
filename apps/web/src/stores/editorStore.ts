@@ -38,6 +38,8 @@ export interface ProjectData {
   title: string
   description?: string
   cover?: string
+  defaultSubtitleLocale?: 'zh' | 'ja'
+  defaultVoiceLocale?: 'zh' | 'ja'
   isPublic?: boolean
   isPublished?: boolean
 }
