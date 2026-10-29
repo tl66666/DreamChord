@@ -1,0 +1,185 @@
+{
+  "schemaVersion": 1,
+  "packId": "dreamchord-human",
+  "displayName": "真人语气声线集（日语）",
+  "description": "来自 OtoLogic 的真人语音素材（非 AI 合成），提供叹息、灵光一闪与语气短语三类声线，可直接作为剧情配音素材播放。素材以 CC BY 4.0 授权发布，允许再分发与作品内使用。",
+  "generativeAiUsed": false,
+  "syntheticSource": false,
+  "source": {
+    "site": "OtoLogic",
+    "attribution": "OtoLogic",
+    "license": "CC BY 4.0",
+    "sourceUrl": "https://otologic.jp/",
+    "licenseUrl": "https://otologic.jp/free/license.html",
+    "redistributionAllowed": true
+  },
+  "usageNote": "这些素材由配音者录制并经 OtoLogic 以 CC BY 4.0 授权再分发，授权依据为许可证本身；未获得声音本人对『AI 声音克隆』的单独同意，请勿将其用作声音克隆/TTS 训练参考，仅限作为真人语音素材直接播放。中文真人语音因未找到许可干净且允许再分发的来源，本包暂不收录（详见 ASSETS.md）。",
+  "profiles": [
+    {
+      "id": "human-yukari-sigh",
+      "name": "幽香里·叹息系",
+      "description": "真人女声的叹息与泄气声，适合失落、疲惫、释然的瞬间。",
+      "language": "ja-JP",
+      "ageTone": "青年",
+      "genderTone": "女声",
+      "tags": ["真人", "叹息", "空气感", "情绪转折"],
+      "previewClip": "human-sigh-long",
+      "clips": [
+        {
+          "role": "human-sigh-long",
+          "name": "长长的叹息",
+          "clipDescription": "真人长叹息（ため息·长），适合角色失落或释然时。",
+          "transcript": "（素材说明）真人ため息·长叹息",
+          "emotion": "失落",
+          "outputFile": "runtime/human-sigh-long.ogg",
+          "sha256": "362af128e44db3bbb68bd5f73f9e5bafd2d9e84c1c666aac4ae613b38416b4ec",
+          "durationSeconds": 3.43
+        },
+        {
+          "role": "human-sigh-dry",
+          "name": "短促的叹气",
+          "clipDescription": "真人干涩短叹气，适合无奈吐槽的空拍。",
+          "transcript": "（素材说明）真人ため息·短叹气",
+          "emotion": "无奈",
+          "outputFile": "runtime/human-sigh-dry.ogg",
+          "sha256": "85c0886e568a6903ea6164f9833ccb26cffaf2de434b162682ddb7a255b81689",
+          "durationSeconds": 1.87
+        }
+      ]
+    },
+    {
+      "id": "human-mitsuki-inspire",
+      "name": "光希·灵光一闪系",
+      "description": "真人声的『ひらめき』灵感/惊讶短声，适合灵光乍现、恍然大悟的瞬间。",
+      "language": "ja-JP",
+      "ageTone": "青年",
+      "genderTone": "女声",
+      "tags": ["真人", "灵光一闪", "惊讶", "节奏点"],
+      "previewClip": "human-inspire-a",
+      "clips": [
+        {
+          "role": "human-inspire-a",
+          "name": "灵光一闪·标准",
+          "clipDescription": "真人『ハッ』的灵光声，适合想到主意的节拍。",
+          "transcript": "（素材说明）真人ひらめき·灵光短声",
+          "emotion": "惊讶",
+          "outputFile": "runtime/human-inspire-a.ogg",
+          "sha256": "0ae5a30f8e3edea67ffa74d0b0666033d3cc5c6edb684a7df008f3649161fbd4",
+          "durationSeconds": 1.77
+        },
+        {
+          "role": "human-inspire-b",
+          "name": "灵光一闪·高音",
+          "clipDescription": "高音区灵光声，适合强烈的顿悟瞬间。",
+          "transcript": "（素材说明）真人ひらめき·高音区",
+          "emotion": "顿悟",
+          "outputFile": "runtime/human-inspire-b.ogg",
+          "sha256": "d2231d7c03ac60c6e931aef3874ba5c5042bf235782bbb1454e056259c06501d",
+          "durationSeconds": 1.74
+        },
+        {
+          "role": "human-inspire-c",
+          "name": "灵光一闪·轻快",
+          "clipDescription": "轻快的灵光声，适合小发现的节拍。",
+          "transcript": "（素材说明）真人ひらめき·轻快",
+          "emotion": "惊喜",
+          "outputFile": "runtime/human-inspire-c.ogg",
+          "sha256": "a07e92bfe163d6c3946cfa4b7e2522d551d7bd77beee22885259f0f5fe1e27fa",
+          "durationSeconds": 1.71
+        }
+      ]
+    },
+    {
+      "id": "human-kotone-phrase",
+      "name": "琴音·语气短语系",
+      "description": "真人录制的日语语气短语（フレーズ），适合角色自言自语、过场气口与情绪铺垫。",
+      "language": "ja-JP",
+      "ageTone": "青年",
+      "genderTone": "女声",
+      "tags": ["真人", "语气短语", "自言自语", "过场"],
+      "previewClip": "human-phrase-a1",
+      "clips": [
+        {
+          "role": "human-phrase-a1",
+          "name": "语气短语 A1",
+          "clipDescription": "真人语气短语（フレーズ01），适合独白气口。",
+          "transcript": "（素材说明）真人フレーズ01 其一",
+          "emotion": "自然",
+          "outputFile": "runtime/human-phrase-a1.ogg",
+          "sha256": "2bacee312dac294fbddf0bc6c98e81fdc805b9c96c91e08ca0fde2aba2b47335",
+          "durationSeconds": 3.15
+        },
+        {
+          "role": "human-phrase-a2",
+          "name": "语气短语 A2",
+          "clipDescription": "真人语气短语（フレーズ01）变体。",
+          "transcript": "（素材说明）真人フレーズ01 其二",
+          "emotion": "自然",
+          "outputFile": "runtime/human-phrase-a2.ogg",
+          "sha256": "aca0fee6f6e45f19485061cdd76594cc2a84cd9c9a0fee0740eaafa30d93a005",
+          "durationSeconds": 3.15
+        },
+        {
+          "role": "human-phrase-b1",
+          "name": "语气短语 B1",
+          "clipDescription": "真人语气短语（フレーズ02），适合犹豫的开场。",
+          "transcript": "（素材说明）真人フレーズ02 其一",
+          "emotion": "犹豫",
+          "outputFile": "runtime/human-phrase-b1.ogg",
+          "sha256": "d44b8df9fff4e5f3d21f94f97f2e048e6a60c0974a00de56d743dcb79e20d788",
+          "durationSeconds": 4.2
+        },
+        {
+          "role": "human-phrase-b2",
+          "name": "语气短语 B2",
+          "clipDescription": "真人语气短语（フレーズ02）变体。",
+          "transcript": "（素材说明）真人フレーズ02 其二",
+          "emotion": "犹豫",
+          "outputFile": "runtime/human-phrase-b2.ogg",
+          "sha256": "be61ab34ef847d8f3a308d34bae8186636d8614c87e73d1d3bd78aa7956e4cd8",
+          "durationSeconds": 4.2
+        },
+        {
+          "role": "human-phrase-c1",
+          "name": "语气短语 C1",
+          "clipDescription": "真人语气短语（フレーズ03），适合轻声应答。",
+          "transcript": "（素材说明）真人フレーズ03",
+          "emotion": "轻声",
+          "outputFile": "runtime/human-phrase-c1.ogg",
+          "sha256": "f3e7b9b0e922502b4ec294073153688a0f44521f75495326a5b16f802224ba87",
+          "durationSeconds": 1.76
+        },
+        {
+          "role": "human-phrase-d1",
+          "name": "语气短语 D1",
+          "clipDescription": "真人语气短语（フレーズ04），较长的完整语气句。",
+          "transcript": "（素材说明）真人フレーズ04",
+          "emotion": "感慨",
+          "outputFile": "runtime/human-phrase-d1.ogg",
+          "sha256": "89e21e3085bbe1a8bb4f3eab9dc26ae73486e6f32809a2ac1ef4b4cb1e6aba86",
+          "durationSeconds": 7.08
+        },
+        {
+          "role": "human-phrase-e1",
+          "name": "语气短语 E1",
+          "clipDescription": "真人语气短语（フレーズ05），适合章节过场。",
+          "transcript": "（素材说明）真人フレーズ05 其一",
+          "emotion": "自然",
+          "outputFile": "runtime/human-phrase-e1.ogg",
+          "sha256": "cd5ff3292ea9ee48f54fbe08bc82089918985eddda5a8fd376aeb88f760cfc8e",
+          "durationSeconds": 4
+        },
+        {
+          "role": "human-phrase-e2",
+          "name": "语气短语 E2",
+          "clipDescription": "真人语气短语（フレーズ05）变体。",
+          "transcript": "（素材说明）真人フレーズ05 其二",
+          "emotion": "自然",
+          "outputFile": "runtime/human-phrase-e2.ogg",
+          "sha256": "b93baa93ba601f935e469da287611dd50e6b4cb0b997cd84a8a557149ce78833",
+          "durationSeconds": 4
+        }
+      ]
+    }
+  ]
+}
