@@ -736,7 +736,7 @@ export default function FlowEditor() {
             </button>
           </div>
 
-          <button onClick={() => setShowSettings(true)} className="inline-flex items-center gap-1.5 rounded-lg border border-dream-200 bg-white px-3 py-1.5 text-sm font-medium text-slate-700 transition hover:bg-dream-50">
+          <button aria-label="故事设置：封面与语言" title="故事设置：封面与语言" onClick={() => setShowSettings(true)} className="inline-flex items-center gap-1.5 rounded-lg border border-dream-200 bg-white px-3 py-1.5 text-sm font-medium text-slate-700 transition hover:bg-dream-50">
             <Settings className="h-4 w-4" />
           </button>
           <button onClick={() => setShowVoices(true)} className="inline-flex items-center gap-1.5 rounded-lg border border-dream-200 bg-white px-3 py-1.5 text-sm font-medium text-slate-700 transition hover:bg-dream-50"><Mic2 className="h-4 w-4" />角色配音</button>
