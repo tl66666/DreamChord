@@ -414,4 +414,3 @@ export const PAINT_LINES = [
     "emotion": "serious"
   }
 ] as const
-

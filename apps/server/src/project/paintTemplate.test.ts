@@ -200,5 +200,3 @@ describe('paint prologue trusted seed and private template', () => {
     } finally { writeFileSync(path.join(packRoot, 'manifest.json'), JSON.stringify(manifest)) }
   })
 })
-
-

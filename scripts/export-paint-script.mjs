@@ -14,5 +14,5 @@ if (process.argv.includes('--docs')) {
   }
   const storyDir = new URL('../docs/story/paint/', import.meta.url)
   await mkdir(storyDir, { recursive: true })
-  await writeFile(new URL('00-prologue.md', storyDir), sections.join('\n') + '\n')
+  await writeFile(new URL('00-prologue.md', storyDir), sections.join('\n').trimEnd() + '\n')
 }

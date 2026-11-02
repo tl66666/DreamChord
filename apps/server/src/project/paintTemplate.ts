@@ -199,6 +199,3 @@ export async function createPaintTemplate(ownerId: string, requestId: string, op
   const project = await installPaintPrologue(options.client || prisma, ownerId, projectId, false, options)
   return { id: project.id, title: project.title, focusNodeId: scoped(projectId, `node-${starterCard().id}`), focusSceneId: scoped(projectId, 'scene-your-next-scene') }
 }
-
-
-
