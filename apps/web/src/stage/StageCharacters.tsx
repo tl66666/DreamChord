@@ -33,13 +33,14 @@ export default function StageCharacters({
   resolveUrl = resolveCharacterUrl,
 }: StageCharactersProps) {
   const [failedImages, setFailedImages] = useState<Record<string, boolean>>({})
+  const activeSpeakerId = speakerId ? characters.find(character => character.id === speakerId || resolveName(character.id) === speakerId)?.id : undefined
 
   return (
     <div className={`pointer-events-none absolute inset-0 overflow-hidden ${className}`} style={{ containerType: 'size' }} data-stage-mode={mode}>
       <AnimatePresence mode="popLayout">
         {characters.map((character, index) => {
           const key = `${character.id}-${character.state}-${character.position || 'center'}`
-          const isSpeaker = !speakerId || speakerId === character.id || resolveName(character.id) === speakerId
+          const isSpeaker = !activeSpeakerId || activeSpeakerId === character.id
           const presentation = getStageSpritePresentation({
             mode,
             position: character.position || 'center',
@@ -49,16 +50,16 @@ export default function StageCharacters({
           })
           const url = character.customUrl || resolveUrl(character.id, character.state)
           const failed = Boolean(failedImages[key])
-          const hasExplicitSpeaker = Boolean(speakerId)
+          const hasExplicitSpeaker = Boolean(activeSpeakerId)
           const mobileStageClass = mode !== 'stage' ? '' : hasExplicitSpeaker
             ? isSpeaker
               ? presentation.framing === 'full'
                 ? 'max-sm:!left-1/2 max-sm:!w-[64%] max-sm:!h-[76%] max-sm:!bottom-[2%]'
-                : 'max-sm:!left-1/2 max-sm:!w-[88%] max-sm:!h-[92%] max-sm:!bottom-[-12%]'
+                : 'max-sm:!left-1/2 max-sm:!w-[max(88%,61cqh)] max-sm:!h-[92%] max-sm:!bottom-[-24%]'
               : 'max-sm:!opacity-0'
             : presentation.framing === 'full'
               ? `max-sm:!w-[38%] max-sm:!h-[58%] max-sm:!bottom-[8%] ${character.position === 'left' ? 'max-sm:!left-[18%]' : 'max-sm:!left-[82%]'}`
-              : `max-sm:!w-[56%] max-sm:!h-[82%] max-sm:!bottom-[-14%] ${character.position === 'right' ? 'max-sm:!left-[82%]' : character.position === 'left' ? 'max-sm:!left-[18%]' : 'max-sm:!left-1/2'}`
+              : `max-sm:!w-[max(56%,55cqh)] max-sm:!h-[82%] max-sm:!bottom-[-14%] ${character.position === 'right' ? 'max-sm:!left-[82%]' : character.position === 'left' ? 'max-sm:!left-[18%]' : 'max-sm:!left-1/2'}`
 
           return (
             <div

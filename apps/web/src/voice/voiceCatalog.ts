@@ -2,6 +2,12 @@ import type { VoiceProfile } from '../api/client'
 
 type CatalogEntry = { name: string; legacy: string[]; description: string; traits: string[]; roles: string[]; example?: string }
 const catalog: Record<string, CatalogEntry> = {
+  'curtain-voice-zhi': { name: '许栀 · 温柔而坦率', legacy: [], description: '温暖清晰的青年女声，语气克制。适合校园日常与认真谈心。', traits: ['温暖', '坦率', '自然对话'], roles: ['青年女性', '女主'], example: '许栀' },
+  'curtain-voice-tang': { name: '唐棠 · 明亮的朋友', legacy: [], description: '明亮、利落的青年女声，带轻微笑意。适合亲近朋友与轻松拌嘴。', traits: ['明亮', '利落', '轻松'], roles: ['青年女性', '朋友'], example: '唐棠' },
+  'curtain-voice-lin': { name: '林澈 · 内敛的青年', legacy: [], description: '偏低、自然的青年男声。适合第一人称主角与迟疑后的坦白。', traits: ['偏低', '内敛', '自然对话'], roles: ['青年男性', '男主'], example: '林澈' },
+  'seventh-voice-luyao': { name: '陆遥 · 雨灯', legacy: [], description: '温暖、平稳，句尾收得轻。适合有分寸的旧友、青年女性与安静的日常谈话。', traits: ['温暖', '克制', '日常'], roles: ['青年女性', '旧友'], example: '陆遥' },
+  'seventh-voice-chengxia': { name: '程夏 · 归潮', legacy: [], description: '清晰、率直，带轻微的明亮感。适合有主见的青年女性、朋友间的对话与坦白。', traits: ['清晰', '率直', '温柔'], roles: ['青年女性', '歌手'], example: '程夏' },
+  'seventh-voice-chenyu': { name: '陈屿 · 旧磁带', legacy: [], description: '偏低的青年男声，自然克制，保留犹豫与停顿。适合第一人称男主、旧友重逢和内敛对白。', traits: ['偏低', '内敛', '克制'], roles: ['青年', '男主'], example: '陈屿' },
   'cast-voice-yuki': { name: '晴音 · 清亮少女', legacy: ['雪 · 清亮而倔强'], description: '明亮清透，带一点不服输的劲头。适合校园对话、惊讶和坚定独白。', traits: ['清亮', '有朝气', '校园'], roles: ['少女', '主角'], example: '雪' },
   'cast-voice-ren': { name: '凛川 · 清冷青年', legacy: ['影 · 克制的锋芒'], description: '音色偏低，语气克制、句尾利落。适合冷静男主、质问与悬疑对白。', traits: ['清冷', '克制', '悬疑'], roles: ['青年', '男主'], example: '影' },
   'cast-voice-miya': { name: '知夏 · 温柔女声', legacy: ['宫 · 温柔有分寸'], description: '温暖平稳，亲近又有分寸。适合可靠学姐、日常闲谈与安慰。', traits: ['温柔', '知性', '日常'], roles: ['学姐', '成熟女性'], example: '宫' },

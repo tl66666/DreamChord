@@ -1,0 +1,73 @@
+{
+  "generated": true,
+  "tool": "OpenAI imagegen",
+  "date": "2026-10-29",
+  "description": "Original university graduation cast and locations. No commercial game art.",
+  "files": [
+    {
+      "file": "backstage.webp",
+      "sourceFile": "exec-74fb59e9-6566-4654-b93d-4f8612683212.png",
+      "sourceSha256": "f2895e0b67dbff64c41681266796df81b3880f3d787ccf04c8c59500327c4596"
+    },
+    {
+      "file": "stage.webp",
+      "sourceFile": "exec-67733104-b041-471c-929a-c620739ebd21.png",
+      "sourceSha256": "d60d002d4f6e7bab12e4c8d5201674d74d3dcb7da61a23d620c4cb0874cf76cd"
+    },
+    {
+      "file": "campus.webp",
+      "sourceFile": "exec-55804c62-068d-400a-beb4-cb374df13805.png",
+      "sourceSha256": "9b8a096667ce8a351f5bd54e350bfb8e80ac542a5ab79157f33f5aa5644f7285"
+    },
+    {
+      "file": "station.webp",
+      "sourceFile": "exec-00fffb98-aa1f-4ef1-98d6-2d8a79870f37.png",
+      "sourceSha256": "1c905bd92f558a7f7825619be1249f1a8a0f58aca1c517fbb4717f0b4031682c"
+    },
+    {
+      "file": "zhi-normal.png",
+      "sourceFile": "exec-ef82f5a3-2563-4581-94e9-fe9c17111db7.png",
+      "sourceSha256": "a7abb29e04f833b049c0aeec9e5654e6cc723852690f1bcf50a1eb05e60b7667"
+    },
+    {
+      "file": "zhi-sad.png",
+      "sourceFile": "exec-ef82f5a3-2563-4581-94e9-fe9c17111db7.png",
+      "sourceSha256": "a7abb29e04f833b049c0aeec9e5654e6cc723852690f1bcf50a1eb05e60b7667"
+    },
+    {
+      "file": "zhi-smile.png",
+      "sourceFile": "exec-ef82f5a3-2563-4581-94e9-fe9c17111db7.png",
+      "sourceSha256": "a7abb29e04f833b049c0aeec9e5654e6cc723852690f1bcf50a1eb05e60b7667"
+    },
+    {
+      "file": "tang-normal.png",
+      "sourceFile": "exec-fb833887-5e24-4525-8190-25c8229115e1.png",
+      "sourceSha256": "3115e61fcb4ede68d314493eccd2d2237113d0b7e0a81b0fc10d47c74dbf476c"
+    },
+    {
+      "file": "tang-sad.png",
+      "sourceFile": "exec-fb833887-5e24-4525-8190-25c8229115e1.png",
+      "sourceSha256": "3115e61fcb4ede68d314493eccd2d2237113d0b7e0a81b0fc10d47c74dbf476c"
+    },
+    {
+      "file": "tang-smile.png",
+      "sourceFile": "exec-fb833887-5e24-4525-8190-25c8229115e1.png",
+      "sourceSha256": "3115e61fcb4ede68d314493eccd2d2237113d0b7e0a81b0fc10d47c74dbf476c"
+    },
+    {
+      "file": "lin-normal.png",
+      "sourceFile": "exec-9fae06e8-d5ec-4815-a8a6-de9772a4da4c.png",
+      "sourceSha256": "f67d933d29f8b61f24e025cc0d8eb864612e4d8f60a624abdd420f3740ac6834"
+    },
+    {
+      "file": "lin-sad.png",
+      "sourceFile": "exec-9fae06e8-d5ec-4815-a8a6-de9772a4da4c.png",
+      "sourceSha256": "f67d933d29f8b61f24e025cc0d8eb864612e4d8f60a624abdd420f3740ac6834"
+    },
+    {
+      "file": "lin-smile.png",
+      "sourceFile": "exec-9fae06e8-d5ec-4815-a8a6-de9772a4da4c.png",
+      "sourceSha256": "f67d933d29f8b61f24e025cc0d8eb864612e4d8f60a624abdd420f3740ac6834"
+    }
+  ]
+}

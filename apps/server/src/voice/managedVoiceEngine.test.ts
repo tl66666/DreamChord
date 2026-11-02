@@ -1,9 +1,36 @@
 import { EventEmitter } from 'node:events'
 import path from 'node:path'
+import { mkdtempSync, rmSync } from 'node:fs'
+import { tmpdir } from 'node:os'
 import { describe, expect, it, vi } from 'vitest'
-import { ManagedVoiceEngine } from './managedVoiceEngine.js'
+import { ManagedVoiceEngine, readManagedVoiceEngineConfig } from './managedVoiceEngine.js'
 
 describe('ManagedVoiceEngine', () => {
+  it('can capture startup diagnostics in a private server-selected log', () => {
+    const dir = mkdtempSync(path.join(tmpdir(), 'dreamchord-engine-log-'))
+    if (!path.resolve(dir).startsWith(path.resolve(tmpdir()) + path.sep)) throw new Error('Invalid test log path')
+    try {
+      const child = Object.assign(new EventEmitter(), { kill: vi.fn() })
+      const spawnProcess = vi.fn().mockReturnValue(child)
+      new ManagedVoiceEngine({ home: dir, python: 'python', port: 9880, logPath: path.join(dir, 'logs', 'tts.log') }, { exists: () => true, spawnProcess }).start()
+      expect(spawnProcess.mock.calls[0]![2].stdio[0]).toBe('ignore')
+      expect(typeof spawnProcess.mock.calls[0]![2].stdio[1]).toBe('number')
+      expect(spawnProcess.mock.calls[0]![2].env.PYTHONIOENCODING).toBe('utf-8')
+    } finally {
+      rmSync(dir, { recursive: true, force: true })
+    }
+  })
+  it('uses a server-selected inference configuration without modifying the upstream default', () => {
+    const home = path.resolve('runtime', 'gpt-sovits')
+    const configPath = path.join(home, 'GPT_SoVITS', 'configs', 'tts_infer_curtain.yaml')
+    const config = readManagedVoiceEngineConfig({ GPT_SOVITS_HOME: home, GPT_SOVITS_CONFIG: configPath })
+    const child = Object.assign(new EventEmitter(), { kill: vi.fn() })
+    const spawnProcess = vi.fn().mockReturnValue(child)
+    const engine = new ManagedVoiceEngine(config, { exists: () => true, spawnProcess })
+    engine.start()
+    expect(spawnProcess.mock.calls[0]![1]).toContain(configPath)
+    expect(new ManagedVoiceEngine(config, { exists: p => p !== configPath, spawnProcess }).status().installed).toBe(false)
+  })
   it('waits for process exit before another GPU model may start', async () => {
     const child = Object.assign(new EventEmitter(), { pid: 1234, kill: vi.fn().mockReturnValue(true) })
     const engine = new ManagedVoiceEngine({ home: path.resolve('runtime'), python: 'python', port: 9880 }, { exists: () => true, spawnProcess: vi.fn().mockReturnValue(child) })

@@ -2,7 +2,7 @@ import { spawn } from 'node:child_process'
 import { existsSync } from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { OFFICIAL_DEMO, voiceTextHash } from '@dreamchord/story-domain'
+import { OFFICIAL_DEMO, SEVENTH_ROW_DEMO, CURTAIN_CALL_DEMO, CURTAIN_STARTER_ENDING, voiceTextHash } from '@dreamchord/story-domain'
 import { createProvider } from '../llm/providers.js'
 
 export interface VoiceTranslationInput { text: string; targetLanguage: 'ja'; provider?: { provider: string; model: string; apiKey: string; baseUrl?: string } }
@@ -52,7 +52,7 @@ export class VoiceTranslationService {
     return task
   }
   private async perform(input: VoiceTranslationInput): Promise<VoiceTranslationResult> {
-    const official = OFFICIAL_DEMO.graph.nodes.find((node) => node.data.text === input.text)?.data.localizations as { ja?: { text?: string } } | undefined
+    const official = [CURTAIN_STARTER_ENDING, ...CURTAIN_CALL_DEMO.graph.nodes, ...SEVENTH_ROW_DEMO.graph.nodes, ...OFFICIAL_DEMO.graph.nodes].find((node) => node.data.text === input.text)?.data.localizations as { ja?: { text?: string } } | undefined
     let translated = official?.ja?.text || ''
     let source = 'official-script'
     if (!translated && input.provider) {

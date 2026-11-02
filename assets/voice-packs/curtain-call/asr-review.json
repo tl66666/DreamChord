@@ -1,0 +1,546 @@
+[
+  {
+    "id": "reference-zhi-zh",
+    "sha256": "6eded781a6cd7937bbf63950f495c73e258648e3aec58dbb4983617f1ad50198",
+    "expected": "明天就要出发了。到了那边，我会给你打电话，还有好多话想慢慢说。",
+    "recognized": "明天叫出发了到了那边我会给你打电话还有好多话想慢慢说",
+    "similarity": 0.943,
+    "review": "supporting-pass"
+  },
+  {
+    "id": "reference-zhi-ja",
+    "sha256": "490f50b4812aa5be3f3fcb37b8cced5d6c1bcc5c947d03079f629822ccfe2844",
+    "expected": "明日の朝には出発するね。向こうに着いたら、電話する。まだ、ゆっくり話したいことがあるから。",
+    "recognized": "明日の朝には出発するね向こうについたら電話するまだゆっくり話したいことがあるから",
+    "similarity": 0.975,
+    "review": "supporting-pass"
+  },
+  {
+    "id": "reference-tang-zh",
+    "sha256": "200c2415ec41a958f21f33a9bd93c11ae0a03500de507cbbaeae4f87275faf5f",
+    "expected": "好啦，先把东西收好。等晚会结束，我们一起去吃夜宵，谁也不许先跑。",
+    "recognized": "好了 先把东西收好等晚会结束我们一起去吃夜销谁也不许先跑",
+    "similarity": 0.926,
+    "review": "supporting-pass"
+  },
+  {
+    "id": "reference-tang-ja",
+    "sha256": "e06933f404df06c3add14eb3bbf4397655d5c3dbfbb9bde19f9dd09f12cd400e",
+    "expected": "はい、まずは片づけよう。公演が終わったら、みんなでご飯に行こうね。先に帰っちゃだめだよ。",
+    "recognized": "はい。まずは片付けよ。公園が終わったら、みんなでご飯に行こうね。先に帰っちゃダメだよ。",
+    "similarity": 0.883,
+    "review": "supporting-pass"
+  },
+  {
+    "id": "reference-lin-zh",
+    "sha256": "1a8ee1eaa2e5544dada1199587c71adde76c69338565075417d688e730d1bc0a",
+    "expected": "我不是不想说，只是一直没找到合适的时候。今天这些话，我想亲口告诉你。",
+    "recognized": "我不是不想说,只是一直没找到合适的时候今天这些话,我想亲口告诉你",
+    "similarity": 1.0,
+    "review": "supporting-pass"
+  },
+  {
+    "id": "reference-lin-ja",
+    "sha256": "7b3a118f78aed016d2ea9b3aa583d380635e6823e9255a250a75675818ea21f0",
+    "expected": "言いたくなかったわけじゃない。ただ、いつ言えばいいか、わからなかった。今日は、自分の言葉で伝えたい。",
+    "recognized": "言いたくなかったわけじゃない ただいつ言えばいいかわからなかった今日は自分の言葉で伝えたい",
+    "similarity": 1.0,
+    "review": "supporting-pass"
+  },
+  {
+    "id": "opening-1-zh",
+    "sha256": "49d686e2382bdaed9c912b348d9964a35d1ab59d19499a1b9729d8c75301c017",
+    "expected": "昨天还说这句写得好，今天就不要了？",
+    "recognized": "昨天还说这句写得好今天就不要了",
+    "similarity": 1.0,
+    "review": "supporting-pass"
+  },
+  {
+    "id": "opening-1-ja",
+    "sha256": "a90535e0cc06c92e6d2291289cec6922a6985b6a48404900e4ff7801d9793d4e",
+    "expected": "昨日は、この一行がいいって言ってたのに。",
+    "recognized": "昨日はこの1個がいいって言ってたのね",
+    "similarity": 0.833,
+    "review": "supporting-pass"
+  },
+  {
+    "id": "opening-2-zh",
+    "sha256": "2fab8a33fa3fbac87248986d64b9a862f212aaaf0477b55444f001697e9d796e",
+    "expected": "昨天是昨天。我明早六点的车，明年谁知道在哪儿。",
+    "recognized": "昨天是昨天,我明早6点的车明天谁知道在哪",
+    "similarity": 0.872,
+    "review": "supporting-pass"
+  },
+  {
+    "id": "opening-2-ja",
+    "sha256": "46b80f78cf5c0d10731d022d6c69e1433a3c3f53ab06023359ed5965c1142feb",
+    "expected": "昨日は昨日。明日の朝六時には電車だよ。来年なんて、どこにいるかわからない。",
+    "recognized": "昨日は昨日明日の朝6時には電車だよ9年なんてどこにいるかわからない",
+    "similarity": 0.939,
+    "review": "supporting-pass"
+  },
+  {
+    "id": "opening-3-zh",
+    "sha256": "35df5a08abfc690e754a42dd8f3077a0a1c84a79632fe054edb5f3c0cbb6a542",
+    "expected": "二位，笔先放下。主持人还没毕业，稿子快被你们改退休了。",
+    "recognized": "二位,比先放下,主持人还没毕业,告辞快被你们改退休了。",
+    "similarity": 0.87,
+    "review": "supporting-pass"
+  },
+  {
+    "id": "opening-3-ja",
+    "sha256": "168271b1e0f9ff69cce9e8ad757619e94672574c789f3a26c46ab6ebb60fc66c",
+    "expected": "お二人さん、いったんペンを置こう。司会はまだ卒業してないのに、原稿のほうが先に引退しそう。",
+    "recognized": "お二人さん、一旦ペンをか、視界はまだ卒業してないのに、原稿の方が先に印太しそう。",
+    "similarity": 0.727,
+    "review": "supporting-pass"
+  },
+  {
+    "id": "opening-4-zh",
+    "sha256": "9913d982ae395a7fbcf84aa50ce4fcb65be90f72a1194f246647ee3356c48dd6",
+    "expected": "你是来催场，还是来看热闹？",
+    "recognized": "你是来催尝,还是来看热闹",
+    "similarity": 0.909,
+    "review": "supporting-pass"
+  },
+  {
+    "id": "opening-5-ja",
+    "sha256": "949d7eeff6c05cc1007f97578e5ac02a443d83488f7121a3bbbe21f2fa00017e",
+    "expected": "両方。あと七分。次に直した人が、夜食おごりね。",
+    "recognized": "両方、あと7分、次に直した人が、野食をご利ね。",
+    "similarity": 0.789,
+    "review": "supporting-pass"
+  },
+  {
+    "id": "opening-6-zh",
+    "sha256": "db764f51b1b13a5ac58b8250276b2e03eae74b1e056833f571abd9e6349a365e",
+    "expected": "看什么？这次我可不给你提醒。",
+    "recognized": "看什么这次我可不跟你提醒",
+    "similarity": 0.917,
+    "review": "supporting-pass"
+  },
+  {
+    "id": "opening-6-ja",
+    "sha256": "a0030fa002ff2989df52b2db01610e23e055d9c6b998ca69dcae51422f83e197",
+    "expected": "何？　今日は助け舟、出さないからね。",
+    "recognized": "なに、今日は助けぶね、出さないからね",
+    "similarity": 0.8,
+    "review": "supporting-pass"
+  },
+  {
+    "id": "opening-7-zh",
+    "sha256": "c04b0ec7c2a6432c08f45c847e760ce8f7ac76326587a213f1fe7110672e00df",
+    "expected": "那你别拿走稿子。你知道我没背下来。",
+    "recognized": "那你别拿走稿子你知道我没背下来啊",
+    "similarity": 0.968,
+    "review": "supporting-pass"
+  },
+  {
+    "id": "opening-7-ja",
+    "sha256": "45b64a5502cdccc2f03718dc9f6490e3b6ed2595b954fbee34d3c9fa54ed4670",
+    "expected": "じゃあ原稿、持っていかないで。覚えてないの、知ってるだろ。",
+    "recognized": "じゃあ 電子を持っていかないで 覚えてないの 知ってるだろ",
+    "similarity": 0.902,
+    "review": "supporting-pass"
+  },
+  {
+    "id": "opening-8-zh",
+    "sha256": "4cb8d0bdd32f4a6f195daae5a7dcdada745b870c8af93d144f6e69a77973ebbb",
+    "expected": "四年了，还是这个出息。",
+    "recognized": "四年了,还是这个出行",
+    "similarity": 0.889,
+    "review": "supporting-pass"
+  },
+  {
+    "id": "opening-8-ja",
+    "sha256": "281062a9a6e40af5b432b535c78a9e5609c54ccc854bc14812a127238bf18967",
+    "expected": "四年たっても、そこは変わらないね。",
+    "recognized": "やねんたっても、そこが変わらないね",
+    "similarity": 0.774,
+    "review": "supporting-pass"
+  },
+  {
+    "id": "before-1-zh",
+    "sha256": "63b0294bf9e18940af9b748d69e74612cdfd6f094585eeee54e871a78aa8b63c",
+    "expected": "你到了那边，安顿好给我发个消息。",
+    "recognized": "也到了那边,安顿好给我发的消息",
+    "similarity": 0.857,
+    "review": "supporting-pass"
+  },
+  {
+    "id": "before-1-ja",
+    "sha256": "8b0b834b34ea60489a679c1b4b3097f730b14d3e8c1e39ee0c8d41b789da4296",
+    "expected": "向こうに着いて、落ち着いたら連絡して。",
+    "recognized": "向こうについて、落ち着いたらあれなくして",
+    "similarity": 0.778,
+    "review": "supporting-pass"
+  },
+  {
+    "id": "before-2-zh",
+    "sha256": "a964cf129401171eef8651d0af09e2d75eab052af4ace7acc8a4babf5aece4e1",
+    "expected": "然后呢？",
+    "recognized": "然后呢",
+    "similarity": 1.0,
+    "review": "supporting-pass"
+  },
+  {
+    "id": "before-2-ja",
+    "sha256": "df9e44266810f45e9d97339381e61f45d23a25baf8eef20301432404102d9f2d",
+    "expected": "それから？",
+    "recognized": "それから",
+    "similarity": 1.0,
+    "review": "supporting-pass"
+  },
+  {
+    "id": "before-4-zh",
+    "sha256": "a8de30e740c32f06360570692fd3a2295e6d316116eae415da2801f26a15e8af",
+    "expected": "你回一个“收到”，我回一个表情。再往后，谁先忙起来，就不说了。",
+    "recognized": "你回一个收到,我回一个表情再往后,谁先忙起来,就不说了",
+    "similarity": 1.0,
+    "review": "supporting-pass"
+  },
+  {
+    "id": "before-4-ja",
+    "sha256": "67ed6c9c5c8a3376f785540ef8d7e996e54d3d3b0359ce207fcd6ed837e5e699",
+    "expected": "君が「了解」って返して、私がスタンプを送る。そのうち、どっちかが忙しくなって、そこで終わり。",
+    "recognized": "君が両側行ったかあした私らスタンプを送るそのうちどっちかの忙しくなってそこで終わり",
+    "similarity": 0.8,
+    "review": "supporting-pass"
+  },
+  {
+    "id": "before-5-zh",
+    "sha256": "b54f9361eca98e66b57d02b390dde9915f4c4917ec52c8ce02b179ddbe24d2cb",
+    "expected": "我不是不想找你。我怕你刚开始工作，没空听这些。",
+    "recognized": "我不是不想找你,我怕你刚开始工作,来一共听这些。",
+    "similarity": 0.878,
+    "review": "supporting-pass"
+  },
+  {
+    "id": "before-5-ja",
+    "sha256": "ee2607a88e97318e2343e0b6462aab5893c897d7e12a26f5dbcd5393044865ac",
+    "expected": "連絡したくないわけじゃない。仕事が始まったばかりで、そんな暇ないかと思って。",
+    "recognized": "連絡した来ないわけじゃない 仕事は始まったばかりでそんな暇ないかと思って",
+    "similarity": 0.943,
+    "review": "supporting-pass"
+  },
+  {
+    "id": "before-6-zh",
+    "sha256": "051c894cab0b0801b75b12fdb36c462b035b28aa4df9a4ecd79c66bc075731a1",
+    "expected": "那也让我自己说没空啊。你每次都提前替我想好了。",
+    "recognized": "那也让我自己说没空啊你每次都提前替我想好了",
+    "similarity": 1.0,
+    "review": "supporting-pass"
+  },
+  {
+    "id": "before-6-ja",
+    "sha256": "199276dc539b0f7da735f179196a45832d8e9f7bcdd5495cfeaba764c116c728",
+    "expected": "だったら、忙しいって私に言わせてよ。いつも先に、私の返事まで考えるんだから。",
+    "recognized": "だったら、忙しいって私に言わせてよいつもさけで、私の辺島で考えるんだから",
+    "similarity": 0.853,
+    "review": "supporting-pass"
+  },
+  {
+    "id": "before-7-zh",
+    "sha256": "5d53579e115b0a92f1283b3422974cb981a08622bc703987788eea849c01032e",
+    "expected": "我想见你的。毕业以后也想。",
+    "recognized": "我少见你的 毕业以后也啥",
+    "similarity": 0.818,
+    "review": "supporting-pass"
+  },
+  {
+    "id": "before-7-ja",
+    "sha256": "d1e4dece9070e98b16d24c591ad117fe27837d661f3594f214ee2c3f84a1964f",
+    "expected": "会いたいよ。卒業してからも。",
+    "recognized": "会いたいよ 措業してからも",
+    "similarity": 0.917,
+    "review": "supporting-pass"
+  },
+  {
+    "id": "before-8-zh",
+    "sha256": "f92fd05f718e58f4d18587296f4fe041ab054d8c4fcd316d7db857326ac899ff",
+    "expected": "这句话，你排练的时候怎么从来没说过？",
+    "recognized": "这句话,你排练的时候怎么从来没说过",
+    "similarity": 1.0,
+    "review": "supporting-pass"
+  },
+  {
+    "id": "before-8-ja",
+    "sha256": "ec24170acadc1c5082797ca9645e4f0a299ba58a9d1bcd754f74576704b58bc2",
+    "expected": "その台詞、練習のときは一度も言わなかったね。",
+    "recognized": "そのゼリハ 練習の時は一度も言わなかったね",
+    "similarity": 0.8,
+    "review": "supporting-pass"
+  },
+  {
+    "id": "choice-line-zh",
+    "sha256": "55d01051fe13de675e0e3b9d1d797c842f444d6d9114108ccd48c0bbac3f33ed",
+    "expected": "最后这句，你来定。不过下了台，还得算数。",
+    "recognized": "三号这局,你来定,不过下了台,还得三数",
+    "similarity": 0.75,
+    "review": "supporting-pass"
+  },
+  {
+    "id": "choice-line-ja",
+    "sha256": "218414a368cac63dc33579bae7f488bc5da334eb132d677b18b9cda43fb828e2",
+    "expected": "最後の一行は、君が決めて。でも、舞台を降りても覚えていてね。",
+    "recognized": "最後の一項は、地面は決まった。でも、舞台を降りても覚えていてね。",
+    "similarity": 0.778,
+    "review": "supporting-pass"
+  },
+  {
+    "id": "invitation-1-zh",
+    "sha256": "aaea0539ac1db14e0d90473abffd4810390def6348a1aef2d748ecbe11b66f24",
+    "expected": "所以，下一次是什么时候？别又说“有空”。",
+    "recognized": "所以,下次是什么时候,别说有空",
+    "similarity": 0.929,
+    "review": "supporting-pass"
+  },
+  {
+    "id": "invitation-1-ja",
+    "sha256": "ccba7f06510a238ffd194ad38062f3257da850d68c3655cdb2f76678deadcf98",
+    "expected": "それで、次はいつ？　「時間ができたら」は、なしね。",
+    "recognized": "それで、次はいつ、時間ができたらはなしね。",
+    "similarity": 1.0,
+    "review": "supporting-pass"
+  },
+  {
+    "id": "invitation-3-zh",
+    "sha256": "cd11c6aca1d49b30608c8c851e97ac4032a4f6c0a8673ac60424743e3640ceb7",
+    "expected": "安排得这么周全。就没什么要问我的？",
+    "recognized": "安排得这么周全就没什么要问我的",
+    "similarity": 1.0,
+    "review": "supporting-pass"
+  },
+  {
+    "id": "invitation-3-ja",
+    "sha256": "9c92e0aac841fc96be73b4aa66f5ca8e15fca86ea30ae62542308d5ed0ea62fc",
+    "expected": "ずいぶん用意がいいね。私に聞くことは？",
+    "recognized": "税盤匂いがいいね 私に聴くことは",
+    "similarity": 0.688,
+    "review": "supporting-pass"
+  },
+  {
+    "id": "invitation-4-zh",
+    "sha256": "8575a522e8d3eb42c24f85f1b0c755934fd361bc65e0756820eca41d766215a2",
+    "expected": "你愿不愿意，带我去吃你找到的第一家好吃的店？",
+    "recognized": "你热不热夜,待我去吃你找到的第一家好吃的店",
+    "similarity": 0.8,
+    "review": "supporting-pass"
+  },
+  {
+    "id": "invitation-5-zh",
+    "sha256": "7a672ea1a5ca4fa74016c3c72076b559f97b4c07e6b366fe1b048521b823bc13",
+    "expected": "成了没？我要关灯了。要不你俩把这段也写进交接表？",
+    "recognized": "成了美 我要關燈了要不你倆把這一段也寫進交接表",
+    "similarity": 0.651,
+    "review": "supporting-pass"
+  },
+  {
+    "id": "invitation-5-ja",
+    "sha256": "db4609ed1cbaea52ed02c89cd7fda6d89fe339bf8ce18e4354c4b34f1ecf082d",
+    "expected": "話、まとまった？　消灯するよ。続きも引き継ぎノートに書いとく？",
+    "recognized": "話、まとまった。 消耗するよ。 続きも引き継ぎの音に変えたく。",
+    "similarity": 0.745,
+    "review": "supporting-pass"
+  },
+  {
+    "id": "invitation-6-zh",
+    "sha256": "40427423c8e875f6cef1fea255e3329adbadbd8c64837d1f90d7c36c477a49e2",
+    "expected": "十月还早。明天送我去车站吧，路上就能先请你吃早饭。",
+    "recognized": "食月还早 明天送我去超站吧路上就能先请你吃早饭",
+    "similarity": 0.909,
+    "review": "supporting-pass"
+  },
+  {
+    "id": "invitation-6-ja",
+    "sha256": "e8aa315fbe396577b3793f161909403a8af144a54e7601be2bfb281504534549",
+    "expected": "十月は、まだ先だね。明日、駅まで送ってよ。まずは途中で、朝ごはんおごるから。",
+    "recognized": "10月はまだ先だね 明日駅まで送ってよまずは途中で朝ごはんをご",
+    "similarity": 0.871,
+    "review": "supporting-pass"
+  },
+  {
+    "id": "invitation-7-zh",
+    "sha256": "9ec9533af451e73cae04c01e649147c784508e7677b93cafd10cb15f7ddbfe95",
+    "expected": "好。还有，夜宵是我请。那一笔是我改的。",
+    "recognized": "好,还有,叶肖使我强,那一笔是我改的",
+    "similarity": 0.733,
+    "review": "supporting-pass"
+  },
+  {
+    "id": "invitation-7-ja",
+    "sha256": "fd8da20db169b223e7a92aa8f24bd586a41e3b4201e59080fc498c8ebf1cf629",
+    "expected": "うん。それと夜食は、僕のおごり。最後に直したの、僕だから。",
+    "recognized": "それと野食は、僕の終わり、最後になおしたの、僕だから。",
+    "similarity": 0.766,
+    "review": "supporting-pass"
+  },
+  {
+    "id": "station-1-zh",
+    "sha256": "52a23f697c57552b849260c2cb391abd389ed6dc7ecad0d1a6e793ce350eacae",
+    "expected": "你昨晚那句祝福，我听见了。",
+    "recognized": "你早晚那些祝福我听见了",
+    "similarity": 0.818,
+    "review": "supporting-pass"
+  },
+  {
+    "id": "station-1-ja",
+    "sha256": "4fcae58b6ae242d11dc804be9c87936dc7cfebdd1859813fed05bb1e4af6bedb",
+    "expected": "昨日の、送り出す言葉。ちゃんと聞いたよ。",
+    "recognized": "昨日はなおくりだす言葉 じゃんと聞いたよ",
+    "similarity": 0.722,
+    "review": "supporting-pass"
+  },
+  {
+    "id": "station-2-zh",
+    "sha256": "c94ae162850b41b1c7d4643d952f4447d22c255f55bc6bdcbe2132ae3f66f506",
+    "expected": "那句是给大家的。还有一句，只想跟你说。",
+    "recognized": "那一句是給大家的,還有一句,只想跟你說",
+    "similarity": 0.788,
+    "review": "supporting-pass"
+  },
+  {
+    "id": "station-2-ja",
+    "sha256": "c0801b357494e7aeeb6756b47d33fb4eb82abf7fdc168591df4d93ba666258fc",
+    "expected": "あれは、みんなへの言葉。もう一つ、君にだけ言いたいことがある。",
+    "recognized": "あいはみんないる言葉 もう一つ 地味にだけ言いたいことは",
+    "similarity": 0.755,
+    "review": "supporting-pass"
+  },
+  {
+    "id": "station-3-zh",
+    "sha256": "17ac678dd8aa921ae571eb333b207991b50ff97a0d35e23a9ae02a55e56e6157",
+    "expected": "我喜欢你。不是因为今天要分别，才忽然喜欢的。",
+    "recognized": "我喜欢你,不是因为今天要分别,还忽然喜欢的",
+    "similarity": 0.947,
+    "review": "supporting-pass"
+  },
+  {
+    "id": "station-3-ja",
+    "sha256": "64153ce4d80632387db722732953825810533771788d5e871bf527c0272a30ac",
+    "expected": "好きだよ。今日、離れるから急に好きになったわけじゃない。",
+    "recognized": "好きだよ 今日離れるから急に好きになったわけじゃない",
+    "similarity": 1.0,
+    "review": "supporting-pass"
+  },
+  {
+    "id": "station-4-zh",
+    "sha256": "6dfe77197bd1af21895cdffe412f30cff03f5b138fa71128bbe81ffeb5cc5b6a",
+    "expected": "你偏偏挑现在说。我马上要上车了。",
+    "recognized": "你偏偏挑现在说我马上要上车了",
+    "similarity": 1.0,
+    "review": "supporting-pass"
+  },
+  {
+    "id": "station-4-ja",
+    "sha256": "b459a14e2913271ebdb8f08212d7c5c754281a9eae82cb4fd3870141b6d57be4",
+    "expected": "どうして今なの。もう、乗らなくちゃいけないのに。",
+    "recognized": "どうして今だな もう乗らなくちゃいけないのに",
+    "similarity": 0.952,
+    "review": "supporting-pass"
+  },
+  {
+    "id": "station-5-zh",
+    "sha256": "e95d42ef29a11a9ba1d7c18a508fce6370bccd864af4ae4e07aea69f1e797696",
+    "expected": "嗯。我不是来要你留下的，也不是来要一个答案。就是不想再让你猜了。",
+    "recognized": "嗯,我不是来要你留下的也不是来要一个答就是不想再让你猜了",
+    "similarity": 0.982,
+    "review": "supporting-pass"
+  },
+  {
+    "id": "station-5-ja",
+    "sha256": "717db1e4a816bf16bafcb04aa751f7c64d2961f6c6829cae048d39d57a9a86e2",
+    "expected": "うん。引き止めに来たんじゃない。返事をもらいに来たわけでもない。ただ、もう察してもらうのは、やめたかった。",
+    "recognized": "一目に来たんじゃない 返事をもらえに来たわけでもないただもう刺してもらうのはやめたかった",
+    "similarity": 0.867,
+    "review": "supporting-pass"
+  },
+  {
+    "id": "station-6-zh",
+    "sha256": "896032286c06fa13f27a776f4d2b55cf4d355f515d19c6c221935f4f7b8f5c7f",
+    "expected": "到了给你打电话。不是报平安，是还有话没说完。",
+    "recognized": "把我了给你打电话不是报频啊是还有话没说完",
+    "similarity": 0.821,
+    "review": "supporting-pass"
+  },
+  {
+    "id": "station-6-ja",
+    "sha256": "a9bc82c3ece0d384d6cf478222432bf388a4e8c577f7009b9dcdfd687331f2dc",
+    "expected": "着いたら電話する。無事に着いたって報告だけじゃなくて。まだ、話の続きがあるから。",
+    "recognized": "ついたら電話する 無事についたって報告だけじゃなくてまだ話の続きがあるから",
+    "similarity": 0.944,
+    "review": "supporting-pass"
+  },
+  {
+    "id": "your-first-line-zh",
+    "sha256": "91e2203e093c333701be8af1ca28eb4b647b6afa1854ccf940a1d5594ed58fa4",
+    "expected": "那你呢？最后这一句，你想怎么写？",
+    "recognized": "那你呢,最後這一句你想怎麼寫",
+    "similarity": 0.692,
+    "review": "supporting-pass"
+  },
+  {
+    "id": "your-first-line-ja",
+    "sha256": "5c16fad38189cf24474d0c71e9ec5b18cabd3131a859568ddd71085b00e015dd",
+    "expected": "君ならどうする？　最後の一行、何て書きたい？",
+    "recognized": "君ならどうすら最後の一かなんて書きたい",
+    "similarity": 0.811,
+    "review": "supporting-pass"
+  },
+  {
+    "id": "opening-5-zh",
+    "sha256": "06aeb98edfb642f85b610ffa38aefb843c151b898ceddc2b2d45d460f6cc7938",
+    "expected": "都不耽误。还有七分钟，谁再改谁请夜宵。",
+    "recognized": "都不胆,还有七分钟,谁再改,谁请夜销",
+    "similarity": 0.839,
+    "review": "supporting-pass"
+  },
+  {
+    "id": "before-3-zh",
+    "sha256": "95807f5ecfa67b5a2473360ff9ab47064735ef7bdd0f8bce7925e2bccc8b1144",
+    "expected": "什么然后？",
+    "recognized": "什么然后",
+    "similarity": 1.0,
+    "review": "supporting-pass"
+  },
+  {
+    "id": "before-3-ja",
+    "sha256": "e695335e0b846c26b4fe3e94b5eaa21c06df3c19623aa9af3651c719d77018ac",
+    "expected": "それからって？",
+    "recognized": "それだらって",
+    "similarity": 0.833,
+    "review": "supporting-pass"
+  },
+  {
+    "id": "invitation-2-zh",
+    "sha256": "967d0824e85b09633c9da145b765b0e3e80c97d212e2402478cfc92529ce1ae8",
+    "expected": "十月假期，我去找你。车票我提前买，住的地方我自己订。",
+    "recognized": "十月大街,我是找你,车掉我提前买,住的地方我自解定。",
+    "similarity": 0.727,
+    "review": "supporting-pass"
+  },
+  {
+    "id": "invitation-2-ja",
+    "sha256": "afe15c5d8d0aad368b32b0df40e7e79d2437076a207182591331a46c5648bf83",
+    "expected": "十月の休みに、そっちへ行く。切符は早めに取るし、泊まる所も自分で探す。",
+    "recognized": "10月の休みに、そちらが、きっとは早めにとるし、止まるところも自分で探す。",
+    "similarity": 0.656,
+    "review": "supporting-pass"
+  },
+  {
+    "id": "invitation-4-ja",
+    "sha256": "3adf20db3e0f2c9dd65b9882a7eaa9ed31e1f5121d5d0aff11e468bfb84d07e1",
+    "expected": "そっちで最初に見つけた、おいしい店に連れていってくれる？",
+    "recognized": "そっちで最初に見つけた、ICMさんにつらたいってくだろう。",
+    "similarity": 0.604,
+    "review": "supporting-pass"
+  },
+  {
+    "id": "opening-4-ja",
+    "sha256": "1bc3d4c6619f762979ca5e2ab1d4c7b7cb5796938b24a23c6fdd566ad493b380",
+    "expected": "呼びに来たの？　それとも、見に来ただけ？",
+    "recognized": "呼びに来たの? それでも海に来たわけ?",
+    "similarity": 0.812,
+    "review": "supporting-pass"
+  }
+]

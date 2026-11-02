@@ -1,4 +1,5 @@
 import { CHARACTER_REGISTRY, resolveCharacterUrl } from '../engine/characters'
+import { SEVENTH_ROW_DEMO, CURTAIN_CALL_DEMO } from '@dreamchord/story-domain'
 
 export interface LibraryCharacter {
   id: string
@@ -77,7 +78,20 @@ const characterExtra: Record<string, Pick<LibraryCharacter, 'biography' | 'outli
   },
 }
 
-export const defaultCharacters: LibraryCharacter[] = Object.values(CHARACTER_REGISTRY).map((character) => {
+const cinemaCharacters: LibraryCharacter[] = SEVENTH_ROW_DEMO.characters.map(c => ({
+  id: `seventh-${c.slug}`, name: c.name, role: '第七排，空座 · 官方角色', description: c.description,
+  biography: c.description, outline: '影院停业前夜重逢，重新听完那卷录音，并决定如何开始明天。',
+  usage: '成年角色、现实题材、旧友重逢；配音库同名音色支持中日双语。',
+  conflicts: [c.slug === 'chenyu' ? '擅长修复声音，却剪掉了自己不愿听见的话。' : c.slug === 'luyao' ? '替朋友保存原带多年，却始终没有说出自己要离开的计划。' : '朋友仍把她当作那个等待的人，她已经开始了自己的生活。'],
+  color: c.color, defaultExpression: 'normal', expressions: ['normal', 'sad', 'smile'].map((id, i) => ({ id, label: ['平静', '难言', '释然'][i]!, url: `/assets/seventh-row/${c.slug}-${id}.png` })), updatedAt: '2026-10-29',
+}))
+const curtainCharacters: LibraryCharacter[] = CURTAIN_CALL_DEMO.characters.map(c => ({
+  id: `curtain-${c.slug}`, name: c.name, role: '谢幕词上的那一句 · 官方角色', description: c.description, biography: c.description,
+  outline: c.slug === 'zhi' ? '准备离校入职，在最后一次搭档主持前，问清两个人未来如何联系。' : c.slug === 'lin' ? '从客套祝福到说出自己的心意，为下一次见面作出具体行动。' : '负责晚会顺利谢幕，也给两位朋友留下一点说话的时间。',
+  usage: '校园毕业、自然对话、分别与重逢；声音库同名音色可直接绑定。', conflicts: [c.slug === 'zhi' ? '想开始新生活，也不愿与熟悉的人渐渐失去联系。' : c.slug === 'lin' ? '习惯替对方考虑，却一直没有问过她的真实想法。' : '催场和关灯之外，朋友还有没来得及说完的话。'],
+  color: c.color, defaultExpression: 'normal', expressions: ['normal', 'sad', 'smile'].map((id, i) => ({ id, label: ['平静', '难言', '微笑'][i]!, url: `/assets/curtain-call/${c.slug}-${id}.png` })), updatedAt: '2026-10-29',
+}))
+export const defaultCharacters: LibraryCharacter[] = [...curtainCharacters, ...cinemaCharacters, ...Object.values(CHARACTER_REGISTRY).map((character) => {
   const extra = characterExtra[character.id]
   return {
     id: character.id,
@@ -106,9 +120,15 @@ export const defaultCharacters: LibraryCharacter[] = Object.values(CHARACTER_REG
     })),
     updatedAt: '2026-06-30',
   }
-})
+})]
 
 export const defaultScenes: LibraryScene[] = [
+  ...[
+    { slug: 'backstage', name: '毕业晚会 · 幕后', place: '室内', timeOfDay: '黄昏', moods: ['日常', '告别'], description: '两支话筒、修改过的稿纸和敞开的侧门。适合上台前的拌嘴、排练与谈心。' },
+    { slug: 'stage', name: '散场以后 · 礼堂', place: '室内', timeOfDay: '夜晚', moods: ['静谧', '余韵'], description: '灯光未熄的空礼堂，台下已无人。适合收拾舞台、说出心意和约定。' },
+    { slug: 'campus', name: '夏夜校园 · 岔路', place: '校园', timeOfDay: '夜晚', moods: ['浪漫', '温暖'], description: '礼堂外的夏夜小路、长椅与自行车。适合散场同行和下一次见面的约定。' },
+    { slug: 'station', name: '清晨六点 · 站台', place: '车站', timeOfDay: '清晨', moods: ['告别', '希望'], description: '晨光照进车窗，列车即将出发。适合送行、坦白与留下余韵的结尾。' },
+  ].map(s => ({ ...s, id: `curtain-${s.slug}`, url: `/assets/curtain-call/${s.slug}.webp`, type: '现实', usage: '原创短篇《谢幕词上的那一句》；也可用于自己的校园与现实题材故事。', updatedAt: '2026-10-29' })),
   {
     id: 'bg-classroom',
     name: '黄昏教室',
@@ -145,6 +165,11 @@ export const defaultScenes: LibraryScene[] = [
     usage: '梦境相遇、内心世界、重要选择与结局余韵',
     updatedAt: '2026-06-30',
   },
+  ...[
+    { slug: 'cinema-rain', name: '白帆影院 · 雨夜门廊', description: '海边旧影院的最后一个营业夜，暖灯照着被雨打湿的街道。', place: '街道', moods: ['重逢', '静谧'] },
+    { slug: 'projection-room', name: '白帆影院 · 放映室', description: '旧放映机、磁带与暖台灯，适合两三人的近距离谈话。', place: '室内', moods: ['回忆', '悬念'] },
+    { slug: 'auditorium', name: '白帆影院 · 第七排', description: '空银幕与深青座椅，最后一场放映开始前的观众席。', place: '室内', moods: ['告别', '释然'] },
+  ].map(s => ({ id: `seventh-${s.slug}`, name: s.name, description: s.description, url: `/assets/seventh-row/${s.slug}.webp`, type: '现实', place: s.place, timeOfDay: '夜晚', moods: s.moods, usage: '原创短篇《第七排，空座》；重逢、录音揭晓、告别与片尾。', updatedAt: '2026-10-29' })),
 ]
 
 export const defaultTemplates: StoryTemplate[] = [
@@ -208,11 +233,23 @@ export const conflictTemplates: ConflictTemplate[] = [
 ]
 
 export function loadLibraryCharacters(): LibraryCharacter[] {
-  return normalizeList(CHARACTER_KEY, defaultCharacters, normalizeCharacter)
+  return addBuiltinOnce(CHARACTER_KEY, addBuiltinOnce(CHARACTER_KEY, normalizeList(CHARACTER_KEY, defaultCharacters, normalizeCharacter), cinemaCharacters, 'seventh-row'), curtainCharacters, 'curtain-call')
 }
 
 export function loadLibraryScenes(): LibraryScene[] {
-  return normalizeList(SCENE_KEY, defaultScenes, normalizeScene)
+  return addBuiltinOnce(SCENE_KEY, addBuiltinOnce(SCENE_KEY, normalizeList(SCENE_KEY, defaultScenes, normalizeScene), defaultScenes.filter(s => s.id.startsWith('seventh-')), 'seventh-row'), defaultScenes.filter(s => s.id.startsWith('curtain-')), 'curtain-call')
+}
+
+function addBuiltinOnce<T extends { id: string }>(key: string, items: T[], additions: T[], pack: string): T[] {
+  const marker = `${key}:${pack}-installed`
+  try {
+    if (localStorage.getItem(marker)) return items
+    if (localStorage.getItem(key) && items.length === 0) { localStorage.setItem(marker, '1'); return items }
+    const result = [...additions.filter(a => !items.some(item => item.id === a.id)), ...items]
+    localStorage.setItem(key, JSON.stringify(result))
+    localStorage.setItem(marker, '1')
+    return result
+  } catch { return items }
 }
 
 export function loadStoryTemplates(): StoryTemplate[] {

@@ -6,6 +6,12 @@ import StageCharacters from './StageCharacters'
 
 describe('StageCharacters', () => {
   afterEach(cleanup)
+  it('recognizes project character names and keeps narration visible on mobile', () => {
+    const { rerender } = render(<StageCharacters characters={[{ id: 'db-character', state: 'normal' }]} speakerId="陆遥" resolveName={() => '陆遥'} />)
+    expect(screen.getByTestId('stage-character-db-character')).toHaveAttribute('data-speaker', 'true')
+    rerender(<StageCharacters characters={[{ id: 'db-character', state: 'normal' }]} speakerId="旁白" resolveName={() => '陆遥'} />)
+    expect(screen.getByTestId('stage-character-db-character')).not.toHaveClass('max-sm:!opacity-0')
+  })
 
   it('renders human characters as focused busts and keeps the ghost whole', () => {
     render(
@@ -25,7 +31,7 @@ describe('StageCharacters', () => {
     expect(screen.getByAltText('雪')).toHaveAttribute('src', '/assets/characters/yuki_smile.png')
     expect(ghost).toHaveAttribute('data-framing', 'full')
     expect(ghost).toHaveAttribute('data-speaker', 'false')
-    expect(yuki).toHaveClass('max-sm:!w-[88%]')
+    expect(yuki).toHaveClass('max-sm:!w-[max(88%,61cqh)]')
     expect(yuki).toHaveClass('max-sm:!left-1/2')
     expect(ghost).toHaveClass('max-sm:!opacity-0')
   })

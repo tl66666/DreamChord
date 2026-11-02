@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import { applyAudioAssetToShotCard, applyStageToShotCard, createSceneNodes, draftFromSceneNodes, type ShotCard } from './sceneGraph'
+import { applyAudioAssetToShotCard, applyStageToShotCard, createSceneNodes, draftFromSceneNodes, normalizeShotCard, type ShotCard } from './sceneGraph'
+import type { LibraryCharacter } from '../lib/libraryData'
 
 const card: ShotCard = {
   id: 'line', sceneId: 'scene', sceneGroupId: 'scene', sceneCode: '1-1', nodeIds: ['line'],
@@ -9,6 +10,10 @@ const card: ShotCard = {
 }
 
 describe('shot-card effective stage', () => {
+  it('can automatically stage a project-owned speaker absent from the browser library', () => {
+    const next = normalizeShotCard({ ...card, speaker: 'project-only', speakerExpression: 'smile', characters: [] }, [{ id: 'project-only', defaultExpression: 'normal', expressions: [{ id: 'smile', url: '/smile.png' }] } as LibraryCharacter])
+    expect(next.characters).toEqual([{ characterId: 'project-only', expression: 'smile', position: 'right', action: 'show' }])
+  })
   it('keeps bilingual text and voice tracks when cards are rebuilt or duplicated', () => {
     const bilingual = { ...card, localizations: { ja: { text: '来たよ。' } }, voiceTracks: { ja: { url: '/ja.wav', textHash: '12345678' } } }
     const { nodes } = createSceneNodes(bilingual, 'scene')

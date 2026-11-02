@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest'
 import type { Character } from '../api/client'
 import type { LibraryCharacter } from '../lib/libraryData'
-import { mergeProjectCharacters, upsertAcceptedProjectCharacter } from './projectCharacters'
+import { mergeProjectCharacters, resolveProjectShotCard, upsertAcceptedProjectCharacter } from './projectCharacters'
+import type { ShotCard } from './sceneGraph'
 
 const localCharacter: LibraryCharacter = {
   id: 'local-yuki', name: '雪', role: '主角', description: '本地角色', biography: '', outline: '', usage: '',
@@ -15,6 +16,24 @@ const projectCharacter = (overrides: Partial<Character> = {}): Character => ({
 })
 
 describe('project editor characters', () => {
+  it('retains legacy built-in expression variants only when their default sprite matches', () => {
+    const local = { ...localCharacter, expressions: [{ id: 'normal', label: '平静', url: '/normal.png' }, { id: 'smile', label: '微笑', url: '/smile.png' }], defaultExpression: 'normal' }
+    const legacy = projectCharacter({ name: local.name, defaultSprite: '/normal.png' })
+    expect(mergeProjectCharacters([local], [legacy])[0]!.expressions.map(e => e.id)).toEqual(['normal', 'smile'])
+    expect(mergeProjectCharacters([local], [{ ...legacy, defaultSprite: '/uploads/custom.png' }])[0]!.expressions).toEqual([{ id: 'default', label: 'default', url: '/uploads/custom.png' }])
+  })
+  it('preserves project expression sprites and resolves named speakers to their project identity', () => {
+    const c = projectCharacter({ name: '许栀', sprites: [{ name: 'normal', url: '/normal.png' }, { name: 'smile', url: '/smile.png' }] })
+    const merged = mergeProjectCharacters([{ ...localCharacter, name: '许栀' }], [c])
+    expect(merged).toHaveLength(1)
+    expect(merged[0]!.expressions.map(e => e.id)).toEqual(['normal', 'smile'])
+    const card = { speaker: '许栀', speakerExpression: 'normal', speakerPosition: 'left', characters: [{ characterId: c.id, expression: 'smile', position: 'center', action: 'show' }] } as ShotCard
+    const resolved = resolveProjectShotCard(card, [c], [])
+    expect(resolved.speaker).toBe(c.id)
+    expect(resolved.speakerExpression).toBe('smile')
+    expect(resolved.speakerPosition).toBe('center')
+    expect(card.speaker).toBe('许栀')
+  })
   it('merges project characters with the local library', () => {
     const characters = mergeProjectCharacters([localCharacter], [projectCharacter()])
 

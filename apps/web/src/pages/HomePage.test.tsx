@@ -19,6 +19,9 @@ vi.mock('../api/client', () => ({
   exportProjectBackup: vi.fn(),
   importProjectBackup: vi.fn(),
   updateProject: vi.fn(),
+  getProjectVoicePreparation: vi.fn(async () => null),
+  prepareProjectVoice: vi.fn(),
+  pauseProjectVoicePreparation: vi.fn(),
 }))
 
 describe('HomePage navigation', () => {

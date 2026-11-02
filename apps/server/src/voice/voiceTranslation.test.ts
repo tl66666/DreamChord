@@ -3,6 +3,18 @@ import { voiceTextHash } from '@dreamchord/story-domain'
 import { VoiceTranslationService } from './voiceTranslation.js'
 
 describe('Chinese to Japanese voice translation', () => {
+  it('reuses the curtain-call starter and dialogue without loading a translation model', async () => {
+    const local = vi.fn()
+    const result = await new VoiceTranslationService(local).translate({ text: '那你呢？最后这一句，你想怎么写？', targetLanguage: 'ja' })
+    expect(result.text).toBe('君ならどうする？　最後の一行、何て書きたい？')
+    expect(local).not.toHaveBeenCalled()
+  })
+  it('also reuses the new cinema demo script for Japanese dubbing', async () => {
+    const local = vi.fn()
+    const result = await new VoiceTranslationService(local).translate({ text: '这次是我出门晚了。', targetLanguage: 'ja' })
+    expect(result.text).toBe('今日は、家を出るのが遅くなった。')
+    expect(local).not.toHaveBeenCalled()
+  })
   it('reuses an official translation without loading another model', async () => {
     const local = vi.fn()
     const result = await new VoiceTranslationService(local).translate({ text: '最后一页……只差最后一句。', targetLanguage: 'ja' })

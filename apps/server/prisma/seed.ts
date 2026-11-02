@@ -1,6 +1,8 @@
 import { PrismaClient } from '@prisma/client'
 import bcrypt from 'bcryptjs'
 import { refreshOfficialDemo } from '../src/demo/officialDemoSeed.js'
+import { seedSeventhRow } from '../src/demo/seventhRowSeed.js'
+import { seedCurtainCall } from '../src/demo/curtainCallSeed.js'
 
 const prisma = new PrismaClient()
 
@@ -52,6 +54,8 @@ async function main() {
   })
 
   const official = await refreshOfficialDemo(prisma, user.id)
+  await seedSeventhRow(prisma, user.id)
+  await seedCurtainCall(prisma, user.id)
   console.log('Seed created:', { user: user.username, projects: ['樱花下的初见', official.title] })
 }
 

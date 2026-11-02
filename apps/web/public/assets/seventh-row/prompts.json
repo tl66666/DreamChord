@@ -1,0 +1,15 @@
+{
+  "tool": "built-in image_gen",
+  "backgrounds": {
+    "cinema-rain": "Original literary visual novel background, 16:9. Aging seaside neighborhood cinema at autumn blue hour in rain. Blank burgundy canopy, amber brass glass entrance doors, unlettered old posters, bicycle, wet street, distant sea. Refined hand-painted anime illustration. Deep teal, amber and muted burgundy. No people, text, logos or UI. Lower part uncluttered for dialogue.",
+    "projection-room": "Same original cinema, 16:9. Vintage film projector and reels left, wood table with cassette recorder, tools, envelope and warm lamp center; rain window and distant coastal lights right. Deep teal, amber and muted burgundy. Literary visual novel hand-painted background, no people or text; lower area clear.",
+    "auditorium": "Same old cinema, 16:9, diagonally facing blank ivory screen left, seven rows of deep petrol velvet seats, a distinct empty central seat and beige coat on adjacent seat, warm aisle lights and cool projection. Refined hand-painted literary visual novel background. No people, text, logos or UI."
+  },
+  "spriteSheetCommon": "Transparent landscape sprite sheet, three non-overlapping complete full-body versions of the same adult character centered at 1/6, 1/2 and 5/6 width. Same identity, outfit and height in all columns, head and feet fully visible. Expressions neutral, hurt/downcast, relieved gentle smile. Refined hand-painted literary VN anime style in the same cinema palette. No labels, text, background or shadows.",
+  "characters": {
+    "luyao": "Adult Chinese woman, 24. Long ink-black low ponytail with ivory ribbon, gray eyes, oatmeal cardigan over white blouse, deep petrol mid-calf pleated skirt, brown ankle boots, small brass projector pin, holds cream envelope near waist.",
+    "chengxia": "Adult Chinese woman, 24, independent singer. Chin-length chestnut wavy bob, silver hair clip, hazel eyes, muted plum coat, ivory sweater, rust red scarf, charcoal knee-length skirt, black tights and ankle boots, blue notebook, arms near torso.",
+    "chenyu": "Adult Chinese man, 26, audio restorer. Tousled short black hair, thin round glasses, gray long coat, russet knit over white shirt, dark trousers, black shoes, small field recorder across body, hand holding recorder."
+  },
+  "transparencyEdit": "Preserve all three figures, faces, clothing, full bodies, exact positions and expressions. Remove all background including glow, vignette, haze and shadows. Genuinely transparent alpha surrounding isolated figures. Clean antialiased hair and feet. No backdrop, glows, labels or cast shadows."
+}

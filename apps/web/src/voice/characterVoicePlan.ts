@@ -14,6 +14,7 @@ export function planCharacterVoices(nodes: Node[], profiles: VoiceProfile[], pro
   for (const node of nodes) {
     if (node.type !== 'dialogue' || typeof node.data.text !== 'string' || !node.data.text.trim()) continue
     const role = String(node.data.role || '')
+    if (!role || role === '旁白' || role === 'narrator') continue
     const sourceText = node.data.text
     const sourceHash = voiceTextHash(sourceText)
     const fields = readLocalizationFields(node.data)

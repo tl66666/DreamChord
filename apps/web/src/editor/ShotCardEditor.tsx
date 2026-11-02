@@ -32,7 +32,7 @@ import { parseManuscriptToShotCards } from './manuscriptUtils'
 import ManuscriptImporter from './ManuscriptImportPreview'
 import type { Asset, Character } from '../api/client'
 import type { ProjectAssetTarget } from './ProjectAssetPicker'
-import { mergeProjectCharacters } from './projectCharacters'
+import { mergeProjectCharacters, resolveProjectShotCard, resolveProjectCharacterId } from './projectCharacters'
 
 interface ShotCardEditorProps {
   projectId?: string
@@ -86,8 +86,8 @@ export default function ShotCardEditor({
     const sceneStart = findSceneStartNode(selectedSceneId, nodes, edges)
     if (!sceneStart) return []
     const sceneNodes = getSceneGroupNodes(sceneStart, nodes, edges)
-    return groupNodesToCards(sceneNodes).map((card) => applyStageToShotCard(card, resolveStageStateAfterNode(nodes, edges, card.id)))
-  }, [nodes, edges, selectedSceneId])
+    return groupNodesToCards(sceneNodes).map((card) => resolveProjectShotCard(applyStageToShotCard(card, resolveStageStateAfterNode(nodes, edges, card.id)), projectCharacters))
+  }, [nodes, edges, selectedSceneId, projectCharacters])
 
   // 对话连续性标记：与前卡相同 speaker + background + 同场景 + 非选项
   const continuityFlags = useMemo(() => cards.map((card, i) => {
@@ -215,11 +215,11 @@ export default function ShotCardEditor({
           // 需要添加角色 → 走完整重建
         } else {
           // 更新已有角色节点的表情和位置
-          const normalized = normalizeShotCard(updatedCard)
+          const normalized = normalizeShotCard(updatedCard, characters)
           const speakerSlot = normalized.characters.find((c) => c.characterId === updatedCard.speaker)
           const existingChars = cardNodes.filter((n) => n.type === 'character')
           const speakerChar = existingChars.find((n) => {
-            const cid = getNodeCharacterId(n)
+            const cid = resolveProjectCharacterId(getNodeCharacterId(n), projectCharacters)
             return cid === updatedCard.speaker || cid.toLowerCase() === updatedCard.speaker.toLowerCase()
           })
           if (speakerChar && speakerSlot) {
@@ -240,7 +240,7 @@ export default function ShotCardEditor({
 
     // ── 完整重建路径：角色列表变更、类型变更、选项变更 ──
     const updatedCard: ShotCard = { ...card, ...updates }
-    const normalized = normalizeShotCard(updatedCard)
+    const normalized = normalizeShotCard(updatedCard, characters)
     const { nodes: newNodes } = createSceneNodes(normalized, card.sceneGroupId)
     const newBgNode = newNodes.find((n) => n.type === 'background')
     const newCharNodes = newNodes.filter((n) => n.type === 'character')
@@ -373,7 +373,7 @@ export default function ShotCardEditor({
 
     const laidOut = layoutNodes(allNodes, allEdges)
     onUpdateGraph(laidOut, allEdges)
-  }, [cards, nodes, edges, onUpdateGraph])
+  }, [cards, nodes, edges, onUpdateGraph, characters, projectCharacters])
 
   useEffect(() => {
     if (!assetSelection) return
@@ -403,7 +403,7 @@ export default function ShotCardEditor({
       choices: type === 'choice' ? ['选项 1', '选项 2'] : undefined,
       sceneCode, sceneGroupId: selectedSceneId, nodeIds: [],
     }
-    const normalized = normalizeShotCard(newCard)
+    const normalized = normalizeShotCard(newCard, characters)
     const { nodes: newNodes } = createSceneNodes(normalized, selectedSceneId)
     const sceneNodesList = sceneStart ? getSceneGroupNodes(sceneStart, nodes, edges) : []
     const lastSceneNode = sceneNodesList[sceneNodesList.length - 1]
@@ -425,7 +425,7 @@ export default function ShotCardEditor({
     onUpdateGraph(laidOut, allEdges)
     setEditingCardId(newCard.id)
     onSelectCard(newCard.id)
-  }, [selectedSceneId, nodes, edges, cards, onSelectCard, onUpdateGraph])
+  }, [selectedSceneId, nodes, edges, cards, onSelectCard, onUpdateGraph, characters])
 
   // 快速续接对话：继承上一张卡的背景和角色舞台，预设发言人
   const quickAppendDialogue = useCallback((speakerId: string) => {
@@ -453,7 +453,7 @@ export default function ShotCardEditor({
       sceneGroupId: selectedSceneId,
       nodeIds: [],
     }
-    const normalized = normalizeShotCard(newCard)
+    const normalized = normalizeShotCard(newCard, characters)
     const { nodes: newNodes } = createSceneNodes(normalized, selectedSceneId)
     const sceneNodesList = sceneStart ? getSceneGroupNodes(sceneStart, nodes, edges) : []
     const lastSceneNode = sceneNodesList[sceneNodesList.length - 1]
@@ -474,7 +474,7 @@ export default function ShotCardEditor({
     onUpdateGraph(laidOut, allEdges)
     setEditingCardId(newCard.id)
     onSelectCard(newCard.id)
-  }, [selectedSceneId, nodes, edges, cards, onSelectCard, onUpdateGraph, addCard])
+  }, [selectedSceneId, nodes, edges, cards, onSelectCard, onUpdateGraph, addCard, characters])
 
   // 快速续接后自动填充台词
   useEffect(() => {
@@ -538,7 +538,7 @@ export default function ShotCardEditor({
     let previousTail = lastSceneNode
     let firstImportedCardId = ''
     importedCards.forEach((card) => {
-      const normalized = normalizeShotCard(card)
+      const normalized = normalizeShotCard(card, characters)
       const { nodes: newNodes } = createSceneNodes(normalized, selectedSceneId)
       if (!firstImportedCardId) firstImportedCardId = card.id
       allNodes.push(...newNodes)
@@ -612,7 +612,7 @@ export default function ShotCardEditor({
       choices: card.choices ? [...card.choices] : undefined,
       nodeIds: [],
     }
-    const normalized = normalizeShotCard(dupCard)
+    const normalized = normalizeShotCard(dupCard, characters)
     const { nodes: newNodes } = createSceneNodes(normalized, card.sceneGroupId)
     const cardLastNodeId = card.nodeIds[card.nodeIds.length - 1]!
 
@@ -640,7 +640,7 @@ export default function ShotCardEditor({
     onUpdateGraph(laidOut, allEdges)
     setEditingCardId(dupCard.id)
     onSelectCard(dupCard.id)
-  }, [cards, nodes, edges, onSelectCard, onUpdateGraph])
+  }, [cards, nodes, edges, onSelectCard, onUpdateGraph, characters])
 
   const moveCard = useCallback((cardId: string, direction: 'up' | 'down') => {
     const index = cards.findIndex((c) => c.id === cardId)

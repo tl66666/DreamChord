@@ -358,5 +358,5 @@ function Info({ label, value }: { label: string; value: string }) { return <div 
 function Field({ label, value, onChange, placeholder = '' }: { label: string; value: string; onChange: (value: string) => void; placeholder?: string }) { return <label className="text-sm font-medium text-slate-700">{label}<input aria-label={label} value={value} onChange={(event) => onChange(event.target.value)} placeholder={placeholder} className="mt-1.5 w-full rounded-md border border-slate-300 px-3 py-2" /></label> }
 
 function isStarterVoice(profile: VoiceProfile) {
-  return profile.id.startsWith('starter-voice-profile-dreamchord-') || profile.id.startsWith('cast-voice-')
+  return voicePresentation(profile).official
 }

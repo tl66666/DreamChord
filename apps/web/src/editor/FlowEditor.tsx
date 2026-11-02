@@ -22,6 +22,7 @@ import type { StoryNodeType } from '@dreamchord/story-domain'
 import AssetPanel from './AssetPanel'
 import ProjectSettingsModal from './ProjectSettingsModal'
 import ProjectVoicePanel from './ProjectVoicePanel'
+import { pauseProjectVoicePreparation } from '../api/client'
 import SceneTree from './SceneTree'
 import ShotCardEditor from './ShotCardEditor'
 import MiniPreview from './MiniPreview'
@@ -31,7 +32,7 @@ import {
   getNodeSceneGroupId, getNodeSceneCode, getNodeData,
   findSceneStartNode, getSceneGroupNodes, createSceneNodes, normalizeShotCard,
   ensureSceneCode, layoutNodes, normalEdge, chainEdges, choiceEdge,
-  groupNodesToCards, toChineseNumber, normalizeChapterTitle,
+  groupNodesToCards, applyStageToShotCard, toChineseNumber, normalizeChapterTitle,
   findConvergenceScenes,
   getSceneFlowPosition, setSceneFlowPosition,
   type ShotCard,
@@ -48,7 +49,8 @@ import { ProjectHealthPanel } from './ProjectHealthPanel'
 import { editorPaneClasses } from './responsiveLayout'
 import { SaveCoordinator, type SaveState } from './saveCoordinator'
 import type { ProjectAssetTarget } from './ProjectAssetPicker'
-import { upsertAcceptedProjectCharacter } from './projectCharacters'
+import { upsertAcceptedProjectCharacter, resolveProjectShotCard } from './projectCharacters'
+import { resolveStageStateAfterNode } from './workbench/storyEditorGraph'
 import { loadLibraryScenes } from '../lib/libraryData'
 import { applyLibraryBackground } from './applyLibraryBackground'
 import AutomaticVoiceBar from '../voice/AutomaticVoiceBar'
@@ -76,6 +78,8 @@ export default function FlowEditor() {
   const [selectedSceneId, setSelectedSceneId] = useState<string | null>(null)
   const [selectedCardId, setSelectedCardId] = useState<string | null>(null)
   const [autoEditCardId, setAutoEditCardId] = useState<string | null>(null)
+  const [showCreatorGuide, setShowCreatorGuide] = useState(() => searchParams.get('welcome') === 'curtain')
+  const creatorFocusApplied = useRef(false)
 
   const store = useEditorStore()
   const nodes = store.nodes
@@ -121,17 +125,20 @@ export default function FlowEditor() {
 
   useEffect(() => {
     if (!projectId || projectId === 'new') return
+    let active = true
     store.setLoading(true)
-    getProject(projectId)
-      .then((project) => syncProjectToStore(project))
+    pauseProjectVoicePreparation(projectId).then(() => getProject(projectId))
+      .then((project) => { if (active) syncProjectToStore(project) })
       .catch((err) => {
+        if (!active) return
         console.error(err)
         if (err.response?.status === 401 || err.response?.status === 403) {
           toast.error('请先登录')
           navigate('/login')
         }
       })
-      .finally(() => store.setLoading(false))
+      .finally(() => { if (active) store.setLoading(false) })
+    return () => { active = false }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [projectId, navigate])
 
@@ -156,7 +163,13 @@ export default function FlowEditor() {
     store.setSelectedNodeId(null)
     // 自动选中第一个场景
     const scenes = buildSceneList(flowNodes, flowEdges)
-    if (scenes.length > 0) setSelectedSceneId(scenes[0]!.id)
+    const focus = !creatorFocusApplied.current && searchParams.get('welcome') === 'curtain' ? flowNodes.find(n => n.data.creatorStarter === true) : undefined
+    if (focus) {
+      creatorFocusApplied.current = true
+      setSelectedSceneId(getNodeSceneGroupId(focus) || null)
+      setSelectedCardId(focus.id)
+      setAutoEditCardId(focus.id)
+    } else if (scenes.length > 0) setSelectedSceneId(scenes[0]!.id)
   }
 
   // === 场景操作 ===
@@ -498,9 +511,9 @@ export default function FlowEditor() {
     const sceneStart = findSceneStartNode(selectedSceneId, nodes, edges)
     if (!sceneStart) return null
     const sceneNodes = getSceneGroupNodes(sceneStart, nodes, edges)
-    const cards = groupNodesToCards(sceneNodes)
+    const cards = groupNodesToCards(sceneNodes).map(card => resolveProjectShotCard(applyStageToShotCard(card, resolveStageStateAfterNode(nodes, edges, card.id)), project?.characters || []))
     return cards.find((c) => c.id === selectedCardId) || cards[0] || null
-  }, [selectedSceneId, selectedCardId, nodes, edges])
+  }, [selectedSceneId, selectedCardId, nodes, edges, project?.characters])
 
   // === 保存/预览/发布 ===
 
@@ -523,7 +536,8 @@ export default function FlowEditor() {
     if (projectId && projectId !== 'new') {
       const saved = await handleSave()
       if (!saved) return
-      navigate(`/play/${projectId}?preview=${Date.now()}`)
+      const from = selectedCardId || nodes.find(n => getNodeSceneGroupId(n) === selectedSceneId && ['dialogue', 'subtitle', 'choice'].includes(String(n.type)))?.id
+      navigate(`/play/${projectId}?preview=${Date.now()}${from ? `&from=${encodeURIComponent(`${store.chapterId}:${from}`)}` : ''}`)
       return
     }
     toast.info('请先从首页新建故事项目并保存，再进入预览。')
@@ -678,6 +692,7 @@ export default function FlowEditor() {
 
   return (
     <div className="flex h-full flex-col">
+      {showCreatorGuide && <div className="flex shrink-0 flex-wrap items-center gap-3 border-b border-dream-100 bg-gradient-to-r from-dream-50 via-white to-amber-50 px-4 py-3"><Sparkles className="h-5 w-5 text-dream-600" /><div className="min-w-0 flex-1"><p className="text-sm font-semibold text-slate-900">这是你的第三种结局</p><p className="mt-1 text-xs leading-5 text-slate-600">先改一句台词或人物表情，再点「预览」。许栀的音色已绑定，中文会自动准备为所选的日语配音；字幕仍显示中文。</p></div><button className="dc-secondary !min-h-9 !text-xs" onClick={() => { const first = nodes.find(n => n.data.creatorStarter === true); if (first) { setSelectedSceneId(getNodeSceneGroupId(first) || null); setSelectedCardId(first.id); setAutoEditCardId(first.id) } }}>定位我的结局</button><button className="dc-secondary !min-h-9 !text-xs" onClick={() => setShowCreatorGuide(false)}>知道了</button></div>}
       {carriedBackgroundId && <div className="flex shrink-0 flex-wrap items-center gap-3 border-b border-dream-100 bg-dream-50 px-4 py-3"><img src={carriedBackground?.url || '/assets/hero.png'} alt="" className="h-11 w-20 rounded-lg object-cover" /><div className="min-w-0 flex-1"><p className="text-sm font-semibold text-slate-900">{carriedBackground ? `已带入背景：${carriedBackground.name}` : '这个背景已不在素材库中'}</p><p className="mt-0.5 text-xs text-slate-600">在左侧选择目标场景，再应用为开场背景。对白、分支和已有配音会保留。</p></div><button disabled={!selectedSceneId || !carriedBackground || store.isLoading} onClick={applyCarriedBackground} className="dc-primary !min-h-9 !text-xs">应用到所选场景</button><button onClick={clearCarriedBackground} className="dc-secondary !min-h-9 !text-xs">取消</button></div>}
       {/* === 顶部工具栏 === */}
       <div className="z-20 flex flex-wrap items-center justify-between gap-3 border-b border-dream-100 bg-white px-4 py-2.5 shadow-sm">
@@ -854,7 +869,7 @@ export default function FlowEditor() {
                 projectCharacters={project?.characters.map((character) => ({ id: character.id, name: character.name }))}
               />
             ) : (
-              <MiniPreview card={selectedCard} onFullScreen={handlePreview} />
+              <MiniPreview card={selectedCard} onFullScreen={handlePreview} projectCharacters={project?.characters} />
             )}
           </div>
         </div>

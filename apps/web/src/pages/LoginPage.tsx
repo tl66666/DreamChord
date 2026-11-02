@@ -1,5 +1,6 @@
 import { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useNavigate, useLocation } from 'react-router-dom'
+import { safeAuthReturnTo } from '../lib/templateEntry'
 import { Sparkles, Loader2 } from 'lucide-react'
 import { login } from '../api/client'
 import { useAuthStore } from '../stores/authStore'
@@ -15,6 +16,7 @@ function getApiError(err: unknown, fallback = '操作失败'): string {
 
 export default function LoginPage() {
   const navigate = useNavigate()
+  const returnTo = safeAuthReturnTo(useLocation().search)
   const { setToken, setUser } = useAuthStore()
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
@@ -29,7 +31,7 @@ export default function LoginPage() {
       const { token, user } = await login({ username, password })
       setToken(token)
       setUser(user)
-      navigate('/')
+      navigate(returnTo)
     } catch (err: unknown) {
       setError(getApiError(err, '登录失败'))
     } finally {
@@ -83,7 +85,7 @@ export default function LoginPage() {
 
         <p className="mt-6 text-center text-sm text-dream-600">
           还没有账号？{' '}
-          <Link to="/register" className="text-dream-600 hover:underline">
+          <Link to={returnTo === '/' ? '/register' : `/register?next=${encodeURIComponent(returnTo)}`} className="text-dream-600 hover:underline">
             立即注册
           </Link>
         </p>

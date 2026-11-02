@@ -3,8 +3,15 @@ import type { Edge, Node } from '@xyflow/react'
 import { OFFICIAL_DEMO } from '@dreamchord/story-domain'
 import { convertFlowToRuntime } from './converter'
 import { createRuntimeEngine } from './runtime'
+import { SEVENTH_ROW_DEMO } from '@dreamchord/story-domain'
+import { groupNodesToCards } from '../editor/sceneGraph'
 
 describe('flow runtime stage continuity', () => {
+  it('opens the new official demo with readable narration and no empty authoring card', () => {
+    const cards = groupNodesToCards(SEVENTH_ROW_DEMO.graph.nodes.filter(n => n.data.sceneGroupId === 'row-scene-1') as Node[])
+    expect(cards.every(card => card.text.trim().length > 0)).toBe(true)
+    expect(cards[0]!.text).toContain('我修好了那卷磁带')
+  })
   it('keeps character state isolated between choice branches', () => {
     const nodes: Node[] = [
       { id: 'bg', type: 'background', position: { x: 0, y: 0 }, data: { backgroundId: '/room.png' } },

@@ -1,4 +1,8 @@
 import axios from 'axios'
+export interface CurtainTemplateEntry { id: string; title: string; focusSceneId: string; focusNodeId: string }
+export async function createCurtainTemplate(requestId: string): Promise<CurtainTemplateEntry> {
+  return (await api.post<CurtainTemplateEntry>('/projects/templates/curtain-call', { requestId })).data
+}
 import { getDefaultProvider, resolveBaseUrl } from '../lib/aiConfig'
 import { useAuthStore } from '../stores/authStore'
 import { presentVoiceProfile } from '../voice/voiceCatalog'
@@ -68,6 +72,7 @@ export async function getMe(): Promise<AuthResponse['user']> {
 
 export interface ProjectDetail {
   id: string
+  authorId?: string
   title: string
   description: string | null
   cover: string
@@ -765,4 +770,17 @@ export async function applyAgentRun(runId: string): Promise<AppliedPatchDto> {
 export async function undoAgentRun(runId: string): Promise<AppliedPatchDto> {
   const { data } = await api.post(`/agent/runs/${runId}/undo`)
   return data
+}
+export interface ProjectVoicePreparationStatus {
+  state: 'working' | 'ready' | 'paused' | 'error'; language: 'zh' | 'ja'
+  ready: number; pending: number; unbound: number; message: string
+}
+export async function getProjectVoicePreparation(projectId: string): Promise<ProjectVoicePreparationStatus | null> {
+  return (await api.get(`/projects/${projectId}/voice-preparation`)).data
+}
+export async function prepareProjectVoice(projectId: string, language: 'zh' | 'ja'): Promise<ProjectVoicePreparationStatus> {
+  return (await api.post(`/projects/${projectId}/voice-preparation`, { language })).data
+}
+export async function pauseProjectVoicePreparation(projectId: string): Promise<ProjectVoicePreparationStatus | null> {
+  return (await api.delete(`/projects/${projectId}/voice-preparation`)).data
 }

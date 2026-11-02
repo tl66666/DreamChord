@@ -577,9 +577,9 @@ export function ensureSceneCode(draft: ShotCard, nodes: Node[], preferredChapter
   return `${preferredChapter}-${nextScene}`
 }
 
-export function resolveExpression(characterId: string, expression: string): string {
+export function resolveExpression(characterId: string, expression: string, characters = loadLibraryCharacters()): string {
   if (expression !== '__random') return expression || 'normal'
-  const character = loadLibraryCharacters().find((item) => item.id === characterId)
+  const character = characters.find((item) => item.id === characterId)
   const expressions = character?.expressions || []
   if (expressions.length === 0) return character?.defaultExpression || 'normal'
   const index = Math.floor(Math.random() * expressions.length)
@@ -663,17 +663,16 @@ export function createSceneNodes(card: ShotCard, reuseGroupId?: string): { nodes
 /**
  * 规范化 ShotCard：处理自动登场、表情解析
  */
-export function normalizeShotCard(card: ShotCard): ShotCard {
-  const characters = loadLibraryCharacters()
+export function normalizeShotCard(card: ShotCard, characters = loadLibraryCharacters()): ShotCard {
   const preparedCharacters = card.characters.map((character) => ({
     ...character,
     action: character.action || 'show',
-    expression: resolveExpression(character.characterId, character.expression),
+    expression: resolveExpression(character.characterId, character.expression, characters),
   }))
 
   if ((card.lensType === 'dialogue' || card.lensType === 'thought') && card.autoStageSpeaker && card.speaker !== '旁白') {
     const speakerIndex = preparedCharacters.findIndex((character) => character.characterId === card.speaker)
-    const speakerExpression = resolveExpression(card.speaker, card.speakerExpression)
+    const speakerExpression = resolveExpression(card.speaker, card.speakerExpression, characters)
     if (speakerIndex >= 0) {
       preparedCharacters[speakerIndex] = {
         ...preparedCharacters[speakerIndex],

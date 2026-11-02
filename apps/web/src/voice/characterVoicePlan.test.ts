@@ -6,6 +6,9 @@ import { planCharacterVoices } from './characterVoicePlan'
 const profiles = [{ id: 'voice', status: 'active', bindings: [{ project: { id: 'project' }, character: { id: 'character-yuki', name: '雪' } }], references: [{ id: 'zh', status: 'active', language: 'zh' }, { id: 'ja', status: 'active', language: 'ja' }] }] as VoiceProfile[]
 const node = (data: Record<string, unknown>): Node => ({ id: 'line', type: 'dialogue', position: { x: 0, y: 0 }, data: { role: 'yuki', text: '别走。', ...data } })
 describe('character voice planning', () => {
+  it('treats narration as silent reading rather than an unbound character', () => {
+    expect(planCharacterVoices([node({ role: '旁白' }), node({ role: '' })], profiles, 'project', 'ja')).toEqual({ pending: [], ready: 0, unbound: 0 })
+  })
   it('uses a character binding for every new line without selecting an audio asset', () => {
     const result = planCharacterVoices([node({})], profiles, 'project', 'ja')
     expect(result.pending[0]).toMatchObject({ characterId: 'character-yuki', profileId: 'voice', referenceId: 'ja', sourceText: '别走。' })

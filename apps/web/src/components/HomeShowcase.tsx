@@ -5,10 +5,10 @@ import LibraryDialog from '../library/LibraryDialog'
 import { useAuthStore } from '../stores/authStore'
 
 const screens = [
-  { id: 'editor', label: '编写故事', title: '把对白、人物与场景放在一起', text: '左侧整理章节和场景，中间写镜头卡，右侧立即预览。复杂分支也能切换到流程图查看。', image: '/assets/showcase/editor.webp', to: '/editor/dreamchord-first-thread', action: '打开示例工作台' },
+  { id: 'editor', label: '编写故事', title: '把对白、人物与场景放在一起', text: '左侧整理章节和场景，中间写镜头卡，右侧立即预览。复杂分支也能切换到流程图查看。', image: '/assets/showcase/editor.webp', to: '/start/curtain-call', action: '从示例开始创作' },
   { id: 'voices', label: '试听音色', title: '先听见角色，再确定他的声音', text: '比较声线和语言，选择合适的音色并绑定角色。后续台词沿用配置，也保留逐句精修。', image: '/assets/showcase/voices.webp', to: '/library?tab=voices', action: '去声音库试听' },
   { id: 'settings', label: '封面与语言', title: '让每个故事都有自己的模样', text: '选用封面、上传图片，设置中文或日文字幕与配音。作品设置会保存，首页和工作台都能修改。', image: '/assets/showcase/settings.webp', to: '/#my-stories', action: '管理我的故事' },
-  { id: 'player', label: '游玩演出', title: '让选择、画面和声音回到故事里', text: '半身立绘、文字与音乐共同呈现剧情。使用作品默认配音，也能在播放设置中单独切换。', image: '/assets/showcase/player.webp', to: '/play/dreamchord-first-thread', action: '试玩官方示例' },
+  { id: 'player', label: '游玩演出', title: '让选择、画面和声音回到故事里', text: '半身立绘、文字与音乐共同呈现剧情。使用作品默认配音，也能在播放设置中单独切换。', image: '/assets/showcase/player.webp', to: '/play/dreamchord-curtain-call', action: '试玩官方示例' },
 ]
 export default function HomeShowcase() {
   const user = useAuthStore((state) => state.user)

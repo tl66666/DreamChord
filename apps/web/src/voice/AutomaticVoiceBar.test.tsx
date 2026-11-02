@@ -14,8 +14,20 @@ vi.mock('../api/client', async (original) => ({ ...await original<typeof import(
 afterEach(() => { cleanup(); localStorage.clear(); vi.useRealTimers(); vi.clearAllMocks() })
 
 describe('automatic dubbing editor integration', () => {
+  it('restores automatic mode for a server-seeded binding without overriding an explicit pause', async () => {
+    useEditorStore.setState({ project: { id: 'project', title: '故事' }, chapterId: 'chapter', isLoading: false })
+    useEditorStore.getState().hydrateGraph([], [])
+    const { unmount } = render(<AutomaticVoiceBar projectId="project" preferredSceneId={null} suspended={false} onApplied={() => undefined} onManage={() => undefined} />)
+    await screen.findByLabelText('暂停自动配音')
+    unmount()
+    saveAutomaticVoice('project', false)
+    render(<AutomaticVoiceBar projectId="project" preferredSceneId={null} suspended={false} onApplied={() => undefined} onManage={() => undefined} />)
+    await act(async () => { await Promise.resolve() })
+    expect(screen.getByLabelText('开启自动配音')).toBeInTheDocument()
+  })
   it('prepares and saves speech after a writing pause without opening the voice workbench', async () => {
     vi.useFakeTimers()
+    saveAutomaticVoice('project', false)
     useEditorStore.setState({ project: { id: 'project', title: '故事' }, chapterId: 'chapter', isLoading: false })
     useEditorStore.getState().hydrateGraph([{ id: 'line', type: 'dialogue', position: { x: 0, y: 0 }, data: { role: '雪', text: '放学后见。' } }], [])
     api.generate.mockImplementation(async (input) => ({ id: 'job', status: 'completed', text: input.text, language: 'zh' }))

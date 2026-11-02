@@ -3,7 +3,7 @@ import { AudioLines, CheckCircle2, Loader2, Pause, Play, RefreshCw } from 'lucid
 import { acceptVoiceGeneration, createVoiceGeneration, getVoiceGenerationJob, getVoiceGenerationJobs, getVoiceProfiles, translateVoiceText, type VoiceProfile } from '../api/client'
 import { useEditorStore } from '../stores/editorStore'
 import { projectVoiceLocale, VOICE_BINDINGS_CHANGED, VOICE_PREFERENCE_CHANGED } from './characterVoicePlan'
-import { AUTOMATIC_VOICE_CHANGED, automaticVoiceEnabled, saveAutomaticVoice } from './automaticVoicePreference'
+import { AUTOMATIC_VOICE_CHANGED, automaticVoiceEnabled, saveAutomaticVoice, enableAutomaticVoiceForBinding } from './automaticVoicePreference'
 import { AutomaticVoiceController, type AutomaticVoiceStatus } from './automaticVoice'
 import type { Node } from '@xyflow/react'
 
@@ -37,7 +37,7 @@ export default function AutomaticVoiceBar({ projectId, preferredSceneId, suspend
   useEffect(() => {
     let active = true
     setProfilesReady(false)
-    const load = () => { void getVoiceProfiles().then((items) => { if (active) { setProfiles(items); setProfilesReady(true); controller.retry() } }).catch(() => { if (active) setStatus({ state: 'error', message: '无法读取角色音色，请稍后重试。' }) }) }
+    const load = () => { void getVoiceProfiles().then((items) => { if (active) { setProfiles(items); setProfilesReady(true); controller.retry(); if (items.some(profile => profile.status === 'active' && profile.bindings.some(binding => binding.project.id === projectId))) enableAutomaticVoiceForBinding(projectId) } }).catch(() => { if (active) setStatus({ state: 'error', message: '无法读取角色音色，请稍后重试。' }) }) }
     const prefs = () => { setEnabled(automaticVoiceEnabled(projectId)); setLocale(useEditorStore.getState().project?.defaultVoiceLocale || projectVoiceLocale(projectId)) }
     prefs(); load()
     window.addEventListener(VOICE_BINDINGS_CHANGED, load)

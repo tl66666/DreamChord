@@ -13,6 +13,9 @@ import { resolveCharacterColor, resolveCharacterName } from '../engine/character
 import type { RuntimeScene } from '../engine/types'
 import StageCharacters from '../stage/StageCharacters'
 import { projectLanguageSettings } from './projectLanguage'
+import { useAuthStore } from '../stores/authStore'
+import { beginCurtainTemplate } from '../lib/templateEntry'
+import { startPreviewAt } from '../engine/previewStart'
 
 interface HistoryItem {
   sceneId: string
@@ -77,6 +80,7 @@ export default function VisualNovelPlayer() {
   const { projectId } = useParams<{ projectId: string }>()
   const navigate = useNavigate()
   const location = useLocation()
+  const user = useAuthStore(s => s.user)
   const [project, setProject] = useState<ProjectDetail | null>(null)
   const [loading, setLoading] = useState(true)
   const [engine, setEngine] = useState<ReturnType<typeof createRuntimeEngine> | null>(null)
@@ -163,7 +167,9 @@ export default function VisualNovelPlayer() {
         setSettings((previous) => ({ ...previous, ...projectLanguageSettings(data, savedLanguage) }))
         const { nodes, edges } = mergeChaptersForPreview(data)
         const runtimeStory = convertFlowToRuntime(data.id, data.title, nodes, edges, data.characters)
-        setEngine(createRuntimeEngine(runtimeStory))
+        const params = new URLSearchParams(location.search)
+        const previewStart = data.authorId === useAuthStore.getState().user?.id && params.has('preview') ? params.get('from') : null
+        setEngine(createRuntimeEngine(startPreviewAt(runtimeStory, previewStart)))
       })
       .catch((err) => {
         if (!active) return
@@ -230,8 +236,9 @@ export default function VisualNovelPlayer() {
   }, [currentScene])
 
   const characters = useMemo(() => currentScene?.characters || [], [currentScene])
-  const speakerName = useMemo(() => resolveCharacterName(localized.role), [localized.role])
-  const speakerColor = useMemo(() => resolveCharacterColor(currentScene?.dialogue?.role || ''), [currentScene])
+  const projectCharacterName = (id: string) => project?.characters.find(character => character.id === id || character.name === id)?.name || resolveCharacterName(id)
+  const speakerName = projectCharacterName(localized.role)
+  const speakerColor = project?.characters.find(character => character.id === currentScene?.dialogue?.role || character.name === currentScene?.dialogue?.role)?.color || resolveCharacterColor(currentScene?.dialogue?.role || '')
 
   const stopTyping = useCallback(() => {
     if (typingRef.current) {
@@ -441,17 +448,6 @@ export default function VisualNovelPlayer() {
         </motion.div>
       </AnimatePresence>
 
-      <div className="pointer-events-none absolute inset-0 z-[5] opacity-70 mix-blend-screen">
-        <motion.div
-          key={currentScene?.id}
-          initial={{ opacity: 0, x: -40 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.6 }}
-          className="absolute left-[-8%] top-[21%] h-px w-[116%] bg-gradient-to-r from-transparent via-dream-300/35 to-transparent"
-        />
-        <div className="absolute bottom-[28%] right-[8%] h-32 w-32 rounded-full border border-dream-200/10 shadow-[0_0_45px_rgba(167,139,250,0.16)]" />
-      </div>
-
       <AnimatePresence>
         {engine?.state.activeUIEvents.map((event, index) => (
           <motion.div
@@ -472,6 +468,7 @@ export default function VisualNovelPlayer() {
       <StageCharacters
         characters={characters}
         speakerId={currentScene?.dialogue?.role}
+        resolveName={projectCharacterName}
         className="z-10"
       />
 
@@ -519,7 +516,7 @@ export default function VisualNovelPlayer() {
                 }}
               />
               <div className="mx-auto w-full max-w-6xl">
-                {speakerName && (
+                {speakerName && !['旁白', 'narrator', 'unknown'].includes(speakerName) && (
                   <div className="mb-3 inline-flex items-center gap-2">
                     <span
                       className="rounded-full px-3 py-1 text-sm font-semibold md:text-base"
@@ -534,7 +531,7 @@ export default function VisualNovelPlayer() {
                     </span>
                   </div>
                 )}
-                <p className="min-h-[3.7rem] max-w-5xl text-lg leading-relaxed text-white/95 md:text-xl md:leading-relaxed">
+                <p className="min-h-[3.7rem] max-w-5xl whitespace-pre-line text-lg leading-relaxed text-white/95 md:text-xl md:leading-relaxed">
                   {displayedText}
                   {isTyping && <span className="ml-1 inline-block h-5 w-0.5 animate-pulse bg-white/70" />}
                 </p>
@@ -545,6 +542,7 @@ export default function VisualNovelPlayer() {
                       : isAuto && audioDirectorRef.current?.isVoicePlaying()
                         ? '自动播放中 · 等待配音'
                         : isAuto ? '自动播放中' : '点击继续'}
+                    {localized.missingVoice && speakerName && !['旁白', 'narrator', 'unknown'].includes(speakerName) && <span className="ml-3 text-amber-200/80">本句{settings.voiceLocale === 'ja' ? '日语' : '中文'}配音尚未准备</span>}
                   </span>
                   <ChevronDown className="h-5 w-5 animate-bounce text-white/42" />
                 </div>
@@ -598,9 +596,12 @@ export default function VisualNovelPlayer() {
             onClick={(event) => event.stopPropagation()}
           >
             <div className="max-w-md rounded-2xl border border-white/10 bg-black/64 p-8 text-center shadow-2xl">
-              <h2 className="mb-2 text-2xl font-bold text-white">第一章 · 终页归弦</h2>
-              <p className="mb-6 text-sm text-white/60">终页已经保存，新的故事线正在等待你。</p>
+              <h2 className="mb-2 text-2xl font-bold text-white">{project?.title || '故事'} · 本次阅读结束</h2>
+              <p className="mb-6 text-sm leading-7 text-white/60">{projectId === 'dreamchord-curtain-call' ? '如果是你，会在谢幕词上留下哪一句？把这个故事带进工作台，写下你的第三种结局。' : '谢谢你读到这里。重新阅读，可以尝试另一种选择。'}</p>
+              {projectId === 'dreamchord-curtain-call' && <p className="mb-5 text-xs leading-6 text-white/40">原创短篇 · 两个结局<br />GPT-SoVITS 角色配音 · 原创生成插画<br />配乐 TERNOX · CC0</p>}
+              {projectId === 'dreamchord-seventh-row' && <p className="mb-5 text-xs leading-6 text-white/40">原创短篇《第七排，空座》<br />配乐 TERNOX · CC0<br />原创生成插画 · Qwen3-TTS 合成角色配音</p>}
               <div className="flex flex-col gap-3">
+                {projectId === 'dreamchord-curtain-call' && <button onClick={() => navigate(beginCurtainTemplate())} className="inline-flex items-center justify-center gap-2 rounded-xl bg-dream-600 px-5 py-3 text-sm font-medium text-white transition hover:bg-dream-700"><PenLine className="h-4 w-4" />写下你的第三种结局</button>}
                 <button onClick={restart} className="inline-flex items-center justify-center gap-2 rounded-xl bg-dream-600 px-5 py-2.5 text-sm font-medium text-white transition hover:bg-dream-700">
                   <RotateCcw className="h-4 w-4" />
                   重新阅读
@@ -613,7 +614,7 @@ export default function VisualNovelPlayer() {
                   <PenLine className="h-4 w-4" />
                   创作故事
                 </button>
-                {projectId && (
+                {projectId && user && project?.authorId === user.id && (
                   <button onClick={() => navigate(`/editor/${projectId}`)} className="inline-flex items-center justify-center gap-2 rounded-xl border border-dream-300/30 bg-dream-500/20 px-5 py-2.5 text-sm text-white transition hover:bg-dream-500/30">
                     <PenLine className="h-4 w-4" />
                     回到工作台

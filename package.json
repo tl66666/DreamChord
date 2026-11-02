@@ -32,7 +32,12 @@
     "db:migrate": "pnpm --filter server prisma migrate dev",
     "db:generate": "pnpm --filter server prisma generate",
     "db:seed": "pnpm --filter server prisma db seed",
-    "db:studio": "pnpm --filter server prisma studio"
+    "db:studio": "pnpm --filter server prisma studio",
+    "demo:cinema:seed": "pnpm --filter @dreamchord/story-domain build && pnpm --filter dreamchord-server exec tsx prisma/seedSeventhRow.ts",
+    "test:cinema": "pnpm --filter @dreamchord/story-domain build && node --test scripts/seventh-row-pack.test.mjs",
+    "voice:pro:configure": "pwsh -NoProfile -File scripts/configure-gpt-sovits-pro.ps1",
+    "demo:curtain:seed": "pnpm --filter @dreamchord/story-domain build && pnpm --filter dreamchord-server exec tsx prisma/seedCurtainCall.ts",
+    "test:curtain": "pnpm --filter @dreamchord/story-domain build && node --test scripts/curtain-call-pack.test.mjs"
   },
   "devDependencies": {
     "@eslint/js": "9.39.1",

@@ -25,6 +25,8 @@ import { projectCover } from '../lib/projectCover'
 import ProjectSettingsModal from '../editor/ProjectSettingsModal'
 import HomeShowcase from '../components/HomeShowcase'
 import { saveProjectVoiceLocale } from '../voice/characterVoicePlan'
+import { prepareProjectVoice } from '../api/client'
+import ProjectVoiceProgress from '../voice/ProjectVoiceProgress'
 
 export const MAX_PROJECT_BACKUP_BYTES = 90 * 1024 * 1024
 
@@ -48,6 +50,7 @@ export default function HomePage() {
   const [projectFilter, setProjectFilter] = useState('all')
   const [projectsError, setProjectsError] = useState('')
   const [reload, setReload] = useState(0)
+  const [voiceRevision, setVoiceRevision] = useState(0)
   const visibleProjects = useMemo(() => myProjects.filter((project) => `${project.title} ${project.description || ''}`.toLowerCase().includes(projectQuery.trim().toLowerCase()) && (projectFilter === 'all' || (projectFilter === 'published' ? project.isPublished : !project.isPublished))), [myProjects, projectQuery, projectFilter])
   const [editingId, setEditingId] = useState<string | null>(null)
   const [editingTitle, setEditingTitle] = useState('')
@@ -149,7 +152,7 @@ export default function HomePage() {
             <button onClick={handleCreate} disabled={creating} className="rounded-lg bg-dream-600 px-6 py-3 font-medium text-white shadow-lg shadow-dream-500/20 hover:bg-dream-700 disabled:opacity-50">
               {creating ? <span className="flex items-center gap-2"><Loader2 className="h-4 w-4 animate-spin" /> 创建中</span> : '新建故事'}
             </button>
-            <Link to="/play/dreamchord-first-thread" className="inline-flex items-center gap-2 rounded-lg border border-white bg-white/75 px-5 py-3 text-sm font-medium text-slate-700 backdrop-blur hover:bg-white"><PlayCircle className="h-4 w-4" />试玩官方示例</Link>
+            <Link to="/play/dreamchord-curtain-call" className="inline-flex items-center gap-2 rounded-lg border border-white bg-white/75 px-5 py-3 text-sm font-medium text-slate-700 backdrop-blur hover:bg-white"><PlayCircle className="h-4 w-4" />试玩官方示例</Link>
           </div>
           <Link to="/agent" className="inline-flex min-h-10 items-center gap-2 text-sm font-medium text-slate-600 hover:text-dream-700"><Bot className="h-4 w-4" />有一个想法？和创作助手聊聊 →</Link>
         </div></div><div aria-hidden="true" className="h-52 sm:hidden" />
@@ -208,6 +211,7 @@ export default function HomePage() {
                     </div>
                     <p className="mb-4 min-h-12 line-clamp-2 text-sm leading-6 text-slate-500">{project.description || '还没有简介，可以从角色与第一幕开始。'}</p>
                     <p className="mb-4 text-xs text-slate-400">{project.defaultVoiceLocale === 'ja' ? '日语配音' : '中文配音'}<span className="mx-2">·</span>{project.defaultSubtitleLocale === 'ja' ? '日文字幕' : '中文字幕'}</p>
+                    <ProjectVoiceProgress projectId={project.id} language={project.defaultVoiceLocale === 'ja' ? 'ja' : 'zh'} revision={voiceRevision} />
                     <div className="grid grid-cols-2 gap-2">
                       <Link to={`/editor/${project.id}`} className="rounded-md bg-dream-600 py-2 text-center text-sm font-medium text-white hover:bg-dream-700">继续编辑</Link>
                       <Link to={`/agent?project=${project.id}`} className="inline-flex items-center justify-center gap-1 rounded-md bg-slate-950 py-2 text-center text-sm font-medium text-white hover:bg-dream-800"><Bot className="h-3.5 w-3.5" />问 Agent</Link>
@@ -227,7 +231,10 @@ export default function HomePage() {
         const updated = await updateProject(settingsProject.id, data)
         setMyProjects((items) => items.map((item) => item.id === updated.id ? { ...item, ...updated } : item))
         if (updated.defaultVoiceLocale) saveProjectVoiceLocale(updated.id, updated.defaultVoiceLocale)
-        setSettingsProject(null); toast.success('故事设置已保存')
+        setSettingsProject(null); toast.success('故事设置已保存，正在检查整部作品的配音')
+        try { await prepareProjectVoice(updated.id, updated.defaultVoiceLocale === 'ja' ? 'ja' : 'zh') }
+        catch { toast.error('故事设置已保存，但配音准备未启动，请点击作品卡片上的“继续准备配音”。') }
+        setVoiceRevision((value) => value + 1)
       }} />}
 
       <section className="mx-auto max-w-7xl px-6 py-16">

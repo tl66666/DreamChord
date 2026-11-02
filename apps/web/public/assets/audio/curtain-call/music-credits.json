@@ -1,0 +1,58 @@
+[
+  {
+    "id": "backstage",
+    "name": "谢幕之前 · 排练与拌嘴",
+    "mood": "日常",
+    "scene": "晚会后台，轻松对话",
+    "sourceRole": "afternoon",
+    "author": "TERNOX",
+    "sourceUrl": "https://ternox.itch.io/vn-music",
+    "license": "CC0-1.0",
+    "sha256": "5beb3d68cd6056356743f560409c653464f606e760b8be13e5a0126c6ab145b5",
+    "durationSeconds": 107.39,
+    "originalSourceRole": "afternoon",
+    "generativeAiUsed": false
+  },
+  {
+    "id": "unsaid",
+    "name": "没说出口 · 上台前一分钟",
+    "mood": "忧郁",
+    "scene": "克制的谈心，选择前留白",
+    "sourceRole": "name",
+    "author": "TERNOX",
+    "sourceUrl": "https://ternox.itch.io/vn-music",
+    "license": "CC0-1.0",
+    "sha256": "0884e9e347917010f054453bf826feef0d54c57ca415b5d97114eb60f0f749b9",
+    "durationSeconds": 74.11,
+    "originalSourceRole": "name",
+    "generativeAiUsed": false
+  },
+  {
+    "id": "invitation",
+    "name": "下一次见面 · 夏夜约定",
+    "mood": "温柔",
+    "scene": "散场礼堂，校园同行",
+    "sourceRole": "coauthor",
+    "author": "TERNOX",
+    "sourceUrl": "https://ternox.itch.io/vn-music",
+    "license": "CC0-1.0",
+    "sha256": "ebd21ea217ba8e1306d5218bc1e5b44a2c32442026ac99d00ecaa9f6a5019352",
+    "durationSeconds": 126.56,
+    "originalSourceRole": "coauthor",
+    "generativeAiUsed": false
+  },
+  {
+    "id": "station",
+    "name": "话还没说完 · 清晨送行",
+    "mood": "治愈",
+    "scene": "车站告别，开放式结尾",
+    "sourceRole": "twilight",
+    "author": "TERNOX",
+    "sourceUrl": "https://ternox.itch.io/vn-music",
+    "license": "CC0-1.0",
+    "sha256": "7be3177e2214b96fcce08c9c64f336505886bae21a34e434514b6c2da2e33449",
+    "durationSeconds": 112.27,
+    "originalSourceRole": "twilight",
+    "generativeAiUsed": false
+  }
+]

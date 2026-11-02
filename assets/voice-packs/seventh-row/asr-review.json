@@ -1,0 +1,562 @@
+[
+  {
+    "id": "door-1-ja",
+    "sha256": "4fa103394878bbf7c21b5289ac1b38a0ddde8cba0827b65437615c4068f0f199",
+    "expected": "十二分遅刻。昔なら、雨のせいだって言ったね。",
+    "recognized": "12分近く 昔なら雨のせいだって言ったね",
+    "similarity": 0.789,
+    "review": "supporting-pass"
+  },
+  {
+    "id": "door-1-zh",
+    "sha256": "721ca860b021481bb4aa0e3cc5008334c391ea7a2b8dc84a7b3f83aa92c9a6a5",
+    "expected": "迟了十二分钟。以前你会说，是雨。",
+    "recognized": "吃了十二分钟以前你会说是雨",
+    "similarity": 0.923,
+    "review": "supporting-pass"
+  },
+  {
+    "id": "door-2-ja",
+    "sha256": "49515c4e7a66342b9a74e6aebc22855433a4e91ef99f015853c968928143631a",
+    "expected": "今日は、家を出るのが遅くなった。",
+    "recognized": "今日は家を出るのが遅くなった",
+    "similarity": 1.0,
+    "review": "supporting-pass"
+  },
+  {
+    "id": "door-2-zh",
+    "sha256": "7c3859e08799e98616f7786327703ea5ca262461c389414577c9788e86715b60",
+    "expected": "这次是我出门晚了。",
+    "recognized": "這次是我出門晚了",
+    "similarity": 0.75,
+    "review": "supporting-pass"
+  },
+  {
+    "id": "door-3-ja",
+    "sha256": "59c2130b0aff34713ba67dbc31c669b0635262e7f9df8b62593a87ba60e34ec6",
+    "expected": "じゃ、入って。閉館まで、あと四十分。",
+    "recognized": "じゃあ入って、平下まで、あと40分",
+    "similarity": 0.69,
+    "review": "supporting-pass"
+  },
+  {
+    "id": "door-3-zh",
+    "sha256": "eb9da408890e7552aacf82cd56e91080ebeece2ea2eb916b89562714f99750be",
+    "expected": "那进来吧。离关门，还有四十分钟。",
+    "recognized": "那進來吧離關門還有40分鐘",
+    "similarity": 0.308,
+    "review": "check"
+  },
+  {
+    "id": "booth-1-ja",
+    "sha256": "0cc4fb6199b05ae043d1345fc49eb605dcd1e13fabe340192957d6b5850ca842",
+    "expected": "まだかけないで。どこを直したの？",
+    "recognized": "まだかけないでどこを直したの?",
+    "similarity": 1.0,
+    "review": "supporting-pass"
+  },
+  {
+    "id": "booth-1-zh",
+    "sha256": "dd4a902727b5929388904ea83408749a5876c6adc7e365136e58d9d7b21fc86b",
+    "expected": "先别放。你把哪一段修好了？",
+    "recognized": "嘿嘿先别放你把哪一段修好了",
+    "similarity": 0.917,
+    "review": "supporting-pass"
+  },
+  {
+    "id": "booth-2-ja",
+    "sha256": "427d221c63d2c1b8044e5bb715c7fe363b1aedc5149934d96aa62b26eb07fbd6",
+    "expected": "ノイズと、テープの速度。それから最後の、七秒の空白。",
+    "recognized": "ノイズとテープの速度 それから最後の7秒の空白",
+    "similarity": 0.955,
+    "review": "supporting-pass"
+  },
+  {
+    "id": "booth-2-zh",
+    "sha256": "1a129c0ee764143271890cb1634d17e1eedb3d19c0c34c0444b4cde4adee231b",
+    "expected": "底噪、走音的带速，还有片尾那七秒空白。",
+    "recognized": "李兆,走音的带速,还有片面的7秒空白",
+    "similarity": 0.688,
+    "review": "supporting-pass"
+  },
+  {
+    "id": "booth-3-ja",
+    "sha256": "efac3497da8a8c1efe1ea587ce0de8dbccd6bb68f854ff9c36874acf850e5991",
+    "expected": "七秒か。昔の私、今より手短に話せたんだね。",
+    "recognized": "7秒か、昔の私、今より手短に離すたんだね",
+    "similarity": 0.833,
+    "review": "supporting-pass"
+  },
+  {
+    "id": "booth-3-zh",
+    "sha256": "cd80ac37609220ea97452b5d01f026bd33020d1e7af6b6dff1944fffa51508d4",
+    "expected": "七秒。我当年说话，倒是比现在利索。",
+    "recognized": "洗一秒我当年说话都是比现在历所",
+    "similarity": 0.69,
+    "review": "supporting-pass"
+  },
+  {
+    "id": "booth-4-ja",
+    "sha256": "d54a3f2e40465a51f4091db46ac41bc174dbd45e58b4b52d02d994e80fd31589",
+    "expected": "元のテープ、ここにある。父さんが「不良」って貼ったまま、捨てなかった。",
+    "recognized": "もとのテープここにある 当産が振りをって張ったまま捨てなかった",
+    "similarity": 0.746,
+    "review": "supporting-pass"
+  },
+  {
+    "id": "booth-4-zh",
+    "sha256": "84995c53fad3b1d83edfda5cd02dbcfee2cabc701dbab9d5f1e7db2622e162b9",
+    "expected": "原带在这里。我爸贴的“坏带”，没扔。",
+    "recognized": "演呆在这里我爸替他坏带没扔",
+    "similarity": 0.692,
+    "review": "supporting-pass"
+  },
+  {
+    "id": "booth-5-ja",
+    "sha256": "cf740e32b86751a14cf497f8187f3ddb68af9b5d26da5c4ace23d57e3a233b42",
+    "expected": "あの日、面接に行ってたんでしょう？",
+    "recognized": "あの日、面接に行ってたんでしょ?",
+    "similarity": 0.966,
+    "review": "supporting-pass"
+  },
+  {
+    "id": "booth-5-zh",
+    "sha256": "1d0cb5903c80f0da43da813b3cf484c8466fdb18c8ef998ea8c17a11e6a6bcda",
+    "expected": "你那天去面试了，对吧？",
+    "recognized": "你那天却面试了,对吧",
+    "similarity": 0.889,
+    "review": "supporting-pass"
+  },
+  {
+    "id": "booth-6-ja",
+    "sha256": "2aebbdb1a84da57437eab208f2f37068dea810fece327558e14cb80c157ab46c",
+    "expected": "うん。電車も止まってなかった。もう会ってもらえない気がして。",
+    "recognized": "うん 電車も止まってなかったもうあってもらえない気がして",
+    "similarity": 0.963,
+    "review": "supporting-pass"
+  },
+  {
+    "id": "booth-6-zh",
+    "sha256": "c607126edfcda33a5f20e3fa952d8577798c57ea198301c1d15c367c27cf5f62",
+    "expected": "嗯。车也没有停。我怕你以后不再找我。",
+    "recognized": "嗯,這也沒有停,我怕你以後不再找我",
+    "similarity": 0.8,
+    "review": "supporting-pass"
+  },
+  {
+    "id": "booth-7-ja",
+    "sha256": "325462217843baa61812031dc829b66c412e5e121728bdc0b92f90d428b6daf3",
+    "expected": "そのあと、何度も連絡したよ。そのたびに、まだ待ってるのかって聞いたね。",
+    "recognized": "その後何度も連絡したよその旅にまだ待ってるのかって聞いたね",
+    "similarity": 0.9,
+    "review": "supporting-pass"
+  },
+  {
+    "id": "booth-7-zh",
+    "sha256": "1079cf3a3a7a604db04ef9e79bbde16f55d35a3d4e817fa09fc72e4ed7e44723",
+    "expected": "我后来找过你。你每次都问，我还在不在等。",
+    "recognized": "呵呵我後來找過你你每次都問我還在不在等",
+    "similarity": 0.667,
+    "review": "supporting-pass"
+  },
+  {
+    "id": "booth-8-ja",
+    "sha256": "1019b108f53d2fc77a89509ce85346e3d35c37c4f5a23a306c4a5f06fd46a6aa",
+    "expected": "街でおいしい麺の店を聞かれて、三百字の謝罪を返してたね。",
+    "recognized": "町で美味しい麺の店を聞かれて300時の社材を返してたね",
+    "similarity": 0.679,
+    "review": "supporting-pass"
+  },
+  {
+    "id": "booth-8-zh",
+    "sha256": "7ae2fa65d856b8e42efdf61ff3884f18ad429aea60bcff8341a78f216594d49d",
+    "expected": "她问过你城里哪家面馆好吃。你回了三百字道歉。",
+    "recognized": "她問過你成立哪家麵館好吃你回了三百字道歉",
+    "similarity": 0.7,
+    "review": "supporting-pass"
+  },
+  {
+    "id": "booth-9-zh",
+    "sha256": "05147a8a8302a39763d4e3dd43a6fc7763665462ab62733615f6db84ae2a2781",
+    "expected": "带子呢？别再替我留白了。",
+    "recognized": "戴子呢别再替我留白了",
+    "similarity": 0.9,
+    "review": "supporting-pass"
+  },
+  {
+    "id": "tape-1-ja",
+    "sha256": "6450f87390c06d9b80c07be78fd4585dc6fc2a6e783e187890227d4e0bd6de9b",
+    "expected": "七列目、ギターケース置いといて。もう歌い終わったから、誰も待たなくていいよ。",
+    "recognized": "7つ目、ギターケース置いといてもう歌い終わったから、誰もまたなくていいよ",
+    "similarity": 0.912,
+    "review": "supporting-pass"
+  },
+  {
+    "id": "tape-1-zh",
+    "sha256": "9a4dd112a8c68fa0c9f5716e770b004ba473902e7d71139cc2e9c1d5569aef64",
+    "expected": "第七排，帮我放一下琴盒。我唱完了，谁也不用等啦。",
+    "recognized": "第七排,幫我放一下琴盒我唱完了,誰也不用等啦",
+    "similarity": 0.9,
+    "review": "supporting-pass"
+  },
+  {
+    "id": "tape-2-ja",
+    "sha256": "df786191a66d9ab0b561a8e75c8ee1758a7adef87509b52dff6f00c52064f7e9",
+    "expected": "じゃあ、私はどこに座るの？",
+    "recognized": "じゃあ、私はどこに座るの?",
+    "similarity": 1.0,
+    "review": "supporting-pass"
+  },
+  {
+    "id": "tape-2-zh",
+    "sha256": "90039239b1d68423df929eb006d3fe41f7fa25f35a26eee0c7c1742e078a0777",
+    "expected": "那我坐哪儿？",
+    "recognized": "那我做哪",
+    "similarity": 0.667,
+    "review": "supporting-pass"
+  },
+  {
+    "id": "tape-3-ja",
+    "sha256": "92ca76b49adfd8badceea55816391624affad2c9667e3734667fa50c7e0806a3",
+    "expected": "私の隣。ずっと立ってるつもり？",
+    "recognized": "私の隣、ずっと立ってるつもり?",
+    "similarity": 1.0,
+    "review": "supporting-pass"
+  },
+  {
+    "id": "tape-3-zh",
+    "sha256": "de4e63071eae38acc53ce3211e11bf1248e7076ceafbc5cb89c0b7567b2a65f3",
+    "expected": "坐我旁边啊。你总不能一直站着。",
+    "recognized": "错过旁边啊你总不能一直站着",
+    "similarity": 0.846,
+    "review": "supporting-pass"
+  },
+  {
+    "id": "booth-10-ja",
+    "sha256": "46eecb2e3b9f3c35948e53152cfa68e07525766251d57b08dde96aa2c0016fb4",
+    "expected": "ディスクにするとき、ここを消した。テープの故障じゃない。",
+    "recognized": "ディスクにするとき、ここを消した、テープの故障じゃない。",
+    "similarity": 1.0,
+    "review": "supporting-pass"
+  },
+  {
+    "id": "booth-10-zh",
+    "sha256": "f3e43abca8b96a45dad317b7c8769ff216d53c4854c5c66d00186eced60f3825",
+    "expected": "当时导出光盘，我把这段删了。不是带子坏了。",
+    "recognized": "當時倒出光盤,我把這段刪了,不是袋子壞了",
+    "similarity": 0.556,
+    "review": "supporting-pass"
+  },
+  {
+    "id": "booth-11-ja",
+    "sha256": "8ffb5068263892086f1e1a223048e7c5b8676d5c8e91261f81078b8a62684402",
+    "expected": "知ってた。この青い手帳に、曲間の言葉を書いてある。私にも原稿があるって、忘れてたね。",
+    "recognized": "知ってた この青い手頂に極感の言葉を書いてある私にも健康があるって忘れてたね",
+    "similarity": 0.865,
+    "review": "supporting-pass"
+  },
+  {
+    "id": "booth-11-zh",
+    "sha256": "9510eddb2939b06e6d92f99fa1381ceaf12594ef0dd628224a1d25e3c54fa5fe",
+    "expected": "我知道。蓝本上有我写的串场词。你忘了，我也有原稿。",
+    "recognized": "我知道 人本上有我写的串丞词你忘了 我也有原稿",
+    "similarity": 0.905,
+    "review": "supporting-pass"
+  },
+  {
+    "id": "booth-12-ja",
+    "sha256": "a69e389da95ef8619ab8c660ccbca252295fa6e18d308c653129653a5453bb82",
+    "expected": "私も元のテープを聞いた。いつか、自分で言ってくれると思ってた。",
+    "recognized": "私もモートのテープを聞いたいつか自分で言ってくれると思ってた",
+    "similarity": 0.931,
+    "review": "supporting-pass"
+  },
+  {
+    "id": "booth-12-zh",
+    "sha256": "705d1dab138e6e2904da440678cf05ddd44aa16b0961f1b04a6d64b3ae2512e5",
+    "expected": "我也听过原带。我以为，总有一天你会自己说。",
+    "recognized": "我也听过原谈我以为总有一天你会自己说",
+    "similarity": 0.944,
+    "review": "supporting-pass"
+  },
+  {
+    "id": "booth-13-ja",
+    "sha256": "3949c35efb309ce8a7eca8ce8df5500782d982370bb4e00ef873db5651d7136c",
+    "expected": "それで二人して、八年も預かってたんだ。今日はね、それを返してもらいに来たの。",
+    "recognized": "それで二人して8年も預かってたんだ今日はね、それを返してもらえに来たの",
+    "similarity": 0.941,
+    "review": "supporting-pass"
+  },
+  {
+    "id": "booth-13-zh",
+    "sha256": "eadb245536859510a8f3a77f89a6a44aa4456f88ee6678ffb86a5d77f9ff025f",
+    "expected": "结果你们俩替我保管了八年。我今天只是来拿回它。",
+    "recognized": "结果你们俩替我保管了八年不今天只是来拿回他",
+    "similarity": 0.905,
+    "review": "supporting-pass"
+  },
+  {
+    "id": "hall-1-ja",
+    "sha256": "be78d99fd2b79cebfb3643ebfee5ca2174bf776a2a2c7ace8036181b4f349fb7",
+    "expected": "最後の上映、この録音をエンドロールに使う？",
+    "recognized": "最後の上、この録音をエンドロールに使う?",
+    "similarity": 0.973,
+    "review": "supporting-pass"
+  },
+  {
+    "id": "hall-1-zh",
+    "sha256": "df1ca78b934828e04933c14623505e2ec899b1dfda260bad4a40e07ea93fd364",
+    "expected": "最后一场，要用这卷录音做片尾吗？",
+    "recognized": "最後一場要用這卷路煙做片尾嗎?",
+    "similarity": 0.571,
+    "review": "supporting-pass"
+  },
+  {
+    "id": "hall-2-ja",
+    "sha256": "c54f6361edfb642b4b57084ab094bd916d22caffde8093a54636e1b0731aa897",
+    "expected": "映画は父さんが選んだ。最後に何を流すかは、私が決めていいって。",
+    "recognized": "映画はお父さんが選んだ最後に何を流すかわ私が決めていって",
+    "similarity": 0.929,
+    "review": "supporting-pass"
+  },
+  {
+    "id": "hall-2-zh",
+    "sha256": "42a9ec2bcfcf59ef338d1a5abe048f1e9b6ae9a23a172d57b2cbfbc7d778bb93",
+    "expected": "片子是我爸挑的，片尾他说让我自己定。",
+    "recognized": "偏則是我爸挑的偏偉他說讓我自己定",
+    "similarity": 0.625,
+    "review": "supporting-pass"
+  },
+  {
+    "id": "hall-3-ja",
+    "sha256": "779a5d321744d376862c4abef9af416506bde6058ea8c2b90fa9ca88cb7dae88",
+    "expected": "元のままなら、流していいよ。外した音も残して。十六歳の私を、もう直さなくていい。",
+    "recognized": "元のままなら 流していいよ 外したおとも残して16歳の私を もう直さなくていい",
+    "similarity": 0.901,
+    "review": "supporting-pass"
+  },
+  {
+    "id": "hall-3-zh",
+    "sha256": "d353d2a5eb8535366a0df69c0c10b247323866c63608205e05301065dcd55fb5",
+    "expected": "可以放原版。唱破的那个音也留下，我不想再修一遍十六岁。",
+    "recognized": "可以放原吧唱破的那个音也留下我不想再修一遍死溜水",
+    "similarity": 0.833,
+    "review": "supporting-pass"
+  },
+  {
+    "id": "hall-4-ja",
+    "sha256": "de742fdb0afbfd8dedf72f9671868894cd36da22742b38ee8570a42abf691404",
+    "expected": "流さなくてもいい。今日の音を録っても。雨の音とか。",
+    "recognized": "長さなくてもいい今日の音をとっても雨の音とか",
+    "similarity": 0.909,
+    "review": "supporting-pass"
+  },
+  {
+    "id": "hall-4-zh",
+    "sha256": "57b66722a7c1e5195ba430b1d933c3969eb6c2858b53db0747409ad9fa7854f1",
+    "expected": "也可以不放。录一点今天的声音，雨声也行。",
+    "recognized": "也可以不放落一点今天的声音与声也行",
+    "similarity": 0.882,
+    "review": "supporting-pass"
+  },
+  {
+    "id": "hall-5-ja",
+    "sha256": "e9cea2cacbdf83264c997d06ab6ef2c9aa68c8abc284092df992c179ca2e6aea",
+    "expected": "今度は、先に聞いて。どうしたい？",
+    "recognized": "今度は先に聞いてどうしたい?",
+    "similarity": 1.0,
+    "review": "supporting-pass"
+  },
+  {
+    "id": "original-1-ja",
+    "sha256": "72c03fec4515b8863c4c164fd1cf796a3acfec58542c5c6d0509925fe9e40e88",
+    "expected": "元のまま流そう。紹介は、君の言葉で。僕は音量を見てくる。",
+    "recognized": "元のまま長そう 紹介は君の言葉で僕は音量を見てくる",
+    "similarity": 0.958,
+    "review": "supporting-pass"
+  },
+  {
+    "id": "original-1-zh",
+    "sha256": "c35f29a38270a2169623dd416169d389df9055a2a36d7cc5f684a0960bd580f0",
+    "expected": "放原版吧。介绍词，你来说。我去看电平。",
+    "recognized": "放原版吧介绍词,你来说我去看电瓶",
+    "similarity": 0.933,
+    "review": "supporting-pass"
+  },
+  {
+    "id": "original-2-ja",
+    "sha256": "49e945f8d88d52d3a046581bff06d7ca4febfa1328b4336acca9fd9d3daecaf8",
+    "expected": "うん。フェーダー上げすぎないでね。あの頃の私、声が大きいから。",
+    "recognized": "うん、フェーダーげすぎないでねあの頃の私、声が大きいから",
+    "similarity": 0.981,
+    "review": "supporting-pass"
+  },
+  {
+    "id": "original-2-zh",
+    "sha256": "35ebbbc0f8e0b307524b0731f23718f9af4fa58145658eae68b81604de7c7cd7",
+    "expected": "好。别把推子拉太高，那时候的我，嗓门挺大的。",
+    "recognized": "好,别把推子拉太高那时候的我,咱们挺大的",
+    "similarity": 0.889,
+    "review": "supporting-pass"
+  },
+  {
+    "id": "original-3-ja",
+    "sha256": "4e8be521a29c1df25d9ff3397fa3ae8deeb04bbf382428474b20dfae75cc5b03",
+    "expected": "明日、あの椅子を直す。運び出す前に、一度くらい座れるようにしたい。",
+    "recognized": "明日、あの椅子を直す、運び出す前に一度ぐらい座れるようにしたい",
+    "similarity": 0.966,
+    "review": "supporting-pass"
+  },
+  {
+    "id": "original-3-zh",
+    "sha256": "f37b8fa11cf90a3794d9d73fae1a79cb14aca17853f971994deaf124c54ff35b",
+    "expected": "我明天把那把椅子修了。搬走以前，总该让它能坐人。",
+    "recognized": "我明天把那把椅子修了搬走以前總該讓他能做人",
+    "similarity": 0.762,
+    "review": "supporting-pass"
+  },
+  {
+    "id": "original-4-ja",
+    "sha256": "6382f3a993ce35fc8d9c4eb8eca780c3fd4ef0b727e64b57c3da509a993402bd",
+    "expected": "手伝いに来てもいい？十時。今度は早く出る。",
+    "recognized": "手伝いに来てもいい? 10時。今度は早く出る。",
+    "similarity": 0.919,
+    "review": "supporting-pass"
+  },
+  {
+    "id": "original-4-zh",
+    "sha256": "0a021c79cbc7e45bae26d7a9c062851c8db880189653c173319e50471bf89860",
+    "expected": "我能来帮忙吗？十点。我会提前出门。",
+    "recognized": "我能来帮忙吗?十点,我会提前出门",
+    "similarity": 1.0,
+    "review": "supporting-pass"
+  },
+  {
+    "id": "original-5-ja",
+    "sha256": "4b2546b3bc061f68c6f70d26e869983561bf7df901204258fccd7bd62fd60fdb",
+    "expected": "九時半。十時には、修理屋さんが引き取りに来るから。",
+    "recognized": "9時半 10時には周り屋さんがひき取りにくるから",
+    "similarity": 0.711,
+    "review": "supporting-pass"
+  },
+  {
+    "id": "original-5-zh",
+    "sha256": "ff0573141f3ce2af8d3db9486eba0227bb3a7604e005343da744b3ae6620305c",
+    "expected": "九点半。修理铺十点就要来搬了。",
+    "recognized": "九點半修律鋪十點就要來搬了",
+    "similarity": 0.615,
+    "review": "supporting-pass"
+  },
+  {
+    "id": "live-1-ja",
+    "sha256": "02a7765c4faddd7a6352374cbf2d09fc93e5cb1070785b485c9b0c7c19629cf1",
+    "expected": "テープは返すよ。今夜の最後に、二人の声を新しく録ってもいい？",
+    "recognized": "テープは返すよ 今夜の最後に 二人の声を 新しく得ってもいい",
+    "similarity": 0.963,
+    "review": "supporting-pass"
+  },
+  {
+    "id": "live-1-zh",
+    "sha256": "3d64e2bcbec196a0e81d05470c65940bbfa85272a2014da59576060741ce2483",
+    "expected": "原带还给你。今晚的片尾，你们愿意重新录吗？",
+    "recognized": "原來還給你,今晚的片尾,你願意重新錄嗎?",
+    "similarity": 0.629,
+    "review": "supporting-pass"
+  },
+  {
+    "id": "live-2-ja",
+    "sha256": "ac7b48f1198fb309f2617cb5bbf1bbf1417d3c30967e70edf2082a20f075128a",
+    "expected": "歌はなし。喉が冷えちゃった。借りたままの麺一杯、忘れないでね。",
+    "recognized": "歌はなし、ノドが冷えちゃった、カリタママの面一杯忘れないでね",
+    "similarity": 0.727,
+    "review": "supporting-pass"
+  },
+  {
+    "id": "live-2-zh",
+    "sha256": "faa2c17621665752b4b10e9e89e9aa58ec1a651df49e29f6cd04c63006d74905",
+    "expected": "不唱歌。嗓子冷了。你上次欠我的那碗面，先记着。",
+    "recognized": "不唱歌嗓子冷了你上次欠我的那碗面先记着",
+    "similarity": 1.0,
+    "review": "supporting-pass"
+  },
+  {
+    "id": "live-3-ja",
+    "sha256": "b67d9bb8f81fd2ecf501f2da0428f764af7d786d0f6056136a8899ab6c82b234",
+    "expected": "何を録る？閉館のお知らせなら、もう読み飽きた。",
+    "recognized": "何をおろくる? 閉館のお知らせならもう読みあきた",
+    "similarity": 0.857,
+    "review": "supporting-pass"
+  },
+  {
+    "id": "live-3-zh",
+    "sha256": "5dc1d9d94ad379896eef5f09fabb17547b8f86d11d596b31faacc4be6b3b1102",
+    "expected": "那录什么？停业通知我已经读腻了。",
+    "recognized": "能落什麼 停業通知未經獨逆了",
+    "similarity": 0.37,
+    "review": "check"
+  },
+  {
+    "id": "live-4-ja",
+    "sha256": "7710fae4ac33add525d88a4158616e12d6d9e870b2df4054584fa003f3409183",
+    "expected": "明日の予定。ここが閉まったら何もない、なんて言わないで。",
+    "recognized": "明日の予定 ここがしまったら何もないなんて言わないで",
+    "similarity": 0.96,
+    "review": "supporting-pass"
+  },
+  {
+    "id": "live-4-zh",
+    "sha256": "bfe1249a9ab5ddd79c1a5d8be269032705bcbf6cd34f9576bcae4ac22b543b59",
+    "expected": "录你明天的安排。别老说这儿关门以后，你就没事做了。",
+    "recognized": "錄你明天的安排別老說這關門以後你就沒事做了",
+    "similarity": 0.605,
+    "review": "supporting-pass"
+  },
+  {
+    "id": "live-5-ja",
+    "sha256": "decae75ff16780d694f41bd7d0b3c0178a9b731ccf40b6d1cc10602e277482c1",
+    "expected": "明日の午後の列車。着いたら、そっちに寄ってもいい？",
+    "recognized": "明日の午後の列車ついたら、そっちによってもいい?",
+    "similarity": 0.909,
+    "review": "supporting-pass"
+  },
+  {
+    "id": "live-5-zh",
+    "sha256": "695f41d9149e2d92c7f7635d41b3a0c8c4b5240addb01eaa6435c763b2fe169b",
+    "expected": "明天下午的车。到站以后，能去你那里坐一会儿吗？",
+    "recognized": "明天下午的车到站以后能去你那里坐一会吗",
+    "similarity": 0.974,
+    "review": "supporting-pass"
+  },
+  {
+    "id": "live-6-ja",
+    "sha256": "13b9e8545dc64b430fa5f8bb9871aeef82092bcc8a39c1f28ffe6eefac7f1cb9",
+    "expected": "おいで。椅子、二つしかないから、一つ持ってきて。",
+    "recognized": "おいで、椅子2つしかないから一つ持ってきて",
+    "similarity": 0.95,
+    "review": "supporting-pass"
+  },
+  {
+    "id": "live-6-zh",
+    "sha256": "83c8323aeadd3715228e17881aa0796b0d6c8f095c2e248cd0fdbb24fd43754b",
+    "expected": "来吧。椅子只有两把，你帮我带一把。",
+    "recognized": "来吧,一只只有两把,你帮我带一把",
+    "similarity": 0.857,
+    "review": "supporting-pass"
+  },
+  {
+    "id": "booth-9-ja",
+    "sha256": "5358b70a641c52b56bb18b29407b0e8c91615b6a4595adb93faddd08672e248f",
+    "expected": "テープ、聞かせて。もう、私の言葉を空白にしないで。",
+    "recognized": "テープ 聞かせてもう 私の言葉を空白にしないで",
+    "similarity": 1.0,
+    "review": "supporting-pass"
+  },
+  {
+    "id": "hall-5-zh",
+    "sha256": "6dab2c558dac75c6f7d34cef9cf2498986087de1b251d748cc48370a3ba2610c",
+    "expected": "这次先问我。你想怎么放？",
+    "recognized": "嗯,這次先問我你想怎麼發",
+    "similarity": 0.571,
+    "review": "supporting-pass"
+  }
+]

@@ -1,0 +1,62 @@
+[
+  {
+    "id": "rain",
+    "name": "雨幕下的白帆",
+    "mood": "温柔",
+    "scene": "雨夜门廊",
+    "sourceRole": "twilight",
+    "author": "TERNOX",
+    "sourceUrl": "https://ternox.itch.io/vn-music",
+    "license": "CC0-1.0",
+    "sha256": "7be3177e2214b96fcce08c9c64f336505886bae21a34e434514b6c2da2e33449",
+    "durationSeconds": 112.27
+  },
+  {
+    "id": "room",
+    "name": "放映室的灯",
+    "mood": "忧郁",
+    "scene": "放映室对话",
+    "sourceRole": "name",
+    "author": "TERNOX",
+    "sourceUrl": "https://ternox.itch.io/vn-music",
+    "license": "CC0-1.0",
+    "sha256": "0884e9e347917010f054453bf826feef0d54c57ca415b5d97114eb60f0f749b9",
+    "durationSeconds": 74.11
+  },
+  {
+    "id": "hall",
+    "name": "第七排的旧回声",
+    "mood": "忧郁",
+    "scene": "观众席与真相",
+    "sourceRole": "miya",
+    "author": "TERNOX",
+    "sourceUrl": "https://ternox.itch.io/vn-music",
+    "license": "CC0-1.0",
+    "sha256": "96c7fbd0e52d511797c8e1000cdbe10d50f18d7c4abaa7159d840322d3e2cd50",
+    "durationSeconds": 69.43
+  },
+  {
+    "id": "original",
+    "name": "原声放映",
+    "mood": "治愈",
+    "scene": "原声结局",
+    "sourceRole": "coauthor",
+    "author": "TERNOX",
+    "sourceUrl": "https://ternox.itch.io/vn-music",
+    "license": "CC0-1.0",
+    "sha256": "ebd21ea217ba8e1306d5218bc1e5b44a2c32442026ac99d00ecaa9f6a5019352",
+    "durationSeconds": 126.56
+  },
+  {
+    "id": "live",
+    "name": "今晚的片尾",
+    "mood": "日常",
+    "scene": "新录音结局",
+    "sourceRole": "afternoon",
+    "author": "TERNOX",
+    "sourceUrl": "https://ternox.itch.io/vn-music",
+    "license": "CC0-1.0",
+    "sha256": "5beb3d68cd6056356743f560409c653464f606e760b8be13e5a0126c6ab145b5",
+    "durationSeconds": 107.39
+  }
+]

@@ -25,7 +25,7 @@ describe('background discovery and handoff', () => {
     await within(dialog).findByRole('option', { name: '我的故事' })
     expect(use).not.toHaveBeenCalled()
     fireEvent.click(within(dialog).getByText('进入编辑器选场景'))
-    expect(use).toHaveBeenCalledWith(defaultScenes[0], 'story')
+    expect(use).toHaveBeenCalledWith(defaultScenes.find(scene => scene.id === 'bg-classroom'), 'story')
   })
   it('preserves an intentional empty library and custom scene names across reloads', () => {
     localStorage.setItem(SCENE_KEY, '[]')

@@ -11,14 +11,17 @@ import type { ShotCard } from './sceneGraph'
 import { resolveBgUrl } from './storyFlowchart/bgUrl'
 import { loadLibraryCharacters, loadLibraryScenes } from '../lib/libraryData'
 import StageCharacters from '../stage/StageCharacters'
+import type { Character } from '../api/client'
+import { mergeProjectCharacters } from './projectCharacters'
 
 interface MiniPreviewProps {
   card: ShotCard | null
   onFullScreen: () => void
+  projectCharacters?: Character[]
 }
 
-export default function MiniPreview({ card, onFullScreen }: MiniPreviewProps) {
-  const characters = useMemo(() => loadLibraryCharacters(), [])
+export default function MiniPreview({ card, onFullScreen, projectCharacters = [] }: MiniPreviewProps) {
+  const characters = useMemo(() => mergeProjectCharacters(loadLibraryCharacters(), projectCharacters), [projectCharacters])
   const libraryScenes = useMemo(() => loadLibraryScenes(), [])
   const [bgError, setBgError] = useState(false)
 
@@ -92,6 +95,7 @@ export default function MiniPreview({ card, onFullScreen }: MiniPreviewProps) {
               }))}
               speakerId={card.speaker !== '旁白' ? card.speaker : undefined}
               resolveName={getCharName}
+              resolveUrl={(id, expression) => { const c = characters.find(c => c.id === id || c.name === id); return c?.expressions.find(e => e.id === expression)?.url || c?.expressions[0]?.url || '' }}
               className="z-[2]"
             />
 

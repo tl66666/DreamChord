@@ -17,6 +17,8 @@ import { createProjectTransferRouter } from './routes/projectTransfer.js'
 import { createLongImportRouter } from './routes/longImport.js'
 import { prismaLongImportService, type LongImportService } from './imports/longImportService.js'
 import { createVoiceRouter } from './routes/voices.js'
+import { createVoicePreparationRouter } from './routes/voicePreparation.js'
+import { createTemplateRouter } from './routes/templates.js'
 
 export interface AppDependencies {
   storyBibleRepository?: StoryBibleRepository
@@ -45,8 +47,10 @@ export function createApp(dependencies: AppDependencies = {}): Express {
   }, express.static(path.resolve(process.env.UPLOAD_DIR || path.join(process.cwd(), 'uploads'))))
 
   app.use('/api/auth', authRoutes)
+  app.use('/api/projects/templates', createTemplateRouter())
   // Public gallery and published-project reads must run before project-scoped auth routers.
   app.use('/api/projects', projectRoutes)
+  app.use('/api/projects', createVoicePreparationRouter())
   app.use('/api/projects', createStoryBibleRouter(dependencies.storyBibleRepository ?? prismaStoryBibleRepository))
   app.use('/api/projects', createChapterSaveRouter(dependencies.chapterSaveRepository ?? prismaChapterSaveRepository))
   app.use('/api/projects', createHealthRouter(dependencies.healthRepository ?? prismaHealthRepository))

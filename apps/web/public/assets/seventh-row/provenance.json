@@ -1,0 +1,116 @@
+[
+  {
+    "name": "cinema-rain",
+    "tool": "built-in image_gen",
+    "sourceFile": "exec-a216ec44-89b5-4ff9-a76b-bc0ad2ac4342.png",
+    "sourceSha256": "8a7b8adda0e620787bb25016ce2af74f291e6378a3cad090a07a5818557baef5",
+    "purpose": "original cinema VN background",
+    "palette": "amber, deep teal, muted burgundy",
+    "outputs": [
+      {
+        "file": "cinema-rain.webp",
+        "sha256": "4f6d3490c7e75d69834f0ec9505de7290500e72d44a94ec577d1e6245a90eecf"
+      }
+    ],
+    "processing": "Resized to 1920x1080 WebP."
+  },
+  {
+    "name": "projection-room",
+    "tool": "built-in image_gen",
+    "sourceFile": "exec-46e80cde-b241-41fb-9e55-d1730a0eb61d.png",
+    "sourceSha256": "7f2eed036a11667457624ed48a1164ec5f3fec5ebf6de91624fedbd82479fcb8",
+    "purpose": "original cinema VN background",
+    "palette": "amber, deep teal, muted burgundy",
+    "outputs": [
+      {
+        "file": "projection-room.webp",
+        "sha256": "64c00e7b6eb31732ded1df27bb61c40fe11a1b7f1fb1e92a391810462e979c99"
+      }
+    ],
+    "processing": "Resized to 1920x1080 WebP."
+  },
+  {
+    "name": "auditorium",
+    "tool": "built-in image_gen",
+    "sourceFile": "exec-38c654c5-8d39-423e-a7f4-a50fc356b1b9.png",
+    "sourceSha256": "3ff09bd4e6c0809c03672b5beed25837421819b5be27cd34d00ea9eb859140e7",
+    "purpose": "original cinema VN background",
+    "palette": "amber, deep teal, muted burgundy",
+    "outputs": [
+      {
+        "file": "auditorium.webp",
+        "sha256": "9eda578905014f2106990f5fbc5725cf3c7e9de1881494ff47d8263d6f06325a"
+      }
+    ],
+    "processing": "Resized to 1920x1080 WebP."
+  },
+  {
+    "name": "luyao",
+    "tool": "built-in image_gen",
+    "sourceFile": "exec-9ce6e95a-fc44-43f9-a00d-cbadc323d5f0.png",
+    "sourceSha256": "8a855504a5403aded8fd81442fd34b117ac25afa2a5f48f99d7517524995058e",
+    "purpose": "original cinema VN character sprite sheet, three expressions, transparent",
+    "palette": "amber, deep teal, muted burgundy",
+    "outputs": [
+      {
+        "file": "luyao-normal.png",
+        "sha256": "c71a8d828d7d356abf9e9b45b48d6bbfc4aecb77c288665aaf47aa1007ff1dce"
+      },
+      {
+        "file": "luyao-sad.png",
+        "sha256": "fcfdbc566b828b7ef2db86c51b456b5fbddf4d974c2f4f30ec9d3f18fb900017"
+      },
+      {
+        "file": "luyao-smile.png",
+        "sha256": "da29e85500ddbe94c8d263f30f5c6662a94c661f6efe0b2960fbe0b0037e5e0a"
+      }
+    ],
+    "processing": "Sprite sheet split into thirds; alpha bounds trimmed; scaled to fill 1500px height on a transparent 1024x1536 canvas."
+  },
+  {
+    "name": "chengxia",
+    "tool": "built-in image_gen",
+    "sourceFile": "exec-aa775585-a2a9-4d98-9c25-1ffa2834c6e3.png",
+    "sourceSha256": "0a6b71188ba15f9abda4ae1906598cfa69195c4871172a5c6f6caaf919e85aac",
+    "purpose": "original cinema VN character sprite sheet, three expressions, transparent",
+    "palette": "amber, deep teal, muted burgundy",
+    "outputs": [
+      {
+        "file": "chengxia-normal.png",
+        "sha256": "cec8d3f081fdc34353b59e4c4ac85b667012573ce5727059112f1ce80e6e64bb"
+      },
+      {
+        "file": "chengxia-sad.png",
+        "sha256": "b937dd251838dc3858dd2798207918ffa5e3b3ad50d5cefc65893c0a31f9aeef"
+      },
+      {
+        "file": "chengxia-smile.png",
+        "sha256": "bbed8184fcc4d7dd95806ae0df04d4336f544f1bdbc169dc43887491af6abc6c"
+      }
+    ],
+    "processing": "Sprite sheet split into thirds; alpha bounds trimmed; scaled to fill 1500px height on a transparent 1024x1536 canvas."
+  },
+  {
+    "name": "chenyu",
+    "tool": "built-in image_gen",
+    "sourceFile": "exec-7dfbf7d3-5d4b-4706-9ba7-c5155ea0ba89.png",
+    "sourceSha256": "0c99bda26c09d49700b48265d1e88d199e6dc5c80e9996745a4bb1c83654eeba",
+    "purpose": "original cinema VN character sprite sheet, three expressions, transparent",
+    "palette": "amber, deep teal, muted burgundy",
+    "outputs": [
+      {
+        "file": "chenyu-normal.png",
+        "sha256": "d0133305319735dff2881fe68db4ae187d9c0bfeedf4ebaf417b7fdc3b1ba06f"
+      },
+      {
+        "file": "chenyu-sad.png",
+        "sha256": "8a3012613c10bb0ba761f4254341cd8499197d85dd3f80ea2d24172ae2d3202a"
+      },
+      {
+        "file": "chenyu-smile.png",
+        "sha256": "226816fee9a5d752cc9dd1ac98117341703a31f53b86cb2cd511e2d54de21519"
+      }
+    ],
+    "processing": "Sprite sheet split into thirds; alpha bounds trimmed; scaled to fill 1500px height on a transparent 1024x1536 canvas."
+  }
+]

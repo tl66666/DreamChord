@@ -1,4 +1,4 @@
-import { existsSync } from 'node:fs'
+import { existsSync, mkdirSync, openSync, closeSync } from 'node:fs'
 import path from 'node:path'
 import { spawn } from 'node:child_process'
 import { fileURLToPath } from 'node:url'
@@ -25,7 +25,7 @@ interface EngineDependencies {
     cwd: string
     windowsHide: boolean
     shell: false
-    stdio: 'ignore'
+    stdio: 'ignore' | ['ignore', number, number]
     env: NodeJS.ProcessEnv
   }) => ManagedChild
 }
@@ -37,6 +37,8 @@ export interface ManagedVoiceEngineConfig {
   port: number
   entrypoint?: string
   modelDirectory?: string
+  configPath?: string
+  logPath?: string
 }
 
 export function readManagedVoiceEngineConfig(
@@ -69,6 +71,8 @@ export function readManagedVoiceEngineConfig(
   return {
     provider: 'gpt-sovits',
     home,
+    configPath: env.GPT_SOVITS_CONFIG ? path.resolve(home, env.GPT_SOVITS_CONFIG) : undefined,
+    logPath: env.GPT_SOVITS_LOG_PATH ? path.resolve(home, env.GPT_SOVITS_LOG_PATH) : undefined,
     python: env.GPT_SOVITS_PYTHON || (existsSync(embeddedPython) ? embeddedPython : existsSync(condaPython) ? condaPython : 'python'),
     port: Number.isInteger(parsedPort) && parsedPort >= 1024 && parsedPort <= 65535 ? parsedPort : 9880,
   }
@@ -99,7 +103,7 @@ export class ManagedVoiceEngine {
       )
     }
     const api = path.join(this.config.home, 'api_v2.py')
-    const inferenceConfig = path.join(this.config.home, 'GPT_SoVITS', 'configs', 'tts_infer.yaml')
+    const inferenceConfig = this.config.configPath || path.join(this.config.home, 'GPT_SoVITS', 'configs', 'tts_infer.yaml')
     const pythonReady = !path.isAbsolute(this.config.python) || this.dependencies.exists(this.config.python)
     return this.dependencies.exists(api) && this.dependencies.exists(inferenceConfig) && pythonReady
   }
@@ -126,14 +130,20 @@ export class ManagedVoiceEngine {
     this.lastError = ''
     const args = this.config.provider === 'cosyvoice'
       ? [this.config.entrypoint!, '--port', String(this.config.port)]
-      : ['api_v2.py', '-a', '127.0.0.1', '-p', String(this.config.port), '-c', 'GPT_SoVITS/configs/tts_infer.yaml']
-    const child = this.dependencies.spawnProcess(this.config.python, args, {
+      : ['api_v2.py', '-a', '127.0.0.1', '-p', String(this.config.port), '-c', this.config.configPath || 'GPT_SoVITS/configs/tts_infer.yaml']
+    let log: number | undefined
+    if (this.config.logPath) {
+      mkdirSync(path.dirname(this.config.logPath), { recursive: true })
+      log = openSync(this.config.logPath, 'a')
+    }
+    let child: ManagedChild
+    try { child = this.dependencies.spawnProcess(this.config.python, args, {
       cwd: this.config.home,
       windowsHide: true,
       shell: false,
-      stdio: 'ignore',
-      env: { ...process.env, PYTHONUNBUFFERED: '1' },
-    })
+      stdio: log === undefined ? 'ignore' : ['ignore', log, log],
+      env: { ...process.env, PYTHONUNBUFFERED: '1', PYTHONIOENCODING: 'utf-8' },
+    }) } finally { if (log !== undefined) closeSync(log) }
     this.child = child
     child.on('error', (error) => {
       this.lastError = `声音引擎启动失败：${error.message}`

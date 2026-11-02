@@ -14,6 +14,7 @@ const ExplorePage = lazy(() => import('./pages/ExplorePage'))
 const SettingsPage = lazy(() => import('./pages/SettingsPage'))
 const LibraryPage = lazy(() => import('./pages/LibraryPage'))
 const AIWriterPage = lazy(() => import('./pages/AIWriterPage'))
+const TemplateStartPage = lazy(() => import('./pages/TemplateStartPage'))
 
 export function AuthInitializer() {
   const { token, setUser, setLoading, logout } = useAuthStore()
@@ -68,6 +69,7 @@ function App() {
               <Route path="/" element={<HomePage />} />
               <Route path="/login" element={<LoginPage />} />
               <Route path="/register" element={<RegisterPage />} />
+              <Route path="/start/curtain-call" element={<TemplateStartPage />} />
               <Route path="/editor/:projectId" element={<ProtectedRoute><EditorPage /></ProtectedRoute>} />
               <Route path="/play/:projectId" element={<PlayerPage />} />
               <Route path="/explore" element={<ExplorePage />} />
