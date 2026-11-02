@@ -60,6 +60,7 @@ apps/server/src/generated/
 
 # Optional local AI runtimes and model weights
 .runtime/
+__pycache__/
 
 # Isolated feature worktrees
 .worktrees/

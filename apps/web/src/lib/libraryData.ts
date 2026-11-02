@@ -1,5 +1,5 @@
 import { CHARACTER_REGISTRY, resolveCharacterUrl } from '../engine/characters'
-import { SEVENTH_ROW_DEMO, CURTAIN_CALL_DEMO } from '@dreamchord/story-domain'
+import { SEVENTH_ROW_DEMO, CURTAIN_CALL_DEMO, PAINT_PROLOGUE } from '@dreamchord/story-domain'
 
 export interface LibraryCharacter {
   id: string
@@ -91,7 +91,13 @@ const curtainCharacters: LibraryCharacter[] = CURTAIN_CALL_DEMO.characters.map(c
   usage: '校园毕业、自然对话、分别与重逢；声音库同名音色可直接绑定。', conflicts: [c.slug === 'zhi' ? '想开始新生活，也不愿与熟悉的人渐渐失去联系。' : c.slug === 'lin' ? '习惯替对方考虑，却一直没有问过她的真实想法。' : '催场和关灯之外，朋友还有没来得及说完的话。'],
   color: c.color, defaultExpression: 'normal', expressions: ['normal', 'sad', 'smile'].map((id, i) => ({ id, label: ['平静', '难言', '微笑'][i]!, url: `/assets/curtain-call/${c.slug}-${id}.png` })), updatedAt: '2026-10-29',
 }))
-export const defaultCharacters: LibraryCharacter[] = [...curtainCharacters, ...cinemaCharacters, ...Object.values(CHARACTER_REGISTRY).map((character) => {
+const paintCharacters: LibraryCharacter[] = PAINT_PROLOGUE.characters.map(c => ({
+  id: `paint-${c.slug}`, name: c.name, role: '请让这幅画老去 · 官方角色', description: c.description, biography: c.description,
+  outline: c.slug === 'cheng' ? '为排戏修好椅子，接受朋友留给自己的座位，然后发现修补被抹去。' : c.slug === 'xia' ? '完成一场小戏，邀请程见坐下，并约定夏天去海边。' : c.slug === 'ye' ? '为漏雨的礼堂排戏筹钱，认真听取朋友的临时改词。' : '受托整理与续作画稿，记录深色补笔与草图的差异。',
+  usage: '原创文学幻想、朋友日常与小剧场；同名日语音色可试听并绑定角色。', conflicts: [c.slug === 'cheng' ? '总替别人解决问题，偶尔忘了问对方是否愿意。' : c.slug === 'xia' ? '希望自己的愿望被当作现在要做的事。' : c.slug === 'ye' ? '需要募款，也希望大家是真心喜欢他的戏。' : '草图的定稿与画面上的新痕迹并不一致。'],
+  color: c.color, defaultExpression: 'normal', expressions: (c.slug === 'lu' ? ['normal'] : ['normal', 'smile', 'serious']).map(id => ({ id, label: ({ normal: '平静', smile: '微笑', serious: '认真' } as Record<string, string>)[id]!, url: `/assets/paint-prologue/${c.slug}-${id}.png` })), updatedAt: '2026-11-02',
+}))
+export const defaultCharacters: LibraryCharacter[] = [...paintCharacters, ...curtainCharacters, ...cinemaCharacters, ...Object.values(CHARACTER_REGISTRY).map((character) => {
   const extra = characterExtra[character.id]
   return {
     id: character.id,
@@ -123,6 +129,14 @@ export const defaultCharacters: LibraryCharacter[] = [...curtainCharacters, ...c
 })]
 
 export const defaultScenes: LibraryScene[] = [
+  ...[
+    { slug: 'workshop', name: '春日下午 · 道具工房', description: '旧礼堂侧边的木工桌、茶杯与打开的窗。适合修理道具、排练与朋友拌嘴。', timeOfDay: '白天', moods: ['温暖', '日常'] },
+    { slug: 'theatre', name: '八位观众 · 小剧场', description: '低矮舞台、几排木椅与暖灯。适合小规模演出、排戏与散场谈心。', timeOfDay: '黄昏', moods: ['温暖', '演出'] },
+    { slug: 'night', name: '灯还亮着 · 深夜工房', description: '同一间工房入夜后的灯与蓝色窗光。适合散场道别与安静伏笔。', timeOfDay: '夜晚', moods: ['静谧', '悬疑'] },
+    { slug: 'chair-repaired', name: '深色补木 · 椅子特写', description: '左后腿接上深色木料，地面留着木屑。剧情道具特写，与缺失版成对使用。', timeOfDay: '夜晚', moods: ['细节', '温暖'] },
+    { slug: 'chair-erased', name: '消失的修补 · 椅子特写', description: '同机位的椅子，补木消失，旧断口露出。适合对照演出与局部异常。', timeOfDay: '夜晚', moods: ['细节', '悬疑'] },
+    { slug: 'outside', name: '画布之外 · 续作工作室', description: '画架、未完的画、录音笔与台灯。适合画外视角和工作记录。', timeOfDay: '夜晚', moods: ['静谧', '悬疑'] },
+  ].map(s => ({ ...s, id: `paint-${s.slug}`, url: `/assets/paint-prologue/${s.slug}.webp`, type: '文学幻想', place: '室内', usage: '原创《请让这幅画老去》序章；同一美术世界的场景与线索特写。', updatedAt: '2026-11-02' })),
   ...[
     { slug: 'backstage', name: '毕业晚会 · 幕后', place: '室内', timeOfDay: '黄昏', moods: ['日常', '告别'], description: '两支话筒、修改过的稿纸和敞开的侧门。适合上台前的拌嘴、排练与谈心。' },
     { slug: 'stage', name: '散场以后 · 礼堂', place: '室内', timeOfDay: '夜晚', moods: ['静谧', '余韵'], description: '灯光未熄的空礼堂，台下已无人。适合收拾舞台、说出心意和约定。' },
@@ -233,11 +247,11 @@ export const conflictTemplates: ConflictTemplate[] = [
 ]
 
 export function loadLibraryCharacters(): LibraryCharacter[] {
-  return addBuiltinOnce(CHARACTER_KEY, addBuiltinOnce(CHARACTER_KEY, normalizeList(CHARACTER_KEY, defaultCharacters, normalizeCharacter), cinemaCharacters, 'seventh-row'), curtainCharacters, 'curtain-call')
+  return addBuiltinOnce(CHARACTER_KEY, addBuiltinOnce(CHARACTER_KEY, addBuiltinOnce(CHARACTER_KEY, normalizeList(CHARACTER_KEY, defaultCharacters, normalizeCharacter), cinemaCharacters, 'seventh-row'), curtainCharacters, 'curtain-call'), paintCharacters, 'paint-prologue')
 }
 
 export function loadLibraryScenes(): LibraryScene[] {
-  return addBuiltinOnce(SCENE_KEY, addBuiltinOnce(SCENE_KEY, normalizeList(SCENE_KEY, defaultScenes, normalizeScene), defaultScenes.filter(s => s.id.startsWith('seventh-')), 'seventh-row'), defaultScenes.filter(s => s.id.startsWith('curtain-')), 'curtain-call')
+  return addBuiltinOnce(SCENE_KEY, addBuiltinOnce(SCENE_KEY, addBuiltinOnce(SCENE_KEY, normalizeList(SCENE_KEY, defaultScenes, normalizeScene), defaultScenes.filter(s => s.id.startsWith('seventh-')), 'seventh-row'), defaultScenes.filter(s => s.id.startsWith('curtain-')), 'curtain-call'), defaultScenes.filter(s => s.id.startsWith('paint-')), 'paint-prologue')
 }
 
 function addBuiltinOnce<T extends { id: string }>(key: string, items: T[], additions: T[], pack: string): T[] {

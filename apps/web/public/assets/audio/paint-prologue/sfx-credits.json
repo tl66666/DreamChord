@@ -1,0 +1,124 @@
+[
+  {
+    "id": "wood",
+    "name": "轻木质碰撞 · 竹木道具置于木面",
+    "author": "OtoLogic",
+    "license": "CC-BY-4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+    "termsUrl": "https://otologic.jp/free/license",
+    "attribution": "Sound effects by OtoLogic (https://otologic.jp/) — CC BY 4.0; adaptations described per clip.",
+    "usage": "场景音效播放；未用于任何声音克隆、模型训练或语音参考。",
+    "sourceUrl": "https://otologic.jp/free/se/household-others01.html",
+    "sourceDownloadUrl": "https://otologic.jp/sounds/se/pre/Sensu02-13%28Put-Wood%29.mp3",
+    "originalSound": "扇子02-13（置く 木）",
+    "originalRecording": "OtoLogic实录竹骨和纸折扇置于木面；C414 XLS / Fireface UFX II，40cm单声道。作为木椅轻碰撞的foley替代，并非真实椅子倒地录音。",
+    "ffmpegFilter": "asetrate=39690,aresample=44100,highpass=f=60,lowpass=f=5000,silenceremove=start_periods=1:start_duration=0.01:start_threshold=-50dB,atrim=duration=1.25,afade=t=out:st=1.05:d=0.2,loudnorm=I=-24:TP=-6:LRA=7,aresample=44100",
+    "sourceFile": "assets/audio-packs/paint-prologue/source/Sensu02-13-Put-Wood.mp3",
+    "sourceSha256": "334360dfaf71a96ef2e89a30265039b1e8acd3940bf6715d77f79a95d39b6ea6",
+    "runtimeFile": "/assets/audio/paint-prologue/wood.ogg",
+    "runtimeSha256": "4f80c2fc59df924bb55adc1c593b3ad06231efb7e7450fe38e6a037ad74c2a1f",
+    "durationSeconds": 1.25,
+    "processing": "原木质生活物声轻降调至0.9倍、滤掉低于60Hz与高于5kHz的频率、裁去开头静默并截为1.25秒、末尾0.2秒淡出、编码前响度目标-24 LUFS/峰值目标-6 dBTP（有损编码后允许微小峰值偏移）；无额外合成冲击、爆炸或跳吓层。",
+    "generativeAiUsed": false,
+    "humanListeningCompleted": false,
+    "technicalValidation": "ffprobe duration/codec; full ffmpeg decode; source and runtime SHA-256",
+    "checkedAt": "2026-11-02"
+  },
+  {
+    "id": "paper",
+    "name": "剧本翻纸 · Book01",
+    "author": "OtoLogic",
+    "license": "CC-BY-4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+    "termsUrl": "https://otologic.jp/free/license",
+    "attribution": "Sound effects by OtoLogic (https://otologic.jp/) — CC BY 4.0; adaptations described per clip.",
+    "usage": "场景音效播放；未用于任何声音克隆、模型训练或语音参考。",
+    "sourceUrl": "https://otologic.jp/free/se/books01.html",
+    "originalSound": "本01（Book01）",
+    "sourceFile": "apps/web/public/assets/audio/demo/sfx-paper.ogg",
+    "sourceSha256": "e5e22dbdbdc4a8b2f07aaa7deafefe0b2251dea74d10b50b2dd9f60a76becd56",
+    "runtimeFile": "/assets/audio/paint-prologue/paper.ogg",
+    "runtimeSha256": "e5e22dbdbdc4a8b2f07aaa7deafefe0b2251dea74d10b50b2dd9f60a76becd56",
+    "durationSeconds": 1.609841,
+    "processing": "原样复制此前社区pack已许可并发布的纸张翻动Ogg；本轮不重编码、不改变响度。具体原始Book01变体编号未在旧pack中保留，不补造编号。",
+    "generativeAiUsed": false,
+    "humanListeningCompleted": false,
+    "technicalValidation": "ffprobe duration/codec; full ffmpeg decode; source and runtime SHA-256",
+    "checkedAt": "2026-11-02"
+  },
+  {
+    "id": "applause",
+    "name": "八个座位的掌声 · 单人手拍轻叠加",
+    "author": "OtoLogic",
+    "license": "CC-BY-4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+    "termsUrl": "https://otologic.jp/free/license",
+    "attribution": "Sound effects by OtoLogic (https://otologic.jp/) — CC BY 4.0; adaptations described per clip.",
+    "usage": "场景音效播放；未用于任何声音克隆、模型训练或语音参考。",
+    "sourceUrl": "https://otologic.jp/free/se/applause-cheer01.html",
+    "sourceDownloadUrl": "https://otologic.jp/sounds/se/pre2/Applause01-5%28Random-Slow%29.mp3",
+    "originalSound": "拍手01-5（ランダム 遅い）",
+    "originalRecording": "OtoLogic单人真实手拍的近距离干声录音；无欢呼与台词。八层处理表示八个虚拟听众位置，不声称录制了八名不同的人。",
+    "layers": [
+      {
+        "speed": 0.88,
+        "delay": 0,
+        "left": 0.9,
+        "right": 0.25
+      },
+      {
+        "speed": 0.94,
+        "delay": 137,
+        "left": 0.8,
+        "right": 0.4
+      },
+      {
+        "speed": 1.03,
+        "delay": 281,
+        "left": 0.7,
+        "right": 0.5
+      },
+      {
+        "speed": 1.09,
+        "delay": 73,
+        "left": 0.6,
+        "right": 0.6
+      },
+      {
+        "speed": 0.91,
+        "delay": 392,
+        "left": 0.5,
+        "right": 0.7
+      },
+      {
+        "speed": 0.98,
+        "delay": 214,
+        "left": 0.4,
+        "right": 0.8
+      },
+      {
+        "speed": 1.06,
+        "delay": 476,
+        "left": 0.25,
+        "right": 0.9
+      },
+      {
+        "speed": 1.13,
+        "delay": 329,
+        "left": 0.55,
+        "right": 0.65
+      }
+    ],
+    "ffmpegFilter": "[0:a]aformat=sample_fmts=fltp:sample_rates=44100:channel_layouts=mono,asplit=8[a0][a1][a2][a3][a4][a5][a6][a7];[a0]atempo=0.88,adelay=0:all=1,pan=stereo|c0=0.9*c0|c1=0.25*c0[b0];[a1]atempo=0.94,adelay=137:all=1,pan=stereo|c0=0.8*c0|c1=0.4*c0[b1];[a2]atempo=1.03,adelay=281:all=1,pan=stereo|c0=0.7*c0|c1=0.5*c0[b2];[a3]atempo=1.09,adelay=73:all=1,pan=stereo|c0=0.6*c0|c1=0.6*c0[b3];[a4]atempo=0.91,adelay=392:all=1,pan=stereo|c0=0.5*c0|c1=0.7*c0[b4];[a5]atempo=0.98,adelay=214:all=1,pan=stereo|c0=0.4*c0|c1=0.8*c0[b5];[a6]atempo=1.06,adelay=476:all=1,pan=stereo|c0=0.25*c0|c1=0.9*c0[b6];[a7]atempo=1.13,adelay=329:all=1,pan=stereo|c0=0.55*c0|c1=0.65*c0[b7];[b0][b1][b2][b3][b4][b5][b6][b7]amix=inputs=8:normalize=1:dropout_transition=0,atrim=duration=5,highpass=f=100,lowpass=f=7000,afade=t=in:st=0:d=0.1,afade=t=out:st=3.7:d=1.3,loudnorm=I=-24:TP=-4:LRA=7,aresample=44100[output]",
+    "sourceFile": "assets/audio-packs/paint-prologue/source/Applause01-5-Random-Slow.mp3",
+    "sourceSha256": "83358f39b24b2e048b4a35fba8c09366c49ce1e6d2779d7caddbf7e3fb959f50",
+    "runtimeFile": "/assets/audio/paint-prologue/applause.ogg",
+    "runtimeSha256": "1b4172d703df0edfc3e3e39ade927f94b624efcd2074dbf244a8661a9deaa502",
+    "durationSeconds": 5,
+    "processing": "从单人随机慢速手拍生成8个轻度错时、速度微调与声像不同的层，等权平均而非直接放大叠加；总长5秒、0.1秒淡入、1.3秒淡出、高通100Hz/低通7kHz、响度目标-24 LUFS/峰值-4 dBTP；没有追加欢呼、合成声音或大场馆残响。",
+    "generativeAiUsed": false,
+    "humanListeningCompleted": false,
+    "technicalValidation": "ffprobe duration/codec; full ffmpeg decode; source and runtime SHA-256",
+    "checkedAt": "2026-11-02"
+  }
+]

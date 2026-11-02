@@ -1,5 +1,8 @@
 import axios from 'axios'
 export interface CurtainTemplateEntry { id: string; title: string; focusSceneId: string; focusNodeId: string }
+export async function createPaintTemplate(requestId: string): Promise<CurtainTemplateEntry> {
+  return (await api.post<CurtainTemplateEntry>('/projects/templates/paint-prologue', { requestId })).data
+}
 export async function createCurtainTemplate(requestId: string): Promise<CurtainTemplateEntry> {
   return (await api.post<CurtainTemplateEntry>('/projects/templates/curtain-call', { requestId })).data
 }

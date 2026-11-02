@@ -8,9 +8,11 @@ import { projectVoiceLocale, VOICE_BINDINGS_CHANGED, VOICE_PREFERENCE_CHANGED } 
 
 export default function DialogueVoiceGenerator({ nodeId, data, onUpdate }: { nodeId: string; data: Record<string, unknown>; onUpdate: (patch: Record<string, unknown>) => void }) {
   const projectId = useEditorStore((state) => state.project?.id)
+  const defaultLocale = useEditorStore((state) => state.project?.defaultVoiceLocale)
   const chapterId = useEditorStore((state) => state.chapterId)
   const [profiles, setProfiles] = useState<VoiceProfile[]>([])
-  const [locale, setLocale] = useState<StoryLocale>(() => projectVoiceLocale(projectId))
+  const [locale, setLocale] = useState<StoryLocale>(() => defaultLocale || projectVoiceLocale(projectId))
+  const localeChoice = useRef({ projectId, manual: false })
   const [job, setJob] = useState<VoiceGenerationJob | null>(null)
   const [candidate, setCandidate] = useState({ role: '', sourceHash: '', originalJa: '', profileId: '' })
   const [manualTranslation, setManualTranslation] = useState<{ text: string; sourceHash: string } | null>(null)
@@ -27,11 +29,14 @@ export default function DialogueVoiceGenerator({ nodeId, data, onUpdate }: { nod
     return () => { alive.current = false; window.removeEventListener(VOICE_BINDINGS_CHANGED, load) }
   }, [])
   useEffect(() => {
-    const updateLocale = () => setLocale(projectVoiceLocale(projectId))
+    if (localeChoice.current.projectId !== projectId) localeChoice.current = { projectId, manual: false }
+    const updateLocale = () => {
+      if (!localeChoice.current.manual) setLocale(defaultLocale || projectVoiceLocale(projectId))
+    }
     updateLocale()
     window.addEventListener(VOICE_PREFERENCE_CHANGED, updateLocale)
     return () => window.removeEventListener(VOICE_PREFERENCE_CHANGED, updateLocale)
-  }, [projectId])
+  }, [projectId, defaultLocale])
   const busy = phase !== 'idle'
   const role = String(data.role || '')
   const sourceText = String(data.text || '')
@@ -89,7 +94,7 @@ export default function DialogueVoiceGenerator({ nodeId, data, onUpdate }: { nod
   return <section className="rounded-xl border border-dream-200 bg-dream-50/50 p-4 text-xs" aria-label="台词配音">
     <p className="font-semibold text-slate-950">为这句台词配音</p>
     <p className="mt-1 leading-5 text-slate-600">{profile ? `使用 ${profile.name}，后续台词沿用同一音色。` : '先点顶部“角色配音”为角色绑定音色。'}本句可单独重录；批量生成请使用“角色配音”。中文台词保持不变。</p>
-    <div className="mt-3 flex flex-wrap gap-2"><select aria-label="生成配音语言" disabled={busy} value={locale} onChange={(event) => { setLocale(event.target.value as StoryLocale); setManualTranslation(null) }} className="min-h-10 min-w-0 flex-1 rounded-lg border border-dream-200 bg-white px-3"><option value="zh">中文配音</option><option value="ja">日语配音 · 自动翻译</option></select><button aria-label="生成试听" disabled={busy || !binding || !reference || !sourceText.trim()} onClick={() => void generate()} className="min-h-10 rounded-lg bg-dream-600 px-4 font-medium text-white hover:bg-dream-700 disabled:opacity-40">{phase === 'translating' ? '正在翻译…' : phase === 'generating' ? '正在生成…' : phase === 'applying' ? '正在应用…' : locale === 'ja' ? '生成日语试听' : '生成中文试听'}</button></div>
+    <div className="mt-3 flex flex-wrap gap-2"><select aria-label="生成配音语言" disabled={busy} value={locale} onChange={(event) => { localeChoice.current.manual = true; setLocale(event.target.value as StoryLocale); setManualTranslation(null) }} className="min-h-10 min-w-0 flex-1 rounded-lg border border-dream-200 bg-white px-3"><option value="zh">中文配音</option><option value="ja">日语配音 · 自动翻译</option></select><button aria-label="生成试听" disabled={busy || !binding || !reference || !sourceText.trim()} onClick={() => void generate()} className="min-h-10 rounded-lg bg-dream-600 px-4 font-medium text-white hover:bg-dream-700 disabled:opacity-40">{phase === 'translating' ? '正在翻译…' : phase === 'generating' ? '正在生成…' : phase === 'applying' ? '正在应用…' : locale === 'ja' ? '生成日语试听' : '生成中文试听'}</button></div>
     {job?.outputUrl && <div className="mt-3 space-y-3 rounded-lg border border-dream-100 bg-white p-3">
       <p className="leading-5 text-slate-500">实际朗读：<span lang={job.language} className="text-slate-800">{job.text}</span></p>
       <audio aria-label="当前台词配音试听" controls src={job.outputUrl} className="h-9 w-full" />

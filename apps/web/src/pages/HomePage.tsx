@@ -152,7 +152,7 @@ export default function HomePage() {
             <button onClick={handleCreate} disabled={creating} className="rounded-lg bg-dream-600 px-6 py-3 font-medium text-white shadow-lg shadow-dream-500/20 hover:bg-dream-700 disabled:opacity-50">
               {creating ? <span className="flex items-center gap-2"><Loader2 className="h-4 w-4 animate-spin" /> 创建中</span> : '新建故事'}
             </button>
-            <Link to="/play/dreamchord-curtain-call" className="inline-flex items-center gap-2 rounded-lg border border-white bg-white/75 px-5 py-3 text-sm font-medium text-slate-700 backdrop-blur hover:bg-white"><PlayCircle className="h-4 w-4" />试玩官方示例</Link>
+            <Link to="/play/dreamchord-paint-prologue" className="inline-flex items-center gap-2 rounded-lg border border-white bg-white/75 px-5 py-3 text-sm font-medium text-slate-700 backdrop-blur hover:bg-white"><PlayCircle className="h-4 w-4" />试玩官方示例</Link>
           </div>
           <Link to="/agent" className="inline-flex min-h-10 items-center gap-2 text-sm font-medium text-slate-600 hover:text-dream-700"><Bot className="h-4 w-4" />有一个想法？和创作助手聊聊 →</Link>
         </div></div><div aria-hidden="true" className="h-52 sm:hidden" />

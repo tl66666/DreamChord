@@ -1,0 +1,63 @@
+{
+  "title": "请让这幅画老去",
+  "generator": "built-in image_gen.imagegen",
+  "createdAt": "2026-11-02",
+  "promptRecord": "First prompt preserved verbatim where available; subsequent prompts summarized faithfully with the scene/continuity constraints. Native original paths identify the generated files.",
+  "processing": "Conventional resize from native 1672x941 to 1920x1080 (no crop); WebP q91. No manual creative edits. Cover uses workshop.",
+  "assets": [
+    {
+      "id": "workshop",
+      "nativePath": "C:/Users/唐乐/.codex/generated_images/01a1680b-608f-7291-9d58-1375c80be01e/exec-f1166be8-7788-4227-bde1-cc3dfe5b9d4b.png",
+      "prompt": "Use case: illustration-story. Asset type: production background for an original literary Japanese-style visual novel, landscape 16:9 composition. A small weathered riverside town's amateur theatre workshop on a bright early spring afternoon, empty of people. Three mismatched wooden chairs, one upside down with a freshly repaired rear leg and a conspicuous dark walnut wooden patch; a workbench with hand tools, screws, a folded pale canvas backdrop showing an unfinished quiet seaside scene, an open worn script without legible writing, a kettle and ordinary mugs. Tall wooden window on the RIGHT looking onto an alley with white plaster buildings and a modest peach tree, sunlight showing dust in air, theatrical wings and a few warm stage lights in the distance on the LEFT. View from eye level as if standing in the room; coherent architecture, believable space, foreground area clear for waist-up characters. Evocative hand-painted gouache / detailed oil-sketch atmosphere with delicate anime-background craftsmanship, subtle canvas grain, luminous but grounded, restrained spring greens, warm ochre wood, cool blue window shadows. Gentle lived-in imperfection, literary and intimate, not fantasy palace, not neon, not photorealism, not a UI mockup. Whole room readable, no extreme fisheye, no lettering, no logo, no people. The chair's repair patch is a meaningful recurring clue, make it visible but natural.",
+      "reference": null,
+      "sourceSha256": "4409105821b05f80df7bc371969364f92da324da529f6afbb25d8011abf6978e",
+      "runtimeFile": "/assets/paint-prologue/workshop.webp",
+      "runtimeSha256": "b0d025e23c330ee53921e1a89613ccae3493004197e06dda28c76814efaf05a2"
+    },
+    {
+      "id": "theatre",
+      "nativePath": "C:/Users/唐乐/.codex/generated_images/01a1680b-608f-7291-9d58-1375c80be01e/exec-117acbdb-fece-41de-bffa-5b72846cbf89.png",
+      "reference": "workshop.png",
+      "prompt": "Same original hand-painted literary visual-novel world. Front row view of an intimate low stage, 8 mismatched wooden chairs, simple door frame/shoe cabinet for a modest homecoming play, grey teal wings, warm amber lights and evening blue windows, small donation jar without text, bucket under roof leak, no people, stage center clear for sprites.",
+      "sourceSha256": "69a9af0e1b805a1ff46eed02bb867c3c769915f27a81893ce698615fc59ea03a",
+      "runtimeFile": "/assets/paint-prologue/theatre.webp",
+      "runtimeSha256": "0be0a16a3ab75f063565a7c671c15aee941e83553e68f48833ccb73d58fe5325"
+    },
+    {
+      "id": "night",
+      "nativePath": "C:/Users/唐乐/.codex/generated_images/01a1680b-608f-7291-9d58-1375c80be01e/exec-e6a90ca4-cd25-4e90-b9ab-9c05e81399d5.png",
+      "reference": "workshop.png",
+      "prompt": "Edit same exact workshop camera/furniture/composition to late night: deep indigo outside windows, warm small amber oil lamp on table, no sunlight, no people or text, no horror lighting, same muted wood and grey teal palette.",
+      "sourceSha256": "717cf3b3b4fa191a7eed77a525d2097bc437ac0b31943d274cfb7e9a19e18a48",
+      "runtimeFile": "/assets/paint-prologue/night.webp",
+      "runtimeSha256": "0dc52c39a786f223d8da45a245f80516f49e0825d9b4c1ca7b62fcd2c4c78945"
+    },
+    {
+      "id": "chair-repaired",
+      "nativePath": "C:/Users/唐乐/.codex/generated_images/01a1680b-608f-7291-9d58-1375c80be01e/exec-f68799a8-183a-4cca-bc5c-671039cc02d4.png",
+      "reference": "workshop.png",
+      "prompt": "Low close-up single CG in same workshop: simple slatted honey oak wooden chair, clear left rear leg has short dark walnut lower graft and straight joint, fresh sawdust below. Night blue window and warm amber lamp, no characters or lettering. Important repair in middle vertical band.",
+      "sourceSha256": "5b8673c57c94d12efb0e31582c85c82021c11ff35c30c53275704ca3f13233eb",
+      "runtimeFile": "/assets/paint-prologue/chair-repaired.webp",
+      "runtimeSha256": "226728b536b9f18fdfcbc3170a7a91b752bea4886b146ba2a8298f21596033dc"
+    },
+    {
+      "id": "chair-erased",
+      "nativePath": "C:/Users/唐乐/.codex/generated_images/01a1680b-608f-7291-9d58-1375c80be01e/exec-2a193583-aaf4-42af-ae0f-ac80e2d2a3cf.png",
+      "reference": "chair-repaired.png",
+      "prompt": "Precise continuity edit. Preserve camera/perspective/light/floor/sawdust/all other chair parts EXACTLY. Only remove dark walnut lower graft and collar from central rear upright leg, leaving an old worm-eaten pale splintered break floating 18cm above floor. Three remaining legs support chair; no new debris, no physical pry marks, no people or lettering.",
+      "sourceSha256": "6936298d4523624a7b98da2cfaf5484f2e819bacdc7af653d42b12524b7e7f38",
+      "runtimeFile": "/assets/paint-prologue/chair-erased.webp",
+      "runtimeSha256": "bd1a02fe130945eb53894cdb105b0628f00126e58dfa27b4562998b316ca751b"
+    },
+    {
+      "id": "outside",
+      "nativePath": "C:/Users/唐乐/.codex/generated_images/01a1680b-608f-7291-9d58-1375c80be01e/exec-f24a35c6-7946-4886-beb2-82b5ca4c0b49.png",
+      "reference": "night.png",
+      "prompt": "Contemporary young female painter studio at midnight, painterly literary VN in subdued greyblue/honeyamber. Large unfinished painting on easel depicts reference theatre workshop as canvas within room, ivory unfinished edges. Left workbench has cotton swabs, ceramic tray, water jar, gloves, blank sketchbook and small digital recorder. Warm task lamp, dark window. No person, lettering or magical portal.",
+      "sourceSha256": "81dc8636c9eeaa49f8a2b890a6c2b3a6d2759d8ac52f7d2db417de4ffd9e82c0",
+      "runtimeFile": "/assets/paint-prologue/outside.webp",
+      "runtimeSha256": "37a6f1fb35cc5fefb671c8f8f70e763a7a9cda8b29a26de77bc77098e56ba1e4"
+    }
+  ]
+}

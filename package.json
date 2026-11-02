@@ -37,7 +37,10 @@
     "test:cinema": "pnpm --filter @dreamchord/story-domain build && node --test scripts/seventh-row-pack.test.mjs",
     "voice:pro:configure": "pwsh -NoProfile -File scripts/configure-gpt-sovits-pro.ps1",
     "demo:curtain:seed": "pnpm --filter @dreamchord/story-domain build && pnpm --filter dreamchord-server exec tsx prisma/seedCurtainCall.ts",
-    "test:curtain": "pnpm --filter @dreamchord/story-domain build && node --test scripts/curtain-call-pack.test.mjs"
+    "test:curtain": "pnpm --filter @dreamchord/story-domain build && node --test scripts/curtain-call-pack.test.mjs",
+    "demo:paint:seed": "pnpm --filter @dreamchord/story-domain build && pnpm --filter dreamchord-server exec tsx prisma/seedPaintPrologue.ts",
+    "demo:paint:script": "pnpm --filter @dreamchord/story-domain build && node scripts/export-paint-script.mjs",
+    "test:paint": "pnpm --filter @dreamchord/story-domain build && node --test scripts/paint-prologue-pack.test.mjs scripts/paint-music-sfx.test.mjs"
   },
   "devDependencies": {
     "@eslint/js": "9.39.1",

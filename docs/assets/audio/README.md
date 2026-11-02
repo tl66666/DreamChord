@@ -1,5 +1,7 @@
 # 展示页合成样音
 
+新增《请让这幅画老去》日语试听：`paint-xia-ja.ogg` 来自 `p-seat-1-ja`，`paint-cheng-ja.ogg` 来自 `p-seat-5-ja`，均为正式运行OGG的逐字节副本。制作引擎为GPT-SoVITS v2ProPlus，参考由Qwen3-TTS生成；不是真人演员录音。源/运行SHA及实际合成参数见 `assets/voice-packs/paint-prologue/manifest.json`，尚未完成人耳听审。展示页主动播放，不自动播放。
+
 两条音频来自 DreamChord 内置角色声线包，不是真人声音克隆，供展示页主动试听使用，不自动播放。
 
 | 文件 | 原始片段 | SHA256 |

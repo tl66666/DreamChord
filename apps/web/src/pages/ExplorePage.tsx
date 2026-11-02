@@ -22,7 +22,7 @@ export default function ExplorePage() {
   }, [])
   useEffect(() => { void load() }, [load])
   const filtered = useMemo(() => projects.filter((project) => {
-    const official = ['dreamchord-curtain-call', 'dreamchord-seventh-row', 'dreamchord-first-thread'].includes(project.id)
+    const official = ['dreamchord-paint-prologue', 'dreamchord-curtain-call', 'dreamchord-seventh-row', 'dreamchord-first-thread'].includes(project.id)
     const matches = `${project.title} ${project.description || ''} ${project.author.nickname || project.author.username}`.toLowerCase().includes(query.trim().toLowerCase())
     return matches && (category === 'all' || (category === 'official' ? official : !official))
   }), [category, projects, query])
@@ -31,7 +31,7 @@ export default function ExplorePage() {
     <main className="dc-page">
       <AppHeader />
       <div className="dc-content">
-      <StudioIntro className="mb-8" image="/assets/ui/scene-collection.webp"><div><p className="text-xs font-semibold tracking-[0.18em] text-slate-600">故事书架</p><h1 className="mt-3 text-3xl font-bold tracking-tight text-slate-950">发现作品</h1><p className="mt-3 max-w-md text-sm leading-7 text-slate-500">走进别人的故事，找到自己的下一次灵感。从官方示例开始，也可以看看创作者们留下的不同结局。</p><Link to="/play/dreamchord-curtain-call" className="dc-primary mt-5">试玩官方示例</Link></div></StudioIntro>
+      <StudioIntro className="mb-8" image="/assets/ui/scene-collection.webp"><div><p className="text-xs font-semibold tracking-[0.18em] text-slate-600">故事书架</p><h1 className="mt-3 text-3xl font-bold tracking-tight text-slate-950">发现作品</h1><p className="mt-3 max-w-md text-sm leading-7 text-slate-500">走进别人的故事，找到自己的下一次灵感。从官方示例开始，也可以看看创作者们留下的不同结局。</p><Link to="/play/dreamchord-paint-prologue" className="dc-primary mt-5">试玩官方示例</Link></div></StudioIntro>
       <div className="mb-6 flex flex-wrap items-center justify-between gap-4"><div role="group" aria-label="作品分类" className="flex gap-1 rounded-xl bg-white p-1 ring-1 ring-slate-200">{[['all', '全部作品'], ['official', '官方示例'], ['community', '创作者作品']].map(([value, label]) => <button key={value} aria-pressed={category === value} onClick={() => setCategory(value)} className={`rounded-lg px-4 py-2 text-sm font-medium ${category === value ? 'bg-dream-600 text-white' : 'text-slate-600 hover:bg-dream-50'}`}>{label}</button>)}</div><label className="relative w-full sm:max-w-sm"><Search className="absolute left-3 top-3 h-4 w-4 text-slate-400" /><input aria-label="搜索作品" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="搜索作品、作者或故事简介" className="h-10 w-full rounded-xl border border-slate-200 bg-white pl-9 pr-3 text-sm" /></label></div>
       {error && <div role="alert" className="dc-panel mb-6 flex flex-wrap items-center justify-between gap-3 p-4 text-sm text-rose-700">{error}<button onClick={() => void load()} className="dc-secondary"><RefreshCw className="h-4 w-4" />重新加载</button></div>}
       {loading ? <div className="dc-panel flex justify-center gap-2 py-20 text-sm text-slate-500"><Loader2 className="h-5 w-5 animate-spin" />正在整理故事书架…</div> : <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">

@@ -18,7 +18,7 @@ function toLibraryCharacter(character: Character, local?: LibraryCharacter): Lib
     conflicts: [],
     color: character.color || '#64748b',
     defaultExpression: character.sprites?.some(s => s.name === 'normal') ? 'normal' : character.sprites?.[0]?.name || legacy?.defaultExpression || 'default',
-    expressions: character.sprites?.length ? character.sprites.map(s => ({ id: s.name, label: ({ normal: '平静', sad: '难言', smile: '微笑' } as Record<string, string>)[s.name] || s.name, url: s.url })) : legacy?.expressions || [{ id: 'default', label: 'default', url: character.defaultSprite || FALLBACK_SPRITE }],
+    expressions: character.sprites?.length ? character.sprites.map(s => ({ id: s.name, label: ({ normal: '平静', sad: '难言', smile: '微笑', serious: '认真' } as Record<string, string>)[s.name] || s.name, url: s.url })) : legacy?.expressions || [{ id: 'default', label: 'default', url: character.defaultSprite || FALLBACK_SPRITE }],
     updatedAt: '',
   }
 }

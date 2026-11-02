@@ -2,6 +2,10 @@ import type { VoiceProfile } from '../api/client'
 
 type CatalogEntry = { name: string; legacy: string[]; description: string; traits: string[]; roles: string[]; example?: string }
 const catalog: Record<string, CatalogEntry> = {
+  'paint-voice-cheng': { name: '程见 · 温暖自嘲', legacy: [], description: '青年男声，日常对话与收敛的认真语气。原创合成参考，当前预置日语。', traits: ['日语', '青年', '日常对白'], roles: ['青年男性', '道具师'], example: '程见' },
+  'paint-voice-xia': { name: '夏禾 · 明亮率真', legacy: [], description: '清亮女声，包含轻松与认真两种参考。原创合成参考，当前预置日语。', traits: ['日语', '清亮', '朋友拌嘴'], roles: ['青年女性', '演员'], example: '夏禾' },
+  'paint-voice-ye': { name: '许野 · 轻快有戏', legacy: [], description: '青年男声，适合有表现力的日常对白。原创合成参考，当前预置日语。', traits: ['日语', '轻快', '舞台对白'], roles: ['青年男性', '编剧'], example: '许野' },
+  'paint-voice-lu': { name: '陆青 · 安静理性', legacy: [], description: '平静女声，适合工作记录与克制对白。原创合成参考，当前预置日语。', traits: ['日语', '平静', '工作记录'], roles: ['成年女性', '画家'], example: '陆青' },
   'curtain-voice-zhi': { name: '许栀 · 温柔而坦率', legacy: [], description: '温暖清晰的青年女声，语气克制。适合校园日常与认真谈心。', traits: ['温暖', '坦率', '自然对话'], roles: ['青年女性', '女主'], example: '许栀' },
   'curtain-voice-tang': { name: '唐棠 · 明亮的朋友', legacy: [], description: '明亮、利落的青年女声，带轻微笑意。适合亲近朋友与轻松拌嘴。', traits: ['明亮', '利落', '轻松'], roles: ['青年女性', '朋友'], example: '唐棠' },
   'curtain-voice-lin': { name: '林澈 · 内敛的青年', legacy: [], description: '偏低、自然的青年男声。适合第一人称主角与迟疑后的坦白。', traits: ['偏低', '内敛', '自然对话'], roles: ['青年男性', '男主'], example: '林澈' },

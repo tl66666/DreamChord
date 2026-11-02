@@ -14,7 +14,7 @@ import type { RuntimeScene } from '../engine/types'
 import StageCharacters from '../stage/StageCharacters'
 import { projectLanguageSettings } from './projectLanguage'
 import { useAuthStore } from '../stores/authStore'
-import { beginCurtainTemplate } from '../lib/templateEntry'
+import { beginCurtainTemplate, beginPaintTemplate } from '../lib/templateEntry'
 import { startPreviewAt } from '../engine/previewStart'
 
 interface HistoryItem {
@@ -373,6 +373,7 @@ export default function VisualNovelPlayer() {
   }, [engine])
 
   useEffect(() => {
+    if (!engine) return
     if (!currentScene) {
       setFinished(true)
       setDisplayedText('')
@@ -386,7 +387,7 @@ export default function VisualNovelPlayer() {
       setDisplayedText('')
       setIsTyping(false)
     }
-  }, [currentScene, playTone, startTyping])
+  }, [engine, currentScene, playTone, startTyping])
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
@@ -597,10 +598,12 @@ export default function VisualNovelPlayer() {
           >
             <div className="max-w-md rounded-2xl border border-white/10 bg-black/64 p-8 text-center shadow-2xl">
               <h2 className="mb-2 text-2xl font-bold text-white">{project?.title || '故事'} · 本次阅读结束</h2>
-              <p className="mb-6 text-sm leading-7 text-white/60">{projectId === 'dreamchord-curtain-call' ? '如果是你，会在谢幕词上留下哪一句？把这个故事带进工作台，写下你的第三种结局。' : '谢谢你读到这里。重新阅读，可以尝试另一种选择。'}</p>
+              <p className="mb-6 text-sm leading-7 text-white/60">{projectId === 'dreamchord-paint-prologue' ? '序章到这里暂告一段落。那把椅子为什么变了？你也可以把角色和场景带进自己的工作台，从下一句开始续写。' : projectId === 'dreamchord-curtain-call' ? '如果是你，会在谢幕词上留下哪一句？把这个故事带进工作台，写下你的第三种结局。' : '谢谢你读到这里。重新阅读，可以尝试另一种选择。'}</p>
+              {projectId === 'dreamchord-paint-prologue' && <p className="mb-5 text-xs leading-6 text-white/40">原创文学幻想 · 当前收录序章<br />GPT-SoVITS 日语合成配音 · 原创生成插画<br />配乐 TERNOX（CC0）· 音效 OtoLogic（CC BY 4.0）</p>}
               {projectId === 'dreamchord-curtain-call' && <p className="mb-5 text-xs leading-6 text-white/40">原创短篇 · 两个结局<br />GPT-SoVITS 角色配音 · 原创生成插画<br />配乐 TERNOX · CC0</p>}
               {projectId === 'dreamchord-seventh-row' && <p className="mb-5 text-xs leading-6 text-white/40">原创短篇《第七排，空座》<br />配乐 TERNOX · CC0<br />原创生成插画 · Qwen3-TTS 合成角色配音</p>}
               <div className="flex flex-col gap-3">
+                {projectId === 'dreamchord-paint-prologue' && <button onClick={() => navigate(beginPaintTemplate())} className="inline-flex items-center justify-center gap-2 rounded-xl bg-dream-600 px-5 py-3 text-sm font-medium text-white transition hover:bg-dream-700"><PenLine className="h-4 w-4" />带入工作台，写下下一句</button>}
                 {projectId === 'dreamchord-curtain-call' && <button onClick={() => navigate(beginCurtainTemplate())} className="inline-flex items-center justify-center gap-2 rounded-xl bg-dream-600 px-5 py-3 text-sm font-medium text-white transition hover:bg-dream-700"><PenLine className="h-4 w-4" />写下你的第三种结局</button>}
                 <button onClick={restart} className="inline-flex items-center justify-center gap-2 rounded-xl bg-dream-600 px-5 py-2.5 text-sm font-medium text-white transition hover:bg-dream-700">
                   <RotateCcw className="h-4 w-4" />

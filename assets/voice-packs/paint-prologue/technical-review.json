@@ -1,0 +1,374 @@
+{
+  "dialogueCount": 59,
+  "referenceCount": 8,
+  "allDialogueEngine": "GPT-SoVITS-v2ProPlus",
+  "totalSeconds": 295.2,
+  "runtimeBytes": 1898082,
+  "allCurrentScriptAndHashesVerified": true,
+  "allDecodedMono24kNoClipping": true,
+  "humanListeningCompleted": false,
+  "pendingHumanListening": [
+    "p-open-1",
+    "p-open-6",
+    "p-after-5",
+    "p-seat-1",
+    "p-outside-1"
+  ],
+  "limitation": "ASR and waveform checks do not establish natural acting or native pronunciation.",
+  "clips": [
+    {
+      "id": "p-open-1",
+      "durationSeconds": 2.38,
+      "peak": 0.6007,
+      "sha256": "f14f77821caed627252c4a955fb32c87208d521c0e1155e411935b508473be3d"
+    },
+    {
+      "id": "p-open-2",
+      "durationSeconds": 1.14,
+      "peak": 0.55161,
+      "sha256": "742eba249ee8614d8405644cd1afe3af778ddb0148113a7575d7801a05b9c894"
+    },
+    {
+      "id": "p-open-3",
+      "durationSeconds": 5.92,
+      "peak": 0.78231,
+      "sha256": "e6958e8cf58f2364eb524103eb45072b4a9a4fca259da973069c8e466d42604c"
+    },
+    {
+      "id": "p-open-4",
+      "durationSeconds": 4.42,
+      "peak": 0.79883,
+      "sha256": "9411d0ea125234bdf27ce2d091f013e7692423c324ea46b5bb275e1eb82bbbfd"
+    },
+    {
+      "id": "p-open-5",
+      "durationSeconds": 2.42,
+      "peak": 0.79844,
+      "sha256": "c078d035033796be1642d5c104481566e8e2ac71a957408eedcb12ba3ece7b8b"
+    },
+    {
+      "id": "p-open-6",
+      "durationSeconds": 3.38,
+      "peak": 0.87029,
+      "sha256": "0fb9db5df9c8acec8d9fcbce3e3dd08d7c44137d389a18b57fdece54489f5573"
+    },
+    {
+      "id": "p-open-7",
+      "durationSeconds": 10.4,
+      "peak": 0.86054,
+      "sha256": "7de5cd84ec8fdafc0c29e460b3f7632e721d704d89042dbb2d2d2e58aa92c1b2"
+    },
+    {
+      "id": "p-open-8",
+      "durationSeconds": 2.34,
+      "peak": 0.6748,
+      "sha256": "eb1d7980e519d0b8af6a18813c852a964c2218dbf0a7f656f35b3ec779452187"
+    },
+    {
+      "id": "p-open-9",
+      "durationSeconds": 3.02,
+      "peak": 0.85318,
+      "sha256": "dee7a9aa8859dce0f231ff3c71ae208006429c5f1ddba0d8315688eafc6dd869"
+    },
+    {
+      "id": "p-repair-1",
+      "durationSeconds": 4.98,
+      "peak": 0.84444,
+      "sha256": "e4a3aee26b0068ba278d193da33e2cac9c3c4c42a0b859c47e1be1cae42bce87"
+    },
+    {
+      "id": "p-repair-2",
+      "durationSeconds": 4.68,
+      "peak": 0.77302,
+      "sha256": "5074e2ee26084a7c1cb4792aefb2341afc79ba85056b0ec9374db109a74c9d89"
+    },
+    {
+      "id": "p-repair-3",
+      "durationSeconds": 2.8,
+      "peak": 0.71025,
+      "sha256": "fc60bb5f8255bb08612ad79f47123c84b0e7778c5c7b861e7db87f1b4e7152c8"
+    },
+    {
+      "id": "p-repair-4",
+      "durationSeconds": 5.26,
+      "peak": 0.86986,
+      "sha256": "6128359073bcfaa409b37189e6e04c25fa95f311d8da59e968ef15486d49dc8d"
+    },
+    {
+      "id": "p-repair-5",
+      "durationSeconds": 4.16,
+      "peak": 0.76075,
+      "sha256": "4631cbf8d87d8def7aafa839abde8db419996165da1c5201440a1e75464876d9"
+    },
+    {
+      "id": "p-repair-6",
+      "durationSeconds": 5.3,
+      "peak": 0.71311,
+      "sha256": "e84da7d53a99f545b578e2af6fa59342a342dc4aec9a57e8a50cd83bb5b943c0"
+    },
+    {
+      "id": "p-repair-7",
+      "durationSeconds": 4.8,
+      "peak": 0.68743,
+      "sha256": "a3e46b82cdda1778c581ccb918084ebc0d4838ee1d609583019dc552a4ccb4f0"
+    },
+    {
+      "id": "p-repair-8",
+      "durationSeconds": 3.78,
+      "peak": 0.81854,
+      "sha256": "fc22bf5e964d110e347cecb458f8f28648909aeed7bc12321deb1b0794369617"
+    },
+    {
+      "id": "p-task-1",
+      "durationSeconds": 8.96,
+      "peak": 0.85059,
+      "sha256": "9f14fe7c0f3548fc2e52d6f961f56f05f94aa785794877953122d40687e810e6"
+    },
+    {
+      "id": "p-task-2",
+      "durationSeconds": 4.8,
+      "peak": 0.81214,
+      "sha256": "4de032f3a7509fd818a587ea21242e4de0b53c52db3d25b357a00b39f8059c4a"
+    },
+    {
+      "id": "p-branch-ye-1",
+      "durationSeconds": 5.02,
+      "peak": 0.85558,
+      "sha256": "7f69f34fc748bcd3b381abd20309a9514f2733aedaf2f8383920a4e1f53bf4e9"
+    },
+    {
+      "id": "p-branch-ye-2",
+      "durationSeconds": 7.28,
+      "peak": 0.70245,
+      "sha256": "d0b80e69fd2c84b93cceda5f9606eb21fcb38fef13335c536e5e6d0c0cf47600"
+    },
+    {
+      "id": "p-branch-ye-3",
+      "durationSeconds": 7.72,
+      "peak": 0.86392,
+      "sha256": "926363a920b8bd633de28fdae67c92c421b72b9e26f7b86b819ff915339da882"
+    },
+    {
+      "id": "p-branch-xia-1",
+      "durationSeconds": 9.84,
+      "peak": 0.85475,
+      "sha256": "ae0913dab05bd5df5419797c4998f14346e7aee7fb31539a8d37dade70681d68"
+    },
+    {
+      "id": "p-branch-xia-2",
+      "durationSeconds": 3.24,
+      "peak": 0.7846,
+      "sha256": "49eed77b67ac46a4140a920417988dd65f40e635cd360300aa9221c1a17a2fc9"
+    },
+    {
+      "id": "p-branch-xia-3",
+      "durationSeconds": 5.7,
+      "peak": 0.80472,
+      "sha256": "e06dcbb2e79a3f80902fd8d7617d3c94d340a0145b8723be598d0a22b56c957e"
+    },
+    {
+      "id": "p-merge-1",
+      "durationSeconds": 5.64,
+      "peak": 0.81463,
+      "sha256": "bc82a3b91a6f8d175e7f668423947daf634320d40cbd5e83af7294eefc8efb34"
+    },
+    {
+      "id": "p-merge-2",
+      "durationSeconds": 5.74,
+      "peak": 0.7565,
+      "sha256": "ba3366dda2eb722d00be8c3b4563ccbf81bbcaa5b1a53e72553bac13bb42f63a"
+    },
+    {
+      "id": "p-merge-3",
+      "durationSeconds": 4.64,
+      "peak": 0.84132,
+      "sha256": "aa76d693c5ccd20e419b3efac8035d84f17d7d42c8cac78355da62137e88511e"
+    },
+    {
+      "id": "p-stage-1",
+      "durationSeconds": 2.02,
+      "peak": 0.6919,
+      "sha256": "0b1fcc524e049c95ca09562a89c184ce90a359b6f9735dac6107e1b8902ae007"
+    },
+    {
+      "id": "p-stage-2",
+      "durationSeconds": 4.5,
+      "peak": 0.84299,
+      "sha256": "5c32308e67745ccae98bcdf9cfe0d3b7db867176a83f5eca752238e44561435c"
+    },
+    {
+      "id": "p-stage-3",
+      "durationSeconds": 2.38,
+      "peak": 0.7256,
+      "sha256": "05c00aefdfb56dcad0aa37f14a5a569ffa7875fe41791fe0f6d2890d4672efa9"
+    },
+    {
+      "id": "p-stage-4",
+      "durationSeconds": 6.5,
+      "peak": 0.75333,
+      "sha256": "970907f8fada0659e2ce3b429cf9c3b7f0b31990e06583971546a8a61512821b"
+    },
+    {
+      "id": "p-stage-5",
+      "durationSeconds": 7.04,
+      "peak": 0.83815,
+      "sha256": "311771629ba08cb214c6b98d6e1ba13c5699642bfa4de3beb6d3c654ec865be3"
+    },
+    {
+      "id": "p-after-1",
+      "durationSeconds": 3.74,
+      "peak": 0.75387,
+      "sha256": "6707abcecb3bbfae432115612a5919cc3f4285d3738c644a765fbdf31901d459"
+    },
+    {
+      "id": "p-after-2",
+      "durationSeconds": 5.46,
+      "peak": 0.73545,
+      "sha256": "a5091575f7e2d7e241aaab3a6ca9b71fcff9c13dd3a835e5cf9675d10f2cde49"
+    },
+    {
+      "id": "p-after-3",
+      "durationSeconds": 4.34,
+      "peak": 0.77259,
+      "sha256": "0b8b1f55dee724ab876d8eb5ab7b725c1e895a8d1b56a3d4339bce592b25f629"
+    },
+    {
+      "id": "p-after-4",
+      "durationSeconds": 5.36,
+      "peak": 0.84606,
+      "sha256": "c423e6e6899024db11de6d38741d3d1c21821f620a127f9ddd65c45c7e74b59a"
+    },
+    {
+      "id": "p-after-5",
+      "durationSeconds": 2.22,
+      "peak": 0.69825,
+      "sha256": "04b719cd52203798fec230b6b459bbc913af5b5726c752e5e627e97f669d912a"
+    },
+    {
+      "id": "p-after-6",
+      "durationSeconds": 4.34,
+      "peak": 0.84577,
+      "sha256": "312b2e70a4a2d1c0d801f7d58386f69dc2bd8bf8e827ed5b66e7280c45b8cc7d"
+    },
+    {
+      "id": "p-after-7",
+      "durationSeconds": 7.7,
+      "peak": 0.86155,
+      "sha256": "02cae05a7dbf4d42492d676dc858613f473faeb9a50f80d3b5b6d1eff70754b8"
+    },
+    {
+      "id": "p-after-8",
+      "durationSeconds": 1.9,
+      "peak": 0.7476,
+      "sha256": "7525a21442f1be2b77569f6c8dd66c717dd44f61c1ce2934c3c4ff6adb701bd4"
+    },
+    {
+      "id": "p-after-9",
+      "durationSeconds": 6.54,
+      "peak": 0.84776,
+      "sha256": "0a7ee89f16846817634909c36488fae19e4f95ad3b6a8578da5fdcf8f3717f09"
+    },
+    {
+      "id": "p-seat-1",
+      "durationSeconds": 4.56,
+      "peak": 0.85887,
+      "sha256": "623a18ca780c6899940ea1e351c4358b591d0c691c89beb980234b9e2d65cc12"
+    },
+    {
+      "id": "p-seat-2",
+      "durationSeconds": 3.44,
+      "peak": 0.81352,
+      "sha256": "ad3fcad0be416621f864b6bd7cfe1245bba3ef81919da11affb03f01bd8632d4"
+    },
+    {
+      "id": "p-seat-3",
+      "durationSeconds": 5.4,
+      "peak": 0.77384,
+      "sha256": "d991be24df15ffc06301f275d73eedc7612628ac25c21240ad3812b4e3bd37b1"
+    },
+    {
+      "id": "p-seat-4",
+      "durationSeconds": 9.66,
+      "peak": 0.844,
+      "sha256": "adc17b6b7fffaca281c9b08f59237d029a701d1fc3ed30e07d8fdad66e7fefc5"
+    },
+    {
+      "id": "p-seat-5",
+      "durationSeconds": 4.76,
+      "peak": 0.85194,
+      "sha256": "58f6aff1fed831a27b2c9e404ce9dbe112e75f7312d28724b8ae43b19bd1db76"
+    },
+    {
+      "id": "p-seat-6",
+      "durationSeconds": 2.5,
+      "peak": 0.84938,
+      "sha256": "2552ece1e846341ceed3e733e19904ab88e1224f75a46b776755ed38a752b700"
+    },
+    {
+      "id": "p-walk-1",
+      "durationSeconds": 3.68,
+      "peak": 0.76485,
+      "sha256": "660b6f08d91443a89ecb266478bdbb07826b18358bf778b3291cd2d641b1ab47"
+    },
+    {
+      "id": "p-walk-2",
+      "durationSeconds": 1.78,
+      "peak": 0.85207,
+      "sha256": "b545ebc9ba201a2b806314c7479d01e3c52dff623c7dec35bb45895488973a2b"
+    },
+    {
+      "id": "p-walk-3",
+      "durationSeconds": 7.96,
+      "peak": 0.78417,
+      "sha256": "2318ab263ca35830d477e83ed1352765f36011c64701b11cb5e920fd95e87215"
+    },
+    {
+      "id": "p-walk-4",
+      "durationSeconds": 5.9,
+      "peak": 0.83301,
+      "sha256": "75ffde1f7b2c00fbe7b474413b87f1dde3d060e9e51f4d244739b6036f178883"
+    },
+    {
+      "id": "p-walk-5",
+      "durationSeconds": 4.32,
+      "peak": 0.84385,
+      "sha256": "d70f6fe58e3c40aeed1d98af33f588430e1df1dcac2e04e84535b5fc18e08b29"
+    },
+    {
+      "id": "p-walk-6",
+      "durationSeconds": 5.52,
+      "peak": 0.84002,
+      "sha256": "36e415d12fad37b0e1f0ae5c9a63030ed3d6a95f363c46815a3b33eba0fc5d6e"
+    },
+    {
+      "id": "p-walk-7",
+      "durationSeconds": 3.2,
+      "peak": 0.84543,
+      "sha256": "154506c72d82bd74c55040496437f0d5be23aa5dd9755bddba4ca14103ae66b4"
+    },
+    {
+      "id": "p-night-1",
+      "durationSeconds": 3.32,
+      "peak": 0.8738,
+      "sha256": "8744a02fa5d34f2fa09f868de495d9d61d085d690b79940a6afddf0dfe9d963e"
+    },
+    {
+      "id": "p-outside-1",
+      "durationSeconds": 13.14,
+      "peak": 0.85757,
+      "sha256": "45a69ff28b30b478b4bd396d9b8773539909163fac07a8f707e2ec1699a5aeaf"
+    },
+    {
+      "id": "p-outside-2",
+      "durationSeconds": 8.58,
+      "peak": 0.85898,
+      "sha256": "c498937775dbc7d3a7d08f00b9ed266e746be940ecc49882454d0b64b1fc004b"
+    },
+    {
+      "id": "your-next-line",
+      "durationSeconds": 3.68,
+      "peak": 0.84311,
+      "sha256": "8b016cd550bdfe3d5928ca064731f9600362d6d9e7c4cce663d0bc806f561f76"
+    }
+  ]
+}

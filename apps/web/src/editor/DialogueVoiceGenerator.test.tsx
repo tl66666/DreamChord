@@ -1,20 +1,54 @@
 // @vitest-environment jsdom
 import '@testing-library/jest-dom/vitest'
-import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { voiceTextHash } from '@dreamchord/story-domain'
 import { useEditorStore } from '../stores/editorStore'
 import DialogueVoiceGenerator from './DialogueVoiceGenerator'
+import { VOICE_PREFERENCE_CHANGED } from '../voice/characterVoicePlan'
 
 const api = vi.hoisted(() => ({ profiles: vi.fn(), generate: vi.fn(), accept: vi.fn(), translate: vi.fn() }))
 vi.mock('../api/client', async (original) => ({ ...await original<typeof import('../api/client')>(), getVoiceProfiles: api.profiles, createVoiceGeneration: api.generate, acceptVoiceGeneration: api.accept, translateVoiceText: api.translate }))
 describe('dialogue voice generation', () => {
   beforeEach(() => {
+    localStorage.clear()
     useEditorStore.setState({ project: { id: 'project', title: '故事' }, chapterId: 'chapter' })
     api.profiles.mockResolvedValue([{ id: 'voice', name: '雪的声线', status: 'active', bindings: [{ project: { id: 'project' }, character: { id: 'character', name: '雪' } }], references: [{ id: 'zh-ref', status: 'active', language: 'zh' }, { id: 'ja-ref', status: 'active', language: 'ja' }] }])
     api.accept.mockResolvedValue({ id: 'asset', url: '/uploads/ja.wav' })
   })
   afterEach(() => { cleanup(); vi.clearAllMocks() })
+  it('inherits the saved project voice locale without changing existing voice tracks', async () => {
+    useEditorStore.setState({ project: { id: 'project', title: '故事', defaultVoiceLocale: 'ja' } })
+    const onUpdate = vi.fn()
+    const data = { role: 'yuki', text: '谢谢你。', voiceTracks: { ja: { url: '/existing-ja.ogg' }, zh: { url: '/existing-zh.ogg' } } }
+    render(<DialogueVoiceGenerator nodeId="node" data={data} onUpdate={onUpdate} />)
+    await screen.findByText(/使用 雪的声线/)
+    expect(screen.getByLabelText('生成配音语言')).toHaveValue('ja')
+    expect(onUpdate).not.toHaveBeenCalled()
+    expect(api.generate).not.toHaveBeenCalled()
+  })
+  it('preserves a manual language choice during the current edit when preferences refresh', async () => {
+    const onUpdate = vi.fn()
+    const view = render(<DialogueVoiceGenerator nodeId="node" data={{ role: 'yuki', text: '谢谢你。' }} onUpdate={onUpdate} />)
+    await screen.findByText(/使用 雪的声线/)
+    fireEvent.change(screen.getByLabelText('生成配音语言'), { target: { value: 'ja' } })
+    act(() => window.dispatchEvent(new Event(VOICE_PREFERENCE_CHANGED)))
+    view.rerender(<DialogueVoiceGenerator nodeId="node" data={{ role: 'yuki', text: '再见。' }} onUpdate={onUpdate} />)
+    expect(screen.getByLabelText('生成配音语言')).toHaveValue('ja')
+  })
+  it('resets a manual language selection to the next project default', async () => {
+    render(<DialogueVoiceGenerator nodeId="node" data={{ role: 'yuki', text: '谢谢你。' }} onUpdate={vi.fn()} />)
+    await screen.findByText(/使用 雪的声线/)
+    fireEvent.change(screen.getByLabelText('生成配音语言'), { target: { value: 'zh' } })
+    act(() => useEditorStore.setState({ project: { id: 'other', title: '另一部故事', defaultVoiceLocale: 'ja' } }))
+    expect(screen.getByLabelText('生成配音语言')).toHaveValue('ja')
+  })
+  it('adopts a project default loaded later when the user has not chosen a language', async () => {
+    render(<DialogueVoiceGenerator nodeId="node" data={{ role: 'yuki', text: '谢谢你。' }} onUpdate={vi.fn()} />)
+    await screen.findByText(/使用 雪的声线/)
+    act(() => useEditorStore.setState({ project: { id: 'project', title: '故事', defaultVoiceLocale: 'ja' } }))
+    expect(screen.getByLabelText('生成配音语言')).toHaveValue('ja')
+  })
   it('uses the translated line and matching reference, preserving the other voice track', async () => {
     const data = { role: 'yuki', text: '谢谢你。', localizations: { ja: { text: 'ありがとう。' } }, voiceTracks: { zh: { url: '/zh.wav' } } }
     api.generate.mockResolvedValue({ id: 'job', status: 'completed', text: 'ありがとう。', language: 'ja', outputUrl: '/uploads/ja.wav' })

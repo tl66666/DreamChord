@@ -70,6 +70,7 @@ function App() {
               <Route path="/login" element={<LoginPage />} />
               <Route path="/register" element={<RegisterPage />} />
               <Route path="/start/curtain-call" element={<TemplateStartPage />} />
+              <Route path="/start/paint-prologue" element={<TemplateStartPage kind="paint" />} />
               <Route path="/editor/:projectId" element={<ProtectedRoute><EditorPage /></ProtectedRoute>} />
               <Route path="/play/:projectId" element={<PlayerPage />} />
               <Route path="/explore" element={<ExplorePage />} />

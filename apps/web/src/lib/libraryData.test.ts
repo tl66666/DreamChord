@@ -3,6 +3,13 @@ import { beforeEach, describe, expect, it } from 'vitest'
 import { CHARACTER_KEY, loadLibraryCharacters, loadLibraryScenes } from './libraryData'
 describe('new official cinema assets', () => {
   beforeEach(() => localStorage.clear())
+  it('adds the paint cast and six clearly named scenes once while respecting removal', () => {
+    const first = loadLibraryCharacters()
+    expect(first.filter(c => c.id.startsWith('paint-'))).toHaveLength(4)
+    localStorage.setItem(CHARACTER_KEY, JSON.stringify(first.filter(c => c.id !== 'paint-xia')))
+    expect(loadLibraryCharacters().some(c => c.id === 'paint-xia')).toBe(false)
+    expect(loadLibraryScenes().filter(s => s.id.startsWith('paint-'))).toHaveLength(6)
+  })
   it('installs curtain-call characters and the four scenes once without restoring deleted assets', () => {
     localStorage.setItem(CHARACTER_KEY, JSON.stringify([{ id: 'user', name: '我的角色', expressions: [] }]))
     const first = loadLibraryCharacters()

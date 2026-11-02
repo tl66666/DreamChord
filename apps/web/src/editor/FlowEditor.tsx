@@ -78,7 +78,7 @@ export default function FlowEditor() {
   const [selectedSceneId, setSelectedSceneId] = useState<string | null>(null)
   const [selectedCardId, setSelectedCardId] = useState<string | null>(null)
   const [autoEditCardId, setAutoEditCardId] = useState<string | null>(null)
-  const [showCreatorGuide, setShowCreatorGuide] = useState(() => searchParams.get('welcome') === 'curtain')
+  const [showCreatorGuide, setShowCreatorGuide] = useState(() => ['curtain', 'paint'].includes(searchParams.get('welcome') || ''))
   const creatorFocusApplied = useRef(false)
 
   const store = useEditorStore()
@@ -163,7 +163,7 @@ export default function FlowEditor() {
     store.setSelectedNodeId(null)
     // 自动选中第一个场景
     const scenes = buildSceneList(flowNodes, flowEdges)
-    const focus = !creatorFocusApplied.current && searchParams.get('welcome') === 'curtain' ? flowNodes.find(n => n.data.creatorStarter === true) : undefined
+    const focus = !creatorFocusApplied.current && ['curtain', 'paint'].includes(searchParams.get('welcome') || '') ? flowNodes.find(n => n.data.creatorStarter === true) : undefined
     if (focus) {
       creatorFocusApplied.current = true
       setSelectedSceneId(getNodeSceneGroupId(focus) || null)
@@ -692,7 +692,7 @@ export default function FlowEditor() {
 
   return (
     <div className="flex h-full flex-col">
-      {showCreatorGuide && <div className="flex shrink-0 flex-wrap items-center gap-3 border-b border-dream-100 bg-gradient-to-r from-dream-50 via-white to-amber-50 px-4 py-3"><Sparkles className="h-5 w-5 text-dream-600" /><div className="min-w-0 flex-1"><p className="text-sm font-semibold text-slate-900">这是你的第三种结局</p><p className="mt-1 text-xs leading-5 text-slate-600">先改一句台词或人物表情，再点「预览」。许栀的音色已绑定，中文会自动准备为所选的日语配音；字幕仍显示中文。</p></div><button className="dc-secondary !min-h-9 !text-xs" onClick={() => { const first = nodes.find(n => n.data.creatorStarter === true); if (first) { setSelectedSceneId(getNodeSceneGroupId(first) || null); setSelectedCardId(first.id); setAutoEditCardId(first.id) } }}>定位我的结局</button><button className="dc-secondary !min-h-9 !text-xs" onClick={() => setShowCreatorGuide(false)}>知道了</button></div>}
+      {showCreatorGuide && <div className="flex shrink-0 flex-wrap items-center gap-3 border-b border-dream-100 bg-gradient-to-r from-dream-50 via-white to-amber-50 px-4 py-3"><Sparkles className="h-5 w-5 text-dream-600" /><div className="min-w-0 flex-1"><p className="text-sm font-semibold text-slate-900">{searchParams.get('welcome') === 'paint' ? '从下一句开始，续写你的故事' : '这是你的第三种结局'}</p><p className="mt-1 text-xs leading-5 text-slate-600">先改一句台词或人物表情，再点「预览」。{searchParams.get('welcome') === 'paint' ? '角色' : '许栀'}的音色已绑定，中文会自动准备为所选的日语配音；字幕仍显示中文。</p></div><button className="dc-secondary !min-h-9 !text-xs" onClick={() => { const first = nodes.find(n => n.data.creatorStarter === true); if (first) { setSelectedSceneId(getNodeSceneGroupId(first) || null); setSelectedCardId(first.id); setAutoEditCardId(first.id) } }}>{searchParams.get('welcome') === 'paint' ? '定位我的续写' : '定位我的结局'}</button><button className="dc-secondary !min-h-9 !text-xs" onClick={() => setShowCreatorGuide(false)}>知道了</button></div>}
       {carriedBackgroundId && <div className="flex shrink-0 flex-wrap items-center gap-3 border-b border-dream-100 bg-dream-50 px-4 py-3"><img src={carriedBackground?.url || '/assets/hero.png'} alt="" className="h-11 w-20 rounded-lg object-cover" /><div className="min-w-0 flex-1"><p className="text-sm font-semibold text-slate-900">{carriedBackground ? `已带入背景：${carriedBackground.name}` : '这个背景已不在素材库中'}</p><p className="mt-0.5 text-xs text-slate-600">在左侧选择目标场景，再应用为开场背景。对白、分支和已有配音会保留。</p></div><button disabled={!selectedSceneId || !carriedBackground || store.isLoading} onClick={applyCarriedBackground} className="dc-primary !min-h-9 !text-xs">应用到所选场景</button><button onClick={clearCarriedBackground} className="dc-secondary !min-h-9 !text-xs">取消</button></div>}
       {/* === 顶部工具栏 === */}
       <div className="z-20 flex flex-wrap items-center justify-between gap-3 border-b border-dream-100 bg-white px-4 py-2.5 shadow-sm">

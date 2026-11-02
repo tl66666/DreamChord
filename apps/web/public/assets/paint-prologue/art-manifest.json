@@ -1,0 +1,699 @@
+{
+  "title": "请让这幅画老去",
+  "assetType": "original full-body transparent character sprites",
+  "generator": "built-in image_gen.imagegen",
+  "createdAt": "2026-11-02",
+  "canvas": {
+    "width": 1024,
+    "height": 1536
+  },
+  "licenseNote": "Original AI-generated character art created for this project; no existing franchise character or artist imitation requested.",
+  "qualityNotes": [
+    "Normal expressions establish the character identity; smile and serious variants were edited from the corresponding normal original.",
+    "Only conventional Sharp resize and transparent padding are used for project adaptation; generated alpha preserved.",
+    "Editor assets remain full-body; runtime is expected to crop to stage composition.",
+    "Discarded initial Xia He collage was not copied into the project.",
+    "Subject bounds and occupancy use alpha >128 to exclude low-alpha antialiased edges. All public sprites pass true-alpha and full-body height checks."
+  ],
+  "assets": [
+    {
+      "id": "cheng-normal",
+      "character": "cheng",
+      "expression": "normal",
+      "generator": "built-in image_gen.imagegen",
+      "prompt": "Use case: illustration-story. Asset type: original literary visual novel character sprite for 请让这幅画老去, standalone full-body transparent PNG, portrait 1024x1536. Sophisticated Japanese visual novel illustration with believable young adult proportions, delicate clean linework, nuanced painted gouache shading, warm spring theater workshop palette: honey wood warmth, muted slate teal and ivory. Original character design, no imitation of any franchise. One single character only, entire body from hair to boot soles, both hands intact, occupies 91% of canvas height with 5% clear space above hair and 4% below soles. Centered upright relaxed standing, subtle three-quarter angle toward viewer, boots roughly shoulder width apart. Genuine transparent alpha background everywhere outside subject; no floor, no backdrop, no cast shadow, no checkerboard baked in, no text, no watermark. Clothes have realistic fabric folds, understated lived-in daily life, no fantasy costume. Consistent gentle upper-right warm illumination. Subject: Cheng Jian (程见), 22-year-old Chinese man, slim-average build, short soft charcoal-black hair, warm brown eyes, youthful gently angular face, a slight tired crease and quiet warmth. Normal expression: relaxed closed mouth, attentive and a little self-deprecating, no broad smile. Outfit: ivory work shirt with sleeves rolled just below elbows, charcoal gray waist apron (waist only, NO chest bib), small worn tool pouch at hip containing a slim paintbrush and pencil, dark gray straight trousers, worn brown ankle boots. Both arms relaxed naturally, one hand lightly resting on apron pocket, other hand lowered. No accessories beyond tool pouch. Full-body character with high facial detail suitable for later half-body crop. Keep face understated rather than glossy idol appearance.",
+      "generationSourcePath": "C:\\Users\\唐乐\\.codex\\generated_images\\01a19b9c-bdf3-7791-a80d-b85f04b75da1\\exec-59776cf6-ad8d-4453-9f81-564158303888.png",
+      "editReference": null,
+      "sourceFile": "source-assets/paint-prologue/cheng-normal.png",
+      "publicFile": "apps/web/public/assets/paint-prologue/cheng-normal.png",
+      "publicUrl": "/assets/paint-prologue/cheng-normal.png",
+      "generationSourceSha256": "308dba7ebbc2f150a017ed8bdee109b9596584aba2788e8db41041daf3686647",
+      "sourceSha256": "308dba7ebbc2f150a017ed8bdee109b9596584aba2788e8db41041daf3686647",
+      "sourceStats": {
+        "width": 1024,
+        "height": 1536,
+        "channels": 4,
+        "alphaRange": [
+          0,
+          254
+        ],
+        "fullyTransparentFraction": 0.7284297943115234,
+        "subjectBoundsAlphaAbove128": {
+          "left": 291,
+          "top": 23,
+          "width": 505,
+          "height": 1487
+        },
+        "subjectHeightRatio": 0.9680989583333334,
+        "headroomRatio": 0.014973958333333334
+      },
+      "adaptation": {
+        "tool": "Sharp 0.33.5",
+        "operations": [
+          "proportional resize",
+          "transparent canvas padding"
+        ],
+        "width": 963,
+        "height": 1444,
+        "left": 1,
+        "top": 55
+      },
+      "publicSha256": "cd2cffe63ba95b15b20b54299dcb3b02434a5276a576645dc58a8150d36a7c5a",
+      "publicStats": {
+        "width": 1024,
+        "height": 1536,
+        "channels": 4,
+        "alphaRange": [
+          0,
+          255
+        ],
+        "fullyTransparentFraction": 0.761077880859375,
+        "subjectBoundsAlphaAbove128": {
+          "left": 274,
+          "top": 76,
+          "width": 475,
+          "height": 1398
+        },
+        "subjectHeightRatio": 0.91015625,
+        "headroomRatio": 0.049479166666666664
+      },
+      "characterName": "程见"
+    },
+    {
+      "id": "cheng-smile",
+      "character": "cheng",
+      "expression": "smile",
+      "generator": "built-in image_gen.imagegen",
+      "prompt": "Use case: identity-preserve. Edit the supplied single character sprite. Change ONLY his facial expression to a small genuine warm smile: mouth corners gently rise, a little self-deprecating affection in eyes, eyes stay open, no huge grin. Preserve every other pixel and design as exactly as possible: same Cheng Jian face identity, head position and size, hair shape, both hands, body pose, clothes, tool pouch, trousers and boots, lighting, full-body framing and 1024x1536 canvas. Keep same clean illustrated visual novel rendering. Genuine transparent background, no backdrop or glow, no text, no new objects. One figure, one view. Do not crop.",
+      "generationSourcePath": "C:\\Users\\唐乐\\.codex\\generated_images\\01a19b9c-bdf3-7791-a80d-b85f04b75da1\\exec-f538a130-efa3-4890-8abd-a845c6c74500.png",
+      "editReference": "cheng-normal",
+      "sourceFile": "source-assets/paint-prologue/cheng-smile.png",
+      "publicFile": "apps/web/public/assets/paint-prologue/cheng-smile.png",
+      "publicUrl": "/assets/paint-prologue/cheng-smile.png",
+      "generationSourceSha256": "6e001be76b4b59613ea43f2f374a194c8dc29005db586371d95e43815c084816",
+      "sourceSha256": "6e001be76b4b59613ea43f2f374a194c8dc29005db586371d95e43815c084816",
+      "sourceStats": {
+        "width": 1024,
+        "height": 1536,
+        "channels": 4,
+        "alphaRange": [
+          0,
+          254
+        ],
+        "fullyTransparentFraction": 0.7312984466552734,
+        "subjectBoundsAlphaAbove128": {
+          "left": 291,
+          "top": 23,
+          "width": 506,
+          "height": 1487
+        },
+        "subjectHeightRatio": 0.9680989583333334,
+        "headroomRatio": 0.014973958333333334
+      },
+      "adaptation": {
+        "tool": "Sharp 0.33.5",
+        "operations": [
+          "proportional resize",
+          "transparent canvas padding"
+        ],
+        "width": 963,
+        "height": 1444,
+        "left": 1,
+        "top": 55
+      },
+      "publicSha256": "fa07fc6f8839337eeb3cc48a23783300429c94ed0b91a85e1e4433441774763b",
+      "publicStats": {
+        "width": 1024,
+        "height": 1536,
+        "channels": 4,
+        "alphaRange": [
+          0,
+          255
+        ],
+        "fullyTransparentFraction": 0.7635726928710938,
+        "subjectBoundsAlphaAbove128": {
+          "left": 275,
+          "top": 76,
+          "width": 476,
+          "height": 1399
+        },
+        "subjectHeightRatio": 0.9108072916666666,
+        "headroomRatio": 0.049479166666666664
+      },
+      "characterName": "程见"
+    },
+    {
+      "id": "cheng-serious",
+      "character": "cheng",
+      "expression": "serious",
+      "generator": "built-in image_gen.imagegen",
+      "prompt": "Use case: identity-preserve. Edit supplied Cheng Jian original single full-body sprite. Change ONLY his facial expression: serious and quietly concerned, brows subtly drawn together, eyes focused and reflective, mouth closed with no smile. No anger caricature. Preserve EXACT same face identity and head angle, hair silhouette and strands, pose, hands, clothing folds, apron tool pouch, trousers, boots, lighting, colors and 1024x1536 framing. No change outside face. Keep delicate illustrated visual novel rendering. Genuine transparent alpha background; no backdrop, floor, shadow, halo, text or new objects. One full-body figure, do not crop.",
+      "generationSourcePath": "C:\\Users\\唐乐\\.codex\\generated_images\\01a19b9c-bdf3-7791-a80d-b85f04b75da1\\exec-d0a6bc4d-11fd-4ec5-9568-026b72ca20fe.png",
+      "editReference": "cheng-normal",
+      "sourceFile": "source-assets/paint-prologue/cheng-serious.png",
+      "publicFile": "apps/web/public/assets/paint-prologue/cheng-serious.png",
+      "publicUrl": "/assets/paint-prologue/cheng-serious.png",
+      "generationSourceSha256": "daf7823f314a1ae6b6610d6a73275cbe4a6734f0372b966a53a466c50444eda0",
+      "sourceSha256": "daf7823f314a1ae6b6610d6a73275cbe4a6734f0372b966a53a466c50444eda0",
+      "sourceStats": {
+        "width": 1024,
+        "height": 1536,
+        "channels": 4,
+        "alphaRange": [
+          0,
+          254
+        ],
+        "fullyTransparentFraction": 0.7296358744303385,
+        "subjectBoundsAlphaAbove128": {
+          "left": 291,
+          "top": 24,
+          "width": 505,
+          "height": 1487
+        },
+        "subjectHeightRatio": 0.9680989583333334,
+        "headroomRatio": 0.015625
+      },
+      "adaptation": {
+        "tool": "Sharp 0.33.5",
+        "operations": [
+          "proportional resize",
+          "transparent canvas padding"
+        ],
+        "width": 963,
+        "height": 1444,
+        "left": 1,
+        "top": 55
+      },
+      "publicSha256": "8d2bd7fb6190be77b1dd144f01ffb0093d82fc087d53d01d84ba5e70d715c464",
+      "publicStats": {
+        "width": 1024,
+        "height": 1536,
+        "channels": 4,
+        "alphaRange": [
+          0,
+          255
+        ],
+        "fullyTransparentFraction": 0.7621256510416666,
+        "subjectBoundsAlphaAbove128": {
+          "left": 275,
+          "top": 77,
+          "width": 475,
+          "height": 1398
+        },
+        "subjectHeightRatio": 0.91015625,
+        "headroomRatio": 0.050130208333333336
+      },
+      "characterName": "程见"
+    },
+    {
+      "id": "xia-normal",
+      "character": "xia",
+      "expression": "normal",
+      "generator": "built-in image_gen.imagegen",
+      "prompt": "Use case: illustration-story. Asset type: original literary visual novel character sprite for 请让这幅画老去, standalone full-body transparent PNG, portrait 1024x1536. Sophisticated Japanese visual novel illustration with believable young adult proportions, delicate clean linework, nuanced painted gouache shading, warm spring theater workshop palette: honey wood warmth, muted slate teal and ivory. Original character design, no imitation of any franchise. One single character only, entire body from hair to boot soles, both hands intact, occupies 91% of canvas height with 5% clear space above hair and 4% below soles. Centered upright relaxed standing, subtle three-quarter angle toward viewer, boots roughly shoulder width apart. Genuine transparent alpha background everywhere outside subject; no floor, no backdrop, no cast shadow, no checkerboard baked in, no text, no watermark. Clothes have realistic fabric folds, understated lived-in daily life, no fantasy costume. Consistent gentle upper-right warm illumination. Subject: Xia He (夏禾), one single 21-year-old Chinese young woman, shoulder-length dark brown to blue-black hair with one tiny braided section beside her face, expressive teal-green eyes, believable adult proportions. Normal expression: bright attentive curiosity, lips naturally closed, slight asymmetry and lively confidence, not flirtatious. Outfit: ivory cotton blouse under muted slate teal-blue pinafore dress with substantial straps, natural waist, below-knee skirt; short oatmeal-brown cardigan open; dark socks and practical brown ankle boots. Both arms relaxed, one hand lightly at dress pocket, other naturally lowered. Modest daily workwear. Delicate clearly ILLUSTRATED Japanese visual novel line art and hand-painted cel/gouache shading, NOT photography. Exactly ONE full-body isolated figure with a single viewpoint. No character sheet, no panels, no collage, no close-ups, no multiple views, no cut-off shoes. Transparent background.",
+      "generationSourcePath": "C:\\Users\\唐乐\\.codex\\generated_images\\01a19b9c-bdf3-7791-a80d-b85f04b75da1\\exec-c4dac68e-5fc3-40f8-b155-072d2fa54911.png",
+      "editReference": null,
+      "sourceFile": "source-assets/paint-prologue/xia-normal.png",
+      "publicFile": "apps/web/public/assets/paint-prologue/xia-normal.png",
+      "publicUrl": "/assets/paint-prologue/xia-normal.png",
+      "generationSourceSha256": "8575865ee037f598abcec8d6b8dbfba68769277d04369d88705098472e246578",
+      "sourceSha256": "8575865ee037f598abcec8d6b8dbfba68769277d04369d88705098472e246578",
+      "sourceStats": {
+        "width": 1024,
+        "height": 1536,
+        "channels": 4,
+        "alphaRange": [
+          0,
+          254
+        ],
+        "fullyTransparentFraction": 0.7076339721679688,
+        "subjectBoundsAlphaAbove128": {
+          "left": 295,
+          "top": 28,
+          "width": 477,
+          "height": 1479
+        },
+        "subjectHeightRatio": 0.962890625,
+        "headroomRatio": 0.018229166666666668
+      },
+      "adaptation": {
+        "tool": "Sharp 0.33.5",
+        "operations": [
+          "proportional resize",
+          "transparent canvas padding"
+        ],
+        "width": 968,
+        "height": 1452,
+        "left": 8,
+        "top": 50
+      },
+      "publicSha256": "acb4dfed9385cd569d2c7279281adc978a431dfa8eef779fd404d771ecebf6ee",
+      "publicStats": {
+        "width": 1024,
+        "height": 1536,
+        "channels": 4,
+        "alphaRange": [
+          0,
+          255
+        ],
+        "fullyTransparentFraction": 0.739660898844401,
+        "subjectBoundsAlphaAbove128": {
+          "left": 287,
+          "top": 77,
+          "width": 451,
+          "height": 1398
+        },
+        "subjectHeightRatio": 0.91015625,
+        "headroomRatio": 0.050130208333333336
+      },
+      "characterName": "夏禾"
+    },
+    {
+      "id": "xia-smile",
+      "character": "xia",
+      "expression": "smile",
+      "generator": "built-in image_gen.imagegen",
+      "prompt": "Use case: identity-preserve. Edit supplied Xia He original single full-body sprite. Change ONLY her facial expression to a lively genuine friendly smile: open eyes brighten, cheek lifts gently, lips curve into warm confident smile, perhaps slight upper teeth visible, no wink and no seductive expression. Preserve EXACT identity, eye color, braid, hair silhouette and every strand, head angle, full-body pose, hands, clothing folds, pinafore dress, oatmeal cardigan, socks and boots, lighting and canvas 1024x1536. No change outside face. Keep the original delicate illustrated visual novel style. Genuine transparent alpha background, no backdrop/floor/shadow/halo/text. Exactly one full-body figure, do not crop.",
+      "generationSourcePath": "C:\\Users\\唐乐\\.codex\\generated_images\\01a19b9c-bdf3-7791-a80d-b85f04b75da1\\exec-1d78a11a-d85e-4a9c-8d36-4dcc985218ef.png",
+      "editReference": "xia-normal",
+      "sourceFile": "source-assets/paint-prologue/xia-smile.png",
+      "publicFile": "apps/web/public/assets/paint-prologue/xia-smile.png",
+      "publicUrl": "/assets/paint-prologue/xia-smile.png",
+      "generationSourceSha256": "fa2b96ad3f0daba4a91ec979f9bd8cd8d31cf8bd6777f0f34867a1307c0c808b",
+      "sourceSha256": "fa2b96ad3f0daba4a91ec979f9bd8cd8d31cf8bd6777f0f34867a1307c0c808b",
+      "sourceStats": {
+        "width": 1024,
+        "height": 1536,
+        "channels": 4,
+        "alphaRange": [
+          0,
+          254
+        ],
+        "fullyTransparentFraction": 0.7134189605712891,
+        "subjectBoundsAlphaAbove128": {
+          "left": 295,
+          "top": 28,
+          "width": 479,
+          "height": 1479
+        },
+        "subjectHeightRatio": 0.962890625,
+        "headroomRatio": 0.018229166666666668
+      },
+      "adaptation": {
+        "tool": "Sharp 0.33.5",
+        "operations": [
+          "proportional resize",
+          "transparent canvas padding"
+        ],
+        "width": 968,
+        "height": 1452,
+        "left": 8,
+        "top": 50
+      },
+      "publicSha256": "6fb2e89fb8aa3b37303161e0c19cb53d0353b244df8d690577c6b539301e4ce0",
+      "publicStats": {
+        "width": 1024,
+        "height": 1536,
+        "channels": 4,
+        "alphaRange": [
+          0,
+          255
+        ],
+        "fullyTransparentFraction": 0.7447611490885416,
+        "subjectBoundsAlphaAbove128": {
+          "left": 287,
+          "top": 76,
+          "width": 453,
+          "height": 1399
+        },
+        "subjectHeightRatio": 0.9108072916666666,
+        "headroomRatio": 0.049479166666666664
+      },
+      "characterName": "夏禾"
+    },
+    {
+      "id": "xia-serious",
+      "character": "xia",
+      "expression": "serious",
+      "generator": "built-in image_gen.imagegen",
+      "prompt": "Use case: identity-preserve. Edit supplied Xia He original single full-body sprite. Change ONLY her facial expression: serious, a little indignant and ready to argue a point, brows slightly lowered and pulled together, green eyes sharply focused, lips firmly closed, spirited but not caricature anger. No smile, no blush increase. Preserve EXACT identity, eye color, braid, hair silhouette and strands, head angle, full-body pose, hands, clothing folds, pinafore dress, oatmeal cardigan, socks and boots, lighting and canvas 1024x1536. No change outside face. Keep original delicate illustrated visual novel style. Genuine transparent alpha background, no backdrop/floor/shadow/halo/text. Exactly one full-body figure, do not crop.",
+      "generationSourcePath": "C:\\Users\\唐乐\\.codex\\generated_images\\01a19b9c-bdf3-7791-a80d-b85f04b75da1\\exec-71ce5626-fe2e-4c05-a801-37948d15c145.png",
+      "editReference": "xia-normal",
+      "sourceFile": "source-assets/paint-prologue/xia-serious.png",
+      "publicFile": "apps/web/public/assets/paint-prologue/xia-serious.png",
+      "publicUrl": "/assets/paint-prologue/xia-serious.png",
+      "generationSourceSha256": "864ae2b6a6db2e8196be2c6da313d41545337a4abc398b90ad793e71caaaa787",
+      "sourceSha256": "864ae2b6a6db2e8196be2c6da313d41545337a4abc398b90ad793e71caaaa787",
+      "sourceStats": {
+        "width": 1024,
+        "height": 1536,
+        "channels": 4,
+        "alphaRange": [
+          0,
+          254
+        ],
+        "fullyTransparentFraction": 0.7118028004964193,
+        "subjectBoundsAlphaAbove128": {
+          "left": 293,
+          "top": 28,
+          "width": 480,
+          "height": 1479
+        },
+        "subjectHeightRatio": 0.962890625,
+        "headroomRatio": 0.018229166666666668
+      },
+      "adaptation": {
+        "tool": "Sharp 0.33.5",
+        "operations": [
+          "proportional resize",
+          "transparent canvas padding"
+        ],
+        "width": 968,
+        "height": 1452,
+        "left": 8,
+        "top": 50
+      },
+      "publicSha256": "1de04593d66fd31719ab7b4ebc3aa569494e4667176b2659e24ef0f94fee6718",
+      "publicStats": {
+        "width": 1024,
+        "height": 1536,
+        "channels": 4,
+        "alphaRange": [
+          0,
+          255
+        ],
+        "fullyTransparentFraction": 0.7433357238769531,
+        "subjectBoundsAlphaAbove128": {
+          "left": 285,
+          "top": 76,
+          "width": 454,
+          "height": 1399
+        },
+        "subjectHeightRatio": 0.9108072916666666,
+        "headroomRatio": 0.049479166666666664
+      },
+      "characterName": "夏禾"
+    },
+    {
+      "id": "ye-normal",
+      "character": "ye",
+      "expression": "normal",
+      "generator": "built-in image_gen.imagegen",
+      "prompt": "Use case: illustration-story. Asset type: original literary visual novel character sprite for 请让这幅画老去, standalone full-body transparent PNG, portrait 1024x1536. Sophisticated Japanese visual novel illustration with believable young adult proportions, delicate clean linework, nuanced painted gouache shading, warm spring theater workshop palette: honey wood warmth, muted slate teal and ivory. Original character design, no imitation of any franchise. One single character only, entire body from hair to boot soles, both hands intact, occupies 91% of canvas height with 5% clear space above hair and 4% below soles. Centered upright relaxed standing, subtle three-quarter angle toward viewer, boots roughly shoulder width apart. Genuine transparent alpha background everywhere outside subject; no floor, no backdrop, no cast shadow, no checkerboard baked in, no text, no watermark. Clothes have realistic fabric folds, understated lived-in daily life, no fantasy costume. Consistent gentle upper-right warm illumination. Subject: Xu Ye (许野), 24-year-old Chinese man, tall lean fine-boned silhouette, slightly messy copper-brown hair, thin round dark metal eyeglasses, lively humorous eyes and expressive narrow face, clearly different from Cheng's black-haired gentle appearance. Normal expression: quizzical half-raised eyebrow, relaxed closed mouth, restrained comic charm. Outfit: casual muted gray-green hip-length cotton jacket worn open, dark burgundy-red knitted pullover underneath, small softly draped burgundy scarf, charcoal slim straight trousers, worn dark brown ankle boots. Both arms down naturally, one hand at jacket pocket, other loosely open alongside leg. Everyday small-town theater worker, no fantasy costume. Exactly ONE full-body isolated ILLUSTRATED figure in one viewpoint, no panels, no collage, no reference sheet. Transparent background.",
+      "generationSourcePath": "C:\\Users\\唐乐\\.codex\\generated_images\\01a19b9c-bdf3-7791-a80d-b85f04b75da1\\exec-ec231bd0-82c9-46f5-98d2-fef69265f2c9.png",
+      "editReference": null,
+      "sourceFile": "source-assets/paint-prologue/ye-normal.png",
+      "publicFile": "apps/web/public/assets/paint-prologue/ye-normal.png",
+      "publicUrl": "/assets/paint-prologue/ye-normal.png",
+      "generationSourceSha256": "90f975b974991e4f05a06013c47c9877bac7e876db3cd447b019bba9b8c79ea6",
+      "sourceSha256": "90f975b974991e4f05a06013c47c9877bac7e876db3cd447b019bba9b8c79ea6",
+      "sourceStats": {
+        "width": 1024,
+        "height": 1536,
+        "channels": 4,
+        "alphaRange": [
+          0,
+          254
+        ],
+        "fullyTransparentFraction": 0.734130859375,
+        "subjectBoundsAlphaAbove128": {
+          "left": 289,
+          "top": 14,
+          "width": 505,
+          "height": 1492
+        },
+        "subjectHeightRatio": 0.9713541666666666,
+        "headroomRatio": 0.009114583333333334
+      },
+      "adaptation": {
+        "tool": "Sharp 0.33.5",
+        "operations": [
+          "proportional resize",
+          "transparent canvas padding"
+        ],
+        "width": 959,
+        "height": 1439,
+        "left": 5,
+        "top": 64
+      },
+      "publicSha256": "5131c4dc155bfe89dde4e9ffd7b8ac2543d131e22f0d284126f233f3311c4c92",
+      "publicStats": {
+        "width": 1024,
+        "height": 1536,
+        "channels": 4,
+        "alphaRange": [
+          0,
+          255
+        ],
+        "fullyTransparentFraction": 0.7676289876302084,
+        "subjectBoundsAlphaAbove128": {
+          "left": 275,
+          "top": 77,
+          "width": 474,
+          "height": 1398
+        },
+        "subjectHeightRatio": 0.91015625,
+        "headroomRatio": 0.050130208333333336
+      },
+      "characterName": "许野"
+    },
+    {
+      "id": "ye-smile",
+      "character": "ye",
+      "expression": "smile",
+      "generator": "built-in image_gen.imagegen",
+      "prompt": "Use case: identity-preserve. Edit supplied Xu Ye original single full-body sprite. Change ONLY his facial expression to a clearly amused mischievous smile: lips lift in a broad confident warm smile with a little upper teeth, eyes open and lively behind round eyeglasses, slightly raised brows, humorous but no caricature. Preserve EXACT Xu Ye identity, copper hair shape/strands, glasses, head angle, pose and hands, gray-green jacket, burgundy scarf and sweater, trousers and boots, all clothing folds, lighting and 1024x1536 canvas. No change outside face. Keep the original delicate illustrated visual novel style. Genuine transparent alpha background; no backdrop, floor, shadow, halo, text, new objects. Single full-body figure, do not crop.",
+      "generationSourcePath": "C:\\Users\\唐乐\\.codex\\generated_images\\01a19b9c-bdf3-7791-a80d-b85f04b75da1\\exec-91839090-b365-4907-ae47-a830e1ddf277.png",
+      "editReference": "ye-normal",
+      "sourceFile": "source-assets/paint-prologue/ye-smile.png",
+      "publicFile": "apps/web/public/assets/paint-prologue/ye-smile.png",
+      "publicUrl": "/assets/paint-prologue/ye-smile.png",
+      "generationSourceSha256": "699edc494f5ff8d6b350bf4094c513ffe1260f07e52fecdb9e551c15b9db5b9f",
+      "sourceSha256": "699edc494f5ff8d6b350bf4094c513ffe1260f07e52fecdb9e551c15b9db5b9f",
+      "sourceStats": {
+        "width": 1024,
+        "height": 1536,
+        "channels": 4,
+        "alphaRange": [
+          0,
+          254
+        ],
+        "fullyTransparentFraction": 0.737603505452474,
+        "subjectBoundsAlphaAbove128": {
+          "left": 289,
+          "top": 15,
+          "width": 508,
+          "height": 1491
+        },
+        "subjectHeightRatio": 0.970703125,
+        "headroomRatio": 0.009765625
+      },
+      "adaptation": {
+        "tool": "Sharp 0.33.5",
+        "operations": [
+          "proportional resize",
+          "transparent canvas padding"
+        ],
+        "width": 959,
+        "height": 1439,
+        "left": 5,
+        "top": 64
+      },
+      "publicSha256": "49ea8dff20fa74ac7cb87a2c4fe95ae115fbd39359caf548d4b5ff43402ee3dd",
+      "publicStats": {
+        "width": 1024,
+        "height": 1536,
+        "channels": 4,
+        "alphaRange": [
+          0,
+          255
+        ],
+        "fullyTransparentFraction": 0.7705046335856119,
+        "subjectBoundsAlphaAbove128": {
+          "left": 276,
+          "top": 78,
+          "width": 475,
+          "height": 1397
+        },
+        "subjectHeightRatio": 0.9095052083333334,
+        "headroomRatio": 0.05078125
+      },
+      "characterName": "许野"
+    },
+    {
+      "id": "ye-serious",
+      "character": "ye",
+      "expression": "serious",
+      "generator": "built-in image_gen.imagegen",
+      "prompt": "Use case: identity-preserve. Edit supplied Xu Ye original single full-body sprite. Change ONLY his facial expression: serious attentive thoughtfulness, humor recedes, brows settle slightly down, eyes focused behind round glasses, lips closed calmly with no smile. Preserve EXACT Xu Ye identity, copper hair shape/strands, glasses, head angle, full-body pose and hands, gray-green jacket, burgundy scarf and sweater, trousers and boots, all clothing folds, lighting and 1024x1536 canvas. No change outside face. Keep the original delicate illustrated visual novel style. Genuine transparent alpha background; no backdrop, floor, shadow, halo, text, new objects. Single full-body figure, do not crop.",
+      "generationSourcePath": "C:\\Users\\唐乐\\.codex\\generated_images\\01a19b9c-bdf3-7791-a80d-b85f04b75da1\\exec-b85bb5ff-97f4-4fab-832c-6ece599c7917.png",
+      "editReference": "ye-normal",
+      "sourceFile": "source-assets/paint-prologue/ye-serious.png",
+      "publicFile": "apps/web/public/assets/paint-prologue/ye-serious.png",
+      "publicUrl": "/assets/paint-prologue/ye-serious.png",
+      "generationSourceSha256": "4d012ba3a3a9a686d28b529e7958400d9a4203529370dc2e0425267056c392d5",
+      "sourceSha256": "4d012ba3a3a9a686d28b529e7958400d9a4203529370dc2e0425267056c392d5",
+      "sourceStats": {
+        "width": 1024,
+        "height": 1536,
+        "channels": 4,
+        "alphaRange": [
+          0,
+          254
+        ],
+        "fullyTransparentFraction": 0.7361590067545573,
+        "subjectBoundsAlphaAbove128": {
+          "left": 289,
+          "top": 15,
+          "width": 507,
+          "height": 1491
+        },
+        "subjectHeightRatio": 0.970703125,
+        "headroomRatio": 0.009765625
+      },
+      "adaptation": {
+        "tool": "Sharp 0.33.5",
+        "operations": [
+          "proportional resize",
+          "transparent canvas padding"
+        ],
+        "width": 959,
+        "height": 1439,
+        "left": 5,
+        "top": 64
+      },
+      "publicSha256": "2490abba27795d85fb87c0963574dce4664a94c596e066672c801eb826a381c1",
+      "publicStats": {
+        "width": 1024,
+        "height": 1536,
+        "channels": 4,
+        "alphaRange": [
+          0,
+          255
+        ],
+        "fullyTransparentFraction": 0.7693494160970052,
+        "subjectBoundsAlphaAbove128": {
+          "left": 276,
+          "top": 78,
+          "width": 475,
+          "height": 1397
+        },
+        "subjectHeightRatio": 0.9095052083333334,
+        "headroomRatio": 0.05078125
+      },
+      "characterName": "许野"
+    },
+    {
+      "id": "lu-normal",
+      "character": "lu",
+      "expression": "normal",
+      "generator": "built-in image_gen.imagegen",
+      "prompt": "Use case: illustration-story. Asset type: original literary visual novel character sprite for 请让这幅画老去, standalone full-body transparent PNG, portrait 1024x1536. Sophisticated Japanese visual novel illustration with believable young adult proportions, delicate clean linework, nuanced painted gouache shading, warm spring theater workshop palette: honey wood warmth, muted slate teal and ivory. Original character design, no imitation of any franchise. One single character only, entire body from hair to boot soles, both hands intact, occupies 91% of canvas height with 5% clear space above hair and 4% below soles. Centered upright relaxed standing, subtle three-quarter angle toward viewer, boots roughly shoulder width apart. Genuine transparent alpha background everywhere outside subject; no floor, no backdrop, no cast shadow, no checkerboard baked in, no text, no watermark. Clothes have realistic fabric folds, understated lived-in daily life, no fantasy costume. Consistent gentle upper-right warm illumination. Subject: Lu Qing (陆青), one 27-year-old Chinese young female painter, refined thoughtful face with gray-brown eyes and short straight black hair tucked behind ears, jaw-length neat understated bob. Normal expression: composed, rational and quietly warm, lips naturally closed, attentive eyes. Outfit: light beige-gray linen work shirt, long sleeves loosely rolled to forearms, comfortable deep navy straight trousers, practical dark brown low ankle work shoes. No dress, no coat, no scarf. Lean adult build. Both arms naturally relaxed at sides; one bare hand loosely holds one plain white cotton work glove. No other prop, no chair. Warm understated everyday professional character, modest practical clothes, clearly mature young adult. Exactly ONE isolated full-body illustrated figure, one viewpoint, no panels, no collage, no character reference sheet. Transparent background.",
+      "generationSourcePath": "C:\\Users\\唐乐\\.codex\\generated_images\\01a19b9c-bdf3-7791-a80d-b85f04b75da1\\exec-4848a8c3-eee7-4f19-9f6c-6c3bfb1eedc4.png",
+      "editReference": null,
+      "sourceFile": "source-assets/paint-prologue/lu-normal.png",
+      "publicFile": "apps/web/public/assets/paint-prologue/lu-normal.png",
+      "publicUrl": "/assets/paint-prologue/lu-normal.png",
+      "generationSourceSha256": "f5179209ca2ad1c207d624407ba3a18fd384f5ea7eee0a1253d9915d35991e50",
+      "sourceSha256": "f5179209ca2ad1c207d624407ba3a18fd384f5ea7eee0a1253d9915d35991e50",
+      "sourceStats": {
+        "width": 1024,
+        "height": 1536,
+        "channels": 4,
+        "alphaRange": [
+          0,
+          254
+        ],
+        "fullyTransparentFraction": 0.7459195454915365,
+        "subjectBoundsAlphaAbove128": {
+          "left": 284,
+          "top": 22,
+          "width": 441,
+          "height": 1475
+        },
+        "subjectHeightRatio": 0.9602864583333334,
+        "headroomRatio": 0.014322916666666666
+      },
+      "adaptation": {
+        "tool": "Sharp 0.33.5",
+        "operations": [
+          "proportional resize",
+          "transparent canvas padding"
+        ],
+        "width": 970,
+        "height": 1456,
+        "left": 34,
+        "top": 56
+      },
+      "publicSha256": "54f3d3dcade1098c0c2064cf99b14d23b4aaa3720dff26da8f80953a414f8d5a",
+      "publicStats": {
+        "width": 1024,
+        "height": 1536,
+        "channels": 4,
+        "alphaRange": [
+          0,
+          255
+        ],
+        "fullyTransparentFraction": 0.7727533976236979,
+        "subjectBoundsAlphaAbove128": {
+          "left": 303,
+          "top": 77,
+          "width": 417,
+          "height": 1398
+        },
+        "subjectHeightRatio": 0.91015625,
+        "headroomRatio": 0.050130208333333336
+      },
+      "characterName": "陆青"
+    }
+  ],
+  "characters": [
+    {
+      "slug": "cheng",
+      "name": "程见",
+      "age": 22,
+      "expressions": [
+        "normal",
+        "smile",
+        "serious"
+      ]
+    },
+    {
+      "slug": "xia",
+      "name": "夏禾",
+      "age": 21,
+      "expressions": [
+        "normal",
+        "smile",
+        "serious"
+      ]
+    },
+    {
+      "slug": "ye",
+      "name": "许野",
+      "age": 24,
+      "expressions": [
+        "normal",
+        "smile",
+        "serious"
+      ]
+    },
+    {
+      "slug": "lu",
+      "name": "陆青",
+      "age": 27,
+      "expressions": [
+        "normal"
+      ]
+    }
+  ],
+  "visualQa": {
+    "contactSheet": "source-assets/paint-prologue/qa-contact.png",
+    "backgrounds": [
+      "#e6ddcd",
+      "#34434b"
+    ],
+    "verified": "2026-11-02",
+    "result": "Inspected all ten sprites over light and dark backgrounds: full limbs, clean alpha edges, no baked checkerboard, no floor shadow. Expression variants retain face identity, outfit and overall pose; minor generated texture variation remains."
+  }
+}
