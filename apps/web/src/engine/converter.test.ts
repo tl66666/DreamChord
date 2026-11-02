@@ -7,6 +7,15 @@ import { SEVENTH_ROW_DEMO } from '@dreamchord/story-domain'
 import { groupNodesToCards } from '../editor/sceneGraph'
 
 describe('flow runtime stage continuity', () => {
+  it('preserves the volume of continuing BGM and the fade duration of stopping BGM', () => {
+    const nodes: Node[] = [
+      { id: 'keep', type: 'subtitle', position: { x: 0, y: 0 }, data: { text: '安静', audio: { bgm: { action: 'keep', volume: 0, fadeInMs: 600 } } } },
+      { id: 'stop', type: 'subtitle', position: { x: 0, y: 0 }, data: { text: '结束', audio: { bgm: { action: 'stop', fadeOutMs: 1800 } } } },
+    ]
+    const story = convertFlowToRuntime('p', '音量', nodes, [{ id: 'e', source: 'keep', target: 'stop' }])
+    expect(story.scenes.find((scene) => scene.id === 'keep')?.audio?.bgm).toEqual({ action: 'keep', volume: 0, fadeInMs: 600 })
+    expect(story.scenes.find((scene) => scene.id === 'stop')?.audio?.bgm).toEqual({ action: 'stop', fadeOutMs: 1800 })
+  })
   it('opens the new official demo with readable narration and no empty authoring card', () => {
     const cards = groupNodesToCards(SEVENTH_ROW_DEMO.graph.nodes.filter(n => n.data.sceneGroupId === 'row-scene-1') as Node[])
     expect(cards.every(card => card.text.trim().length > 0)).toBe(true)

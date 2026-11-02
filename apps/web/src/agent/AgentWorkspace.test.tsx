@@ -16,7 +16,7 @@ vi.mock('../api/client', () => ({
   updateAgentConversation: (...args: unknown[]) => api.update(...args),
   deleteAgentConversation: (...args: unknown[]) => api.remove(...args),
 }))
-vi.mock('./AgentPanel', () => ({ default: ({ taskRequest }: { taskRequest?: { prompt: string; draft?: string; autoRun?: boolean } }) => <div data-testid="agent-composer">{taskRequest?.autoRun ? `${taskRequest.prompt}\n${taskRequest.draft || ''}` : 'Agent composer'}</div> }))
+vi.mock('./AgentPanel', () => ({ default: ({ taskRequest, onTaskConsumed }: { taskRequest?: { id: number; prompt: string; draft?: string; autoRun?: boolean }; onTaskConsumed?: (id: number) => void }) => <div data-testid="agent-composer">{taskRequest?.autoRun ? <><span>{`${taskRequest.prompt}\n${taskRequest.draft || ''}`}</span><button onClick={() => onTaskConsumed?.(taskRequest.id)}>标记任务已处理</button></> : 'Agent composer'}</div> }))
 
 function renderWorkspace(chapterId: string | null = 'chapter') {
   return render(<FeedbackProvider><AgentWorkspace
@@ -95,5 +95,19 @@ describe('agent workspace', () => {
     fireEvent.click(await screen.findByRole('button', { name: '生成工作台场景' }))
 
     await waitFor(() => expect(screen.getByTestId('agent-composer').textContent).toContain('林宇：'))
+    fireEvent.click(screen.getByRole('button', { name: '标记任务已处理' }))
+    expect(screen.getByTestId('agent-composer').textContent).toBe('Agent composer')
+  })
+
+  it('keeps a waiting draft attached to the conversation where it was requested', async () => {
+    api.getConversations.mockResolvedValue([...api.conversations, { ...api.conversations[0], id: 'other', title: '另一条对话' }])
+    api.getMessages.mockResolvedValue({ items: [{ id: 'draft', role: 'assistant', content: '林宇：\n“雨停了，出发吧。”', metadata: {}, createdAt: '' }], nextCursor: null })
+    renderWorkspace()
+    fireEvent.click(await screen.findByRole('button', { name: '生成工作台场景' }))
+    expect(screen.getByTestId('agent-composer').textContent).toContain('林宇：')
+    fireEvent.click(screen.getByRole('button', { name: /另一条对话/ }))
+    expect(screen.getByTestId('agent-composer').textContent).toBe('Agent composer')
+    fireEvent.click(screen.getByRole('button', { name: /第一章续写/ }))
+    expect(screen.getByTestId('agent-composer').textContent).toContain('林宇：')
   })
 })

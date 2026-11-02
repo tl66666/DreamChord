@@ -23,8 +23,8 @@ export const PROVIDER_META: ProviderMeta[] = [
     provider: 'kimi',
     name: 'Kimi (Moonshot)',
     url: 'https://platform.moonshot.cn',
-    models: ['kimi-2-6', 'kimi-2-7', 'kimi-latest'],
-    defaultModel: 'kimi-2-7',
+    models: [],
+    defaultModel: '',
     allowCustomModel: true,
     allowCustomBaseUrl: false,
     defaultBaseUrl: 'https://api.moonshot.cn/v1',
@@ -33,8 +33,8 @@ export const PROVIDER_META: ProviderMeta[] = [
     provider: 'glm',
     name: '智谱 GLM',
     url: 'https://open.bigmodel.cn',
-    models: ['glm-4.7-flash', 'glm-5.1', 'glm-5.2', 'glm-4-flash', 'glm-4'],
-    defaultModel: 'glm-5.2',
+    models: [],
+    defaultModel: '',
     allowCustomModel: true,
     allowCustomBaseUrl: false,
     defaultBaseUrl: 'https://open.bigmodel.cn/api/paas/v4',
@@ -43,8 +43,8 @@ export const PROVIDER_META: ProviderMeta[] = [
     provider: 'deepseek',
     name: 'DeepSeek',
     url: 'https://platform.deepseek.com',
-    models: ['deepseek-v4-flash', 'deepseek-v4-pro', 'deepseek-chat', 'deepseek-coder'],
-    defaultModel: 'deepseek-v4-pro',
+    models: [],
+    defaultModel: '',
     allowCustomModel: true,
     allowCustomBaseUrl: false,
     defaultBaseUrl: 'https://api.deepseek.com',
@@ -53,8 +53,8 @@ export const PROVIDER_META: ProviderMeta[] = [
     provider: 'custom',
     name: '自定义 OpenAI 兼容接口',
     url: '',
-    models: ['自定义模型'],
-    defaultModel: '自定义模型',
+    models: [],
+    defaultModel: '',
     allowCustomModel: true,
     allowCustomBaseUrl: true,
   },
@@ -67,15 +67,16 @@ export function loadAIConfigs(): AIProviderConfig[] {
     const raw = localStorage.getItem(STORAGE_KEY)
     if (raw) {
       const parsed = JSON.parse(raw) as AIProviderConfig[]
+      if (!Array.isArray(parsed)) throw new Error('Invalid settings')
       return PROVIDER_META.map((meta) => {
         const existing = parsed.find((config) => config.provider === meta.provider)
         return {
           provider: meta.provider,
           name: meta.name,
-          enabled: existing?.enabled ?? false,
-          apiKey: existing?.apiKey ?? '',
-          model: existing?.model || meta.defaultModel,
-          baseUrl: existing?.baseUrl ?? meta.defaultBaseUrl ?? '',
+          enabled: existing?.enabled === true,
+          apiKey: typeof existing?.apiKey === 'string' ? existing.apiKey.trim() : '',
+          model: typeof existing?.model === 'string' ? existing.model.trim() : meta.defaultModel,
+          baseUrl: typeof existing?.baseUrl === 'string' ? existing.baseUrl.trim() : meta.defaultBaseUrl ?? '',
         }
       })
     }
@@ -94,7 +95,24 @@ export function loadAIConfigs(): AIProviderConfig[] {
 }
 
 export function saveAIConfigs(configs: AIProviderConfig[]) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(configs))
+  const error = validateAIConfigs(configs)
+  if (error) throw new Error(error)
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(configs.map((config) => ({ ...config, apiKey: config.apiKey.trim(), model: config.model.trim(), baseUrl: config.baseUrl?.trim() }))))
+}
+
+export function validateAIConfigs(configs: AIProviderConfig[]): string | undefined {
+  if (configs.filter((config) => config.enabled).length > 1) return '请只启用一个模型提供商。'
+  for (const config of configs.filter((item) => item.enabled)) {
+    if (!config.apiKey.trim()) return `${config.name}：请填写 API Key。`
+    if (!config.model.trim() || config.model.trim() === '自定义模型') return `${config.name}：请填写平台提供的模型 ID。`
+    if (config.model.trim().length > 160) return '模型 ID 不能超过 160 个字符。'
+    if (config.provider === 'custom' || config.baseUrl) {
+      try {
+        const url = new URL(config.baseUrl?.trim() || '')
+        if (!['http:', 'https:'].includes(url.protocol) || url.username || url.password || url.search || url.hash) throw new Error()
+      } catch { return `${config.name}：请填写有效的 HTTP(S) Base URL，不要包含密钥、查询参数或片段。` }
+    }
+  }
 }
 
 export function setActiveModel(provider: string, model: string): AIProviderConfig | null {
@@ -102,16 +120,16 @@ export function setActiveModel(provider: string, model: string): AIProviderConfi
   if (!nextModel) return getDefaultProvider()
   const configs = loadAIConfigs().map((config) => config.provider === provider ? { ...config, model: nextModel } : config)
   saveAIConfigs(configs)
-  return configs.find((config) => config.enabled && config.apiKey) ?? null
+  return configs.find((config) => config.enabled && !validateAIConfigs([config])) ?? null
 }
 
 export function getDefaultProvider(): AIProviderConfig | null {
   const configs = loadAIConfigs()
-  return configs.find((config) => config.enabled && config.apiKey) || null
+  return configs.find((config) => config.enabled && !validateAIConfigs([config])) || null
 }
 
 export function getAllEnabledProviders(): AIProviderConfig[] {
-  return loadAIConfigs().filter((config) => config.enabled && config.apiKey)
+  return loadAIConfigs().filter((config) => config.enabled && !validateAIConfigs([config]))
 }
 
 export function resolveBaseUrl(provider: string, baseUrl?: string): string | undefined {

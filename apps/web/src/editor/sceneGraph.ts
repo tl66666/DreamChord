@@ -53,7 +53,7 @@ export function applyAudioAssetToShotCard(
   url: string,
 ): ShotCard {
   const audio = card.audio || {}
-  if (field === 'bgm') return { ...card, audio: { ...audio, bgm: { action: 'play', url } } }
+  if (field === 'bgm') return { ...card, audio: { ...audio, bgm: { ...audio.bgm, action: 'play', url, volume: audio.bgm?.volume ?? .6 } } }
   if (field === 'sfx') return { ...card, audio: { ...audio, sfx: [...(audio.sfx || []), { url }] } }
   return { ...card, audio: { ...audio, voice: { url } }, voiceTracks: { ...card.voiceTracks, zh: { url, textHash: voiceTextHash(card.text) } } }
 }

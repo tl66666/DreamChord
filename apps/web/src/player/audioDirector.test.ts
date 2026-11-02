@@ -49,6 +49,59 @@ describe('audio director', () => {
     expect(created[1]?.volume).toBe(0.6)
   })
 
+  it('reuses a relative music URL even when the browser resolves audio.src to an absolute URL', () => {
+    const created: FakeAudio[] = []
+    const director = createAudioDirector((url) => { const item = audio(`http://localhost${url}`); created.push(item); return item })
+    director.playScene({ bgm: { action: 'play', url: '/theme.ogg', volume: .5 } }, { bgm: 1, sfx: 1, voice: 1 })
+    created[0]!.currentTime = 15
+    director.playScene({ bgm: { action: 'play', url: '/theme.ogg', volume: .7 } }, { bgm: 1, sfx: 1, voice: 1 })
+    expect(created).toHaveLength(1)
+    expect(created[0]!.currentTime).toBe(15)
+    expect(created[0]!.volume).toBe(.7)
+  })
+
+  it('adjusts continuing music including zero without restarting playback', () => {
+    const created: FakeAudio[] = []
+    const director = createAudioDirector((url) => { const item = audio(url); created.push(item); return item })
+    director.playScene({ bgm: { action: 'play', url: '/theme.ogg', volume: .8 } }, { bgm: .5, sfx: 1, voice: 1 })
+    director.playScene({ bgm: { action: 'keep', volume: .6, fadeInMs: 300 } }, { bgm: .5, sfx: 1, voice: 1 })
+    vi.advanceTimersByTime(300)
+    expect(created[0]!.volume).toBeCloseTo(.3)
+    director.playScene({ bgm: { action: 'keep', volume: 0 } }, { bgm: .5, sfx: 1, voice: 1 })
+    expect(created[0]!.volume).toBe(0)
+    expect(created).toHaveLength(1)
+    expect(created[0]!.pause).not.toHaveBeenCalled()
+  })
+
+  it('preserves an authored long music transition while voice ducking starts and ends', () => {
+    const created: FakeAudio[] = []
+    const director = createAudioDirector((url) => { const item = audio(url); created.push(item); return item })
+    const mix = { bgm: 1, sfx: 1, voice: 1 }
+    director.playScene({ bgm: { action: 'play', url: '/theme.ogg', volume: 1 } }, mix)
+    director.playScene({ bgm: { action: 'keep', volume: 0, fadeInMs: 3000 }, voice: { url: '/line.wav' } }, mix)
+    vi.advanceTimersByTime(120)
+    expect(created[0]!.volume).toBeGreaterThan(.6)
+    expect(created[0]!.volume).toBeLessThan(.75)
+    created[1]!.emit('ended')
+    vi.advanceTimersByTime(1380)
+    expect(created[0]!.volume).toBeCloseTo(.5)
+    vi.advanceTimersByTime(1500)
+    expect(created[0]!.volume).toBe(0)
+  })
+
+  it('retries blocked initial music on the next story interaction without creating another track', async () => {
+    const music = audio('/theme.ogg')
+    music.play.mockRejectedValueOnce(new Error('autoplay blocked'))
+    const director = createAudioDirector(() => music)
+    const mix = { bgm: 1, sfx: 1, voice: 1 }
+    director.playScene({ bgm: { action: 'play', url: '/theme.ogg', volume: .6 } }, mix)
+    await Promise.resolve()
+    director.playScene(undefined, mix)
+    await Promise.resolve()
+    expect(music.play).toHaveBeenCalledTimes(2)
+    expect(music.volume).toBe(.6)
+  })
+
   it('plays SFX and voice on separate one-shot channels and clears them', () => {
     const created: ReturnType<typeof audio>[] = []
     const director = createAudioDirector((url) => { const item = audio(url); created.push(item); return item })
@@ -79,7 +132,7 @@ describe('audio director', () => {
     director.playScene({ bgm: { action: 'play', url: '/theme.ogg', volume: 0.6 } }, { bgm: 1, sfx: 1, voice: 1 })
     director.playScene({ bgm: { action: 'keep' }, voice: { url: '/line.wav' } }, { bgm: 1, sfx: 1, voice: 1 })
     vi.advanceTimersByTime(120)
-    expect(created[0]?.volume).toBeCloseTo(0.3)
+    expect(created[0]?.volume).toBeCloseTo(0.45)
     expect(director.isVoicePlaying()).toBe(true)
 
     created[1]?.emit('ended')

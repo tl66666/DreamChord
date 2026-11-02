@@ -74,6 +74,7 @@ export default function ConversationTranscript({ conversation, messages, loading
 
 function isCreativeDraft(content: string): boolean {
   const value = content.trim()
+  if (/^已完成[^\n]*剧情体检/.test(value)) return false
   if (/^```(?:json)?\b/i.test(value) || /^\{\s*"(?:type|suggestions|plan|patch)"/i.test(value)) return false
   if (/(?:已将续写(?:整理|保存)|已基于素材|可运行场景草案|尚未写入章节|确认后会在工作台|等待用户确认写入)/.test(value)) return false
   return /(?:【草稿结束】|【旁白】|【地点】|【画面】|【选项】|(?:^|\n)\s*(?:\*\*)?[^\n：:]{1,30}(?:\*\*)?\s*[：:])/.test(value)

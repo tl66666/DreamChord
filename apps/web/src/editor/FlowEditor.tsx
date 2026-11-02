@@ -880,11 +880,16 @@ export default function FlowEditor() {
           <AgentWorkspace
             projectId={projectId || ''} projectTitle={project?.title || '当前项目'}
             chapterId={store.chapterId || ''} chapterTitle={activeChapter?.title || '当前章节'} chapterVersion={store.chapterVersion}
-            selectedNodeId={store.selectedNodeId} selectedSceneId={selectedSceneId} taskRequest={agentTask}
+            selectedNodeId={viewMode === 'scene' ? selectedCardId : store.selectedNodeId} selectedSceneId={selectedSceneId} taskRequest={agentTask}
+            getGraphMutationBlockedReason={() => saveCoordinator.isDirty ? '请先保存当前编辑，再重新生成 Agent 草稿，避免覆盖尚未保存的内容。' : undefined}
             embeddedInEditor onClose={() => setShowAI(false)}
             graph={{ nodes: nodes.map((node) => ({ id: node.id, type: (node.type || 'dialogue') as StoryNodeType, position: node.position, data: { ...node.data } })), edges: edges.map((edge) => ({ id: edge.id, source: edge.source, target: edge.target, label: typeof edge.label === 'string' ? edge.label : undefined, sourceHandle: edge.sourceHandle || undefined, animated: edge.animated ?? true })) }}
             initialConversationId="" onConversationChange={() => undefined}
             onApplyGraph={(result: AppliedPatchDto) => {
+              if (result.chapterId !== useEditorStore.getState().chapterId) {
+                toast.info('变更属于其他章节，当前编辑内容已保留。请打开对应章节查看。')
+                return
+              }
               const previousIds = new Set(nodes.map((node) => node.id))
               const normalizedNodes = ensureLegacySceneGroups(result.graph.nodes)
               const addedSceneId = normalizedNodes.find((node) => !previousIds.has(node.id) && typeof node.data.sceneGroupId === 'string')?.data.sceneGroupId
@@ -902,7 +907,7 @@ export default function FlowEditor() {
               }
               setShowAI(false)
             }}
-            onSelectNode={(nodeId) => { store.setSelectedNodeId(nodeId); const node = nodes.find((item) => item.id === nodeId); const sceneId = node && typeof node.data.sceneGroupId === 'string' ? node.data.sceneGroupId : null; if (sceneId) handleSelectScene(sceneId) }}
+            onSelectNode={(nodeId) => { store.setSelectedNodeId(nodeId); const node = nodes.find((item) => item.id === nodeId); const sceneId = node && typeof node.data.sceneGroupId === 'string' ? node.data.sceneGroupId : null; if (sceneId) { handleSelectScene(sceneId); if (node && ['dialogue', 'subtitle', 'choice'].includes(String(node.type))) setSelectedCardId(nodeId) } }}
           />
         </section>
       </div>}

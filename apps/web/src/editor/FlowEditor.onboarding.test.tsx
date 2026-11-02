@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { StrictMode } from 'react'
-import { act, cleanup, render, screen, waitFor } from '@testing-library/react'
+import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { FeedbackProvider } from '../components/FeedbackProvider'
@@ -9,7 +9,8 @@ import FlowEditor from './FlowEditor'
 
 vi.mock('../api/client', async original => ({ ...await original<typeof import('../api/client')>(), getProject: vi.fn(), pauseProjectVoicePreparation: vi.fn(async () => ({})) }))
 vi.mock('./SceneTree', () => ({ default: (props: { selectedSceneId: string }) => <p data-testid="selected-scene">{props.selectedSceneId}</p> }))
-vi.mock('./ShotCardEditor', () => ({ default: () => null }))
+vi.mock('./ShotCardEditor', () => ({ default: ({ onSelectCard }: { onSelectCard: (id: string) => void }) => <button onClick={() => onSelectCard('mine')}>编辑我的镜头</button> }))
+vi.mock('../agent/AgentWorkspace', () => ({ default: ({ selectedNodeId, getGraphMutationBlockedReason }: { selectedNodeId: string | null; getGraphMutationBlockedReason?: () => string | undefined }) => <div><p data-testid="agent-target">{selectedNodeId}</p><p>{getGraphMutationBlockedReason ? '保存保护已连接' : '保存保护未连接'}</p></div> }))
 vi.mock('./MiniPreview', () => ({ default: () => null }))
 vi.mock('../voice/AutomaticVoiceBar', () => ({ default: () => null }))
 describe('first creator entry', () => {
@@ -27,5 +28,9 @@ describe('first creator entry', () => {
     await waitFor(() => expect(screen.getByTestId('selected-scene').textContent).toBe('your-ending'))
     await act(async () => pending[0]!(project))
     expect(screen.getByTestId('selected-scene').textContent).toBe('your-ending')
+    fireEvent.click(screen.getByRole('button', { name: '编辑我的镜头' }))
+    fireEvent.click(screen.getByRole('button', { name: '创作 Agent' }))
+    await waitFor(() => expect(screen.getByTestId('agent-target').textContent).toBe('mine'))
+    expect(screen.getByText('保存保护已连接')).toBeTruthy()
   })
 })

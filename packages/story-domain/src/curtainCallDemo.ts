@@ -24,7 +24,7 @@ function speech(id: string, role: Role, text: string, ja: string, extra: Record<
 function line(id: string, role: Role, text: string, ja: string, extra: Record<string, unknown> = {}) { return add(id, 'dialogue', speech(id, role, text, ja, extra).data) }
 function bg(id: string, name: string) { add(id, 'background', { backgroundId: `${root}/${name}.webp` }) }
 function show(id: string, characterId: Role, expression: 'normal' | 'sad' | 'smile', position: 'left' | 'right' | 'center', action = 'show') { add(id, 'character', { characterId, expression, position, action }) }
-const music = (track: string, volume = .18) => ({ bgm: { action: 'play', url: `/assets/audio/curtain-call/${track}.ogg`, volume, fadeInMs: 1600, fadeOutMs: 1400 } })
+const music = (track: string, volume = .55) => ({ bgm: { action: 'play', url: `/assets/audio/curtain-call/${track}.ogg`, volume, fadeInMs: 1600, fadeOutMs: 1400 } })
 
 bg('backstage', 'backstage')
 note('crossed-out', '离毕业晚会结束还有十分钟，许栀划掉了谢幕词的最后一句。\n\n“明年，也一起站在这里吧。”', '卒業公演が終わるまで、あと十分。許栀は閉会の言葉の最後の一行に、線を引いた。\n\n「来年も、一緒にここに立とう」', { audio: music('backstage') })
@@ -47,7 +47,7 @@ note('laugh-ends', '她笑了一下，拧开水瓶。瓶盖搁在那道红线上
 scene = 2
 show('tang-leave', '唐棠', 'normal', 'left', 'hide')
 show('zhi-alone', '许栀', 'normal', 'center')
-note('before-stage', '唐棠去确认灯光。许栀把稿子翻过来，背面密密麻麻，全是排练时随手记的东西。\n“左边话筒偏低”“别踩线”“林澈这里容易忘”。最后一条，昨天才写。', '唐棠が照明を確認しに行く。原稿の裏には、稽古のメモがびっしりあった。\n「左のマイクは低い」「コードを踏まない」「ここで林澈が忘れがち」。最後の一つは、昨日の字だ。', { audio: music('unsaid', .15) })
+note('before-stage', '唐棠去确认灯光。许栀把稿子翻过来，背面密密麻麻，全是排练时随手记的东西。\n“左边话筒偏低”“别踩线”“林澈这里容易忘”。最后一条，昨天才写。', '唐棠が照明を確認しに行く。原稿の裏には、稽古のメモがびっしりあった。\n「左のマイクは低い」「コードを踏まない」「ここで林澈が忘れがち」。最後の一つは、昨日の字だ。', { audio: music('unsaid', .45) })
 line('before-1', '林澈', '你到了那边，安顿好给我发个消息。', '向こうに着いて、落ち着いたら連絡して。')
 line('before-2', '许栀', '然后呢？', 'それから？')
 line('before-3', '林澈', '什么然后？', 'それからって？')
@@ -90,7 +90,7 @@ note('blessing-speech', '我写下一句祝福。她看过以后，在“你”�
 edges.push({ id: 'choose-station', source: choice, target: 'blessing-speech', sourceHandle: 'choice-1', label: '改成祝福', animated: true })
 bg('station-morning', 'station')
 show('zhi-station', '许栀', 'normal', 'center')
-note('morning-platform', '早上五点五十分。我把热豆浆放进她行李箱侧袋，拎手上还系着昨晚剩下的一截彩带。\n这一次，没有稿子，也没有人替我们报幕。', '朝五時五十分。温かい豆乳を、彼女のスーツケースの横ポケットに入れた。持ち手には、昨夜のリボンが少しだけ残っている。\n今日は原稿も、僕らを紹介してくれる人もいない。', { audio: music('station', .16) })
+note('morning-platform', '早上五点五十分。我把热豆浆放进她行李箱侧袋，拎手上还系着昨晚剩下的一截彩带。\n这一次，没有稿子，也没有人替我们报幕。', '朝五時五十分。温かい豆乳を、彼女のスーツケースの横ポケットに入れた。持ち手には、昨夜のリボンが少しだけ残っている。\n今日は原稿も、僕らを紹介してくれる人もいない。', { audio: music('station', .5) })
 line('station-1', '许栀', '你昨晚那句祝福，我听见了。', '昨日の、送り出す言葉。ちゃんと聞いたよ。')
 line('station-2', '林澈', '那句是给大家的。还有一句，只想跟你说。', 'あれは、みんなへの言葉。もう一つ、君にだけ言いたいことがある。')
 note('train-door', '她停下拉箱子的手。车门还开着，站务员在远处看表。\n我没有再问她到了以后忙不忙。', '彼女の手が、持ち手の上で止まった。扉はまだ開いている。向こうで係員が時計を見た。\n忙しくなるかどうかは、もう聞かなかった。')

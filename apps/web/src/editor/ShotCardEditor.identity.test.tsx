@@ -9,6 +9,12 @@ vi.mock('./NodeLocalizationEditor', () => ({ default: () => null }))
 
 describe('legacy graph character edits', () => {
   afterEach(() => { cleanup(); localStorage.clear() })
+  it('selects a card for preview when its edit control is opened', () => {
+    const select = vi.fn()
+    render(<FeedbackProvider><ShotCardEditor nodes={[{ id: 'line', type: 'subtitle', position: { x: 0, y: 0 }, data: { text: '雨停了', sceneGroupId: 's', sceneCode: '1-1' } }]} edges={[]} selectedSceneId="s" selectedCardId={null} autoEditCardId={null} onConsumeAutoEdit={vi.fn()} onSelectCard={select} onUpdateGraph={vi.fn()} onRequestAI={vi.fn()} onSetSceneExit={vi.fn()} scenes={[]} onCreateBranch={vi.fn()} onNavigateToScene={vi.fn()} onOpenAssetPicker={vi.fn()} onAssetApplied={vi.fn()} convergenceMap={new Map()} /></FeedbackProvider>)
+    fireEvent.click(screen.getByRole('button', { name: '展开/折叠' }))
+    expect(select).toHaveBeenCalledWith('line')
+  })
   it('updates the raw alias character node when the selected speaker uses a project id', () => {
     localStorage.setItem(CHARACTER_KEY, JSON.stringify([{ id: 'legacy-yuki', name: '雪', expressions: [{ id: 'normal', label: '平静', url: '/normal.png' }, { id: 'smile', label: '微笑', url: '/smile.png' }], defaultExpression: 'normal' }]))
     const nodes: Node[] = [

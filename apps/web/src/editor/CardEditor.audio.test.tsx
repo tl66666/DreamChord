@@ -13,6 +13,16 @@ const card: ShotCard = {
 describe('card audio direction', () => {
   afterEach(cleanup)
 
+  it('edits music volume down to zero and fades without losing the track or other channels', () => {
+    const onUpdate = vi.fn()
+    const audio = { bgm: { action: 'play' as const, url: '/theme.ogg', volume: .6, fadeInMs: 500, fadeOutMs: 900 }, voice: { url: '/voice.wav' }, sfx: [{ url: '/bell.wav' }] }
+    render(<CardEditor card={{ ...card, audio }} characters={[]} libraryScenes={[]} storyTemplates={[]} allScenes={[]} allEdges={[]} convergenceMap={new Map()} onUpdate={onUpdate} onSetChoiceTarget={vi.fn()} onCreateBranch={vi.fn()} onNavigateToScene={vi.fn()} onRequestAI={vi.fn()} onOpenAssetPicker={vi.fn()} />)
+    fireEvent.change(screen.getByLabelText('背景音乐音量'), { target: { value: '0' } })
+    expect(onUpdate).toHaveBeenLastCalledWith({ audio: { ...audio, bgm: { ...audio.bgm, volume: 0 } } })
+    fireEvent.change(screen.getByLabelText('音乐淡出时长（秒）'), { target: { value: '2' } })
+    expect(onUpdate).toHaveBeenLastCalledWith({ audio: { ...audio, bgm: { ...audio.bgm, fadeOutMs: 2000 } } })
+  })
+
   it('opens the project asset picker for each audio channel on the current shot', () => {
     const onOpenAssetPicker = vi.fn()
     render(

@@ -14,7 +14,7 @@ const createConversation = vi.hoisted(() => vi.fn(async () => ({ id: 'conversati
 vi.mock('../api/client', () => ({ createAgentConversation: createConversation }))
 
 const baseRun = {
-  id: 'run', prompt: '检查', scope: 'chapter', targetId: null, provider: 'test', model: 'fake', plan: ['读取章节', '检查结构'],
+  id: 'run', chapterId: 'chapter', prompt: '检查', scope: 'chapter', targetId: null, provider: 'test', model: 'fake', plan: ['读取章节', '检查结构'],
   timeline: [], sources: [], validation: {}, errorCode: null, errorMessage: null, patch: null, createdAt: '', updatedAt: '', completedAt: null,
   usage: { mode: 'provider', provider: 'test', model: 'fake', toolCalls: 0, tools: [], memorySuggestions: 0, patch: false, fallback: false },
 }
@@ -29,7 +29,7 @@ const props = {
 }
 
 describe('AgentPanel', () => {
-  afterEach(cleanup)
+  afterEach(() => { cleanup(); sessionStorage.clear() })
   beforeEach(() => { vi.clearAllMocks(); state.provider = { provider: 'test', model: 'fake', apiKey: 'key' }; state.controller = controller(null) })
 
   it('shows prompt, scope, shortcuts, and run command while idle', () => {
@@ -41,6 +41,34 @@ describe('AgentPanel', () => {
     expect(screen.getByRole('button', { name: '检查剧情' })).toBeTruthy()
     expect(screen.getByRole('button', { name: '梳理角色' })).toBeTruthy()
     expect(screen.getByRole('button', { name: '素材建议' })).toBeTruthy()
+  })
+
+  it('uses the explicitly chosen scene instead of overriding it with the editor selection', async () => {
+    const start = vi.fn(async () => undefined)
+    state.controller = { ...controller(null), start }
+    render(<AgentPanel {...props} selectedSceneId="scene-a" graph={{ nodes: ['a', 'b'].map((id) => ({ id, type: 'dialogue', position: { x: 0, y: 0 }, data: { sceneGroupId: `scene-${id}`, sceneTitle: `场景${id}`, text: id } })), edges: [] }} />)
+    fireEvent.click(screen.getByRole('button', { name: '当前场景' }))
+    fireEvent.change(screen.getByLabelText('修改目标'), { target: { value: 'scene-b' } })
+    fireEvent.change(screen.getByLabelText('创作任务'), { target: { value: '检查这里' } })
+    fireEvent.click(screen.getByRole('button', { name: '发送给 Agent' }))
+    await waitFor(() => expect(start).toHaveBeenCalledWith(expect.objectContaining({ targetId: 'scene-b' })))
+  })
+
+  it('restores an unsent instruction after leaving for model settings', () => {
+    const view = render(<AgentPanel {...props} />)
+    fireEvent.change(screen.getByLabelText('创作任务'), { target: { value: '还没发送的创作要求' } })
+    view.unmount()
+    render(<AgentPanel {...props} />)
+    expect(screen.getByLabelText('创作任务')).toHaveProperty('value', '还没发送的创作要求')
+  })
+
+  it('keeps the instruction and reports a conversation startup failure', async () => {
+    createConversation.mockRejectedValueOnce(new Error('unavailable'))
+    render(<AgentPanel {...props} />)
+    fireEvent.change(screen.getByLabelText('创作任务'), { target: { value: '检查这里' } })
+    fireEvent.click(screen.getByRole('button', { name: '发送给 Agent' }))
+    await waitFor(() => expect(screen.getByRole('alert').textContent).toMatch(/内容已保留/))
+    expect(screen.getByLabelText('创作任务')).toHaveProperty('value', '检查这里')
   })
 
   it('shows progress and cancel while active', () => {
@@ -64,6 +92,32 @@ describe('AgentPanel', () => {
     expect(screen.getByText('新增节点')).toBeTruthy()
     expect(screen.getByRole('button', { name: '应用变更' })).toBeTruthy()
     expect(screen.getByRole('button', { name: '放弃草案' })).toBeTruthy()
+  })
+
+  it.each(['awaiting_approval', 'completed'])('does not apply or undo a restored %s proposal belonging to another chapter', (status) => {
+    const apply = vi.fn(), undo = vi.fn()
+    state.controller = { ...controller({ ...baseRun, chapterId: 'other-chapter', status, patch: { id: 'patch', status: 'proposed', payload: { operations: [] }, validation: { valid: true }, diff: { addedNodeIds: [], updatedNodeIds: [], removedNodeIds: [], addedEdgeIds: [], removedEdgeIds: [] }, baseVersion: 1, appliedVersion: 2 } }), apply, undo }
+    render(<AgentPanel {...props} />)
+    const button = screen.getByRole('button', { name: status === 'completed' ? '撤销变更' : '应用变更' })
+    expect(button).toHaveProperty('disabled', true)
+    expect(screen.getByText(/该草案属于其他章节/)).toBeTruthy()
+    fireEvent.click(button)
+    expect(apply).not.toHaveBeenCalled()
+    expect(undo).not.toHaveBeenCalled()
+  })
+
+  it('waits for the current proposal to be handled before consuming a new auto-run request', async () => {
+    const start = vi.fn(async () => undefined)
+    const consume = vi.fn()
+    state.controller = { ...controller({ ...baseRun, status: 'awaiting_approval' }), start }
+    const request = { id: 902, prompt: '转换新的正文', scope: 'chapter' as const, autoRun: true }
+    const view = render(<AgentPanel {...props} taskRequest={request} onTaskConsumed={consume} />)
+    expect(start).not.toHaveBeenCalled()
+    expect(consume).not.toHaveBeenCalled()
+    state.controller = { ...controller({ ...baseRun, status: 'completed' }), start }
+    view.rerender(<AgentPanel {...props} taskRequest={request} onTaskConsumed={consume} />)
+    await waitFor(() => expect(start).toHaveBeenCalledOnce())
+    expect(consume).toHaveBeenCalledWith(902)
   })
 
   it('does not apply a proposal while the editor has unsaved work', () => {

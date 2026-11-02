@@ -18,7 +18,7 @@ export interface ProviderSecretConfig { provider: string; model: string; apiKey:
 export interface AgentPatchDto { id: string; status: string; payload: unknown; validation: unknown; diff: unknown; baseVersion: number; appliedVersion: number | null }
 export interface AgentRunUsageDto { mode: 'local' | 'provider' | 'fallback'; provider: string; model: string; toolCalls: number; tools: string[]; memorySuggestions: number; patch: boolean; fallback: boolean }
 export interface AgentRunDto {
-  id: string; status: AgentRunStatus; prompt: string; scope: string; targetId: string | null; provider: string; model: string
+  id: string; chapterId: string | null; status: AgentRunStatus; prompt: string; scope: string; targetId: string | null; provider: string; model: string
   plan: string[]; timeline: unknown[]; sources: unknown[]; validation: unknown; errorCode: string | null; errorMessage: string | null; usage: AgentRunUsageDto
   patch: AgentPatchDto | null; createdAt: string; updatedAt: string; completedAt: string | null
 }
@@ -101,7 +101,7 @@ export class PrismaAgentRunService implements AgentRunService {
     const run = await this.client.agentRun.findFirst({ where: { id: runId, userId }, include: { patch: true } })
     if (!run) throw new Error('Agent 任务不存在')
     return {
-      id: run.id, status: run.status as AgentRunStatus, prompt: run.prompt, scope: run.scope, targetId: run.targetId,
+      id: run.id, chapterId: run.chapterId, status: run.status as AgentRunStatus, prompt: run.prompt, scope: run.scope, targetId: run.targetId,
       provider: run.provider, model: run.model, plan: parseJson(run.plan, []) as string[], timeline: parseJson(run.timeline, []) as unknown[],
       sources: parseJson(run.sources, []) as unknown[], validation: parseJson(run.validation, {}), errorCode: run.errorCode, errorMessage: run.errorMessage,
       usage: parseJson(run.usage, { mode: 'provider', provider: run.provider, model: run.model, toolCalls: 0, tools: [], memorySuggestions: 0, patch: false, fallback: false }) as AgentRunUsageDto,

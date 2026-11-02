@@ -14,7 +14,7 @@ const lookupMock = vi.mocked(lookup)
 class MemoryAgentRunService implements AgentRunService {
   lastInput: CreateAgentRunInput | null = null
   run: AgentRunDto = {
-    id: 'run', status: 'queued', prompt: '检查第二章', scope: 'chapter', targetId: null,
+    id: 'run', chapterId: 'chapter-two', status: 'queued', prompt: '检查第二章', scope: 'chapter', targetId: null,
     provider: 'custom', model: 'fake', plan: [], timeline: [], sources: [], validation: {},
     errorCode: null, errorMessage: null, patch: null, createdAt: '2026-07-11T00:00:00.000Z', updatedAt: '2026-07-11T00:00:00.000Z', completedAt: null,
     usage: { mode: 'provider', provider: 'custom', model: 'fake', toolCalls: 0, tools: [], memorySuggestions: 0, patch: false, fallback: false },

@@ -11,4 +11,17 @@ describe('previewing a selected card', () => {
     expect(story.scenes[0]!.id).toBe('first')
     expect(startPreviewAt(story, 'missing')).toBe(story)
   })
+  it('inherits music only along the reachable path and never replays preceding voice or effects', () => {
+    const input: RuntimeStory = { ...story, scenes: [
+      { id: 'first', event: 'ON_INIT', background: '', audio: { bgm: { action: 'play', url: '/theme.ogg', volume: .6 }, sfx: [{ url: '/bell.wav' }] }, nextSceneId: 'quiet' },
+      { id: 'quiet', event: 'ON_INIT', background: '', audio: { bgm: { action: 'keep', volume: .3 } }, nextSceneId: 'mine' },
+      { id: 'unrelated', event: 'ON_INIT', background: '', audio: { bgm: { action: 'play', url: '/wrong.ogg' } } },
+      { ...story.scenes[1]!, audio: { voice: { url: '/my-line.wav' } } },
+    ] }
+    const result = startPreviewAt(input, 'mine')
+    expect(result.scenes[0]?.audio).toEqual({ bgm: { action: 'play', url: '/theme.ogg', volume: .3 }, voice: { url: '/my-line.wav' } })
+    expect(input.scenes[3]?.audio?.bgm).toBeUndefined()
+    const stopped = { ...input, scenes: input.scenes.map((scene) => scene.id === 'quiet' ? { ...scene, audio: { bgm: { action: 'stop' as const } } } : scene) }
+    expect(startPreviewAt(stopped, 'mine').scenes[0]?.audio?.bgm).toBeUndefined()
+  })
 })

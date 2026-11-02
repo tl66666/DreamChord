@@ -541,6 +541,23 @@ export function CardEditor({
             {card.audio?.bgm?.action === 'play' && card.audio.bgm.url && <span className="max-w-24 truncate text-[11px] text-dream-500" title={card.audio.bgm.url}>{card.audio.bgm.url.split('/').pop()}</span>}
             <button type="button" aria-label="从项目素材选择背景音乐" title="从项目素材选择背景音乐" onClick={() => onOpenAssetPicker(card.id, 'bgm')} className="flex h-7 w-7 shrink-0 items-center justify-center rounded border border-dream-200 bg-white text-dream-600 hover:bg-dream-50"><FolderOpen className="h-3.5 w-3.5" /></button>
           </div>
+          {card.audio?.bgm?.action === 'play' && !card.audio.bgm.url && <p className="text-xs text-amber-700">请点击文件夹选择一首背景音乐。</p>}
+          {card.audio?.bgm?.action !== 'stop' && <div className="space-y-2 rounded-lg border border-slate-200/70 bg-white/80 p-3">
+            {(card.audio?.bgm?.action ?? 'keep') === 'keep' && <label className="flex items-center gap-2 text-xs text-slate-600">
+              <input type="checkbox" checked={card.audio?.bgm?.volume !== undefined} onChange={(event) => updateAudio({ bgm: { ...card.audio?.bgm, action: 'keep', volume: event.target.checked ? .6 : undefined } })} className="accent-dream-600" />在此镜头调整延续音乐的音量
+            </label>}
+            <div className="flex items-center justify-between gap-3 text-xs"><label htmlFor={`bgm-volume-${card.id}`} className="font-medium text-slate-700">背景音乐音量</label><output className="tabular-nums text-dream-700">{card.audio?.bgm?.action === 'play' || card.audio?.bgm?.volume !== undefined ? `${Math.round((card.audio?.bgm?.volume ?? 1) * 100)}%` : '沿用前一镜头'}</output></div>
+            <input id={`bgm-volume-${card.id}`} type="range" min="0" max="100" step="1" value={Math.round((card.audio?.bgm?.volume ?? 1) * 100)} disabled={card.audio?.bgm?.action !== 'play' && card.audio?.bgm?.volume === undefined} onChange={(event) => updateAudio({ bgm: { ...card.audio?.bgm, action: card.audio?.bgm?.action ?? 'keep', volume: Number(event.target.value) / 100 } })} className="h-6 w-full accent-dream-600 disabled:opacity-35" />
+            <p className="text-[11px] leading-5 text-slate-500">0% 为静音，100% 为原始音量。对白时音乐会适度压低；玩家还可单独调整播放音量。</p>
+          </div>}
+          <details className="rounded-lg border border-slate-200/70 bg-white/80 p-2.5">
+            <summary className="cursor-pointer text-xs font-medium text-slate-600">音乐过渡</summary>
+            <div className="mt-2 grid grid-cols-2 gap-3">
+              {card.audio?.bgm?.action !== 'stop' && <label className="text-[11px] text-slate-500">淡入 / 调音（秒）<input aria-label="音乐淡入时长（秒）" type="number" min="0" max="30" step="0.1" value={(card.audio?.bgm?.fadeInMs ?? 0) / 1000} onChange={(event) => updateAudio({ bgm: { ...card.audio?.bgm, action: card.audio?.bgm?.action ?? 'keep', fadeInMs: Math.round(Math.min(30, Math.max(0, Number(event.target.value))) * 1000) } })} className="mt-1 h-9 w-full rounded border border-slate-200 px-2 text-sm text-slate-800" /></label>}
+              <label className="text-[11px] text-slate-500">淡出（秒）<input aria-label="音乐淡出时长（秒）" type="number" min="0" max="30" step="0.1" value={(card.audio?.bgm?.fadeOutMs ?? 250) / 1000} disabled={(card.audio?.bgm?.action ?? 'keep') === 'keep'} onChange={(event) => updateAudio({ bgm: { ...card.audio?.bgm, action: card.audio?.bgm?.action ?? 'keep', fadeOutMs: Math.round(Math.min(30, Math.max(0, Number(event.target.value))) * 1000) } })} className="mt-1 h-9 w-full rounded border border-slate-200 px-2 text-sm text-slate-800 disabled:bg-slate-50 disabled:opacity-50" /></label>
+            </div>
+            <p className="mt-2 text-[11px] leading-5 text-slate-500">淡出在切换或停止音乐时生效；延续同一首不会重新起播。</p>
+          </details>
           <div className="flex items-center gap-2">
             <Volume2 className="h-3.5 w-3.5 shrink-0 text-dream-500" />
             <span className="w-8 shrink-0 text-xs text-dream-500">音效</span>

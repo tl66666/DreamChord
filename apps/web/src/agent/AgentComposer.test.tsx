@@ -7,6 +7,23 @@ import AgentComposer from './AgentComposer'
 describe('AgentComposer local mode', () => {
   afterEach(cleanup)
 
+  it('lets the author apply an arbitrary model ID without switching on every keystroke', () => {
+    const onModelChange = vi.fn()
+    render(<AgentComposer prompt="" scope="project" disabled={false} hasProvider activeProvider={{ name: 'Provider', model: 'old-model' }} onModelChange={onModelChange}
+      onPromptChange={vi.fn()} onScopeChange={vi.fn()} onRun={vi.fn()} onHealth={vi.fn()} onOpenSettings={vi.fn()} />)
+    fireEvent.change(screen.getByLabelText('当前模型 ID'), { target: { value: 'org/new-model' } })
+    expect(onModelChange).not.toHaveBeenCalled()
+    fireEvent.click(screen.getByRole('button', { name: '应用模型' }))
+    expect(onModelChange).toHaveBeenCalledWith('org/new-model')
+  })
+
+  it('does not submit a card task when there are no available cards', () => {
+    const onRun = vi.fn()
+    render(<AgentComposer prompt="修改台词" scope="card" disabled={false} hasProvider targets={[]} onPromptChange={vi.fn()} onScopeChange={vi.fn()} onRun={onRun} onHealth={vi.fn()} onOpenSettings={vi.fn()} />)
+    expect(screen.getByRole('button', { name: '发送给 Agent' })).toBeDisabled()
+    expect(screen.getByText(/还没有可处理的镜头/)).toBeTruthy()
+  })
+
   it('keeps the local assistant runnable without a configured provider', () => {
     const onRun = vi.fn()
     render(<AgentComposer
@@ -111,7 +128,7 @@ describe('AgentComposer local mode', () => {
   it('sends on Enter while keeping Shift+Enter for a newline', () => {
     const onRun = vi.fn()
     render(<AgentComposer
-      prompt="润色这句台词" scope="card" disabled={false} hasProvider
+      prompt="润色这句台词" scope="card" disabled={false} hasProvider targetId="line" targets={[{ id: 'line', label: '这句台词' }]}
       onPromptChange={vi.fn()} onScopeChange={vi.fn()} onRun={onRun} onHealth={vi.fn()} onOpenSettings={vi.fn()}
     />)
 

@@ -3,6 +3,11 @@ import { CURTAIN_CALL_DEMO, CURTAIN_STARTER_ENDING } from './curtainCallDemo.js'
 import { voiceTextHash } from './voiceDirection.js'
 
 describe('curtain call creator demo', () => {
+  it('uses audible music cue levels before player mixing and speech ducking', () => {
+    const cues = [...CURTAIN_CALL_DEMO.graph.nodes, CURTAIN_STARTER_ENDING].map(node => node.data.audio as { bgm?: { action: string; volume?: number } } | undefined).filter(audio => audio?.bgm?.action === 'play')
+    expect(cues).toHaveLength(5)
+    expect(cues.every(audio => audio!.bgm!.volume! >= .4 && audio!.bgm!.volume! <= .6)).toBe(true)
+  })
   it('has two complete reachable routes, while the third ending belongs only to the creator starter', () => {
     const { nodes, edges } = CURTAIN_CALL_DEMO.graph
     const reached = new Set<string>()

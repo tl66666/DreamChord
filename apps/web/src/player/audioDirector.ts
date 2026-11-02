@@ -26,7 +26,8 @@ interface AudioScheduler {
   clearTimeout: (handle: ReturnType<typeof setTimeout>) => void
 }
 
-type ManagedAudio = { audio: AudioLike; baseVolume: number; ended?: () => void }
+type VolumeTarget = { volume: number }
+type ManagedAudio = { audio: AudioLike; baseVolume: number; gain?: VolumeTarget; sourceUrl?: string; needsPlayback?: boolean; ended?: () => void }
 
 const defaultScheduler: AudioScheduler = {
   setTimeout: (callback, delayMs) => setTimeout(callback, delayMs),
@@ -47,15 +48,18 @@ export function createAudioDirector(
   let effects: ManagedAudio[] = []
   let mix: AudioMix = { bgm: 1, sfx: 1, voice: 1 }
   const voiceEndedSubscribers = new Set<() => void>()
-  const fadeTimers = new Map<AudioLike, ReturnType<typeof setTimeout>>()
+  const fadeTimers = new Map<VolumeTarget, ReturnType<typeof setTimeout>>()
+  let duckLevel = 1
+  const renderBgmLevel = () => { if (bgm) bgm.audio.volume = clampVolume(bgm.baseVolume * mix.bgm * duckLevel, 1) }
+  const duckGain: VolumeTarget = { get volume() { return duckLevel }, set volume(value) { duckLevel = value; renderBgmLevel() } }
 
-  const cancelFade = (audio: AudioLike) => {
+  const cancelFade = (audio: VolumeTarget) => {
     const handle = fadeTimers.get(audio)
     if (handle !== undefined) scheduler.clearTimeout(handle)
     fadeTimers.delete(audio)
   }
 
-  const fadeTo = (audio: AudioLike, target: number, durationMs: number, onComplete?: () => void) => {
+  const fadeTo = (audio: VolumeTarget, target: number, durationMs: number, onComplete?: () => void) => {
     cancelFade(audio)
     const safeTarget = clampVolume(target, 1)
     if (durationMs <= 0 || Math.abs(audio.volume - safeTarget) < 0.001) {
@@ -81,6 +85,7 @@ export function createAudioDirector(
 
   const stopNow = (item: ManagedAudio | undefined) => {
     if (!item) return
+    if (item.gain) cancelFade(item.gain)
     cancelFade(item.audio)
     if (item.ended) item.audio.removeEventListener?.('ended', item.ended)
     item.audio.pause()
@@ -89,6 +94,7 @@ export function createAudioDirector(
 
   const fadeAndStop = (item: ManagedAudio | undefined, fadeOutMs: number) => {
     if (!item) return
+    if (item.gain) cancelFade(item.gain)
     if (item.ended) item.audio.removeEventListener?.('ended', item.ended)
     if (fadeOutMs <= 0) {
       stopNow(item)
@@ -100,13 +106,8 @@ export function createAudioDirector(
     })
   }
 
-  const targetBgmVolume = () => {
-    if (!bgm) return 0
-    return clampVolume(bgm.baseVolume * mix.bgm * (voice ? 0.5 : 1), 1)
-  }
-
   const setBgmLevel = (durationMs = 0) => {
-    if (bgm) fadeTo(bgm.audio, targetBgmVolume(), durationMs)
+    fadeTo(duckGain, voice ? .75 : 1, durationMs)
   }
 
   const playSafely = (audio: AudioLike, onFailure?: () => void) => {
@@ -116,6 +117,13 @@ export function createAudioDirector(
       // Autoplay policies and unavailable media must not interrupt story playback.
       onFailure?.()
     }
+  }
+
+  const resumeBlockedMusic = () => {
+    const item = bgm
+    if (!item?.needsPlayback) return
+    item.needsPlayback = false
+    playSafely(item.audio, () => { item.needsPlayback = true })
   }
 
   const finishVoice = (item: ManagedAudio, notify: boolean) => {
@@ -140,6 +148,7 @@ export function createAudioDirector(
       mix = nextMix
       if (!direction) {
         stopTransient()
+        resumeBlockedMusic()
         return
       }
 
@@ -149,24 +158,27 @@ export function createAudioDirector(
         fadeAndStop(oldBgm, direction.bgm.fadeOutMs ?? 250)
       } else if (direction.bgm?.action === 'play' && direction.bgm.url) {
         const baseVolume = clampVolume(direction.bgm.volume, 1)
-        if (bgm?.audio.src === direction.bgm.url) {
-          bgm.baseVolume = baseVolume
-          setBgmLevel(direction.bgm.fadeInMs ?? 0)
+        if (bgm?.sourceUrl === direction.bgm.url) {
+          fadeTo(bgm.gain!, baseVolume, direction.bgm.fadeInMs ?? 0)
         } else {
           const oldBgm = bgm
           bgm = undefined
           fadeAndStop(oldBgm, direction.bgm.fadeOutMs ?? 250)
           const audio = factory(direction.bgm.url)
           audio.loop = true
-          bgm = { audio, baseVolume }
-          const target = targetBgmVolume()
-          audio.volume = direction.bgm.fadeInMs ? 0 : target
-          playSafely(audio)
-          if (direction.bgm.fadeInMs) fadeTo(audio, target, direction.bgm.fadeInMs)
+          const item: ManagedAudio = { audio, baseVolume: direction.bgm.fadeInMs ? 0 : baseVolume, sourceUrl: direction.bgm.url, needsPlayback: true }
+          item.gain = { get volume() { return item.baseVolume }, set volume(value) { item.baseVolume = value; if (bgm === item) renderBgmLevel() } }
+          bgm = item
+          renderBgmLevel()
+          if (direction.bgm.fadeInMs) fadeTo(item.gain, baseVolume, direction.bgm.fadeInMs)
         }
       } else {
+        if (bgm && direction.bgm?.action === 'keep' && direction.bgm.volume !== undefined) {
+          fadeTo(bgm.gain!, clampVolume(direction.bgm.volume, bgm.baseVolume), direction.bgm.fadeInMs ?? 0)
+        }
         setBgmLevel()
       }
+      resumeBlockedMusic()
 
       if (direction.sfx?.length) {
         for (const item of direction.sfx) {

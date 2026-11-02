@@ -261,9 +261,9 @@ export default function SceneTree({
                         ) : (
                           <>
                             <div className="flex items-center gap-1">
-                              <span className="text-xs font-mono text-slate-500">{scene.code}</span>
+                              <span className="shrink-0 whitespace-nowrap text-[11px] font-mono text-slate-500">{scene.code}</span>
                               <span
-                                className="cursor-text truncate text-sm font-medium text-slate-700"
+                                className="cursor-text truncate text-sm font-medium text-slate-700" title={scene.title}
                                 onDoubleClick={(e) => {
                                   e.stopPropagation()
                                   startEditScene(scene.id, scene.title)

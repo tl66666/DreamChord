@@ -13,7 +13,7 @@ type Pane = 'conversations' | 'chat' | 'context'
 
 export default function AgentWorkspace({
   projectId, projectTitle, chapterId, chapterTitle, chapterVersion, graph, selectedNodeId, selectedSceneId, initialConversationId,
-  onConversationChange, onApplyGraph, onSelectNode, taskRequest, embeddedInEditor = false, onClose,
+  onConversationChange, onApplyGraph, onSelectNode, taskRequest, embeddedInEditor = false, onClose, getGraphMutationBlockedReason,
 }: {
   projectId: string; projectTitle: string; chapterId: string | null; chapterTitle: string | null; chapterVersion: number | null; graph: StoryGraph
   selectedNodeId: string | null; selectedSceneId?: string | null; initialConversationId?: string
@@ -21,6 +21,7 @@ export default function AgentWorkspace({
   onApplyGraph: (result: AppliedPatchDto) => void; onSelectNode: (nodeId: string) => void
   taskRequest?: { id: number; prompt: string; scope: import('./agentTypes').AgentScope }
   embeddedInEditor?: boolean; onClose?: () => void
+  getGraphMutationBlockedReason?: () => string | undefined
 }) {
   const confirm = useConfirm()
   const toast = useToast()
@@ -31,10 +32,12 @@ export default function AgentWorkspace({
   const [loading, setLoading] = useState(true)
   const [busy, setBusy] = useState(false)
   const [pane, setPane] = useState<Pane>('chat')
-  const [draftTask, setDraftTask] = useState<{ id: number; prompt: string; scope: AgentScope; draft: string; autoRun: boolean } | null>(null)
+  const [draftTask, setDraftTask] = useState<{ id: number; conversationId: string; prompt: string; scope: AgentScope; draft: string; autoRun: boolean } | null>(null)
+  const [consumedTasks, setConsumedTasks] = useState(() => new Set<number>())
 
   const activeConversation = useMemo(() => conversations.find((item) => item.id === activeId) ?? null, [activeId, conversations])
-  const effectiveTaskRequest = draftTask ?? taskRequest
+  const candidateTask = draftTask ? draftTask.conversationId === activeId ? draftTask : undefined : taskRequest
+  const effectiveTaskRequest = candidateTask && !consumedTasks.has(candidateTask.id) ? candidateTask : undefined
 
   const loadConversations = useCallback(async (preferredId?: string) => {
     const items = await getAgentConversations(projectId)
@@ -118,7 +121,7 @@ export default function AgentWorkspace({
   const panelClass = (target: Pane, desktop: string) => `${pane === target ? 'flex' : 'hidden'} ${desktop} min-h-0 flex-col`
 
   return (
-    <div className="flex h-full min-h-0 flex-col bg-white">
+    <div className="flex h-full min-h-0 w-full min-w-0 flex-1 flex-col bg-white">
       {embeddedInEditor && <header className="flex min-h-14 shrink-0 items-center justify-between border-b border-slate-200 bg-white px-4 sm:px-5">
         <div className="flex min-w-0 items-center gap-2.5">
           <span className="grid h-8 w-8 shrink-0 place-items-center rounded-md bg-slate-950 text-white"><BookOpenCheck className="h-4 w-4" /></span>
@@ -139,8 +142,8 @@ export default function AgentWorkspace({
           <ConversationSidebar conversations={conversations} activeId={activeId} busy={busy} onCreate={() => void createConversation()} onSelect={selectConversation} onRename={(id, title) => void renameConversation(id, title)} onPin={(item) => void pinConversation(item)} onDelete={(item) => void removeConversation(item)} />
         </div>
         <div className={panelClass('chat', 'xl:flex')}>
-          <ConversationTranscript conversation={activeConversation} messages={messages} loading={loading} hasMore={Boolean(nextCursor)} onLoadMore={() => nextCursor && void loadMessages(activeId, nextCursor)} onDraftAction={(request) => setDraftTask({ ...request, id: Date.now(), autoRun: true })} onDraftEdit={async (messageId, content) => { try { await updateAgentMessage(activeId, messageId, content); await loadMessages(activeId) } catch { toast.error('草稿保存失败') } }}>
-            {activeId ? <AgentPanel projectId={projectId} chapterId={chapterId} chapterVersion={chapterVersion} selectedNodeId={selectedNodeId} selectedSceneId={selectedSceneId ?? null} graph={graph} taskRequest={effectiveTaskRequest} initialConversationId={activeId} onConversationChange={selectConversation} onApplyGraph={onApplyGraph} onSelectNode={onSelectNode} compact /> : <div className="p-4 text-center text-sm text-slate-500"><button type="button" aria-label="新建对话" onClick={() => void createConversation()} className="rounded-md bg-slate-950 px-4 py-2 text-white">新建对话</button></div>}
+          <ConversationTranscript conversation={activeConversation} messages={messages} loading={loading} hasMore={Boolean(nextCursor)} onLoadMore={() => nextCursor && void loadMessages(activeId, nextCursor)} onDraftAction={(request) => setDraftTask({ ...request, conversationId: activeId, id: Date.now(), autoRun: true })} onDraftEdit={async (messageId, content) => { try { await updateAgentMessage(activeId, messageId, content); await loadMessages(activeId) } catch { toast.error('草稿保存失败') } }}>
+            {activeId ? <AgentPanel key={`${projectId}:${chapterId}:${activeId}`} projectId={projectId} chapterId={chapterId} chapterVersion={chapterVersion} selectedNodeId={selectedNodeId} selectedSceneId={selectedSceneId ?? null} graph={graph} getGraphMutationBlockedReason={getGraphMutationBlockedReason} taskRequest={effectiveTaskRequest} onTaskConsumed={(id) => { setConsumedTasks((current) => new Set([...current, id])); setDraftTask(null) }} initialConversationId={activeId} onConversationChange={selectConversation} onApplyGraph={onApplyGraph} onSelectNode={onSelectNode} compact /> : <div className="p-4 text-center text-sm text-slate-500"><button type="button" aria-label="新建对话" onClick={() => void createConversation()} className="rounded-md bg-slate-950 px-4 py-2 text-white">新建对话</button></div>}
           </ConversationTranscript>
         </div>
         <div className={panelClass('context', 'xl:flex')}>

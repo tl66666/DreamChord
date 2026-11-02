@@ -9,6 +9,10 @@ const messages = [{ id: 'message', role: 'assistant', content: '林宇：\n“�
 
 describe('ConversationTranscript', () => {
   afterEach(cleanup)
+  it('does not mistake a health-check report with a colon for story prose', () => {
+    render(<ConversationTranscript conversation={conversation} messages={[{ ...messages[0], content: '已完成上台以前剧情体检，共发现 0 项：\n上台以前：未发现结构问题' }]} loading={false} hasMore={false} onLoadMore={vi.fn()} onDraftAction={vi.fn()}><div>composer</div></ConversationTranscript>)
+    expect(screen.queryByRole('button', { name: '生成工作台场景' })).toBeNull()
+  })
   it('follows the newest message when a conversation is opened', async () => {
     const scrollTo = vi.fn()
     Object.defineProperty(HTMLElement.prototype, 'scrollTo', { configurable: true, value: scrollTo })

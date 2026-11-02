@@ -94,7 +94,11 @@ function parseAudioDirection(value: unknown): RuntimeAudioDirection | undefined 
     : undefined
   const action = bgmInput?.action
   const bgm: RuntimeBgmDirection | undefined = action === 'keep' || action === 'stop'
-    ? { action }
+    ? { action,
+        ...(typeof bgmInput?.volume === 'number' ? { volume: bgmInput.volume } : {}),
+        ...(typeof bgmInput?.fadeInMs === 'number' ? { fadeInMs: bgmInput.fadeInMs } : {}),
+        ...(typeof bgmInput?.fadeOutMs === 'number' ? { fadeOutMs: bgmInput.fadeOutMs } : {}),
+      }
     : action === 'play' && typeof bgmInput?.url === 'string' && bgmInput.url
       ? {
           action,

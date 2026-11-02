@@ -17,7 +17,39 @@ const baseRun = {
 }
 
 describe('useAgentRun', () => {
-  beforeEach(() => { vi.clearAllMocks() })
+  beforeEach(() => { vi.clearAllMocks(); sessionStorage.clear() })
+
+  it('restores the last proposal after reopening its conversation without persisting credentials', async () => {
+    vi.mocked(createAgentRun).mockResolvedValue({ ...baseRun, status: 'awaiting_approval' })
+    vi.mocked(getAgentRun).mockResolvedValue({ ...baseRun, status: 'awaiting_approval' })
+    const first = renderHook(() => useAgentRun('project:conversation'))
+    await act(() => first.result.current.start({ projectId: 'p', conversationId: 'c', chapterId: 'ch', prompt: '检查', scope: 'chapter', providerConfig: { provider: 'test', model: 'fake', apiKey: 'secret-test-key' } }))
+    first.unmount()
+    const next = renderHook(() => useAgentRun('project:conversation'))
+    await waitFor(() => expect(next.result.current.run?.status).toBe('awaiting_approval'))
+    expect(getAgentRun).toHaveBeenCalledWith('run')
+    expect(Object.values(sessionStorage).join('')).not.toContain('secret-test-key')
+    const other = renderHook(() => useAgentRun('project:other-conversation'))
+    expect(other.result.current.run).toBeNull()
+  })
+
+  it('recovers an accepted task even when the panel closes before the POST finishes', async () => {
+    let resolve!: (value: typeof baseRun) => void
+    vi.mocked(createAgentRun).mockReturnValue(new Promise(done => { resolve = done }))
+    vi.mocked(getAgentRun).mockResolvedValue({ ...baseRun, status: 'awaiting_approval' })
+    const first = renderHook(() => useAgentRun('project:slow'))
+    let pending!: Promise<void>
+    act(() => { pending = first.result.current.start({ projectId: 'p', conversationId: 'slow', chapterId: 'ch', prompt: '检查', scope: 'chapter', providerConfig: { provider: 'test', model: 'fake', apiKey: 'key' } }) })
+    first.unmount()
+    const next = renderHook(() => useAgentRun('project:slow'))
+    expect(next.result.current.isSubmitting).toBe(true)
+    await act(async () => { resolve(baseRun); await pending })
+    await waitFor(() => expect(next.result.current.run?.id).toBe('run'))
+    next.unmount()
+    const reopened = renderHook(() => useAgentRun('project:slow'))
+    await waitFor(() => expect(reopened.result.current.run?.status).toBe('awaiting_approval'))
+    expect(createAgentRun).toHaveBeenCalledOnce()
+  })
 
   it('polls active runs and stops at approval', async () => {
     vi.mocked(createAgentRun).mockResolvedValue(baseRun)

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { Save, ExternalLink, Check, AlertCircle, ArrowLeft } from 'lucide-react'
-import { loadAIConfigs, saveAIConfigs, PROVIDER_META, type AIProviderConfig } from '../lib/aiConfig'
+import { loadAIConfigs, saveAIConfigs, validateAIConfigs, PROVIDER_META, type AIProviderConfig } from '../lib/aiConfig'
 import AppHeader from '../components/AppHeader'
 import StudioIntro from '../components/StudioIntro'
 
@@ -9,7 +9,8 @@ export default function SettingsPage() {
   const location = useLocation()
   const [configs, setConfigs] = useState<AIProviderConfig[]>([])
   const [saved, setSaved] = useState(false)
-  const [customModels, setCustomModels] = useState<Record<string, string>>({})
+  const [error, setError] = useState('')
+  const [dirty, setDirty] = useState(false)
   const requestedReturn = new URLSearchParams(location.search).get('returnTo')
   const returnTo = requestedReturn?.startsWith('/') && !requestedReturn.startsWith('//') ? requestedReturn : '/'
   const returnLabel = returnTo === '/' ? '返回首页' : returnTo.startsWith('/library') ? '返回素材库' : returnTo.startsWith('/editor') ? '返回编辑器' : '返回创作 Agent'
@@ -17,14 +18,7 @@ export default function SettingsPage() {
   useEffect(() => {
     const loaded = loadAIConfigs()
     setConfigs(loaded)
-    const customs: Record<string, string> = {}
-    loaded.forEach((c) => {
-      const meta = PROVIDER_META.find((m) => m.provider === c.provider)
-      if (meta?.allowCustomModel && !meta.models.includes(c.model)) {
-        customs[c.provider] = c.model
-      }
-    })
-    setCustomModels(customs)
+
   }, [])
 
   const updateConfig = (provider: string, field: keyof AIProviderConfig, value: string | boolean) => {
@@ -39,30 +33,26 @@ export default function SettingsPage() {
       return prev.map((cfg) => (cfg.provider === provider ? { ...cfg, [field]: value } : cfg))
     })
     setSaved(false)
-  }
-
-  const handleModelChange = (provider: string, value: string) => {
-    if (value === '__custom__') {
-      updateConfig(provider, 'model', customModels[provider] || '')
-    } else {
-      updateConfig(provider, 'model', value)
-    }
-  }
-
-  const handleCustomModelChange = (provider: string, value: string) => {
-    setCustomModels((prev) => ({ ...prev, [provider]: value }))
-    const cfg = configs.find((c) => c.provider === provider)
-    const meta = PROVIDER_META.find((m) => m.provider === provider)
-    if (cfg && meta && !meta.models.includes(cfg.model)) {
-      updateConfig(provider, 'model', value)
-    }
+    setError('')
+    setDirty(true)
   }
 
   const handleSave = () => {
-    saveAIConfigs(configs)
-    setSaved(true)
-    setTimeout(() => setSaved(false), 2000)
+    const validation = validateAIConfigs(configs)
+    if (validation) { setError(validation); return }
+    try {
+      saveAIConfigs(configs)
+      setSaved(true)
+      setDirty(false)
+      setError('')
+    } catch { setError('无法保存配置，请检查浏览器是否允许本地存储后重试。') }
   }
+
+  useEffect(() => {
+    const guard = (event: BeforeUnloadEvent) => { if (dirty) event.preventDefault() }
+    window.addEventListener('beforeunload', guard)
+    return () => window.removeEventListener('beforeunload', guard)
+  }, [dirty])
 
   return (
     <div className="dc-page">
@@ -96,14 +86,15 @@ export default function SettingsPage() {
       <StudioIntro className="mb-6" image="/assets/ui/writing-nook.webp" landscape><div><p className="text-xs font-semibold text-dream-600">创作设置</p><h2 className="mt-2 text-lg font-bold text-slate-950">让工具配合你的写作习惯</h2><p className="mt-2 max-w-xl text-sm leading-6 text-slate-500">创作助手与日语配音翻译共用已启用的模型。未配置在线模型时，配音可使用本机翻译组件。</p></div></StudioIntro>
       <div className="mb-6 flex items-start gap-3 rounded-xl border border-dream-200 bg-dream-50/50 p-4 text-sm text-dream-700">
         <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-dream-500" />
-        <p>同一时间只能启用一个 AI 提供商。启用新的提供商会自动停用当前的。切换后编辑器中的 AI 功能将立即使用新模型。</p>
+        <p>填写服务平台实际提供的模型 ID，无需等待软件更新。保存后用于后续 Agent 任务和翻译，正在执行的任务继续使用原配置。</p>
       </div>
 
+      {error && <p role="alert" className="mb-5 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">{error}</p>}
+      {dirty && <p role="status" className="mb-4 text-sm text-amber-700">配置尚未保存。</p>}
       <div className="space-y-6">
         {PROVIDER_META.map((meta) => {
           const cfg = configs.find((c) => c.provider === meta.provider)
           if (!cfg) return null
-          const isCustomModel = meta.allowCustomModel && !meta.models.includes(cfg.model)
           return (
             <div
               key={meta.provider}
@@ -111,7 +102,7 @@ export default function SettingsPage() {
             >
               <div className="mb-4 flex flex-wrap items-start justify-between gap-4">
                 <div className="min-w-0 flex-1 space-y-2">
-                  <div><h2 className="text-lg font-semibold text-slate-950">{meta.name}</h2><p className={`mt-0.5 text-xs ${cfg.enabled && cfg.apiKey.trim() ? 'text-emerald-700' : 'text-slate-500'}`}>{cfg.enabled && cfg.apiKey.trim() ? '已启用 · 密钥已保存在本机' : cfg.enabled ? '已启用 · 请填写 API Key' : '未启用'}</p></div>
+                  <div><h2 className="text-lg font-semibold text-slate-950">{meta.name}</h2><p className={`mt-0.5 text-xs ${cfg.enabled && cfg.apiKey.trim() ? 'text-emerald-700' : 'text-slate-500'}`}>{cfg.enabled && cfg.apiKey.trim() ? dirty ? '待保存 · 配置完成后生效' : '已启用 · 配置保存在当前浏览器' : cfg.enabled ? '已启用 · 请填写 API Key' : '未启用'}</p></div>
                   {meta.url && (
                     <a
                       href={meta.url}
@@ -149,35 +140,13 @@ export default function SettingsPage() {
                 </div>
 
                 <div>
-                  <label htmlFor={`model-${meta.provider}`} className="mb-1.5 block text-sm font-medium text-slate-700">默认模型</label>
-                  <select
-                    id={`model-${meta.provider}`}
-                    value={isCustomModel ? '__custom__' : cfg.model}
-                    onChange={(e) => handleModelChange(meta.provider, e.target.value)}
-                    className="w-full rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm text-slate-900 focus:border-dream-500 focus:outline-none focus:ring-2 focus:ring-dream-500/20"
-                  >
-                    {meta.models.map((model) => (
-                      <option key={model} value={model}>
-                        {model}
-                      </option>
-                    ))}
-                    {meta.allowCustomModel && <option value="__custom__">自定义模型...</option>}
-                  </select>
+                  <label htmlFor={`model-${meta.provider}`} className="mb-1.5 block text-sm font-medium text-slate-700">模型 ID</label>
+                  <input id={`model-${meta.provider}`} type="text" value={cfg.model} maxLength={160}
+                    onChange={(event) => updateConfig(meta.provider, 'model', event.target.value)}
+                    placeholder="从服务平台复制完整的模型 ID"
+                    className="w-full rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-dream-500 focus:outline-none focus:ring-2 focus:ring-dream-500/20" />
+                  <p className="mt-1.5 text-xs leading-5 text-slate-500">可填写新模型、私有模型或平台部署名；需要与当前 API Key、接口地址匹配。</p>
                 </div>
-
-                {isCustomModel && (
-                  <div>
-                    <label htmlFor={`custom-model-${meta.provider}`} className="mb-1.5 block text-sm font-medium text-slate-700">自定义模型名</label>
-                    <input
-                      id={`custom-model-${meta.provider}`}
-                      type="text"
-                      value={customModels[meta.provider] || cfg.model}
-                      onChange={(e) => handleCustomModelChange(meta.provider, e.target.value)}
-                      placeholder="例如：kimi-2-7-preview"
-                      className="w-full rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-dream-500 focus:outline-none focus:ring-2 focus:ring-dream-500/20"
-                    />
-                  </div>
-                )}
 
                 {meta.allowCustomBaseUrl && (
                   <div>
@@ -197,6 +166,10 @@ export default function SettingsPage() {
             </div>
           )
         })}
+      </div>
+      <div className="sticky bottom-3 mt-6 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-dream-200 bg-white/95 p-3 shadow-lg backdrop-blur">
+        <button type="button" onClick={() => { setConfigs((prev) => prev.map((config) => ({ ...config, enabled: false }))); setDirty(true); setSaved(false); setError('') }} className="text-sm font-medium text-slate-600 hover:text-dream-700">停用在线模型</button>
+        <button type="button" onClick={handleSave} className="dc-primary">{saved ? '配置已保存' : '保存并生效'}</button>
       </div>
       </main>
     </div>

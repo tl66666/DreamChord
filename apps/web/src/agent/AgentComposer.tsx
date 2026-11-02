@@ -1,5 +1,6 @@
-import { BookOpen, GitBranch, Image as ImageIcon, MessageSquareText, Play, ScanSearch, Settings2, Users, WandSparkles } from 'lucide-react'
+import { BookOpen, GitBranch, Image as ImageIcon, MessageSquareText, Play, ScanSearch, Users, WandSparkles } from 'lucide-react'
 import type { AgentScope } from './agentTypes'
+import AgentModelControl from './AgentModelControl'
 
 const scopes: Array<{ value: AgentScope; label: string }> = [
   { value: 'card', label: '当前镜头' }, { value: 'scene', label: '当前场景' },
@@ -18,23 +19,24 @@ const starters = [
   { label: '素材建议', icon: ImageIcon, prompt: '盘点全局素材，并建议还需要准备哪些背景、CG 或角色立绘。', scope: 'project' as const },
 ]
 
-export default function AgentComposer({ prompt, scope, disabled, hasProvider, hasChapter = true, hasSelectedScene = false, targetId, targets, activeProvider, modelOptions = [], compact = false, materialMode = 'reuse', healthOpen = false, onPromptChange, onScopeChange, onTargetChange, onModelChange, onMaterialModeChange, onRun, onQuickRun, onConvertText, onHealth, onOpenSettings }: {
+export default function AgentComposer({ prompt, scope, disabled, hasProvider, hasChapter = true, hasSelectedScene = false, targetId, targets, activeProvider, compact = false, materialMode = 'reuse', healthOpen = false, onPromptChange, onScopeChange, onTargetChange, onModelChange, onMaterialModeChange, onRun, onQuickRun, onConvertText, onHealth, onOpenSettings }: {
   prompt: string; scope: AgentScope; disabled: boolean; hasProvider: boolean; hasChapter?: boolean
   hasSelectedScene?: boolean; targetId?: string | null; targets?: Array<{ id: string; label: string }>
   activeProvider?: { name: string; model: string } | null; modelOptions?: string[]; compact?: boolean; materialMode?: 'reuse' | 'prompts'
   healthOpen?: boolean
   onPromptChange: (value: string) => void; onScopeChange: (scope: AgentScope) => void; onTargetChange?: (targetId: string) => void; onModelChange?: (model: string) => void; onMaterialModeChange?: (mode: 'reuse' | 'prompts') => void; onRun: () => void; onQuickRun?: (request: { prompt: string; scope: AgentScope }) => void; onConvertText?: () => void; onHealth: () => void; onOpenSettings: () => void
 }) {
-  const needsTarget = (scope === 'card' || scope === 'scene') && Boolean(targets?.length)
+  const needsTarget = scope === 'card' || scope === 'scene'
+  const hasValidTarget = Boolean(targetId && targets?.some((target) => target.id === targetId))
   const submit = () => {
-    if (disabled || !prompt.trim() || (needsTarget && !targetId)) return
+    if (disabled || !prompt.trim() || (needsTarget && !hasValidTarget)) return
     onRun()
   }
   const playableSceneShortcut = shortcuts.find((item) => item.localCapable)!
 
   return (
     <div className={`${compact ? 'space-y-2 p-3' : 'space-y-3 p-4'} border-b border-slate-200`}>
-      {compact ? <div className="grid grid-cols-2 gap-1.5">
+      {compact ? <div className="grid grid-cols-1 gap-1.5">
         <label className="block">
         <span className="sr-only">常用任务</span>
         <select aria-label="常用任务" value="" onChange={(event) => {
@@ -45,18 +47,16 @@ export default function AgentComposer({ prompt, scope, disabled, hasProvider, ha
           {starters.map((starter) => <option key={starter.label} value={starter.label}>{starter.label}</option>)}
         </select>
         </label>
-        <div aria-label="当前模型" className="flex h-9 min-w-0 items-center gap-1.5 border border-slate-200 bg-slate-50 px-2 text-xs text-slate-600">
-          {activeProvider ? <select aria-label="切换当前模型" value={activeProvider.model} onChange={(event) => onModelChange?.(event.target.value)} className="min-w-0 flex-1 bg-transparent font-medium text-slate-800 outline-none">
-            {modelOptions.map((model) => <option key={model} value={model}>{activeProvider.name} · {model}</option>)}
-          </select> : <span className="min-w-0 flex-1 truncate font-medium text-slate-700">本地创作模式</span>}
-          <button type="button" aria-label="模型设置" title="模型设置" onClick={onOpenSettings} className="grid h-7 w-7 shrink-0 place-items-center text-slate-500 hover:bg-white hover:text-slate-950"><Settings2 className="h-3.5 w-3.5" /></button>
-        </div>
+
       </div> : <div>
         <p className="mb-1.5 text-[11px] font-semibold text-slate-500">直接问 Agent</p>
         <div className="grid grid-cols-2 gap-1.5">
           {starters.map(({ label, icon: Icon, prompt: value, scope: nextScope }) => <button key={label} type="button" aria-label={label} onClick={() => { onPromptChange(value); onScopeChange(nextScope) }} className="flex min-h-9 items-center gap-2 rounded-md border border-slate-200 bg-white px-2.5 text-left text-[11px] font-medium text-slate-700 hover:border-dream-200 hover:bg-dream-50"><Icon className="h-3.5 w-3.5 shrink-0 text-dream-700" />{label}</button>)}
         </div>
       </div>}
+      <details open={compact ? undefined : true} className={compact ? 'rounded-lg border border-slate-200 bg-slate-50 p-2' : ''}>
+      <summary className={compact ? 'cursor-pointer text-xs font-medium leading-6 text-slate-600' : 'hidden'}>范围与模型 · {scopes.find(item => item.value === scope)?.label} · {activeProvider?.model ?? '本地模式'}</summary>
+      <div className="space-y-2 pt-1">
       <div className={`grid ${compact ? 'grid-cols-2 sm:grid-cols-4' : 'grid-cols-2'} gap-1 rounded-lg bg-slate-100 p-1`} aria-label="Agent 作用域">
         {scopes.map((item) => {
           const unavailable = !hasChapter && item.value !== 'project'
@@ -76,15 +76,11 @@ export default function AgentComposer({ prompt, scope, disabled, hasProvider, ha
           <option value="">选择要处理的内容</option>
           {targets?.map((target) => <option key={target.id} value={target.id}>{target.label}</option>)}
         </select>
-        <p className="mt-1.5 text-[11px] leading-4 text-slate-500">会先生成可审阅草案，不会直接改写故事。</p>
+        <p className="mt-1.5 text-[11px] leading-4 text-slate-500">{targets?.length ? '会先生成可审阅草案，不会直接改写故事。' : scope === 'card' ? '还没有可处理的镜头，请先添加镜头，或切换到当前章节。' : '还没有可处理的场景，请先添加场景，或切换到当前章节。'}</p>
       </label>}
-      {!compact && <div aria-label="当前模型" className="flex min-h-9 items-center gap-2 border border-slate-200 bg-slate-50 px-2.5 text-xs text-slate-600">
-        <span className="shrink-0 font-medium text-slate-500">模型</span>
-        {activeProvider ? <select aria-label="切换当前模型" value={activeProvider.model} onChange={(event) => onModelChange?.(event.target.value)} className="min-w-0 flex-1 bg-transparent font-medium text-slate-800 outline-none">
-          {modelOptions.map((model) => <option key={model} value={model}>{activeProvider.name} · {model}</option>)}
-        </select> : <span className="min-w-0 flex-1 font-medium text-slate-700">本地创作模式</span>}
-        <button type="button" aria-label="模型设置" title="模型设置" onClick={onOpenSettings} className="grid h-7 w-7 shrink-0 place-items-center text-slate-500 hover:bg-white hover:text-slate-950"><Settings2 className="h-3.5 w-3.5" /></button>
-      </div>}
+      <AgentModelControl provider={activeProvider} disabled={disabled} onChange={onModelChange} onSettings={onOpenSettings} />
+      </div>
+      </details>
       <label className="block">
         <span className="sr-only">创作任务</span>
         <textarea aria-label="创作任务" value={prompt} onChange={(event) => onPromptChange(event.target.value)} onKeyDown={(event) => {
@@ -95,17 +91,17 @@ export default function AgentComposer({ prompt, scope, disabled, hasProvider, ha
       </label>
       {hasChapter && onConvertText && <button type="button" aria-label="将正文转为场景" disabled={disabled || !prompt.trim()} onClick={onConvertText} className="flex min-h-9 w-full items-center justify-center gap-1.5 border border-dream-200 bg-dream-50 px-3 text-xs font-semibold text-dream-800 hover:bg-dream-100 disabled:cursor-not-allowed disabled:border-slate-200 disabled:bg-slate-50 disabled:text-slate-300"><WandSparkles className="h-3.5 w-3.5" />将正文转为场景</button>}
       {!compact && <div className="grid grid-cols-2 gap-1.5">
-        {shortcuts.map(({ label, icon: Icon, prompt: value, scope: nextScope, localCapable = false }) => <button key={label} type="button" title={!hasChapter ? '绑定章节后可用' : label} disabled={!hasChapter} onClick={() => { if (!hasProvider && !localCapable) { onOpenSettings(); return } onPromptChange(value); onScopeChange(nextScope) }} className="flex min-h-10 flex-col items-center justify-center gap-0.5 rounded-md border border-slate-200 bg-white px-1 text-[11px] font-medium text-slate-600 hover:border-dream-200 hover:bg-dream-50 hover:text-dream-700 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-300"><Icon className="h-3.5 w-3.5" />{label}</button>)}
+        {shortcuts.map(({ label, icon: Icon, prompt: value, scope: nextScope, localCapable = false }) => <button key={label} type="button" title={!hasChapter ? '绑定章节后可用' : label} disabled={disabled || !hasChapter} onClick={() => { if (!hasProvider && !localCapable) { onOpenSettings(); return } onPromptChange(value); onScopeChange(nextScope) }} className="flex min-h-10 flex-col items-center justify-center gap-0.5 rounded-md border border-slate-200 bg-white px-1 text-[11px] font-medium text-slate-600 hover:border-dream-200 hover:bg-dream-50 hover:text-dream-700 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-300"><Icon className="h-3.5 w-3.5" />{label}</button>)}
       </div>}
       {!hasProvider && !compact && <p className="text-xs leading-5 text-amber-700">未配置模型时仍可读取项目、章节、角色、素材、对话和记忆，解释创作方法；对已选台词用“改成：新内容”可生成可审批的精确替换草案。开放式续写再配置外部模型。 <button type="button" onClick={onOpenSettings} className="font-semibold underline underline-offset-2">前往模型设置</button></p>}
       {compact && <div className="grid grid-cols-[minmax(0,1fr)_40px_minmax(104px,0.9fr)] gap-1.5">
-        <button type="button" aria-label={hasSelectedScene ? '续写已选场景' : playableSceneShortcut.label} title={!hasChapter ? '绑定章节后可用' : hasSelectedScene ? '续写已选场景' : playableSceneShortcut.label} disabled={!hasChapter} onClick={() => { const request = { prompt: hasSelectedScene ? '承接已选场景继续续写，保持已有角色、地点和未解决线索。请生成可审阅的镜头卡和连线。' : playableSceneShortcut.prompt, scope: hasSelectedScene ? 'scene' as const : playableSceneShortcut.scope }; if (onQuickRun) onQuickRun(request); else { onPromptChange(request.prompt); onScopeChange(request.scope) } }} className="inline-flex min-h-10 items-center justify-center gap-1.5 rounded-lg border border-dream-200 bg-dream-50 px-2 text-xs font-semibold text-dream-700 hover:bg-dream-100 disabled:cursor-not-allowed disabled:border-slate-200 disabled:bg-slate-50 disabled:text-slate-300"><Play className="h-4 w-4" />{hasSelectedScene ? '续写已选场景' : playableSceneShortcut.label}</button>
+        <button type="button" aria-label={hasSelectedScene ? '续写已选场景' : playableSceneShortcut.label} title={!hasChapter ? '绑定章节后可用' : hasSelectedScene ? '续写已选场景' : playableSceneShortcut.label} disabled={disabled || !hasChapter} onClick={() => { const request = { prompt: hasSelectedScene ? '承接已选场景继续续写，保持已有角色、地点和未解决线索。请生成可审阅的镜头卡和连线。' : playableSceneShortcut.prompt, scope: hasSelectedScene ? 'scene' as const : playableSceneShortcut.scope }; if (onQuickRun) onQuickRun(request); else { onPromptChange(request.prompt); onScopeChange(request.scope) } }} className="inline-flex min-h-10 items-center justify-center gap-1.5 rounded-lg border border-dream-200 bg-dream-50 px-2 text-xs font-semibold text-dream-700 hover:bg-dream-100 disabled:cursor-not-allowed disabled:border-slate-200 disabled:bg-slate-50 disabled:text-slate-300"><Play className="h-4 w-4" />{hasSelectedScene ? '续写已选场景' : playableSceneShortcut.label}</button>
         <button type="button" aria-label={healthOpen ? '收起剧情体检' : '运行剧情体检'} title={healthOpen ? '收起剧情体检' : '运行剧情体检'} onClick={onHealth} className={`inline-flex min-h-10 items-center justify-center rounded-lg border text-slate-700 hover:bg-slate-50 ${healthOpen ? 'border-amber-300 bg-amber-50' : 'border-slate-200 bg-white'}`}><ScanSearch className="h-4 w-4" /></button>
-        <button type="button" aria-label="发送给 Agent" onClick={submit} disabled={disabled || !prompt.trim() || (needsTarget && !targetId)} className="inline-flex min-h-10 items-center justify-center gap-1.5 rounded-lg bg-dream-600 px-2 text-xs font-semibold text-white hover:bg-dream-700 disabled:cursor-not-allowed disabled:bg-slate-300"><Play className="h-4 w-4" />发送</button>
+        <button type="button" aria-label="发送给 Agent" onClick={submit} disabled={disabled || !prompt.trim() || (needsTarget && !hasValidTarget)} className="inline-flex min-h-10 items-center justify-center gap-1.5 rounded-lg bg-dream-600 px-2 text-xs font-semibold text-white hover:bg-dream-700 disabled:cursor-not-allowed disabled:bg-slate-300"><Play className="h-4 w-4" />发送</button>
       </div>}
       {!compact && <div className="flex gap-2">
         <button type="button" aria-label={healthOpen ? '收起剧情体检' : '运行剧情体检'} onClick={onHealth} className={`inline-flex min-h-10 flex-1 items-center justify-center gap-1.5 rounded-lg border text-xs font-semibold text-slate-700 hover:bg-slate-50 ${healthOpen ? 'border-amber-300 bg-amber-50' : 'border-slate-200 bg-white'}`}><ScanSearch className="h-4 w-4" />{healthOpen ? '收起体检' : '剧情体检'}</button>
-        <button type="button" aria-label="发送给 Agent" onClick={submit} disabled={disabled || !prompt.trim() || (needsTarget && !targetId)} className="inline-flex min-h-10 flex-[1.25] items-center justify-center gap-1.5 rounded-lg bg-dream-600 text-xs font-semibold text-white hover:bg-dream-700 disabled:cursor-not-allowed disabled:bg-slate-300"><Play className="h-4 w-4" />发送给 Agent</button>
+        <button type="button" aria-label="发送给 Agent" onClick={submit} disabled={disabled || !prompt.trim() || (needsTarget && !hasValidTarget)} className="inline-flex min-h-10 flex-[1.25] items-center justify-center gap-1.5 rounded-lg bg-dream-600 text-xs font-semibold text-white hover:bg-dream-700 disabled:cursor-not-allowed disabled:bg-slate-300"><Play className="h-4 w-4" />发送给 Agent</button>
       </div>}
     </div>
   )

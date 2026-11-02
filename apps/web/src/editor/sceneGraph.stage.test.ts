@@ -10,6 +10,10 @@ const card: ShotCard = {
 }
 
 describe('shot-card effective stage', () => {
+  it('keeps the authored mix and fades when replacing a music asset', () => {
+    const original = { ...card, audio: { bgm: { action: 'play' as const, url: '/old.ogg', volume: .4, fadeInMs: 600, fadeOutMs: 900 } } }
+    expect(applyAudioAssetToShotCard(original, 'bgm', '/new.ogg').audio?.bgm).toEqual({ ...original.audio.bgm, url: '/new.ogg' })
+  })
   it('can automatically stage a project-owned speaker absent from the browser library', () => {
     const next = normalizeShotCard({ ...card, speaker: 'project-only', speakerExpression: 'smile', characters: [] }, [{ id: 'project-only', defaultExpression: 'normal', expressions: [{ id: 'smile', url: '/smile.png' }] } as LibraryCharacter])
     expect(next.characters).toEqual([{ characterId: 'project-only', expression: 'smile', position: 'right', action: 'show' }])
@@ -68,7 +72,7 @@ describe('shot-card effective stage', () => {
     const withVoice = applyAudioAssetToShotCard(withSecondEffect, 'voice', '/uploads/narration.wav')
 
     expect(withVoice.audio).toEqual({
-      bgm: { action: 'play', url: '/uploads/rain.mp3' },
+      bgm: { action: 'play', url: '/uploads/rain.mp3', volume: .6 },
       sfx: [{ url: '/uploads/thunder.ogg' }, { url: '/uploads/chime.ogg' }],
       voice: { url: '/uploads/narration.wav' },
     })

@@ -1105,7 +1105,7 @@ export default function ShotCardEditor({
               allEdges={edges}
               convergenceMap={convergenceMap}
               onSelect={() => { onSelectCard(card.id); if (editingCardId !== card.id) setEditingCardId(null) }}
-              onEdit={() => setEditingCardId(editingCardId === card.id ? null : card.id)}
+              onEdit={() => { onSelectCard(card.id); setEditingCardId(editingCardId === card.id ? null : card.id) }}
               onUpdate={(updates) => updateCard(card.id, updates)}
               onDelete={() => deleteCard(card.id)}
               onDuplicate={() => duplicateCard(card.id)}

@@ -77,6 +77,7 @@ describe('creative agent end-to-end workflow', () => {
     const queued = await service.createRun({ projectId: 'project', conversationId: conversation.id, chapterId: 'chapter-two', prompt: '给第二章增加两条不同走向', scope: 'chapter', providerConfig: { provider: 'fake', model: 'controlled', apiKey: 'memory-only' } }, 'owner')
     const ready = await waitForApproval(service, queued.id)
 
+    expect(ready).toMatchObject({ chapterId: 'chapter-two' })
     expect(ready.errorMessage).toBeNull()
     expect(ready.status).toBe('awaiting_approval')
     expect(ready.timeline).toEqual(expect.arrayContaining([expect.objectContaining({ tool: 'read_chapter_outline' }), expect.objectContaining({ tool: 'analyze_story_graph' })]))
