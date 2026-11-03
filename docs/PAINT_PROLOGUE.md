@@ -20,6 +20,7 @@
 
 一个行动选择分别走向「对台词」或「整理道具」，之后汇合。序章有一个完整收尾与下一章悬念，不伪装成多结局长篇。故事通过人物行动、道具与时间顺序埋线，不在对白里解释全部世界规则。
 
+- [中文阅读稿](story/paint/reading.zh.md)：不带节点编号，正文按对台词路线连续展开，另一分支附在后面。
 - [正式中日文本](story/paint/00-prologue.md)：与图谱同步，包含两条分支。
 - [全篇创作设定](superpowers/specs/2026-11-02-paint-story-design.md)：有后续章节与世界真相，包含剧透。
 - 正式数据：`packages/story-domain/src/paintPrologue.ts`（演出）、`paintNarration.ts`（中日叙述）、`paintLines.ts`（固定配音对白）。
@@ -46,6 +47,7 @@ pnpm demo:paint:upgrade
 pnpm test:paint
 pnpm demo:paint:script
 node scripts/export-paint-script.mjs --docs
+node scripts/export-paint-script.mjs --reading
 ```
 
 安装命令只创建缺失的官方项目；已存在的作品完整保留，不重置数据库。`demo:paint:upgrade` 是本次明确的旧版→新叙事版升级：仅固定官方ID、原demo作者、公开发布、内容指纹与发布v1完全一致时才事务更新；作者改过、私人副本或其他故事一律拒绝，已是新版则不操作。项目/章节/角色/音色ID保留，章节version递增。旧版规范定义保存在 `assets/story-packs/paint-prologue/release-v1.json`。安装/升级前检查美术路径、声音参考、对白文本/角色/语言/节点以及运行音轨SHA。

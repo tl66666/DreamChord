@@ -17,3 +17,36 @@ if (process.argv.includes('--docs')) {
   await mkdir(storyDir, { recursive: true })
   await writeFile(new URL('00-prologue.md', storyDir), sections.join('\n').trimEnd() + '\n')
 }
+if (process.argv.includes('--reading')) {
+  const { nodes, edges } = PAINT_PROLOGUE.graph
+  const byId = new Map(nodes.map(n => [n.id, n]))
+  const parts = ['# 请让这幅画老去', '', '## 序章 · 多出来的一把椅子', '', '本阅读稿沿「陪许野对台词」的选择展开；另一段行动分支附在正文后。文字与游戏当前版本一致。', '']
+  let id = nodes[0].id, section = '', seen = new Set()
+  const write = n => {
+    if (n.type === 'subtitle') parts.push(n.data.text, '')
+    if (n.type === 'dialogue') parts.push(`**${n.data.role}**：「${n.data.text}」`, '')
+  }
+  while (id && !seen.has(id)) {
+    seen.add(id)
+    const n = byId.get(id)
+    if (!n) throw new Error(`Missing reading node: ${id}`)
+    if (n.data.sceneTitle !== section) { section = n.data.sceneTitle; parts.push(`### ${section}`, '') }
+    write(n)
+    const next = edges.filter(e => e.source === id)
+    id = n.type === 'choice' ? next.find(e => e.sourceHandle === 'choice-0')?.target : next[0]?.target
+  }
+  const alternate = edges.find(e => e.source === 'p-action-choice' && e.sourceHandle === 'choice-1')
+  if (alternate) {
+    parts.push('---', '', '### 另一个选择：留下来帮夏禾整理道具', '', '这段替换正文中的对台词片段，之后同样回到胶干后的排练。', '')
+    id = alternate.target; seen = new Set()
+    while (id && id !== 'p-before-stage' && !seen.has(id)) {
+      seen.add(id); const n = byId.get(id)
+      if (!n) throw new Error(`Missing alternate node: ${id}`)
+      write(n); id = edges.find(e => e.source === id)?.target
+    }
+  }
+  parts.push('---', '', '### 文学互文来源', '', ...PAINT_LITERARY_SOURCES.map(s => `- ${s.author}《${s.title}》：[原文](${s.url})。${s.use}`))
+  const dir = new URL('../docs/story/paint/', import.meta.url)
+  await mkdir(dir, { recursive: true })
+  await writeFile(new URL('reading.zh.md', dir), parts.join('\n').trimEnd() + '\n')
+}
