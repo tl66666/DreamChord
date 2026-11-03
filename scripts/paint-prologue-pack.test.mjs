@@ -54,6 +54,21 @@ test('all cast expression assets are large full-body sprites with real transpare
   }
 })
 
+test('the prose opening, keepsake and unfinished sea stage have original files and verified runtime images', async () => {
+  const m = json('source-assets/paint-prologue/prose-art-manifest.json')
+  assert.deepEqual(m.assets.map(a => a.id).sort(), ['home', 'keepsake', 'theatre-sea'])
+  for (const a of m.assets) {
+    assert.ok(a.prompt && a.generator === 'built-in image_gen.imagegen')
+    assert.equal(hash(read(a.nativeFile)), a.native.sha256)
+    assert.equal(hash(read(a.sourceFile)), a.sourceSha256)
+    const bytes = read(a.publicFile)
+    assert.equal(hash(bytes), a.publicSha256)
+    const meta = await sharp(bytes).metadata()
+    assert.equal(meta.width, 1920); assert.equal(meta.height, 1080)
+    assert.equal(a.adaptation.cropped, false)
+  }
+})
+
 test('every runtime file referenced by the graph, cover and starter is present', () => {
   const scan = value => typeof value === 'string' ? (value.startsWith('/assets/') ? [value] : []) : Array.isArray(value) ? value.flatMap(scan) : value && typeof value === 'object' ? Object.values(value).flatMap(scan) : []
   for (const url of new Set(scan([PAINT_PROLOGUE, PAINT_STARTER_CARD]))) assert.ok(read(`apps/web/public${url}`).length > 100, url)

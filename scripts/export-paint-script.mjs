@@ -1,5 +1,5 @@
 import { mkdir, writeFile } from 'node:fs/promises'
-import { PAINT_LINES, PAINT_PROLOGUE } from '../packages/story-domain/dist/index.js'
+import { PAINT_LINES, PAINT_PROLOGUE, PAINT_LITERARY_SOURCES } from '../packages/story-domain/dist/index.js'
 const dir = new URL('../.runtime/', import.meta.url)
 await mkdir(dir, { recursive: true })
 await writeFile(new URL('paint-script.json', dir), JSON.stringify(PAINT_LINES, null, 2) + '\n')
@@ -13,6 +13,7 @@ if (process.argv.includes('--docs')) {
     if (n.type === 'choice') sections.push('**行动选择（分支各有独有回应，然后汇合）**', '', ...n.data.choices.map((v, i) => `${i + 1}. ${v}`), '')
   }
   const storyDir = new URL('../docs/story/paint/', import.meta.url)
+  sections.push('## 互文来源', '', ...PAINT_LITERARY_SOURCES.map(s => `- ${s.author}《${s.title}》：[原文](${s.url})。${s.use}`), '')
   await mkdir(storyDir, { recursive: true })
   await writeFile(new URL('00-prologue.md', storyDir), sections.join('\n').trimEnd() + '\n')
 }

@@ -1,0 +1,148 @@
+{
+  "title": "请让这幅画老去",
+  "assetType": "prose-revision narrative backgrounds",
+  "createdAt": "2026-11-03",
+  "generator": "built-in image_gen.imagegen",
+  "qualityNotes": [
+    "No characters were generated or modified.",
+    "Native outputs retained unchanged; source production PNG and public WebP resized to 1920x1080 without cropping.",
+    "Existing background-manifest.json and domain code are unchanged."
+  ],
+  "assets": [
+    {
+      "id": "home",
+      "prompt": "Use case: illustration-story. Asset type: original literary visual novel opening background, a new illustration in the same restrained hand-painted gouache/oil treatment and warm everyday small-town setting as the theater workshop reference shown. REQUIRED wide 16:9 composition, target 1920x1080, single scene with no border. Scene: Cheng Jian's modest lived-in bedroom on the SECOND FLOOR of an old Chinese small-town building, at 2 PM on a quiet April afternoon. Warm welcoming first-entry story space, clean and practical rather than luxurious. The room has a simple narrow bed on the left with rumpled ivory cotton blanket; a modest low bookcase with used paperbacks, one charcoal-gray work apron hanging on a peg. A small worn honey-colored wooden table occupies the left foreground: a freshly removed simple old metal door latch beside its few screws and an ordinary screwdriver, a half-cold ceramic cup of tea with NO steam, and one small ivory theater ticket lying flat with no readable lettering. These objects should be visible but proportionate, no giant props. On the RIGHT a wood-framed open window looks down over the SAME style of Chinese white plaster walls and black tiled roofs, green spring trees and a few restrained blossoms of the workshop village, coherent Chinese architecture not European or Japanese shrine. Soft spring daylight through that right window. Keep the upper center of the composition visually quiet with a plain warm off-white wall and softly falling light, useful for first-entry title overlay. Palette: honey wood, muted gray-teal, warm ivory, natural green outside. Subtle rich brush texture, painterly realistic perspective, thoughtful calm literary VN background. No people, no silhouettes, no animals, no readable Chinese/Japanese/Latin text, no logo/watermark/UI, no magical glows, no ornate decor, no falling petals or petal piles, no excessive clutter, no huge mansion, no gilded or luxury furniture.",
+      "generator": "built-in image_gen.imagegen",
+      "generationSourcePath": "C:\\Users\\唐乐\\.codex\\generated_images\\01a19b9c-bdf3-7791-a80d-b85f04b75da1\\exec-15663150-750c-484e-9138-93531374f69a.png",
+      "styleReference": {
+        "path": "source-assets/paint-prologue/workshop.png",
+        "use": "Viewed before generation; visual style guidance in prompt, not an edit target",
+        "sha256": "4409105821b05f80df7bc371969364f92da324da529f6afbb25d8011abf6978e"
+      },
+      "transparentBackground": false,
+      "nativeFile": "source-assets/paint-prologue/home-native.png",
+      "sourceFile": "source-assets/paint-prologue/home.png",
+      "publicFile": "apps/web/public/assets/paint-prologue/home.webp",
+      "publicUrl": "/assets/paint-prologue/home.webp",
+      "native": {
+        "width": 1672,
+        "height": 941,
+        "format": "png",
+        "sha256": "566db6dc494ec7d64777251ae541bb0eb68ed508d5a8104aa5413edea41cf2b8"
+      },
+      "sourceSha256": "652c1dabea8fdf08da74cb3c28736699486cbd86a804d2276ad18b7ae4855b2b",
+      "publicSha256": "12f8ebaf1b92c788877d27bcb105345e17ecfe6145332b15471eabf7447f55fb",
+      "adaptation": {
+        "tool": "Sharp 0.33.5",
+        "operations": [
+          "resize to 1920x1080 without crop",
+          "PNG to WebP quality 94"
+        ],
+        "cropped": false,
+        "aspectRoundingCorrectionRatio": 0.0005316321105792721
+      },
+      "visualQa": {
+        "result": "Pass",
+        "checks": [
+          "No characters",
+          "Modest second-floor room",
+          "Right window shows Chinese white walls, dark tiled roofs and spring trees",
+          "Quiet upper-center wall",
+          "Door latch, screwdriver, cold tea and blank small ivory theater ticket visible",
+          "Warm honey wood / ivory / muted teal treatment"
+        ]
+      }
+    },
+    {
+      "id": "keepsake",
+      "prompt": "Use case: illustration-story. Asset type: original narrative prop CG for a literary visual novel, wide 16:9 frame, target 1920x1080, one painterly close-up scene. Match the previously shown theater workshop's hand-painted gouache/oil brush texture, honey-colored worn timber, muted gray-teal and warm ivory palette, natural Chinese small-town spring afternoon window light. Subject on the workshop's old wooden tabletop: one modest OLD THIN ordinary paperback booklet of literary prose poems, open at about its middle, plain faded oatmeal paper cover visible under pages, visibly only about 50-70 pages, softened corners, gently thumbed edges and faint pencil underlining and marginal pencil notes as UNREADABLE graphite strokes. This is a treasured often-read small prose book used as a stage/story keepsake, not an ornate antique tome, Bible, grimoire or magic item. No legible book title or author or story text in any language; page contents should be suggested abstract extremely fine blurred ink strokes, never readable Chinese/Japanese/English letters. Tucked across the right-hand open page is ONE SMALL IVORY THEATER TICKET, long enough to show its narrow tear-off stub STILL ATTACHED with an intact perforation and matching paper all in one uncut rectangular piece, no detached fragment; the ticket has only a simple ruled ornamental border and pale unreadable graphic marks, NO readable lettering, numbers or dates. A plain deep TEAL fabric bookmark ribbon lies between the pages and projects below the book. A short worn pencil rests beside the book, a ceramic tea cup nearby has ONE tiny subtle chip in its rim (not a large crack, not smashed), tea inside, no steam. The open booklet, complete ticket with attached stub and chipped cup are all clearly visible and fit comfortably WITHIN THE FRAME. Camera at a three-quarter overhead table angle, booklet central-left and tea cup upper-right, enough surrounding wood to establish workshop rather than product catalog. Soft right-side window light with gentle shadows; calm tactile reading memories, restrained warm daily life, no dramatic spotlight. No people/hands/characters, no logo/watermark/UI/border/collage, no readable text, no fancy gilding, no medieval or magical symbols, no theatrical rose petals, no giant book.",
+      "generator": "built-in image_gen.imagegen",
+      "generationSourcePath": "C:\\Users\\唐乐\\.codex\\generated_images\\01a19b9c-bdf3-7791-a80d-b85f04b75da1\\exec-513e83d7-003e-4884-93a6-b355824b90e1.png",
+      "styleReference": {
+        "path": "source-assets/paint-prologue/workshop.png",
+        "use": "Viewed before generation; visual style guidance in prompt, not an edit target",
+        "sha256": "4409105821b05f80df7bc371969364f92da324da529f6afbb25d8011abf6978e"
+      },
+      "transparentBackground": false,
+      "nativeFile": "source-assets/paint-prologue/keepsake-native.png",
+      "sourceFile": "source-assets/paint-prologue/keepsake.png",
+      "publicFile": "apps/web/public/assets/paint-prologue/keepsake.webp",
+      "publicUrl": "/assets/paint-prologue/keepsake.webp",
+      "native": {
+        "width": 1672,
+        "height": 941,
+        "format": "png",
+        "sha256": "0746c48b61cc10bdb94ea816025bfd278e4a3fc7c1a0a0f5ef0d0de8f53e3de3"
+      },
+      "sourceSha256": "ed4fd53bed127ee8cd8549d284c6fcfabb3e6e11513784cb87a89957d9e31560",
+      "publicSha256": "e7a1b14cbe68c402919c4214e0731eadc0b2712127ed9828b2d4fe92d128ff46",
+      "adaptation": {
+        "tool": "Sharp 0.33.5",
+        "operations": [
+          "resize to 1920x1080 without crop",
+          "PNG to WebP quality 94"
+        ],
+        "cropped": false,
+        "aspectRoundingCorrectionRatio": 0.0005316321105792721
+      },
+      "visualQa": {
+        "result": "Pass",
+        "checks": [
+          "Open ordinary used thin booklet",
+          "Uncut complete theater ticket with attached perforated stub",
+          "Deep-teal cloth bookmark and pencil marginal marks",
+          "Unreadable page/ticket marks",
+          "Tea cup with small rim chips",
+          "Soft workshop window light",
+          "No magical or religious iconography"
+        ]
+      }
+    },
+    {
+      "id": "theatre-sea",
+      "prompt": "Use case: precise-object-edit. Edit THIS existing theater background to produce a narrative scenery variant. Keep the same camera position, 16:9 framing, low shabby wooden stage, small humble community performance setting, warm tungsten stage lights, muted slate-teal curtains, honey wood floor, viewer-facing EIGHT worn audience chairs and their current loose arrangement in foreground, and real tall windows high on the RIGHT showing the same Chinese small-town rooftops and evening sky. Keep the hand-painted literary visual novel gouache/oil background style and overall palette. Make one targeted set change: onstage in the back-center slightly RIGHT, centered around x=55%-58% of image width, add an obviously freestanding fake wooden WINDOW FRAME stage prop (simple handmade empty rectangular frame on modest support feet, not a real hole or window in the wall). BEHIND this fake frame hangs a HAND-PAINTED SEASCAPE CANVAS CLOTH secured from an ordinary horizontal rod by visible short tie strings. The LEFT TWO-THIRDS of that cloth is painted with muted gray-blue sea, a low quiet horizon and shallow pale waves; the RIGHT THIRD MUST visibly remain UNPAINTED IVORY COARSE CLOTH with loose folds/wrinkles and the painting stopping unevenly at the paint-to-cloth boundary. All of this is a flat modest unfinished theater backdrop, not a real outdoor view and not an ocean portal. Show brush strokes, raw weave, sag and rigging so no viewer mistakes the painted sea for a real landscape outside. The painted cloth should be visibly a little larger than the fake window frame and have its unfinished ivory right edge protruding beyond the frame. The original plain door and little cupboard/shoe cabinet can shift a little LEFT to make room, remaining ordinary homemade stage props. Keep scenery low and quiet enough that the upper-central part remains usable behind actor faces; do not fill the upper center with busy rigging or enormous props. Preserve the architectural room and audience seating, no stage expansion, no photographic ocean. No people, no silhouettes, no letters or readable text, no logos, no magic or luminous effects. Keep full scene visible, no crop, target final production frame 1920x1080.",
+      "generator": "built-in image_gen.imagegen",
+      "generationSourcePath": "C:\\Users\\唐乐\\.codex\\generated_images\\01a19b9c-bdf3-7791-a80d-b85f04b75da1\\exec-0f214a8e-c996-4cc6-b211-ca361d264010.png",
+      "styleReference": {
+        "path": "source-assets/paint-prologue/theatre.png",
+        "use": "Viewed and supplied to built-in imagegen as edit target; preserve room/camera/seating while adding unfinished seascape stage set",
+        "sha256": "69a9af0e1b805a1ff46eed02bb867c3c769915f27a81893ce698615fc59ea03a"
+      },
+      "transparentBackground": false,
+      "nativeFile": "source-assets/paint-prologue/theatre-sea-native.png",
+      "sourceFile": "source-assets/paint-prologue/theatre-sea.png",
+      "publicFile": "apps/web/public/assets/paint-prologue/theatre-sea.webp",
+      "publicUrl": "/assets/paint-prologue/theatre-sea.webp",
+      "native": {
+        "width": 1672,
+        "height": 941,
+        "format": "png",
+        "sha256": "8a07ccec06929c22473e4e509038149fc8c2a4ee8c3a3ef0f3cff6f4c30b2206"
+      },
+      "sourceSha256": "c33f14b91127417a6a47dd07a6798216c1c7b6fa5d8e7f1b4b44055c0b5cb96b",
+      "publicSha256": "b620f6f4124bbf9c72f1b67157d30fe9b3c975bc1ca358c437e2fbc2933c40a9",
+      "adaptation": {
+        "tool": "Sharp 0.33.5",
+        "operations": [
+          "resize to 1920x1080 without crop",
+          "PNG to WebP quality 94"
+        ],
+        "cropped": false,
+        "aspectRoundingCorrectionRatio": 0.0005316321105792721
+      },
+      "visualQa": {
+        "result": "Pass",
+        "checks": [
+          "Original room, camera, low stage, tungsten lamps, slate-teal curtains and foreground chairs retained",
+          "Freestanding fake window frame with visible support feet",
+          "Hand-painted gray-blue sea with shallow pale waves on hanging cloth",
+          "Unpainted ivory coarse-cloth right edge, folds and tie strings clearly visible",
+          "Original door and cupboard shifted left",
+          "Right real high window retains small-town evening sky",
+          "No people, readable text or magical effect"
+        ]
+      }
+    }
+  ],
+  "updatedAt": "2026-11-03"
+}

@@ -5,7 +5,8 @@ import type { ProjectData } from '../stores/editorStore'
 import { projectCover } from '../lib/projectCover'
 
 const covers = [
-  { name: '请让这幅画老去', url: '/assets/paint-prologue/cover.webp' },
+  { name: '请让这幅画老去', url: '/assets/paint-prologue/home.webp' },
+  { name: '春日工房', url: '/assets/paint-prologue/workshop.webp' },
   { name: '小剧场的暖灯', url: '/assets/paint-prologue/theatre.webp' },
   { name: '谢幕词上的那一句', url: '/assets/curtain-call/backstage.webp' },
   { name: '夏夜校园', url: '/assets/curtain-call/campus.webp' },

@@ -1,0 +1,3722 @@
+{
+  "id": "dreamchord-paint-prologue",
+  "title": "请让这幅画老去",
+  "chapterTitle": "序章 · 多出来的一把椅子",
+  "description": "一把修好的椅子，一场只有八位观众的戏。散场后，刚刚接上的木头却不见了。原创文学幻想 · 序章 · 中文字幕 / 日语角色配音。",
+  "cover": "/assets/paint-prologue/cover.webp",
+  "graph": {
+    "nodes": [
+      {
+        "id": "p-workshop",
+        "type": "background",
+        "position": {
+          "x": 480,
+          "y": 0
+        },
+        "data": {
+          "backgroundId": "/assets/paint-prologue/workshop.webp",
+          "sceneGroupId": "paint-scene-1",
+          "sceneTitle": "一把待修的椅子",
+          "sceneCode": "序-1"
+        }
+      },
+      {
+        "id": "p-first-afternoon",
+        "type": "subtitle",
+        "position": {
+          "x": 480,
+          "y": 110
+        },
+        "data": {
+          "role": "旁白",
+          "text": "四月十七日，下午。\n许野借来的椅子，比他写的剧本还要老。\n\n我伸手去够桌上的钉子。夏禾正好推门进来。",
+          "localizations": {
+            "ja": {
+              "text": "四月十七日、午後。\nイエが借りてきた椅子は、彼の台本よりずっと古かった。\n\n卓上の釘に手を伸ばしたところへ、ホーが入ってきた。",
+              "sourceHash": "57d4f631"
+            }
+          },
+          "audio": {
+            "bgm": {
+              "action": "play",
+              "url": "/assets/audio/paint-prologue/workshop.ogg",
+              "volume": 0.55,
+              "fadeInMs": 1600,
+              "fadeOutMs": 1600
+            }
+          },
+          "sceneGroupId": "paint-scene-1",
+          "sceneTitle": "一把待修的椅子",
+          "sceneCode": "序-1"
+        }
+      },
+      {
+        "id": "p-xia-arrives",
+        "type": "character",
+        "position": {
+          "x": 480,
+          "y": 220
+        },
+        "data": {
+          "characterId": "夏禾",
+          "expression": "serious",
+          "position": "center",
+          "action": "show",
+          "sceneGroupId": "paint-scene-1",
+          "sceneTitle": "一把待修的椅子",
+          "sceneCode": "序-1"
+        }
+      },
+      {
+        "id": "p-open-1",
+        "type": "dialogue",
+        "position": {
+          "x": 480,
+          "y": 330
+        },
+        "data": {
+          "role": "夏禾",
+          "text": "程见，先别坐。",
+          "voiceDirection": {
+            "emotion": "resolve",
+            "intensity": 0.4,
+            "pace": 0.98,
+            "pauseProfile": "short",
+            "delivery": "克制但坚定，关键词稍加重，句尾落稳",
+            "lockedFields": [],
+            "source": "auto",
+            "textHash": "c3e2235c"
+          },
+          "localizations": {
+            "ja": {
+              "text": "ジエン、まだ座らないで。",
+              "sourceHash": "c3e2235c"
+            }
+          },
+          "voiceTracks": {
+            "ja": {
+              "url": "/assets/audio/paint-prologue/p-open-1-ja.ogg",
+              "textHash": "15a6db3c",
+              "profileId": "paint-voice-xia"
+            }
+          },
+          "sceneGroupId": "paint-scene-1",
+          "sceneTitle": "一把待修的椅子",
+          "sceneCode": "序-1"
+        }
+      },
+      {
+        "id": "p-open-2",
+        "type": "dialogue",
+        "position": {
+          "x": 480,
+          "y": 440
+        },
+        "data": {
+          "role": "程见",
+          "text": "来不及了。",
+          "voiceDirection": {
+            "emotion": "neutral",
+            "intensity": 0.3,
+            "pace": 0.98,
+            "pauseProfile": "short",
+            "delivery": "自然陈述，重音克制，不额外煽情",
+            "lockedFields": [],
+            "source": "auto",
+            "textHash": "283036a3"
+          },
+          "localizations": {
+            "ja": {
+              "text": "もう遅い。",
+              "sourceHash": "283036a3"
+            }
+          },
+          "voiceTracks": {
+            "ja": {
+              "url": "/assets/audio/paint-prologue/p-open-2-ja.ogg",
+              "textHash": "26b12c16",
+              "profileId": "paint-voice-cheng"
+            }
+          },
+          "sceneGroupId": "paint-scene-1",
+          "sceneTitle": "一把待修的椅子",
+          "sceneCode": "序-1"
+        }
+      },
+      {
+        "id": "p-fall",
+        "type": "subtitle",
+        "position": {
+          "x": 480,
+          "y": 550
+        },
+        "data": {
+          "role": "旁白",
+          "text": "喀。\n椅子朝左歪下去，我连人带钉子盒坐到了地上。钉子倒没撒——我把盒子护住了。",
+          "localizations": {
+            "ja": {
+              "text": "ぱき、と音がした。\n椅子が左へ傾き、釘の箱ごと床に尻もちをついた。釘はこぼれなかった。箱だけは抱え込んだ。",
+              "sourceHash": "5c638dd9"
+            }
+          },
+          "audio": {
+            "sfx": [
+              {
+                "url": "/assets/audio/paint-prologue/wood.ogg",
+                "volume": 0.45
+              }
+            ]
+          },
+          "sceneGroupId": "paint-scene-1",
+          "sceneTitle": "一把待修的椅子",
+          "sceneCode": "序-1"
+        }
+      },
+      {
+        "id": "p-xia-right",
+        "type": "character",
+        "position": {
+          "x": 480,
+          "y": 660
+        },
+        "data": {
+          "characterId": "夏禾",
+          "expression": "serious",
+          "position": "right",
+          "action": "show",
+          "sceneGroupId": "paint-scene-1",
+          "sceneTitle": "一把待修的椅子",
+          "sceneCode": "序-1"
+        }
+      },
+      {
+        "id": "p-ye-arrives",
+        "type": "character",
+        "position": {
+          "x": 480,
+          "y": 770
+        },
+        "data": {
+          "characterId": "许野",
+          "expression": "smile",
+          "position": "left",
+          "action": "show",
+          "sceneGroupId": "paint-scene-1",
+          "sceneTitle": "一把待修的椅子",
+          "sceneCode": "序-1"
+        }
+      },
+      {
+        "id": "p-open-3",
+        "type": "dialogue",
+        "position": {
+          "x": 480,
+          "y": 880
+        },
+        "data": {
+          "role": "许野",
+          "text": "很好。今晚的第一声掌声，由地板提供。",
+          "voiceDirection": {
+            "emotion": "neutral",
+            "intensity": 0.3,
+            "pace": 0.98,
+            "pauseProfile": "natural",
+            "delivery": "自然陈述，重音克制，不额外煽情",
+            "lockedFields": [],
+            "source": "auto",
+            "textHash": "758b5acf"
+          },
+          "localizations": {
+            "ja": {
+              "text": "よし。今夜最初の拍手は、床からいただいた。",
+              "sourceHash": "758b5acf"
+            }
+          },
+          "voiceTracks": {
+            "ja": {
+              "url": "/assets/audio/paint-prologue/p-open-3-ja.ogg",
+              "textHash": "1b92ba33",
+              "profileId": "paint-voice-ye"
+            }
+          },
+          "sceneGroupId": "paint-scene-1",
+          "sceneTitle": "一把待修的椅子",
+          "sceneCode": "序-1"
+        }
+      },
+      {
+        "id": "p-open-4",
+        "type": "dialogue",
+        "position": {
+          "x": 480,
+          "y": 990
+        },
+        "data": {
+          "role": "程见",
+          "text": "先把你的剧本从我背底下抽走，再发表感想。",
+          "voiceDirection": {
+            "emotion": "neutral",
+            "intensity": 0.3,
+            "pace": 0.98,
+            "pauseProfile": "natural",
+            "delivery": "自然陈述，重音克制，不额外煽情",
+            "lockedFields": [],
+            "source": "auto",
+            "textHash": "a890241c"
+          },
+          "localizations": {
+            "ja": {
+              "text": "感想はいいから、背中の下の台本、取ってくれる？",
+              "sourceHash": "a890241c"
+            }
+          },
+          "voiceTracks": {
+            "ja": {
+              "url": "/assets/audio/paint-prologue/p-open-4-ja.ogg",
+              "textHash": "944a4190",
+              "profileId": "paint-voice-cheng"
+            }
+          },
+          "sceneGroupId": "paint-scene-1",
+          "sceneTitle": "一把待修的椅子",
+          "sceneCode": "序-1"
+        }
+      },
+      {
+        "id": "p-open-5",
+        "type": "dialogue",
+        "position": {
+          "x": 480,
+          "y": 1100
+        },
+        "data": {
+          "role": "夏禾",
+          "text": "手呢？伸给我看。",
+          "voiceDirection": {
+            "emotion": "resolve",
+            "intensity": 0.4,
+            "pace": 0.98,
+            "pauseProfile": "short",
+            "delivery": "克制但坚定，关键词稍加重，句尾落稳",
+            "lockedFields": [],
+            "source": "auto",
+            "textHash": "90ffc8c4"
+          },
+          "localizations": {
+            "ja": {
+              "text": "手は？　ちょっと見せて。",
+              "sourceHash": "90ffc8c4"
+            }
+          },
+          "voiceTracks": {
+            "ja": {
+              "url": "/assets/audio/paint-prologue/p-open-5-ja.ogg",
+              "textHash": "3866bb41",
+              "profileId": "paint-voice-xia"
+            }
+          },
+          "sceneGroupId": "paint-scene-1",
+          "sceneTitle": "一把待修的椅子",
+          "sceneCode": "序-1"
+        }
+      },
+      {
+        "id": "p-open-6",
+        "type": "dialogue",
+        "position": {
+          "x": 480,
+          "y": 1210
+        },
+        "data": {
+          "role": "程见",
+          "text": "没破。椅子比我伤得重。",
+          "voiceDirection": {
+            "emotion": "neutral",
+            "intensity": 0.3,
+            "pace": 0.98,
+            "pauseProfile": "short",
+            "delivery": "自然陈述，重音克制，不额外煽情",
+            "lockedFields": [],
+            "source": "auto",
+            "textHash": "21714416"
+          },
+          "localizations": {
+            "ja": {
+              "text": "切れてない。椅子のほうが重傷だ。",
+              "sourceHash": "21714416"
+            }
+          },
+          "voiceTracks": {
+            "ja": {
+              "url": "/assets/audio/paint-prologue/p-open-6-ja.ogg",
+              "textHash": "150fd576",
+              "profileId": "paint-voice-cheng"
+            }
+          },
+          "sceneGroupId": "paint-scene-1",
+          "sceneTitle": "一把待修的椅子",
+          "sceneCode": "序-1"
+        }
+      },
+      {
+        "id": "p-open-7",
+        "type": "dialogue",
+        "position": {
+          "x": 480,
+          "y": 1320
+        },
+        "data": {
+          "role": "许野",
+          "text": "它扮演一个等儿子回家的老人。这么倒下去，观众会以为儿子回不来了。",
+          "voiceDirection": {
+            "emotion": "neutral",
+            "intensity": 0.3,
+            "pace": 0.98,
+            "pauseProfile": "natural",
+            "delivery": "自然陈述，重音克制，不额外煽情",
+            "lockedFields": [],
+            "source": "auto",
+            "textHash": "1e79371d"
+          },
+          "localizations": {
+            "ja": {
+              "text": "その椅子、息子の帰りを待つ老人の席なんだ。この倒れ方じゃ、帰ってこないと思われる。",
+              "sourceHash": "1e79371d"
+            }
+          },
+          "voiceTracks": {
+            "ja": {
+              "url": "/assets/audio/paint-prologue/p-open-7-ja.ogg",
+              "textHash": "c5085f8e",
+              "profileId": "paint-voice-ye"
+            }
+          },
+          "sceneGroupId": "paint-scene-1",
+          "sceneTitle": "一把待修的椅子",
+          "sceneCode": "序-1"
+        }
+      },
+      {
+        "id": "p-open-8",
+        "type": "dialogue",
+        "position": {
+          "x": 480,
+          "y": 1430
+        },
+        "data": {
+          "role": "夏禾",
+          "text": "你不是说喜剧吗？",
+          "voiceDirection": {
+            "emotion": "neutral",
+            "intensity": 0.3,
+            "pace": 0.98,
+            "pauseProfile": "short",
+            "delivery": "自然陈述，重音克制，不额外煽情",
+            "lockedFields": [],
+            "source": "auto",
+            "textHash": "3f1598ea"
+          },
+          "localizations": {
+            "ja": {
+              "text": "喜劇だって言わなかった？",
+              "sourceHash": "3f1598ea"
+            }
+          },
+          "voiceTracks": {
+            "ja": {
+              "url": "/assets/audio/paint-prologue/p-open-8-ja.ogg",
+              "textHash": "2e45dd66",
+              "profileId": "paint-voice-xia"
+            }
+          },
+          "sceneGroupId": "paint-scene-1",
+          "sceneTitle": "一把待修的椅子",
+          "sceneCode": "序-1"
+        }
+      },
+      {
+        "id": "p-open-9",
+        "type": "dialogue",
+        "position": {
+          "x": 480,
+          "y": 1540
+        },
+        "data": {
+          "role": "许野",
+          "text": "所以必须修。",
+          "voiceDirection": {
+            "emotion": "neutral",
+            "intensity": 0.3,
+            "pace": 0.98,
+            "pauseProfile": "short",
+            "delivery": "自然陈述，重音克制，不额外煽情",
+            "lockedFields": [],
+            "source": "auto",
+            "textHash": "d536ec96"
+          },
+          "localizations": {
+            "ja": {
+              "text": "だから、直してもらわないと。",
+              "sourceHash": "d536ec96"
+            }
+          },
+          "voiceTracks": {
+            "ja": {
+              "url": "/assets/audio/paint-prologue/p-open-9-ja.ogg",
+              "textHash": "76438087",
+              "profileId": "paint-voice-ye"
+            }
+          },
+          "sceneGroupId": "paint-scene-1",
+          "sceneTitle": "一把待修的椅子",
+          "sceneCode": "序-1"
+        }
+      },
+      {
+        "id": "p-room",
+        "type": "subtitle",
+        "position": {
+          "x": 480,
+          "y": 1650
+        },
+        "data": {
+          "role": "旁白",
+          "text": "这间旧礼堂漏了两年雨，掌管钥匙的赵伯已经不肯再往屋顶爬。\n许野便说，演戏收一点钱。\n他印了三十张票，卖出去七张，又送了一张。那张送给了我。",
+          "localizations": {
+            "ja": {
+              "text": "この古い集会所は、二年前から雨漏りしていた。鍵を預かるおじさんも、もう屋根には上れない。\nそれでイエが、芝居をして修繕代を集めようと言い出した。\n三十枚刷った券は、七枚売れ、一枚はただで渡した。その一枚は僕のところにある。",
+              "sourceHash": "a55d7227"
+            }
+          },
+          "sceneGroupId": "paint-scene-1",
+          "sceneTitle": "一把待修的椅子",
+          "sceneCode": "序-1"
+        }
+      },
+      {
+        "id": "p-repair-1",
+        "type": "dialogue",
+        "position": {
+          "x": 480,
+          "y": 1760
+        },
+        "data": {
+          "role": "程见",
+          "text": "左后腿。木头从里面蛀空了，得接一段新的。",
+          "voiceDirection": {
+            "emotion": "neutral",
+            "intensity": 0.3,
+            "pace": 0.98,
+            "pauseProfile": "natural",
+            "delivery": "自然陈述，重音克制，不额外煽情",
+            "lockedFields": [],
+            "source": "auto",
+            "textHash": "a0dc3def"
+          },
+          "localizations": {
+            "ja": {
+              "text": "左の後ろ脚だ。中まで虫に食われてる。継ぎ足さないと。",
+              "sourceHash": "a0dc3def"
+            }
+          },
+          "voiceTracks": {
+            "ja": {
+              "url": "/assets/audio/paint-prologue/p-repair-1-ja.ogg",
+              "textHash": "7abc873e",
+              "profileId": "paint-voice-cheng"
+            }
+          },
+          "sceneGroupId": "paint-scene-1",
+          "sceneTitle": "一把待修的椅子",
+          "sceneCode": "序-1"
+        }
+      },
+      {
+        "id": "p-repair-2",
+        "type": "dialogue",
+        "position": {
+          "x": 480,
+          "y": 1870
+        },
+        "data": {
+          "role": "夏禾",
+          "text": "这种颜色行吗？以前柜台剩的。",
+          "voiceDirection": {
+            "emotion": "neutral",
+            "intensity": 0.3,
+            "pace": 0.98,
+            "pauseProfile": "natural",
+            "delivery": "自然陈述，重音克制，不额外煽情",
+            "lockedFields": [],
+            "source": "auto",
+            "textHash": "cad1e8a8"
+          },
+          "localizations": {
+            "ja": {
+              "text": "この色でもいい？　店のカウンターを直したときの残り。",
+              "sourceHash": "cad1e8a8"
+            }
+          },
+          "voiceTracks": {
+            "ja": {
+              "url": "/assets/audio/paint-prologue/p-repair-2-ja.ogg",
+              "textHash": "97c763e6",
+              "profileId": "paint-voice-xia"
+            }
+          },
+          "sceneGroupId": "paint-scene-1",
+          "sceneTitle": "一把待修的椅子",
+          "sceneCode": "序-1"
+        }
+      },
+      {
+        "id": "p-repair-3",
+        "type": "dialogue",
+        "position": {
+          "x": 480,
+          "y": 1980
+        },
+        "data": {
+          "role": "程见",
+          "text": "够结实，就是深了点。",
+          "voiceDirection": {
+            "emotion": "neutral",
+            "intensity": 0.3,
+            "pace": 0.98,
+            "pauseProfile": "short",
+            "delivery": "自然陈述，重音克制，不额外煽情",
+            "lockedFields": [],
+            "source": "auto",
+            "textHash": "2e3cf6c1"
+          },
+          "localizations": {
+            "ja": {
+              "text": "丈夫そうだ。ちょっと濃いけどね。",
+              "sourceHash": "2e3cf6c1"
+            }
+          },
+          "voiceTracks": {
+            "ja": {
+              "url": "/assets/audio/paint-prologue/p-repair-3-ja.ogg",
+              "textHash": "382341e4",
+              "profileId": "paint-voice-cheng"
+            }
+          },
+          "sceneGroupId": "paint-scene-1",
+          "sceneTitle": "一把待修的椅子",
+          "sceneCode": "序-1"
+        }
+      },
+      {
+        "id": "p-repair-4",
+        "type": "dialogue",
+        "position": {
+          "x": 480,
+          "y": 2090
+        },
+        "data": {
+          "role": "夏禾",
+          "text": "深就深吧。灯暗下来，也看不出来。",
+          "voiceDirection": {
+            "emotion": "neutral",
+            "intensity": 0.3,
+            "pace": 0.98,
+            "pauseProfile": "natural",
+            "delivery": "自然陈述，重音克制，不额外煽情",
+            "lockedFields": [],
+            "source": "auto",
+            "textHash": "c4fae501"
+          },
+          "localizations": {
+            "ja": {
+              "text": "濃くてもいいよ。照明を落とせば、わからないし。",
+              "sourceHash": "c4fae501"
+            }
+          },
+          "voiceTracks": {
+            "ja": {
+              "url": "/assets/audio/paint-prologue/p-repair-4-ja.ogg",
+              "textHash": "c10a744b",
+              "profileId": "paint-voice-xia"
+            }
+          },
+          "sceneGroupId": "paint-scene-1",
+          "sceneTitle": "一把待修的椅子",
+          "sceneCode": "序-1"
+        }
+      },
+      {
+        "id": "p-repair-5",
+        "type": "dialogue",
+        "position": {
+          "x": 480,
+          "y": 2200
+        },
+        "data": {
+          "role": "程见",
+          "text": "你刚才还让我把裙子的线头剪干净。",
+          "voiceDirection": {
+            "emotion": "neutral",
+            "intensity": 0.3,
+            "pace": 0.98,
+            "pauseProfile": "natural",
+            "delivery": "自然陈述，重音克制，不额外煽情",
+            "lockedFields": [],
+            "source": "auto",
+            "textHash": "971cffa8"
+          },
+          "localizations": {
+            "ja": {
+              "text": "さっきは、衣装の糸くずまで取れって言ったのに。",
+              "sourceHash": "971cffa8"
+            }
+          },
+          "voiceTracks": {
+            "ja": {
+              "url": "/assets/audio/paint-prologue/p-repair-5-ja.ogg",
+              "textHash": "9a393f9a",
+              "profileId": "paint-voice-cheng"
+            }
+          },
+          "sceneGroupId": "paint-scene-1",
+          "sceneTitle": "一把待修的椅子",
+          "sceneCode": "序-1"
+        }
+      },
+      {
+        "id": "p-repair-6",
+        "type": "dialogue",
+        "position": {
+          "x": 480,
+          "y": 2310
+        },
+        "data": {
+          "role": "夏禾",
+          "text": "我的裙子有人看，椅子腿没有。",
+          "voiceDirection": {
+            "emotion": "neutral",
+            "intensity": 0.3,
+            "pace": 0.98,
+            "pauseProfile": "natural",
+            "delivery": "自然陈述，重音克制，不额外煽情",
+            "lockedFields": [],
+            "source": "auto",
+            "textHash": "e08d1503"
+          },
+          "localizations": {
+            "ja": {
+              "text": "私の衣装は、みんなが見るの。椅子の脚は見ないでしょ。",
+              "sourceHash": "e08d1503"
+            }
+          },
+          "voiceTracks": {
+            "ja": {
+              "url": "/assets/audio/paint-prologue/p-repair-6-ja.ogg",
+              "textHash": "2444355e",
+              "profileId": "paint-voice-xia"
+            }
+          },
+          "sceneGroupId": "paint-scene-1",
+          "sceneTitle": "一把待修的椅子",
+          "sceneCode": "序-1"
+        }
+      },
+      {
+        "id": "p-repair-7",
+        "type": "dialogue",
+        "position": {
+          "x": 480,
+          "y": 2420
+        },
+        "data": {
+          "role": "许野",
+          "text": "我会看。我还给它写了人物小传。",
+          "voiceDirection": {
+            "emotion": "neutral",
+            "intensity": 0.3,
+            "pace": 0.98,
+            "pauseProfile": "natural",
+            "delivery": "自然陈述，重音克制，不额外煽情",
+            "lockedFields": [],
+            "source": "auto",
+            "textHash": "51c075f7"
+          },
+          "localizations": {
+            "ja": {
+              "text": "俺は見るぞ。ちゃんと人物設定だって書いた。",
+              "sourceHash": "51c075f7"
+            }
+          },
+          "voiceTracks": {
+            "ja": {
+              "url": "/assets/audio/paint-prologue/p-repair-7-ja.ogg",
+              "textHash": "03ccaccf",
+              "profileId": "paint-voice-ye"
+            }
+          },
+          "sceneGroupId": "paint-scene-1",
+          "sceneTitle": "一把待修的椅子",
+          "sceneCode": "序-1"
+        }
+      },
+      {
+        "id": "p-repair-8",
+        "type": "dialogue",
+        "position": {
+          "x": 480,
+          "y": 2530
+        },
+        "data": {
+          "role": "夏禾",
+          "text": "那你替它把胶按住。",
+          "voiceDirection": {
+            "emotion": "neutral",
+            "intensity": 0.3,
+            "pace": 0.98,
+            "pauseProfile": "short",
+            "delivery": "自然陈述，重音克制，不额外煽情",
+            "lockedFields": [],
+            "source": "auto",
+            "textHash": "8aec5d2a"
+          },
+          "localizations": {
+            "ja": {
+              "text": "じゃあ、接着剤が乾くまで押さえてて。",
+              "sourceHash": "8aec5d2a"
+            }
+          },
+          "voiceTracks": {
+            "ja": {
+              "url": "/assets/audio/paint-prologue/p-repair-8-ja.ogg",
+              "textHash": "ffcc4c41",
+              "profileId": "paint-voice-xia"
+            }
+          },
+          "sceneGroupId": "paint-scene-1",
+          "sceneTitle": "一把待修的椅子",
+          "sceneCode": "序-1"
+        }
+      },
+      {
+        "id": "p-repair-work",
+        "type": "subtitle",
+        "position": {
+          "x": 480,
+          "y": 2640
+        },
+        "data": {
+          "role": "旁白",
+          "text": "许野蹲下来，郑重地按住椅子，仿佛终于分到了一个重要角色。\n我锯下一段深色木头，削平接口，涂胶，再用两枚木销固定。\n夏禾递工具的顺序很熟练。第三次递错的时候，她开始念我的名字。",
+          "localizations": {
+            "ja": {
+              "text": "イエはしゃがみ込み、ようやく大役をもらったように椅子を押さえた。\n濃い色の木を切り、継ぎ目を削り、接着剤と二本の木栓で留める。\nホーは慣れた手つきで道具を渡した。三度目に違うものを渡してからは、先に僕の名前を呼ぶようになった。",
+              "sourceHash": "11974309"
+            }
+          },
+          "sceneGroupId": "paint-scene-1",
+          "sceneTitle": "一把待修的椅子",
+          "sceneCode": "序-1"
+        }
+      },
+      {
+        "id": "p-xia-smile",
+        "type": "character",
+        "position": {
+          "x": 480,
+          "y": 2750
+        },
+        "data": {
+          "characterId": "夏禾",
+          "expression": "smile",
+          "position": "right",
+          "action": "change",
+          "sceneGroupId": "paint-scene-1",
+          "sceneTitle": "一把待修的椅子",
+          "sceneCode": "序-1"
+        }
+      },
+      {
+        "id": "p-task-1",
+        "type": "dialogue",
+        "position": {
+          "x": 480,
+          "y": 2860
+        },
+        "data": {
+          "role": "许野",
+          "text": "等胶干，帮我对一句？就一句。这回真不改了。",
+          "voiceDirection": {
+            "emotion": "neutral",
+            "intensity": 0.3,
+            "pace": 0.98,
+            "pauseProfile": "natural",
+            "delivery": "自然陈述，重音克制，不额外煽情",
+            "lockedFields": [],
+            "source": "auto",
+            "textHash": "840cab40"
+          },
+          "localizations": {
+            "ja": {
+              "text": "乾くまで、台詞合わせに付き合ってくれないか。一つだけ。今度こそ書き直さない。",
+              "sourceHash": "840cab40"
+            }
+          },
+          "voiceTracks": {
+            "ja": {
+              "url": "/assets/audio/paint-prologue/p-task-1-ja.ogg",
+              "textHash": "3df1f8d2",
+              "profileId": "paint-voice-ye"
+            }
+          },
+          "sceneGroupId": "paint-scene-1",
+          "sceneTitle": "一把待修的椅子",
+          "sceneCode": "序-1"
+        }
+      },
+      {
+        "id": "p-task-2",
+        "type": "dialogue",
+        "position": {
+          "x": 480,
+          "y": 2970
+        },
+        "data": {
+          "role": "夏禾",
+          "text": "你上次的“一句”，让我把晚饭吃成了早饭。",
+          "voiceDirection": {
+            "emotion": "neutral",
+            "intensity": 0.3,
+            "pace": 0.98,
+            "pauseProfile": "natural",
+            "delivery": "自然陈述，重音克制，不额外煽情",
+            "lockedFields": [],
+            "source": "auto",
+            "textHash": "1fc37688"
+          },
+          "localizations": {
+            "ja": {
+              "text": "前の「一つだけ」で、晩ごはんが朝ごはんになったけど。",
+              "sourceHash": "1fc37688"
+            }
+          },
+          "voiceTracks": {
+            "ja": {
+              "url": "/assets/audio/paint-prologue/p-task-2-ja.ogg",
+              "textHash": "db842907",
+              "profileId": "paint-voice-xia"
+            }
+          },
+          "sceneGroupId": "paint-scene-1",
+          "sceneTitle": "一把待修的椅子",
+          "sceneCode": "序-1"
+        }
+      },
+      {
+        "id": "p-action-choice",
+        "type": "choice",
+        "position": {
+          "x": 480,
+          "y": 3080
+        },
+        "data": {
+          "choices": [
+            "陪许野对一句台词",
+            "留下来帮夏禾整理道具"
+          ],
+          "localizations": {
+            "ja": {
+              "choices": [
+                "イエの台詞合わせに付き合う",
+                "ホーと小道具を片づける"
+              ]
+            }
+          },
+          "sceneGroupId": "paint-scene-1",
+          "sceneTitle": "一把待修的椅子",
+          "sceneCode": "序-1"
+        }
+      },
+      {
+        "id": "p-branch-ye-1",
+        "type": "dialogue",
+        "position": {
+          "x": 480,
+          "y": 3190
+        },
+        "data": {
+          "role": "许野",
+          "text": "你说：我留给你的房间，一直是原来的样子。",
+          "voiceDirection": {
+            "emotion": "resolve",
+            "intensity": 0.4,
+            "pace": 0.98,
+            "pauseProfile": "natural",
+            "delivery": "克制但坚定，关键词稍加重，句尾落稳",
+            "lockedFields": [],
+            "source": "auto",
+            "textHash": "69df5e97"
+          },
+          "localizations": {
+            "ja": {
+              "text": "こう言ってくれ。「お前の部屋は、昔のままだよ」って。",
+              "sourceHash": "69df5e97"
+            }
+          },
+          "voiceTracks": {
+            "ja": {
+              "url": "/assets/audio/paint-prologue/p-branch-ye-1-ja.ogg",
+              "textHash": "435156b6",
+              "profileId": "paint-voice-ye"
+            }
+          },
+          "sceneGroupId": "paint-scene-1",
+          "sceneTitle": "一把待修的椅子",
+          "sceneCode": "序-1"
+        }
+      },
+      {
+        "id": "p-branch-ye-2",
+        "type": "dialogue",
+        "position": {
+          "x": 480,
+          "y": 3300
+        },
+        "data": {
+          "role": "程见",
+          "text": "我留给你的房间，一直是原来的样子。可你长高了，床得换。",
+          "voiceDirection": {
+            "emotion": "neutral",
+            "intensity": 0.3,
+            "pace": 0.98,
+            "pauseProfile": "natural",
+            "delivery": "自然陈述，重音克制，不额外煽情",
+            "lockedFields": [],
+            "source": "auto",
+            "textHash": "d4257a9e"
+          },
+          "localizations": {
+            "ja": {
+              "text": "お前の部屋は、昔のままだよ。でも、背が伸びたな。ベッドは替えないと。",
+              "sourceHash": "d4257a9e"
+            }
+          },
+          "voiceTracks": {
+            "ja": {
+              "url": "/assets/audio/paint-prologue/p-branch-ye-2-ja.ogg",
+              "textHash": "c4846520",
+              "profileId": "paint-voice-cheng"
+            }
+          },
+          "sceneGroupId": "paint-scene-1",
+          "sceneTitle": "一把待修的椅子",
+          "sceneCode": "序-1"
+        }
+      },
+      {
+        "id": "p-branch-ye-3",
+        "type": "dialogue",
+        "position": {
+          "x": 480,
+          "y": 3410
+        },
+        "data": {
+          "role": "许野",
+          "text": "后半句哪来的？……等一下，别说话，我记下来。",
+          "voiceDirection": {
+            "emotion": "neutral",
+            "intensity": 0.3,
+            "pace": 0.98,
+            "pauseProfile": "dramatic",
+            "delivery": "自然陈述，重音克制，不额外煽情",
+            "lockedFields": [],
+            "source": "auto",
+            "textHash": "c6174631"
+          },
+          "localizations": {
+            "ja": {
+              "text": "後半、どこから出てきた？　……待て、しゃべるな。書き留める。",
+              "sourceHash": "c6174631"
+            }
+          },
+          "voiceTracks": {
+            "ja": {
+              "url": "/assets/audio/paint-prologue/p-branch-ye-3-ja.ogg",
+              "textHash": "ccfeec27",
+              "profileId": "paint-voice-ye"
+            }
+          },
+          "sceneGroupId": "paint-scene-1",
+          "sceneTitle": "一把待修的椅子",
+          "sceneCode": "序-1"
+        }
+      },
+      {
+        "id": "p-ye-page",
+        "type": "subtitle",
+        "position": {
+          "x": 480,
+          "y": 3520
+        },
+        "data": {
+          "role": "旁白",
+          "text": "他用嘴叼住笔帽，在纸边补了一行，又把“床得换”圈了两遍。\n写完，他把稿子转给夏禾看。她读了一遍，点点头，拿走了。",
+          "localizations": {
+            "ja": {
+              "text": "ペンのふたをくわえ、紙の端に一行書き足した。「ベッドは替えないと」に、丸を二つ。\nホーに見せると、彼女は一度読んでうなずき、そのまま台本を持っていった。",
+              "sourceHash": "69043517"
+            }
+          },
+          "audio": {
+            "sfx": [
+              {
+                "url": "/assets/audio/paint-prologue/paper.ogg",
+                "volume": 0.3
+              }
+            ]
+          },
+          "sceneGroupId": "paint-scene-1",
+          "sceneTitle": "一把待修的椅子",
+          "sceneCode": "序-1"
+        }
+      },
+      {
+        "id": "p-branch-xia-1",
+        "type": "dialogue",
+        "position": {
+          "x": 480,
+          "y": 3630
+        },
+        "data": {
+          "role": "夏禾",
+          "text": "那个箱子别碰，我收好了。你上次分得太细，我找一条绳子翻了三层。",
+          "voiceDirection": {
+            "emotion": "neutral",
+            "intensity": 0.3,
+            "pace": 0.98,
+            "pauseProfile": "natural",
+            "delivery": "自然陈述，重音克制，不额外煽情",
+            "lockedFields": [],
+            "source": "auto",
+            "textHash": "f7c09d03"
+          },
+          "localizations": {
+            "ja": {
+              "text": "その箱は触らないで。もう片づけたから。前は細かく分けすぎて、ひも一本探すのに三段も開けたんだよ。",
+              "sourceHash": "f7c09d03"
+            }
+          },
+          "voiceTracks": {
+            "ja": {
+              "url": "/assets/audio/paint-prologue/p-branch-xia-1-ja.ogg",
+              "textHash": "43df56e5",
+              "profileId": "paint-voice-xia"
+            }
+          },
+          "sceneGroupId": "paint-scene-1",
+          "sceneTitle": "一把待修的椅子",
+          "sceneCode": "序-1"
+        }
+      },
+      {
+        "id": "p-branch-xia-2",
+        "type": "dialogue",
+        "position": {
+          "x": 480,
+          "y": 3740
+        },
+        "data": {
+          "role": "程见",
+          "text": "那今天听你指挥。",
+          "voiceDirection": {
+            "emotion": "neutral",
+            "intensity": 0.3,
+            "pace": 0.98,
+            "pauseProfile": "short",
+            "delivery": "自然陈述，重音克制，不额外煽情",
+            "lockedFields": [],
+            "source": "auto",
+            "textHash": "4980fa77"
+          },
+          "localizations": {
+            "ja": {
+              "text": "じゃあ今日は、指示を待つよ。",
+              "sourceHash": "4980fa77"
+            }
+          },
+          "voiceTracks": {
+            "ja": {
+              "url": "/assets/audio/paint-prologue/p-branch-xia-2-ja.ogg",
+              "textHash": "a595cc9b",
+              "profileId": "paint-voice-cheng"
+            }
+          },
+          "sceneGroupId": "paint-scene-1",
+          "sceneTitle": "一把待修的椅子",
+          "sceneCode": "序-1"
+        }
+      },
+      {
+        "id": "p-branch-xia-3",
+        "type": "dialogue",
+        "position": {
+          "x": 480,
+          "y": 3850
+        },
+        "data": {
+          "role": "夏禾",
+          "text": "把茶喝了。凉的是你的，热的是我的。",
+          "voiceDirection": {
+            "emotion": "neutral",
+            "intensity": 0.3,
+            "pace": 0.98,
+            "pauseProfile": "natural",
+            "delivery": "自然陈述，重音克制，不额外煽情",
+            "lockedFields": [],
+            "source": "auto",
+            "textHash": "1fa3b2c5"
+          },
+          "localizations": {
+            "ja": {
+              "text": "お茶、飲んで。冷めたほうがジエンので、熱いほうが私の。",
+              "sourceHash": "1fa3b2c5"
+            }
+          },
+          "voiceTracks": {
+            "ja": {
+              "url": "/assets/audio/paint-prologue/p-branch-xia-3-ja.ogg",
+              "textHash": "730a8a24",
+              "profileId": "paint-voice-xia"
+            }
+          },
+          "sceneGroupId": "paint-scene-1",
+          "sceneTitle": "一把待修的椅子",
+          "sceneCode": "序-1"
+        }
+      },
+      {
+        "id": "p-xia-tea",
+        "type": "subtitle",
+        "position": {
+          "x": 480,
+          "y": 3960
+        },
+        "data": {
+          "role": "旁白",
+          "text": "杯子上有我替她粘过的缺口。我记得，她为这事生过气——她只是让我拿去洗。\n我没问过，她是不是想把那点缺口留下。\n这次，我把箱子推到她手边，没再打开。",
+          "localizations": {
+            "ja": {
+              "text": "カップには、僕が埋めた欠け跡があった。あのとき彼女は怒った。洗ってとしか頼んでいない、と。\nあの欠けを残しておきたいかなんて、聞きもしなかった。\n今日は、箱を彼女のそばへ寄せるだけにした。",
+              "sourceHash": "c7a0881b"
+            }
+          },
+          "sceneGroupId": "paint-scene-1",
+          "sceneTitle": "一把待修的椅子",
+          "sceneCode": "序-1"
+        }
+      },
+      {
+        "id": "p-before-stage",
+        "type": "subtitle",
+        "position": {
+          "x": 480,
+          "y": 4070
+        },
+        "data": {
+          "role": "旁白",
+          "text": "胶干了。我把椅子放平，用力晃了晃。\n左后腿多了一截深胡桃色的木头，颜色有些突兀，坐上去却稳当。\n夏禾把它搬上舞台。我去门口收票。",
+          "localizations": {
+            "ja": {
+              "text": "接着剤が乾いた。床に置き、強く揺すってみる。\n左の後ろ脚に、濃いクルミ色の木が継がれていた。色は目立つが、もうぐらつかない。\nホーが舞台へ運び、僕は入口に券を受け取りに行った。",
+              "sourceHash": "69cd6e1c"
+            }
+          },
+          "sceneGroupId": "paint-scene-1",
+          "sceneTitle": "一把待修的椅子",
+          "sceneCode": "序-1"
+        }
+      },
+      {
+        "id": "p-merge-1",
+        "type": "dialogue",
+        "position": {
+          "x": 480,
+          "y": 4180
+        },
+        "data": {
+          "role": "许野",
+          "text": "七个观众。比上回多两个。",
+          "voiceDirection": {
+            "emotion": "neutral",
+            "intensity": 0.3,
+            "pace": 0.98,
+            "pauseProfile": "short",
+            "delivery": "自然陈述，重音克制，不额外煽情",
+            "lockedFields": [],
+            "source": "auto",
+            "textHash": "946fdd17"
+          },
+          "localizations": {
+            "ja": {
+              "text": "お客さん、七人。前より二人増えた。",
+              "sourceHash": "946fdd17"
+            }
+          },
+          "voiceTracks": {
+            "ja": {
+              "url": "/assets/audio/paint-prologue/p-merge-1-ja.ogg",
+              "textHash": "d0cc8976",
+              "profileId": "paint-voice-ye"
+            }
+          },
+          "sceneGroupId": "paint-scene-1",
+          "sceneTitle": "一把待修的椅子",
+          "sceneCode": "序-1"
+        }
+      },
+      {
+        "id": "p-merge-2",
+        "type": "dialogue",
+        "position": {
+          "x": 480,
+          "y": 4290
+        },
+        "data": {
+          "role": "夏禾",
+          "text": "少算一个。卖馒头的阿姨说关了店就来。",
+          "voiceDirection": {
+            "emotion": "neutral",
+            "intensity": 0.3,
+            "pace": 0.98,
+            "pauseProfile": "natural",
+            "delivery": "自然陈述，重音克制，不额外煽情",
+            "lockedFields": [],
+            "source": "auto",
+            "textHash": "082a905a"
+          },
+          "localizations": {
+            "ja": {
+              "text": "もう一人。パン屋のおばさんも、店を閉めたら来るって。",
+              "sourceHash": "082a905a"
+            }
+          },
+          "voiceTracks": {
+            "ja": {
+              "url": "/assets/audio/paint-prologue/p-merge-2-ja.ogg",
+              "textHash": "ac820ab7",
+              "profileId": "paint-voice-xia"
+            }
+          },
+          "sceneGroupId": "paint-scene-1",
+          "sceneTitle": "一把待修的椅子",
+          "sceneCode": "序-1"
+        }
+      },
+      {
+        "id": "p-merge-3",
+        "type": "dialogue",
+        "position": {
+          "x": 480,
+          "y": 4400
+        },
+        "data": {
+          "role": "许野",
+          "text": "八个人，够我紧张了。",
+          "voiceDirection": {
+            "emotion": "resolve",
+            "intensity": 0.4,
+            "pace": 0.98,
+            "pauseProfile": "short",
+            "delivery": "克制但坚定，关键词稍加重，句尾落稳",
+            "lockedFields": [],
+            "source": "auto",
+            "textHash": "e240d485"
+          },
+          "localizations": {
+            "ja": {
+              "text": "八人か。緊張するには、十分だな。",
+              "sourceHash": "e240d485"
+            }
+          },
+          "voiceTracks": {
+            "ja": {
+              "url": "/assets/audio/paint-prologue/p-merge-3-ja.ogg",
+              "textHash": "0e754776",
+              "profileId": "paint-voice-ye"
+            }
+          },
+          "sceneGroupId": "paint-scene-1",
+          "sceneTitle": "一把待修的椅子",
+          "sceneCode": "序-1"
+        }
+      },
+      {
+        "id": "p-theatre",
+        "type": "background",
+        "position": {
+          "x": 960,
+          "y": 4510
+        },
+        "data": {
+          "backgroundId": "/assets/paint-prologue/theatre.webp",
+          "sceneGroupId": "paint-scene-2",
+          "sceneTitle": "八个观众",
+          "sceneCode": "序-2"
+        }
+      },
+      {
+        "id": "p-xia-stage",
+        "type": "character",
+        "position": {
+          "x": 960,
+          "y": 4620
+        },
+        "data": {
+          "characterId": "夏禾",
+          "expression": "serious",
+          "position": "right",
+          "action": "change",
+          "sceneGroupId": "paint-scene-2",
+          "sceneTitle": "八个观众",
+          "sceneCode": "序-2"
+        }
+      },
+      {
+        "id": "p-ye-stage",
+        "type": "character",
+        "position": {
+          "x": 960,
+          "y": 4730
+        },
+        "data": {
+          "characterId": "许野",
+          "expression": "serious",
+          "position": "left",
+          "action": "change",
+          "sceneGroupId": "paint-scene-2",
+          "sceneTitle": "八个观众",
+          "sceneCode": "序-2"
+        }
+      },
+      {
+        "id": "p-performance",
+        "type": "subtitle",
+        "position": {
+          "x": 960,
+          "y": 4840
+        },
+        "data": {
+          "role": "旁白",
+          "text": "临开场，挂幕布的绳子松了。我只好留在侧边，把垂下来的布角托住。\n从这里看过去，舞台窄成了一道门。\n许野戴上灰胡子，夏禾拎着空皮箱。一个儿子，离家七年，今天回来。",
+          "localizations": {
+            "ja": {
+              "text": "開演の直前、幕のひもが緩んだ。脇に残って、垂れた布の端を支える。\nここからだと、舞台は戸口ほどの幅しか見えない。\nイエは灰色のひげをつけ、ホーは空のトランクを持った。七年ぶりに帰ってくる息子の役だ。",
+              "sourceHash": "368b5cd2"
+            }
+          },
+          "audio": {
+            "bgm": {
+              "action": "stop",
+              "fadeOutMs": 1500
+            }
+          },
+          "sceneGroupId": "paint-scene-2",
+          "sceneTitle": "八个观众",
+          "sceneCode": "序-2"
+        }
+      },
+      {
+        "id": "p-stage-1",
+        "type": "dialogue",
+        "position": {
+          "x": 960,
+          "y": 4950
+        },
+        "data": {
+          "role": "夏禾",
+          "text": "爹，我回来了。",
+          "voiceDirection": {
+            "emotion": "resolve",
+            "intensity": 0.4,
+            "pace": 0.98,
+            "pauseProfile": "short",
+            "delivery": "克制但坚定，关键词稍加重，句尾落稳",
+            "lockedFields": [],
+            "source": "auto",
+            "textHash": "8db350ce"
+          },
+          "localizations": {
+            "ja": {
+              "text": "父さん、ただいま。",
+              "sourceHash": "8db350ce"
+            }
+          },
+          "voiceTracks": {
+            "ja": {
+              "url": "/assets/audio/paint-prologue/p-stage-1-ja.ogg",
+              "textHash": "7fcc58e1",
+              "profileId": "paint-voice-xia"
+            }
+          },
+          "sceneGroupId": "paint-scene-2",
+          "sceneTitle": "八个观众",
+          "sceneCode": "序-2"
+        }
+      },
+      {
+        "id": "p-stage-2",
+        "type": "dialogue",
+        "position": {
+          "x": 960,
+          "y": 5060
+        },
+        "data": {
+          "role": "许野",
+          "text": "回来了好。屋里的东西，都没动过。",
+          "voiceDirection": {
+            "emotion": "resolve",
+            "intensity": 0.4,
+            "pace": 0.98,
+            "pauseProfile": "natural",
+            "delivery": "克制但坚定，关键词稍加重，句尾落稳",
+            "lockedFields": [],
+            "source": "auto",
+            "textHash": "f067af40"
+          },
+          "localizations": {
+            "ja": {
+              "text": "おかえり。部屋のものは、何も動かしてないよ。",
+              "sourceHash": "f067af40"
+            }
+          },
+          "voiceTracks": {
+            "ja": {
+              "url": "/assets/audio/paint-prologue/p-stage-2-ja.ogg",
+              "textHash": "a955e5d1",
+              "profileId": "paint-voice-ye"
+            }
+          },
+          "sceneGroupId": "paint-scene-2",
+          "sceneTitle": "八个观众",
+          "sceneCode": "序-2"
+        }
+      },
+      {
+        "id": "p-stage-3",
+        "type": "dialogue",
+        "position": {
+          "x": 960,
+          "y": 5170
+        },
+        "data": {
+          "role": "夏禾",
+          "text": "那这是谁的鞋？",
+          "voiceDirection": {
+            "emotion": "neutral",
+            "intensity": 0.3,
+            "pace": 0.98,
+            "pauseProfile": "short",
+            "delivery": "自然陈述，重音克制，不额外煽情",
+            "lockedFields": [],
+            "source": "auto",
+            "textHash": "93a13799"
+          },
+          "localizations": {
+            "ja": {
+              "text": "じゃあ、この靴は誰の？",
+              "sourceHash": "93a13799"
+            }
+          },
+          "voiceTracks": {
+            "ja": {
+              "url": "/assets/audio/paint-prologue/p-stage-3-ja.ogg",
+              "textHash": "4bb56c68",
+              "profileId": "paint-voice-xia"
+            }
+          },
+          "sceneGroupId": "paint-scene-2",
+          "sceneTitle": "八个观众",
+          "sceneCode": "序-2"
+        }
+      },
+      {
+        "id": "p-forgotten-shoes",
+        "type": "subtitle",
+        "position": {
+          "x": 960,
+          "y": 5280
+        },
+        "data": {
+          "role": "旁白",
+          "text": "许野低头。\n他的脚上，还穿着给“儿子”准备的那双大鞋。\n第二排有位阿姨先笑了，接着，笑声一排一排传过来。",
+          "localizations": {
+            "ja": {
+              "text": "イエが足元を見た。\n「息子」のために用意した大きな靴を、まだ自分で履いている。\n二列目のおばさんが先に笑い、隣へ、その隣へ、笑いが広がった。",
+              "sourceHash": "c7d860d5"
+            }
+          },
+          "sceneGroupId": "paint-scene-2",
+          "sceneTitle": "八个观众",
+          "sceneCode": "序-2"
+        }
+      },
+      {
+        "id": "p-stage-4",
+        "type": "dialogue",
+        "position": {
+          "x": 960,
+          "y": 5390
+        },
+        "data": {
+          "role": "许野",
+          "text": "……我的。爹这几年，也长了一点。",
+          "voiceDirection": {
+            "emotion": "neutral",
+            "intensity": 0.3,
+            "pace": 0.98,
+            "pauseProfile": "dramatic",
+            "delivery": "自然陈述，重音克制，不额外煽情",
+            "lockedFields": [],
+            "source": "auto",
+            "textHash": "c4b91df7"
+          },
+          "localizations": {
+            "ja": {
+              "text": "……父さんのだ。この何年かで、父さんも少し大きくなった。",
+              "sourceHash": "c4b91df7"
+            }
+          },
+          "voiceTracks": {
+            "ja": {
+              "url": "/assets/audio/paint-prologue/p-stage-4-ja.ogg",
+              "textHash": "7369f49f",
+              "profileId": "paint-voice-ye"
+            }
+          },
+          "sceneGroupId": "paint-scene-2",
+          "sceneTitle": "八个观众",
+          "sceneCode": "序-2"
+        }
+      },
+      {
+        "id": "p-stage-5",
+        "type": "dialogue",
+        "position": {
+          "x": 960,
+          "y": 5500
+        },
+        "data": {
+          "role": "夏禾",
+          "text": "那就把柜子挪一挪。我的鞋，也得有地方放。",
+          "voiceDirection": {
+            "emotion": "resolve",
+            "intensity": 0.4,
+            "pace": 0.98,
+            "pauseProfile": "natural",
+            "delivery": "克制但坚定，关键词稍加重，句尾落稳",
+            "lockedFields": [],
+            "source": "auto",
+            "textHash": "4234744d"
+          },
+          "localizations": {
+            "ja": {
+              "text": "それなら、棚を少しずらそう。僕の靴も、置けるように。",
+              "sourceHash": "4234744d"
+            }
+          },
+          "voiceTracks": {
+            "ja": {
+              "url": "/assets/audio/paint-prologue/p-stage-5-ja.ogg",
+              "textHash": "52b8daa9",
+              "profileId": "paint-voice-xia"
+            }
+          },
+          "sceneGroupId": "paint-scene-2",
+          "sceneTitle": "八个观众",
+          "sceneCode": "序-2"
+        }
+      },
+      {
+        "id": "p-play-ends",
+        "type": "subtitle",
+        "position": {
+          "x": 960,
+          "y": 5610
+        },
+        "data": {
+          "role": "旁白",
+          "text": "她把皮箱放下，弯腰挪动那只很轻的鞋柜。\n许野起身帮她，胡子掉了一半。他没去捡。\n我在幕布后面，看见那把补过的椅子被挪到了窗边。\n戏在这里结束。掌声不响，听得出每个人都在拍。",
+          "localizations": {
+            "ja": {
+              "text": "彼女はトランクを置き、軽い靴棚をずらした。\nイエも立って手を貸す。ひげが半分落ちたが、拾わなかった。\n幕の陰から、直した椅子が窓辺へ運ばれていくのが見えた。\n芝居は、そこで終わった。大きくはない拍手の中に、一人ひとりの手の音が聞こえた。",
+              "sourceHash": "f8019996"
+            }
+          },
+          "audio": {
+            "sfx": [
+              {
+                "url": "/assets/audio/paint-prologue/applause.ogg",
+                "volume": 0.32
+              }
+            ]
+          },
+          "sceneGroupId": "paint-scene-2",
+          "sceneTitle": "八个观众",
+          "sceneCode": "序-2"
+        }
+      },
+      {
+        "id": "p-ye-after",
+        "type": "character",
+        "position": {
+          "x": 1440,
+          "y": 5720
+        },
+        "data": {
+          "characterId": "许野",
+          "expression": "smile",
+          "position": "left",
+          "action": "change",
+          "sceneGroupId": "paint-scene-3",
+          "sceneTitle": "散场以后",
+          "sceneCode": "序-3"
+        }
+      },
+      {
+        "id": "p-xia-after",
+        "type": "character",
+        "position": {
+          "x": 1440,
+          "y": 5830
+        },
+        "data": {
+          "characterId": "夏禾",
+          "expression": "smile",
+          "position": "right",
+          "action": "change",
+          "sceneGroupId": "paint-scene-3",
+          "sceneTitle": "散场以后",
+          "sceneCode": "序-3"
+        }
+      },
+      {
+        "id": "p-after-show",
+        "type": "subtitle",
+        "position": {
+          "x": 1440,
+          "y": 5940
+        },
+        "data": {
+          "role": "旁白",
+          "text": "散场后，我们数出了十一块七毛钱，和两张明天来取的馒头票。\n夏禾把硬币叠成几小摞。许野趴在桌上，划掉了第三幕的标题。",
+          "localizations": {
+            "ja": {
+              "text": "終演後、集まったお金を数えた。十一元七角と、明日使えるパンの引換券が二枚。\nホーが小銭を積み上げる隣で、イエは台本の三幕目に線を引いた。",
+              "sourceHash": "b164ab1d"
+            }
+          },
+          "audio": {
+            "bgm": {
+              "action": "play",
+              "url": "/assets/audio/paint-prologue/afterglow.ogg",
+              "volume": 0.5,
+              "fadeInMs": 1600,
+              "fadeOutMs": 1600
+            }
+          },
+          "sceneGroupId": "paint-scene-3",
+          "sceneTitle": "散场以后",
+          "sceneCode": "序-3"
+        }
+      },
+      {
+        "id": "p-after-1",
+        "type": "dialogue",
+        "position": {
+          "x": 1440,
+          "y": 6050
+        },
+        "data": {
+          "role": "许野",
+          "text": "本来还有第三幕。",
+          "voiceDirection": {
+            "emotion": "neutral",
+            "intensity": 0.3,
+            "pace": 0.98,
+            "pauseProfile": "short",
+            "delivery": "自然陈述，重音克制，不额外煽情",
+            "lockedFields": [],
+            "source": "auto",
+            "textHash": "aff58bd9"
+          },
+          "localizations": {
+            "ja": {
+              "text": "本当は、三幕目もあったんだ。",
+              "sourceHash": "aff58bd9"
+            }
+          },
+          "voiceTracks": {
+            "ja": {
+              "url": "/assets/audio/paint-prologue/p-after-1-ja.ogg",
+              "textHash": "1a2025fd",
+              "profileId": "paint-voice-ye"
+            }
+          },
+          "sceneGroupId": "paint-scene-3",
+          "sceneTitle": "散场以后",
+          "sceneCode": "序-3"
+        }
+      },
+      {
+        "id": "p-after-2",
+        "type": "dialogue",
+        "position": {
+          "x": 1440,
+          "y": 6160
+        },
+        "data": {
+          "role": "夏禾",
+          "text": "留到屋顶修好以后吧。雨都快进第二幕了。",
+          "voiceDirection": {
+            "emotion": "neutral",
+            "intensity": 0.3,
+            "pace": 0.98,
+            "pauseProfile": "natural",
+            "delivery": "自然陈述，重音克制，不额外煽情",
+            "lockedFields": [],
+            "source": "auto",
+            "textHash": "0d1cf2a6"
+          },
+          "localizations": {
+            "ja": {
+              "text": "屋根が直ってからにしよう。雨がもう、二幕目まで来てる。",
+              "sourceHash": "0d1cf2a6"
+            }
+          },
+          "voiceTracks": {
+            "ja": {
+              "url": "/assets/audio/paint-prologue/p-after-2-ja.ogg",
+              "textHash": "823abc39",
+              "profileId": "paint-voice-xia"
+            }
+          },
+          "sceneGroupId": "paint-scene-3",
+          "sceneTitle": "散场以后",
+          "sceneCode": "序-3"
+        }
+      },
+      {
+        "id": "p-after-3",
+        "type": "dialogue",
+        "position": {
+          "x": 1440,
+          "y": 6270
+        },
+        "data": {
+          "role": "程见",
+          "text": "八个人笑了六个。不错了。",
+          "voiceDirection": {
+            "emotion": "neutral",
+            "intensity": 0.3,
+            "pace": 0.98,
+            "pauseProfile": "short",
+            "delivery": "自然陈述，重音克制，不额外煽情",
+            "lockedFields": [],
+            "source": "auto",
+            "textHash": "1dcc211a"
+          },
+          "localizations": {
+            "ja": {
+              "text": "八人のうち、六人は笑ってた。悪くないよ。",
+              "sourceHash": "1dcc211a"
+            }
+          },
+          "voiceTracks": {
+            "ja": {
+              "url": "/assets/audio/paint-prologue/p-after-3-ja.ogg",
+              "textHash": "36cd67ea",
+              "profileId": "paint-voice-cheng"
+            }
+          },
+          "sceneGroupId": "paint-scene-3",
+          "sceneTitle": "散场以后",
+          "sceneCode": "序-3"
+        }
+      },
+      {
+        "id": "p-after-4",
+        "type": "dialogue",
+        "position": {
+          "x": 1440,
+          "y": 6380
+        },
+        "data": {
+          "role": "许野",
+          "text": "另外两个睡着了，不能算反对票。",
+          "voiceDirection": {
+            "emotion": "neutral",
+            "intensity": 0.3,
+            "pace": 0.98,
+            "pauseProfile": "natural",
+            "delivery": "自然陈述，重音克制，不额外煽情",
+            "lockedFields": [],
+            "source": "auto",
+            "textHash": "74884c6b"
+          },
+          "localizations": {
+            "ja": {
+              "text": "あとの二人は寝てたから、反対票には数えない。",
+              "sourceHash": "74884c6b"
+            }
+          },
+          "voiceTracks": {
+            "ja": {
+              "url": "/assets/audio/paint-prologue/p-after-4-ja.ogg",
+              "textHash": "5cfc0490",
+              "profileId": "paint-voice-ye"
+            }
+          },
+          "sceneGroupId": "paint-scene-3",
+          "sceneTitle": "散场以后",
+          "sceneCode": "序-3"
+        }
+      },
+      {
+        "id": "p-after-5",
+        "type": "dialogue",
+        "position": {
+          "x": 1440,
+          "y": 6490
+        },
+        "data": {
+          "role": "夏禾",
+          "text": "程见，坐这儿。",
+          "voiceDirection": {
+            "emotion": "neutral",
+            "intensity": 0.3,
+            "pace": 0.98,
+            "pauseProfile": "short",
+            "delivery": "自然陈述，重音克制，不额外煽情",
+            "lockedFields": [],
+            "source": "auto",
+            "textHash": "91261439"
+          },
+          "localizations": {
+            "ja": {
+              "text": "ジエン、ここに座って。",
+              "sourceHash": "91261439"
+            }
+          },
+          "voiceTracks": {
+            "ja": {
+              "url": "/assets/audio/paint-prologue/p-after-5-ja.ogg",
+              "textHash": "c06afd56",
+              "profileId": "paint-voice-xia"
+            }
+          },
+          "sceneGroupId": "paint-scene-3",
+          "sceneTitle": "散场以后",
+          "sceneCode": "序-3"
+        }
+      },
+      {
+        "id": "p-after-6",
+        "type": "dialogue",
+        "position": {
+          "x": 1440,
+          "y": 6600
+        },
+        "data": {
+          "role": "程见",
+          "text": "先收完吧。人家明早还要用。",
+          "voiceDirection": {
+            "emotion": "neutral",
+            "intensity": 0.3,
+            "pace": 0.98,
+            "pauseProfile": "natural",
+            "delivery": "自然陈述，重音克制，不额外煽情",
+            "lockedFields": [],
+            "source": "auto",
+            "textHash": "64f2c564"
+          },
+          "localizations": {
+            "ja": {
+              "text": "片づけてからにするよ。明日の朝、ここ使うんだろ。",
+              "sourceHash": "64f2c564"
+            }
+          },
+          "voiceTracks": {
+            "ja": {
+              "url": "/assets/audio/paint-prologue/p-after-6-ja.ogg",
+              "textHash": "2b89e64f",
+              "profileId": "paint-voice-cheng"
+            }
+          },
+          "sceneGroupId": "paint-scene-3",
+          "sceneTitle": "散场以后",
+          "sceneCode": "序-3"
+        }
+      },
+      {
+        "id": "p-xia-serious-after",
+        "type": "character",
+        "position": {
+          "x": 1440,
+          "y": 6710
+        },
+        "data": {
+          "characterId": "夏禾",
+          "expression": "serious",
+          "position": "right",
+          "action": "change",
+          "sceneGroupId": "paint-scene-3",
+          "sceneTitle": "散场以后",
+          "sceneCode": "序-3"
+        }
+      },
+      {
+        "id": "p-after-7",
+        "type": "dialogue",
+        "position": {
+          "x": 1440,
+          "y": 6820
+        },
+        "data": {
+          "role": "夏禾",
+          "text": "刚才你扶了半天幕布，都没看见我出场。现在还要让我等？",
+          "voiceDirection": {
+            "emotion": "resolve",
+            "intensity": 0.4,
+            "pace": 0.98,
+            "pauseProfile": "natural",
+            "delivery": "克制但坚定，关键词稍加重，句尾落稳",
+            "lockedFields": [],
+            "source": "auto",
+            "textHash": "9dc08213"
+          },
+          "localizations": {
+            "ja": {
+              "text": "さっきはずっと幕を押さえてて、私が出るとこも見てなかったでしょ。まだ待たせるの？",
+              "sourceHash": "9dc08213"
+            }
+          },
+          "voiceTracks": {
+            "ja": {
+              "url": "/assets/audio/paint-prologue/p-after-7-ja.ogg",
+              "textHash": "ace327b8",
+              "profileId": "paint-voice-xia"
+            }
+          },
+          "sceneGroupId": "paint-scene-3",
+          "sceneTitle": "散场以后",
+          "sceneCode": "序-3"
+        }
+      },
+      {
+        "id": "p-after-8",
+        "type": "dialogue",
+        "position": {
+          "x": 1440,
+          "y": 6930
+        },
+        "data": {
+          "role": "程见",
+          "text": "看见了。从缝里。",
+          "voiceDirection": {
+            "emotion": "neutral",
+            "intensity": 0.3,
+            "pace": 0.98,
+            "pauseProfile": "short",
+            "delivery": "自然陈述，重音克制，不额外煽情",
+            "lockedFields": [],
+            "source": "auto",
+            "textHash": "73b48b3e"
+          },
+          "localizations": {
+            "ja": {
+              "text": "見たよ。隙間から。",
+              "sourceHash": "73b48b3e"
+            }
+          },
+          "voiceTracks": {
+            "ja": {
+              "url": "/assets/audio/paint-prologue/p-after-8-ja.ogg",
+              "textHash": "f98fe9a1",
+              "profileId": "paint-voice-cheng"
+            }
+          },
+          "sceneGroupId": "paint-scene-3",
+          "sceneTitle": "散场以后",
+          "sceneCode": "序-3"
+        }
+      },
+      {
+        "id": "p-after-9",
+        "type": "dialogue",
+        "position": {
+          "x": 1440,
+          "y": 7040
+        },
+        "data": {
+          "role": "夏禾",
+          "text": "缝里的不算。我再演一遍，你好好看。",
+          "voiceDirection": {
+            "emotion": "resolve",
+            "intensity": 0.4,
+            "pace": 0.98,
+            "pauseProfile": "natural",
+            "delivery": "克制但坚定，关键词稍加重，句尾落稳",
+            "lockedFields": [],
+            "source": "auto",
+            "textHash": "5b53a7f4"
+          },
+          "localizations": {
+            "ja": {
+              "text": "隙間からじゃ、だめ。もう一回やるから、ちゃんと見てて。",
+              "sourceHash": "5b53a7f4"
+            }
+          },
+          "voiceTracks": {
+            "ja": {
+              "url": "/assets/audio/paint-prologue/p-after-9-ja.ogg",
+              "textHash": "95e1b04e",
+              "profileId": "paint-voice-xia"
+            }
+          },
+          "sceneGroupId": "paint-scene-3",
+          "sceneTitle": "散场以后",
+          "sceneCode": "序-3"
+        }
+      },
+      {
+        "id": "p-chair-offer",
+        "type": "subtitle",
+        "position": {
+          "x": 1440,
+          "y": 7150
+        },
+        "data": {
+          "role": "旁白",
+          "text": "她从台上搬下那把椅子，放在第一排正中。\n我拍掉围裙上的木屑，想把椅面再擦一下。她按住了我的手。",
+          "localizations": {
+            "ja": {
+              "text": "舞台から、あの椅子を運んできて、一列目の真ん中に置く。\n前掛けの木くずを払い、座面も拭こうとしたら、手を押さえられた。",
+              "sourceHash": "38a8bb81"
+            }
+          },
+          "sceneGroupId": "paint-scene-3",
+          "sceneTitle": "散场以后",
+          "sceneCode": "序-3"
+        }
+      },
+      {
+        "id": "p-seat-1",
+        "type": "dialogue",
+        "position": {
+          "x": 1440,
+          "y": 7260
+        },
+        "data": {
+          "role": "夏禾",
+          "text": "别拿衣服擦。那是给你留的。",
+          "voiceDirection": {
+            "emotion": "neutral",
+            "intensity": 0.3,
+            "pace": 0.98,
+            "pauseProfile": "natural",
+            "delivery": "自然陈述，重音克制，不额外煽情",
+            "lockedFields": [],
+            "source": "auto",
+            "textHash": "4f563b65"
+          },
+          "localizations": {
+            "ja": {
+              "text": "服で拭かないで。それ、ジエンの席だから。",
+              "sourceHash": "4f563b65"
+            }
+          },
+          "voiceTracks": {
+            "ja": {
+              "url": "/assets/audio/paint-prologue/p-seat-1-ja.ogg",
+              "textHash": "012bd0ac",
+              "profileId": "paint-voice-xia"
+            }
+          },
+          "sceneGroupId": "paint-scene-3",
+          "sceneTitle": "散场以后",
+          "sceneCode": "序-3"
+        }
+      },
+      {
+        "id": "p-seat-2",
+        "type": "dialogue",
+        "position": {
+          "x": 1440,
+          "y": 7370
+        },
+        "data": {
+          "role": "程见",
+          "text": "演了半天，你才告诉我，我也是观众。",
+          "voiceDirection": {
+            "emotion": "neutral",
+            "intensity": 0.3,
+            "pace": 0.98,
+            "pauseProfile": "natural",
+            "delivery": "自然陈述，重音克制，不额外煽情",
+            "lockedFields": [],
+            "source": "auto",
+            "textHash": "3ab27b6d"
+          },
+          "localizations": {
+            "ja": {
+              "text": "終わってから言うんだね。僕も客だったのか。",
+              "sourceHash": "3ab27b6d"
+            }
+          },
+          "voiceTracks": {
+            "ja": {
+              "url": "/assets/audio/paint-prologue/p-seat-2-ja.ogg",
+              "textHash": "8982c9e5",
+              "profileId": "paint-voice-cheng"
+            }
+          },
+          "sceneGroupId": "paint-scene-3",
+          "sceneTitle": "散场以后",
+          "sceneCode": "序-3"
+        }
+      },
+      {
+        "id": "p-seat-3",
+        "type": "dialogue",
+        "position": {
+          "x": 1440,
+          "y": 7480
+        },
+        "data": {
+          "role": "夏禾",
+          "text": "你老站在别人看不见的地方，当然得告诉你。",
+          "voiceDirection": {
+            "emotion": "resolve",
+            "intensity": 0.4,
+            "pace": 0.98,
+            "pauseProfile": "natural",
+            "delivery": "克制但坚定，关键词稍加重，句尾落稳",
+            "lockedFields": [],
+            "source": "auto",
+            "textHash": "2d083a91"
+          },
+          "localizations": {
+            "ja": {
+              "text": "いつも、人から見えないところに立ってるんだもの。言わなきゃ。",
+              "sourceHash": "2d083a91"
+            }
+          },
+          "voiceTracks": {
+            "ja": {
+              "url": "/assets/audio/paint-prologue/p-seat-3-ja.ogg",
+              "textHash": "b6d4e5ab",
+              "profileId": "paint-voice-xia"
+            }
+          },
+          "sceneGroupId": "paint-scene-3",
+          "sceneTitle": "散场以后",
+          "sceneCode": "序-3"
+        }
+      },
+      {
+        "id": "p-seat-4",
+        "type": "dialogue",
+        "position": {
+          "x": 1440,
+          "y": 7590
+        },
+        "data": {
+          "role": "许野",
+          "text": "这回请坐稳。戏要是不好看，你可以走。椅子不能再散。",
+          "voiceDirection": {
+            "emotion": "neutral",
+            "intensity": 0.3,
+            "pace": 0.98,
+            "pauseProfile": "natural",
+            "delivery": "自然陈述，重音克制，不额外煽情",
+            "lockedFields": [],
+            "source": "auto",
+            "textHash": "508f41c9"
+          },
+          "localizations": {
+            "ja": {
+              "text": "今度は、しっかり座ってくれ。つまらなかったら帰っていい。でも、椅子はもう壊さないでくれよ。",
+              "sourceHash": "508f41c9"
+            }
+          },
+          "voiceTracks": {
+            "ja": {
+              "url": "/assets/audio/paint-prologue/p-seat-4-ja.ogg",
+              "textHash": "b6b965b6",
+              "profileId": "paint-voice-ye"
+            }
+          },
+          "sceneGroupId": "paint-scene-3",
+          "sceneTitle": "散场以后",
+          "sceneCode": "序-3"
+        }
+      },
+      {
+        "id": "p-seat-5",
+        "type": "dialogue",
+        "position": {
+          "x": 1440,
+          "y": 7700
+        },
+        "data": {
+          "role": "程见",
+          "text": "放心，今晚最出色的就是它。",
+          "voiceDirection": {
+            "emotion": "neutral",
+            "intensity": 0.3,
+            "pace": 0.98,
+            "pauseProfile": "natural",
+            "delivery": "自然陈述，重音克制，不额外煽情",
+            "lockedFields": [],
+            "source": "auto",
+            "textHash": "a1221603"
+          },
+          "localizations": {
+            "ja": {
+              "text": "大丈夫。今夜いちばんの出来だよ、この椅子。",
+              "sourceHash": "a1221603"
+            }
+          },
+          "voiceTracks": {
+            "ja": {
+              "url": "/assets/audio/paint-prologue/p-seat-5-ja.ogg",
+              "textHash": "741465a9",
+              "profileId": "paint-voice-cheng"
+            }
+          },
+          "sceneGroupId": "paint-scene-3",
+          "sceneTitle": "散场以后",
+          "sceneCode": "序-3"
+        }
+      },
+      {
+        "id": "p-seat-6",
+        "type": "dialogue",
+        "position": {
+          "x": 1440,
+          "y": 7810
+        },
+        "data": {
+          "role": "夏禾",
+          "text": "我还没演呢。",
+          "voiceDirection": {
+            "emotion": "neutral",
+            "intensity": 0.3,
+            "pace": 0.98,
+            "pauseProfile": "short",
+            "delivery": "自然陈述，重音克制，不额外煽情",
+            "lockedFields": [],
+            "source": "auto",
+            "textHash": "203c3319"
+          },
+          "localizations": {
+            "ja": {
+              "text": "私、まだ演じてないんだけど。",
+              "sourceHash": "203c3319"
+            }
+          },
+          "voiceTracks": {
+            "ja": {
+              "url": "/assets/audio/paint-prologue/p-seat-6-ja.ogg",
+              "textHash": "ebb3cd90",
+              "profileId": "paint-voice-xia"
+            }
+          },
+          "sceneGroupId": "paint-scene-3",
+          "sceneTitle": "散场以后",
+          "sceneCode": "序-3"
+        }
+      },
+      {
+        "id": "p-xia-enjoys",
+        "type": "character",
+        "position": {
+          "x": 1440,
+          "y": 7920
+        },
+        "data": {
+          "characterId": "夏禾",
+          "expression": "smile",
+          "position": "right",
+          "action": "change",
+          "sceneGroupId": "paint-scene-3",
+          "sceneTitle": "散场以后",
+          "sceneCode": "序-3"
+        }
+      },
+      {
+        "id": "p-second-performance",
+        "type": "subtitle",
+        "position": {
+          "x": 1440,
+          "y": 8030
+        },
+        "data": {
+          "role": "旁白",
+          "text": "我坐了下来。\n椅子很好，没有响。\n\n这回夏禾没提皮箱，也没有叫“爹”。她把小小的鞋柜推过来，问我鞋放在哪里。\n我指了指空着的那一格。\n许野在一旁咳嗽，说这已经不是他的剧本了。",
+          "localizations": {
+            "ja": {
+              "text": "腰を下ろした。\n椅子は、音ひとつ立てなかった。\n\n今度のホーはトランクを持たず、「父さん」とも呼ばなかった。小さな靴棚を押してきて、靴をどこへ置こうかと聞く。\n空いた一段を指さした。\nイエが咳払いをして、もう俺の台本じゃないな、と言った。",
+              "sourceHash": "1e3afe39"
+            }
+          },
+          "sceneGroupId": "paint-scene-3",
+          "sceneTitle": "散场以后",
+          "sceneCode": "序-3"
+        }
+      },
+      {
+        "id": "p-xia-exits",
+        "type": "character",
+        "position": {
+          "x": 1440,
+          "y": 8140
+        },
+        "data": {
+          "characterId": "夏禾",
+          "expression": "normal",
+          "position": "right",
+          "action": "hide",
+          "sceneGroupId": "paint-scene-3",
+          "sceneTitle": "散场以后",
+          "sceneCode": "序-3"
+        }
+      },
+      {
+        "id": "p-ye-exits",
+        "type": "character",
+        "position": {
+          "x": 1440,
+          "y": 8250
+        },
+        "data": {
+          "characterId": "许野",
+          "expression": "normal",
+          "position": "left",
+          "action": "hide",
+          "sceneGroupId": "paint-scene-3",
+          "sceneTitle": "散场以后",
+          "sceneCode": "序-3"
+        }
+      },
+      {
+        "id": "p-repaired-detail",
+        "type": "background",
+        "position": {
+          "x": 1440,
+          "y": 8360
+        },
+        "data": {
+          "backgroundId": "/assets/paint-prologue/chair-repaired.webp",
+          "sceneGroupId": "paint-scene-3",
+          "sceneTitle": "散场以后",
+          "sceneCode": "序-3"
+        }
+      },
+      {
+        "id": "p-mark-remains",
+        "type": "subtitle",
+        "position": {
+          "x": 1440,
+          "y": 8470
+        },
+        "data": {
+          "role": "旁白",
+          "text": "送他们到门口的时候，灯还亮着。\n椅腿上的深色补木，我打算明天再磨一遍。\n窗没有关严，风把贴在玻璃上的旧戏票吹起一角。",
+          "localizations": {
+            "ja": {
+              "text": "二人を戸口まで送ったとき、明かりはまだついていた。\n脚の濃い継ぎ木は、明日もう一度やすりをかけようと思った。\n閉めきっていない窓から風が入り、ガラスに貼った古い観劇券の角をめくった。",
+              "sourceHash": "a7c23800"
+            }
+          },
+          "sceneGroupId": "paint-scene-3",
+          "sceneTitle": "散场以后",
+          "sceneCode": "序-3"
+        }
+      },
+      {
+        "id": "p-workshop-night",
+        "type": "background",
+        "position": {
+          "x": 1440,
+          "y": 8580
+        },
+        "data": {
+          "backgroundId": "/assets/paint-prologue/night.webp",
+          "sceneGroupId": "paint-scene-3",
+          "sceneTitle": "散场以后",
+          "sceneCode": "序-3"
+        }
+      },
+      {
+        "id": "p-xia-at-door",
+        "type": "character",
+        "position": {
+          "x": 1440,
+          "y": 8690
+        },
+        "data": {
+          "characterId": "夏禾",
+          "expression": "normal",
+          "position": "center",
+          "action": "show",
+          "sceneGroupId": "paint-scene-3",
+          "sceneTitle": "散场以后",
+          "sceneCode": "序-3"
+        }
+      },
+      {
+        "id": "p-walk-1",
+        "type": "dialogue",
+        "position": {
+          "x": 1440,
+          "y": 8800
+        },
+        "data": {
+          "role": "夏禾",
+          "text": "夏天，陪我去趟海边吧。",
+          "voiceDirection": {
+            "emotion": "resolve",
+            "intensity": 0.4,
+            "pace": 0.98,
+            "pauseProfile": "short",
+            "delivery": "克制但坚定，关键词稍加重，句尾落稳",
+            "lockedFields": [],
+            "source": "auto",
+            "textHash": "96ce96c9"
+          },
+          "localizations": {
+            "ja": {
+              "text": "夏になったら、一緒に海へ行かない？",
+              "sourceHash": "96ce96c9"
+            }
+          },
+          "voiceTracks": {
+            "ja": {
+              "url": "/assets/audio/paint-prologue/p-walk-1-ja.ogg",
+              "textHash": "e126f78f",
+              "profileId": "paint-voice-xia"
+            }
+          },
+          "sceneGroupId": "paint-scene-3",
+          "sceneTitle": "散场以后",
+          "sceneCode": "序-3"
+        }
+      },
+      {
+        "id": "p-walk-2",
+        "type": "dialogue",
+        "position": {
+          "x": 1440,
+          "y": 8910
+        },
+        "data": {
+          "role": "程见",
+          "text": "怎么忽然想去？",
+          "voiceDirection": {
+            "emotion": "neutral",
+            "intensity": 0.3,
+            "pace": 0.98,
+            "pauseProfile": "short",
+            "delivery": "自然陈述，重音克制，不额外煽情",
+            "lockedFields": [],
+            "source": "auto",
+            "textHash": "901e5b27"
+          },
+          "localizations": {
+            "ja": {
+              "text": "どうしたの、急に。",
+              "sourceHash": "901e5b27"
+            }
+          },
+          "voiceTracks": {
+            "ja": {
+              "url": "/assets/audio/paint-prologue/p-walk-2-ja.ogg",
+              "textHash": "44a60701",
+              "profileId": "paint-voice-cheng"
+            }
+          },
+          "sceneGroupId": "paint-scene-3",
+          "sceneTitle": "散场以后",
+          "sceneCode": "序-3"
+        }
+      },
+      {
+        "id": "p-walk-3",
+        "type": "dialogue",
+        "position": {
+          "x": 1440,
+          "y": 9020
+        },
+        "data": {
+          "role": "夏禾",
+          "text": "不忽然。我提过三回了。你每回都说，等忙完。",
+          "voiceDirection": {
+            "emotion": "resolve",
+            "intensity": 0.4,
+            "pace": 0.98,
+            "pauseProfile": "natural",
+            "delivery": "克制但坚定，关键词稍加重，句尾落稳",
+            "lockedFields": [],
+            "source": "auto",
+            "textHash": "91f980dc"
+          },
+          "localizations": {
+            "ja": {
+              "text": "急じゃないよ。もう三回言った。ジエンはいつも、用事が片づいたらって。",
+              "sourceHash": "91f980dc"
+            }
+          },
+          "voiceTracks": {
+            "ja": {
+              "url": "/assets/audio/paint-prologue/p-walk-3-ja.ogg",
+              "textHash": "09aa3125",
+              "profileId": "paint-voice-xia"
+            }
+          },
+          "sceneGroupId": "paint-scene-3",
+          "sceneTitle": "散场以后",
+          "sceneCode": "序-3"
+        }
+      },
+      {
+        "id": "p-walk-4",
+        "type": "dialogue",
+        "position": {
+          "x": 1440,
+          "y": 9130
+        },
+        "data": {
+          "role": "程见",
+          "text": "那就先定日子。六月，店里哪天能歇？",
+          "voiceDirection": {
+            "emotion": "resolve",
+            "intensity": 0.4,
+            "pace": 0.98,
+            "pauseProfile": "natural",
+            "delivery": "克制但坚定，关键词稍加重，句尾落稳",
+            "lockedFields": [],
+            "source": "auto",
+            "textHash": "cc46c4f2"
+          },
+          "localizations": {
+            "ja": {
+              "text": "じゃあ、先に日を決めよう。六月なら、お店はいつ休める？",
+              "sourceHash": "cc46c4f2"
+            }
+          },
+          "voiceTracks": {
+            "ja": {
+              "url": "/assets/audio/paint-prologue/p-walk-4-ja.ogg",
+              "textHash": "556821af",
+              "profileId": "paint-voice-cheng"
+            }
+          },
+          "sceneGroupId": "paint-scene-3",
+          "sceneTitle": "散场以后",
+          "sceneCode": "序-3"
+        }
+      },
+      {
+        "id": "p-walk-5",
+        "type": "dialogue",
+        "position": {
+          "x": 1440,
+          "y": 9240
+        },
+        "data": {
+          "role": "夏禾",
+          "text": "我明天问。你这回别忘了。",
+          "voiceDirection": {
+            "emotion": "neutral",
+            "intensity": 0.3,
+            "pace": 0.98,
+            "pauseProfile": "short",
+            "delivery": "自然陈述，重音克制，不额外煽情",
+            "lockedFields": [],
+            "source": "auto",
+            "textHash": "a0a2746f"
+          },
+          "localizations": {
+            "ja": {
+              "text": "明日、聞いてみる。今度は、忘れないでね。",
+              "sourceHash": "a0a2746f"
+            }
+          },
+          "voiceTracks": {
+            "ja": {
+              "url": "/assets/audio/paint-prologue/p-walk-5-ja.ogg",
+              "textHash": "a8513cad",
+              "profileId": "paint-voice-xia"
+            }
+          },
+          "sceneGroupId": "paint-scene-3",
+          "sceneTitle": "散场以后",
+          "sceneCode": "序-3"
+        }
+      },
+      {
+        "id": "p-ye-at-door",
+        "type": "character",
+        "position": {
+          "x": 1440,
+          "y": 9350
+        },
+        "data": {
+          "characterId": "许野",
+          "expression": "smile",
+          "position": "left",
+          "action": "show",
+          "sceneGroupId": "paint-scene-3",
+          "sceneTitle": "散场以后",
+          "sceneCode": "序-3"
+        }
+      },
+      {
+        "id": "p-xia-door-right",
+        "type": "character",
+        "position": {
+          "x": 1440,
+          "y": 9460
+        },
+        "data": {
+          "characterId": "夏禾",
+          "expression": "smile",
+          "position": "right",
+          "action": "show",
+          "sceneGroupId": "paint-scene-3",
+          "sceneTitle": "散场以后",
+          "sceneCode": "序-3"
+        }
+      },
+      {
+        "id": "p-walk-6",
+        "type": "dialogue",
+        "position": {
+          "x": 1440,
+          "y": 9570
+        },
+        "data": {
+          "role": "许野",
+          "text": "有人问问编剧去不去吗？我也认得路。",
+          "voiceDirection": {
+            "emotion": "neutral",
+            "intensity": 0.3,
+            "pace": 0.98,
+            "pauseProfile": "natural",
+            "delivery": "自然陈述，重音克制，不额外煽情",
+            "lockedFields": [],
+            "source": "auto",
+            "textHash": "cecfc4bc"
+          },
+          "localizations": {
+            "ja": {
+              "text": "脚本家にも聞いてくれないか？　俺だって道はわかるぞ。",
+              "sourceHash": "cecfc4bc"
+            }
+          },
+          "voiceTracks": {
+            "ja": {
+              "url": "/assets/audio/paint-prologue/p-walk-6-ja.ogg",
+              "textHash": "8579d581",
+              "profileId": "paint-voice-ye"
+            }
+          },
+          "sceneGroupId": "paint-scene-3",
+          "sceneTitle": "散场以后",
+          "sceneCode": "序-3"
+        }
+      },
+      {
+        "id": "p-walk-7",
+        "type": "dialogue",
+        "position": {
+          "x": 1440,
+          "y": 9680
+        },
+        "data": {
+          "role": "夏禾",
+          "text": "认得路就自己走。",
+          "voiceDirection": {
+            "emotion": "neutral",
+            "intensity": 0.3,
+            "pace": 0.98,
+            "pauseProfile": "short",
+            "delivery": "自然陈述，重音克制，不额外煽情",
+            "lockedFields": [],
+            "source": "auto",
+            "textHash": "c5be1497"
+          },
+          "localizations": {
+            "ja": {
+              "text": "わかるなら、自分で来れば。",
+              "sourceHash": "c5be1497"
+            }
+          },
+          "voiceTracks": {
+            "ja": {
+              "url": "/assets/audio/paint-prologue/p-walk-7-ja.ogg",
+              "textHash": "82271162",
+              "profileId": "paint-voice-xia"
+            }
+          },
+          "sceneGroupId": "paint-scene-3",
+          "sceneTitle": "散场以后",
+          "sceneCode": "序-3"
+        }
+      },
+      {
+        "id": "p-goodnight",
+        "type": "subtitle",
+        "position": {
+          "x": 1440,
+          "y": 9790
+        },
+        "data": {
+          "role": "旁白",
+          "text": "许野不服气地追上去，开始介绍一条根本不存在的近路。\n夏禾回头朝我挥手。\n\n明天先问她六月哪天歇。\n我把这件事排在磨椅子前面。",
+          "localizations": {
+            "ja": {
+              "text": "イエは負けじと追いかけ、ありもしない近道の説明を始めた。\nホーが振り返って手を振る。\n\n明日はまず、六月の休みを聞こう。\n椅子のやすりがけより、先に。",
+              "sourceHash": "69226fb6"
+            }
+          },
+          "sceneGroupId": "paint-scene-3",
+          "sceneTitle": "散场以后",
+          "sceneCode": "序-3"
+        }
+      },
+      {
+        "id": "p-xia-gone",
+        "type": "character",
+        "position": {
+          "x": 1920,
+          "y": 9900
+        },
+        "data": {
+          "characterId": "夏禾",
+          "expression": "normal",
+          "position": "right",
+          "action": "hide",
+          "sceneGroupId": "paint-scene-4",
+          "sceneTitle": "深色的补笔",
+          "sceneCode": "序-4"
+        }
+      },
+      {
+        "id": "p-ye-gone",
+        "type": "character",
+        "position": {
+          "x": 1920,
+          "y": 10010
+        },
+        "data": {
+          "characterId": "许野",
+          "expression": "normal",
+          "position": "left",
+          "action": "hide",
+          "sceneGroupId": "paint-scene-4",
+          "sceneTitle": "深色的补笔",
+          "sceneCode": "序-4"
+        }
+      },
+      {
+        "id": "p-return",
+        "type": "subtitle",
+        "position": {
+          "x": 1920,
+          "y": 10120
+        },
+        "data": {
+          "role": "旁白",
+          "text": "我折回礼堂，取落在桌上的钥匙。\n灯光下有一条很短的影子，斜斜压着地上的木屑。\n\n那把椅子又歪了。",
+          "localizations": {
+            "ja": {
+              "text": "机に忘れた鍵を取りに、集会所へ戻った。\n明かりの下で、短い影が床の木くずを斜めに横切っていた。\n\n椅子が、また傾いている。",
+              "sourceHash": "cac425f6"
+            }
+          },
+          "audio": {
+            "bgm": {
+              "action": "stop",
+              "fadeOutMs": 1800
+            }
+          },
+          "sceneGroupId": "paint-scene-4",
+          "sceneTitle": "深色的补笔",
+          "sceneCode": "序-4"
+        }
+      },
+      {
+        "id": "p-erased-detail",
+        "type": "background",
+        "position": {
+          "x": 1920,
+          "y": 10230
+        },
+        "data": {
+          "backgroundId": "/assets/paint-prologue/chair-erased.webp",
+          "sceneGroupId": "paint-scene-4",
+          "sceneTitle": "深色的补笔",
+          "sceneCode": "序-4"
+        }
+      },
+      {
+        "id": "p-empty-patch",
+        "type": "subtitle",
+        "position": {
+          "x": 1920,
+          "y": 10340
+        },
+        "data": {
+          "role": "旁白",
+          "text": "左后腿断在原来的地方。\n没有被撬过的划痕，没有胶。两枚木销也不见了。\n\n我摸到的，是下午那道蛀空的断口。\n木屑还留在地板上。",
+          "localizations": {
+            "ja": {
+              "text": "左の後ろ脚が、元と同じところで折れていた。\nこじ開けた傷も、接着剤もない。二本の木栓も消えている。\n\n指が触れたのは、昼間見た、虫食いの折れ口だった。\n木くずだけが、床に残っていた。",
+              "sourceHash": "c24371b8"
+            }
+          },
+          "audio": {
+            "bgm": {
+              "action": "stop",
+              "fadeOutMs": 1200
+            }
+          },
+          "sceneGroupId": "paint-scene-4",
+          "sceneTitle": "深色的补笔",
+          "sceneCode": "序-4"
+        }
+      },
+      {
+        "id": "p-night-1",
+        "type": "dialogue",
+        "position": {
+          "x": 1920,
+          "y": 10450
+        },
+        "data": {
+          "role": "程见",
+          "text": "不对……我明明已经修好了。",
+          "voiceDirection": {
+            "emotion": "resolve",
+            "intensity": 0.4,
+            "pace": 0.98,
+            "pauseProfile": "dramatic",
+            "delivery": "克制但坚定，关键词稍加重，句尾落稳",
+            "lockedFields": [],
+            "source": "auto",
+            "textHash": "b31d844c"
+          },
+          "localizations": {
+            "ja": {
+              "text": "おかしい……確かに、直したのに。",
+              "sourceHash": "b31d844c"
+            }
+          },
+          "voiceTracks": {
+            "ja": {
+              "url": "/assets/audio/paint-prologue/p-night-1-ja.ogg",
+              "textHash": "32869133",
+              "profileId": "paint-voice-cheng"
+            }
+          },
+          "sceneGroupId": "paint-scene-4",
+          "sceneTitle": "深色的补笔",
+          "sceneCode": "序-4"
+        }
+      },
+      {
+        "id": "p-outside",
+        "type": "background",
+        "position": {
+          "x": 1920,
+          "y": 10560
+        },
+        "data": {
+          "backgroundId": "/assets/paint-prologue/outside.webp",
+          "sceneGroupId": "paint-scene-4",
+          "sceneTitle": "深色的补笔",
+          "sceneCode": "序-4"
+        }
+      },
+      {
+        "id": "p-another-room",
+        "type": "subtitle",
+        "position": {
+          "x": 1920,
+          "y": 10670
+        },
+        "data": {
+          "role": "旁白",
+          "text": "同一夜，稍早。另一间工作室。\n\n一位年轻画家放下画笔，打开录音笔。\n她借着台灯俯身去看。画布上，窗边那把椅子，有一截格外深的颜色。",
+          "localizations": {
+            "ja": {
+              "text": "同じ夜、少し前。別のアトリエ。\n\n若い画家が筆を置き、レコーダーをつけた。\nランプの下で身をかがめる。キャンバスの窓辺にある椅子には、一か所だけ濃い色があった。",
+              "sourceHash": "2f6cd6b3"
+            }
+          },
+          "audio": {
+            "sfx": [
+              {
+                "url": "/assets/audio/paint-prologue/paper.ogg",
+                "volume": 0.22
+              }
+            ]
+          },
+          "sceneGroupId": "paint-scene-4",
+          "sceneTitle": "深色的补笔",
+          "sceneCode": "序-4"
+        }
+      },
+      {
+        "id": "p-outside-1",
+        "type": "dialogue",
+        "position": {
+          "x": 1920,
+          "y": 10780
+        },
+        "data": {
+          "role": "陆青",
+          "text": "续作记录，四月十七日。画面右下方，椅子左后腿有一处深色补笔。",
+          "voiceDirection": {
+            "emotion": "resolve",
+            "intensity": 0.4,
+            "pace": 0.98,
+            "pauseProfile": "natural",
+            "delivery": "克制但坚定，关键词稍加重，句尾落稳",
+            "lockedFields": [],
+            "source": "auto",
+            "textHash": "39946eda"
+          },
+          "localizations": {
+            "ja": {
+              "text": "制作記録、四月十七日。画面右下、椅子の左の後ろ脚に、暗い色の加筆がある。",
+              "sourceHash": "39946eda"
+            }
+          },
+          "voiceTracks": {
+            "ja": {
+              "url": "/assets/audio/paint-prologue/p-outside-1-ja.ogg",
+              "textHash": "a3f3cce8",
+              "profileId": "paint-voice-lu"
+            }
+          },
+          "sceneGroupId": "paint-scene-4",
+          "sceneTitle": "深色的补笔",
+          "sceneCode": "序-4"
+        }
+      },
+      {
+        "id": "p-outside-2",
+        "type": "dialogue",
+        "position": {
+          "x": 1920,
+          "y": 10890
+        },
+        "data": {
+          "role": "陆青",
+          "text": "与留下的草图不符。先去掉，再确认原来的结构。",
+          "voiceDirection": {
+            "emotion": "resolve",
+            "intensity": 0.4,
+            "pace": 0.98,
+            "pauseProfile": "natural",
+            "delivery": "克制但坚定，关键词稍加重，句尾落稳",
+            "lockedFields": [],
+            "source": "auto",
+            "textHash": "b867e2ff"
+          },
+          "localizations": {
+            "ja": {
+              "text": "残された下絵とは合わない。いったん除去して、元の形を確かめる。",
+              "sourceHash": "b867e2ff"
+            }
+          },
+          "voiceTracks": {
+            "ja": {
+              "url": "/assets/audio/paint-prologue/p-outside-2-ja.ogg",
+              "textHash": "b74c13de",
+              "profileId": "paint-voice-lu"
+            }
+          },
+          "sceneGroupId": "paint-scene-4",
+          "sceneTitle": "深色的补笔",
+          "sceneCode": "序-4"
+        }
+      },
+      {
+        "id": "p-ending",
+        "type": "subtitle",
+        "position": {
+          "x": 1920,
+          "y": 11000
+        },
+        "data": {
+          "role": "旁白",
+          "text": "她停下笔，把“待确认”三个字圈了起来。\n\n那张草图上，椅子还是完好的。\n\n——序章 · 多出来的一把椅子——\n\n《请让这幅画老去》\n第一章预告：今天也有一场坏戏",
+          "localizations": {
+            "ja": {
+              "text": "彼女はペンを止め、「要確認」の文字を丸で囲んだ。\n\n下絵の椅子は、まだ壊れていなかった。\n\n——序章・もう一脚の椅子——\n\n『どうか、この絵を老いさせて』\n第一章予告・今日も出来の悪い芝居がある",
+              "sourceHash": "3c3701bd"
+            }
+          },
+          "sceneGroupId": "paint-scene-4",
+          "sceneTitle": "深色的补笔",
+          "sceneCode": "序-4"
+        }
+      }
+    ],
+    "edges": [
+      {
+        "id": "p-workshop-p-first-afternoon",
+        "source": "p-workshop",
+        "target": "p-first-afternoon",
+        "animated": true
+      },
+      {
+        "id": "p-first-afternoon-p-xia-arrives",
+        "source": "p-first-afternoon",
+        "target": "p-xia-arrives",
+        "animated": true
+      },
+      {
+        "id": "p-xia-arrives-p-open-1",
+        "source": "p-xia-arrives",
+        "target": "p-open-1",
+        "animated": true
+      },
+      {
+        "id": "p-open-1-p-open-2",
+        "source": "p-open-1",
+        "target": "p-open-2",
+        "animated": true
+      },
+      {
+        "id": "p-open-2-p-fall",
+        "source": "p-open-2",
+        "target": "p-fall",
+        "animated": true
+      },
+      {
+        "id": "p-fall-p-xia-right",
+        "source": "p-fall",
+        "target": "p-xia-right",
+        "animated": true
+      },
+      {
+        "id": "p-xia-right-p-ye-arrives",
+        "source": "p-xia-right",
+        "target": "p-ye-arrives",
+        "animated": true
+      },
+      {
+        "id": "p-ye-arrives-p-open-3",
+        "source": "p-ye-arrives",
+        "target": "p-open-3",
+        "animated": true
+      },
+      {
+        "id": "p-open-3-p-open-4",
+        "source": "p-open-3",
+        "target": "p-open-4",
+        "animated": true
+      },
+      {
+        "id": "p-open-4-p-open-5",
+        "source": "p-open-4",
+        "target": "p-open-5",
+        "animated": true
+      },
+      {
+        "id": "p-open-5-p-open-6",
+        "source": "p-open-5",
+        "target": "p-open-6",
+        "animated": true
+      },
+      {
+        "id": "p-open-6-p-open-7",
+        "source": "p-open-6",
+        "target": "p-open-7",
+        "animated": true
+      },
+      {
+        "id": "p-open-7-p-open-8",
+        "source": "p-open-7",
+        "target": "p-open-8",
+        "animated": true
+      },
+      {
+        "id": "p-open-8-p-open-9",
+        "source": "p-open-8",
+        "target": "p-open-9",
+        "animated": true
+      },
+      {
+        "id": "p-open-9-p-room",
+        "source": "p-open-9",
+        "target": "p-room",
+        "animated": true
+      },
+      {
+        "id": "p-room-p-repair-1",
+        "source": "p-room",
+        "target": "p-repair-1",
+        "animated": true
+      },
+      {
+        "id": "p-repair-1-p-repair-2",
+        "source": "p-repair-1",
+        "target": "p-repair-2",
+        "animated": true
+      },
+      {
+        "id": "p-repair-2-p-repair-3",
+        "source": "p-repair-2",
+        "target": "p-repair-3",
+        "animated": true
+      },
+      {
+        "id": "p-repair-3-p-repair-4",
+        "source": "p-repair-3",
+        "target": "p-repair-4",
+        "animated": true
+      },
+      {
+        "id": "p-repair-4-p-repair-5",
+        "source": "p-repair-4",
+        "target": "p-repair-5",
+        "animated": true
+      },
+      {
+        "id": "p-repair-5-p-repair-6",
+        "source": "p-repair-5",
+        "target": "p-repair-6",
+        "animated": true
+      },
+      {
+        "id": "p-repair-6-p-repair-7",
+        "source": "p-repair-6",
+        "target": "p-repair-7",
+        "animated": true
+      },
+      {
+        "id": "p-repair-7-p-repair-8",
+        "source": "p-repair-7",
+        "target": "p-repair-8",
+        "animated": true
+      },
+      {
+        "id": "p-repair-8-p-repair-work",
+        "source": "p-repair-8",
+        "target": "p-repair-work",
+        "animated": true
+      },
+      {
+        "id": "p-repair-work-p-xia-smile",
+        "source": "p-repair-work",
+        "target": "p-xia-smile",
+        "animated": true
+      },
+      {
+        "id": "p-xia-smile-p-task-1",
+        "source": "p-xia-smile",
+        "target": "p-task-1",
+        "animated": true
+      },
+      {
+        "id": "p-task-1-p-task-2",
+        "source": "p-task-1",
+        "target": "p-task-2",
+        "animated": true
+      },
+      {
+        "id": "p-task-2-p-action-choice",
+        "source": "p-task-2",
+        "target": "p-action-choice",
+        "animated": true
+      },
+      {
+        "id": "p-branch-ye-1-p-branch-ye-2",
+        "source": "p-branch-ye-1",
+        "target": "p-branch-ye-2",
+        "animated": true
+      },
+      {
+        "id": "p-branch-ye-2-p-branch-ye-3",
+        "source": "p-branch-ye-2",
+        "target": "p-branch-ye-3",
+        "animated": true
+      },
+      {
+        "id": "p-branch-ye-3-p-ye-page",
+        "source": "p-branch-ye-3",
+        "target": "p-ye-page",
+        "animated": true
+      },
+      {
+        "id": "p-choose-ye",
+        "source": "p-action-choice",
+        "target": "p-branch-ye-1",
+        "sourceHandle": "choice-0",
+        "label": "对台词",
+        "animated": true
+      },
+      {
+        "id": "p-branch-xia-1-p-branch-xia-2",
+        "source": "p-branch-xia-1",
+        "target": "p-branch-xia-2",
+        "animated": true
+      },
+      {
+        "id": "p-branch-xia-2-p-branch-xia-3",
+        "source": "p-branch-xia-2",
+        "target": "p-branch-xia-3",
+        "animated": true
+      },
+      {
+        "id": "p-branch-xia-3-p-xia-tea",
+        "source": "p-branch-xia-3",
+        "target": "p-xia-tea",
+        "animated": true
+      },
+      {
+        "id": "p-choose-xia",
+        "source": "p-action-choice",
+        "target": "p-branch-xia-1",
+        "sourceHandle": "choice-1",
+        "label": "整理道具",
+        "animated": true
+      },
+      {
+        "id": "p-ye-page-merge",
+        "source": "p-ye-page",
+        "target": "p-before-stage",
+        "animated": true
+      },
+      {
+        "id": "p-xia-tea-merge",
+        "source": "p-xia-tea",
+        "target": "p-before-stage",
+        "animated": true
+      },
+      {
+        "id": "p-before-stage-p-merge-1",
+        "source": "p-before-stage",
+        "target": "p-merge-1",
+        "animated": true
+      },
+      {
+        "id": "p-merge-1-p-merge-2",
+        "source": "p-merge-1",
+        "target": "p-merge-2",
+        "animated": true
+      },
+      {
+        "id": "p-merge-2-p-merge-3",
+        "source": "p-merge-2",
+        "target": "p-merge-3",
+        "animated": true
+      },
+      {
+        "id": "p-merge-3-p-theatre",
+        "source": "p-merge-3",
+        "target": "p-theatre",
+        "animated": true
+      },
+      {
+        "id": "p-theatre-p-xia-stage",
+        "source": "p-theatre",
+        "target": "p-xia-stage",
+        "animated": true
+      },
+      {
+        "id": "p-xia-stage-p-ye-stage",
+        "source": "p-xia-stage",
+        "target": "p-ye-stage",
+        "animated": true
+      },
+      {
+        "id": "p-ye-stage-p-performance",
+        "source": "p-ye-stage",
+        "target": "p-performance",
+        "animated": true
+      },
+      {
+        "id": "p-performance-p-stage-1",
+        "source": "p-performance",
+        "target": "p-stage-1",
+        "animated": true
+      },
+      {
+        "id": "p-stage-1-p-stage-2",
+        "source": "p-stage-1",
+        "target": "p-stage-2",
+        "animated": true
+      },
+      {
+        "id": "p-stage-2-p-stage-3",
+        "source": "p-stage-2",
+        "target": "p-stage-3",
+        "animated": true
+      },
+      {
+        "id": "p-stage-3-p-forgotten-shoes",
+        "source": "p-stage-3",
+        "target": "p-forgotten-shoes",
+        "animated": true
+      },
+      {
+        "id": "p-forgotten-shoes-p-stage-4",
+        "source": "p-forgotten-shoes",
+        "target": "p-stage-4",
+        "animated": true
+      },
+      {
+        "id": "p-stage-4-p-stage-5",
+        "source": "p-stage-4",
+        "target": "p-stage-5",
+        "animated": true
+      },
+      {
+        "id": "p-stage-5-p-play-ends",
+        "source": "p-stage-5",
+        "target": "p-play-ends",
+        "animated": true
+      },
+      {
+        "id": "p-play-ends-p-ye-after",
+        "source": "p-play-ends",
+        "target": "p-ye-after",
+        "animated": true
+      },
+      {
+        "id": "p-ye-after-p-xia-after",
+        "source": "p-ye-after",
+        "target": "p-xia-after",
+        "animated": true
+      },
+      {
+        "id": "p-xia-after-p-after-show",
+        "source": "p-xia-after",
+        "target": "p-after-show",
+        "animated": true
+      },
+      {
+        "id": "p-after-show-p-after-1",
+        "source": "p-after-show",
+        "target": "p-after-1",
+        "animated": true
+      },
+      {
+        "id": "p-after-1-p-after-2",
+        "source": "p-after-1",
+        "target": "p-after-2",
+        "animated": true
+      },
+      {
+        "id": "p-after-2-p-after-3",
+        "source": "p-after-2",
+        "target": "p-after-3",
+        "animated": true
+      },
+      {
+        "id": "p-after-3-p-after-4",
+        "source": "p-after-3",
+        "target": "p-after-4",
+        "animated": true
+      },
+      {
+        "id": "p-after-4-p-after-5",
+        "source": "p-after-4",
+        "target": "p-after-5",
+        "animated": true
+      },
+      {
+        "id": "p-after-5-p-after-6",
+        "source": "p-after-5",
+        "target": "p-after-6",
+        "animated": true
+      },
+      {
+        "id": "p-after-6-p-xia-serious-after",
+        "source": "p-after-6",
+        "target": "p-xia-serious-after",
+        "animated": true
+      },
+      {
+        "id": "p-xia-serious-after-p-after-7",
+        "source": "p-xia-serious-after",
+        "target": "p-after-7",
+        "animated": true
+      },
+      {
+        "id": "p-after-7-p-after-8",
+        "source": "p-after-7",
+        "target": "p-after-8",
+        "animated": true
+      },
+      {
+        "id": "p-after-8-p-after-9",
+        "source": "p-after-8",
+        "target": "p-after-9",
+        "animated": true
+      },
+      {
+        "id": "p-after-9-p-chair-offer",
+        "source": "p-after-9",
+        "target": "p-chair-offer",
+        "animated": true
+      },
+      {
+        "id": "p-chair-offer-p-seat-1",
+        "source": "p-chair-offer",
+        "target": "p-seat-1",
+        "animated": true
+      },
+      {
+        "id": "p-seat-1-p-seat-2",
+        "source": "p-seat-1",
+        "target": "p-seat-2",
+        "animated": true
+      },
+      {
+        "id": "p-seat-2-p-seat-3",
+        "source": "p-seat-2",
+        "target": "p-seat-3",
+        "animated": true
+      },
+      {
+        "id": "p-seat-3-p-seat-4",
+        "source": "p-seat-3",
+        "target": "p-seat-4",
+        "animated": true
+      },
+      {
+        "id": "p-seat-4-p-seat-5",
+        "source": "p-seat-4",
+        "target": "p-seat-5",
+        "animated": true
+      },
+      {
+        "id": "p-seat-5-p-seat-6",
+        "source": "p-seat-5",
+        "target": "p-seat-6",
+        "animated": true
+      },
+      {
+        "id": "p-seat-6-p-xia-enjoys",
+        "source": "p-seat-6",
+        "target": "p-xia-enjoys",
+        "animated": true
+      },
+      {
+        "id": "p-xia-enjoys-p-second-performance",
+        "source": "p-xia-enjoys",
+        "target": "p-second-performance",
+        "animated": true
+      },
+      {
+        "id": "p-second-performance-p-xia-exits",
+        "source": "p-second-performance",
+        "target": "p-xia-exits",
+        "animated": true
+      },
+      {
+        "id": "p-xia-exits-p-ye-exits",
+        "source": "p-xia-exits",
+        "target": "p-ye-exits",
+        "animated": true
+      },
+      {
+        "id": "p-ye-exits-p-repaired-detail",
+        "source": "p-ye-exits",
+        "target": "p-repaired-detail",
+        "animated": true
+      },
+      {
+        "id": "p-repaired-detail-p-mark-remains",
+        "source": "p-repaired-detail",
+        "target": "p-mark-remains",
+        "animated": true
+      },
+      {
+        "id": "p-mark-remains-p-workshop-night",
+        "source": "p-mark-remains",
+        "target": "p-workshop-night",
+        "animated": true
+      },
+      {
+        "id": "p-workshop-night-p-xia-at-door",
+        "source": "p-workshop-night",
+        "target": "p-xia-at-door",
+        "animated": true
+      },
+      {
+        "id": "p-xia-at-door-p-walk-1",
+        "source": "p-xia-at-door",
+        "target": "p-walk-1",
+        "animated": true
+      },
+      {
+        "id": "p-walk-1-p-walk-2",
+        "source": "p-walk-1",
+        "target": "p-walk-2",
+        "animated": true
+      },
+      {
+        "id": "p-walk-2-p-walk-3",
+        "source": "p-walk-2",
+        "target": "p-walk-3",
+        "animated": true
+      },
+      {
+        "id": "p-walk-3-p-walk-4",
+        "source": "p-walk-3",
+        "target": "p-walk-4",
+        "animated": true
+      },
+      {
+        "id": "p-walk-4-p-walk-5",
+        "source": "p-walk-4",
+        "target": "p-walk-5",
+        "animated": true
+      },
+      {
+        "id": "p-walk-5-p-ye-at-door",
+        "source": "p-walk-5",
+        "target": "p-ye-at-door",
+        "animated": true
+      },
+      {
+        "id": "p-ye-at-door-p-xia-door-right",
+        "source": "p-ye-at-door",
+        "target": "p-xia-door-right",
+        "animated": true
+      },
+      {
+        "id": "p-xia-door-right-p-walk-6",
+        "source": "p-xia-door-right",
+        "target": "p-walk-6",
+        "animated": true
+      },
+      {
+        "id": "p-walk-6-p-walk-7",
+        "source": "p-walk-6",
+        "target": "p-walk-7",
+        "animated": true
+      },
+      {
+        "id": "p-walk-7-p-goodnight",
+        "source": "p-walk-7",
+        "target": "p-goodnight",
+        "animated": true
+      },
+      {
+        "id": "p-goodnight-p-xia-gone",
+        "source": "p-goodnight",
+        "target": "p-xia-gone",
+        "animated": true
+      },
+      {
+        "id": "p-xia-gone-p-ye-gone",
+        "source": "p-xia-gone",
+        "target": "p-ye-gone",
+        "animated": true
+      },
+      {
+        "id": "p-ye-gone-p-return",
+        "source": "p-ye-gone",
+        "target": "p-return",
+        "animated": true
+      },
+      {
+        "id": "p-return-p-erased-detail",
+        "source": "p-return",
+        "target": "p-erased-detail",
+        "animated": true
+      },
+      {
+        "id": "p-erased-detail-p-empty-patch",
+        "source": "p-erased-detail",
+        "target": "p-empty-patch",
+        "animated": true
+      },
+      {
+        "id": "p-empty-patch-p-night-1",
+        "source": "p-empty-patch",
+        "target": "p-night-1",
+        "animated": true
+      },
+      {
+        "id": "p-night-1-p-outside",
+        "source": "p-night-1",
+        "target": "p-outside",
+        "animated": true
+      },
+      {
+        "id": "p-outside-p-another-room",
+        "source": "p-outside",
+        "target": "p-another-room",
+        "animated": true
+      },
+      {
+        "id": "p-another-room-p-outside-1",
+        "source": "p-another-room",
+        "target": "p-outside-1",
+        "animated": true
+      },
+      {
+        "id": "p-outside-1-p-outside-2",
+        "source": "p-outside-1",
+        "target": "p-outside-2",
+        "animated": true
+      },
+      {
+        "id": "p-outside-2-p-ending",
+        "source": "p-outside-2",
+        "target": "p-ending",
+        "animated": true
+      }
+    ]
+  },
+  "characters": [
+    {
+      "slug": "cheng",
+      "name": "程见",
+      "description": "22岁，道具与杂务师。手艺好，爱记口头账，也真心乐于帮朋友。比起修好东西，更需要学会先听完别人的愿望。",
+      "color": "#967b56",
+      "defaultSprite": "/assets/paint-prologue/cheng-normal.png"
+    },
+    {
+      "slug": "xia",
+      "name": "夏禾",
+      "description": "21岁，杂货铺店员兼演员。利落、爱笑，也会生气。她想去海边，不愿自己的认真话总被放到忙完以后。",
+      "color": "#587c7b",
+      "defaultSprite": "/assets/paint-prologue/xia-normal.png"
+    },
+    {
+      "slug": "ye",
+      "name": "许野",
+      "description": "24岁，业余编剧。戏不一定写得好，却认真在意每位观众。贫嘴时也会悄悄记下朋友说过的好句子。",
+      "color": "#9e6358",
+      "defaultSprite": "/assets/paint-prologue/ye-normal.png"
+    },
+    {
+      "slug": "lu",
+      "name": "陆青",
+      "description": "27岁，受托整理与续作的年轻画家。认真、克制，希望理解前辈留下的画稿。序章中仅以画外工作记录出现。",
+      "color": "#747c91",
+      "defaultSprite": "/assets/paint-prologue/lu-normal.png"
+    }
+  ]
+}

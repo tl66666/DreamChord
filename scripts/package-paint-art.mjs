@@ -18,7 +18,21 @@ for (const item of manifest.assets) {
   item.runtimeFile = `/assets/paint-prologue/${item.id}.webp`
   item.runtimeSha256 = createHash('sha256').update(await readFile(path.join(target, `${item.id}.webp`))).digest('hex')
 }
-// The story cover shares its opening location, without giving away the outside perspective.
+// Preserve the v1 cover URL. The prose revision selects home.webp directly.
 await copyFile(path.join(target, 'workshop.webp'), path.join(target, 'cover.webp'))
 await writeFile(manifestPath, JSON.stringify(manifest, null, 2) + '\n')
-console.log(`${manifest.assets.length} backgrounds + opening cover packaged; originals retained.`)
+const prosePath = path.join(source, 'prose-art-manifest.json')
+let prose
+try { prose = JSON.parse(await readFile(prosePath, 'utf8')) } catch (error) { if (error.code !== 'ENOENT') throw error }
+for (const item of prose?.assets || []) {
+  const input = await readFile(path.join(root, item.sourceFile))
+  if (createHash('sha256').update(input).digest('hex') !== item.sourceSha256) throw new Error(`Source digest changed: ${item.id}`)
+  await sharp(input).webp({ quality: 94, effort: 6 }).toFile(path.join(root, item.publicFile))
+  item.publicSha256 = createHash('sha256').update(await readFile(path.join(root, item.publicFile))).digest('hex')
+}
+if (prose) {
+  const record = JSON.stringify(prose, null, 2) + '\n'
+  await writeFile(prosePath, record)
+  await writeFile(path.join(target, 'prose-art-manifest.json'), record)
+}
+console.log(`${manifest.assets.length + (prose?.assets.length || 0)} backgrounds + legacy cover packaged; originals retained.`)

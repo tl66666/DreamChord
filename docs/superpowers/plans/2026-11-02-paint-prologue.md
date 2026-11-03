@@ -39,4 +39,4 @@
 - [x] Independent literary/Japanese review for natural dialogue, speaker identity, clue timing and continuity.
 - [x] Independent code/spec review after implementation. Fix important findings.
 - [x] Run domain/server/web tests, lint, build, readiness, media and presentation checks. Browser verify desktop/mobile, both branch paths, Japanese audio, music continuity, half-body sprites, template clone and editor save.
-- [ ] Update story guide, credits and verification screenshots; commit/push the authorized iteration, leaving pre-existing external changes unstaged.
+- [x] Update story guide, credits and verification screenshots; commit/push the authorized iteration, leaving pre-existing external changes unstaged.

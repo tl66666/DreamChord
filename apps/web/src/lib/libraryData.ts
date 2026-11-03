@@ -130,6 +130,11 @@ export const defaultCharacters: LibraryCharacter[] = [...paintCharacters, ...cur
 
 export const defaultScenes: LibraryScene[] = [
   ...[
+    { slug: 'home', name: '一张入场券 · 程见的居室', description: '门闩、冷茶、书架与下午的窗光。适合人物入场、收信和第一人称日常。', timeOfDay: '白天', moods: ['温暖', '日常'] },
+    { slug: 'keepsake', name: '没写完的改编 · 书与票根', description: '旧散文诗、完整票根与铅笔痕的道具特写。适合阅读、回忆与创作停顿。', timeOfDay: '白天', moods: ['细节', '静谧'] },
+    { slug: 'theatre-sea', name: '半幅海 · 小剧场', description: '家常戏的假窗、只画一半的海景布、八把观众椅与暖灯。适合舞台演出与散场后重演。', timeOfDay: '黄昏', moods: ['温暖', '演出'] },
+  ].map(s => ({ ...s, id: `paint-${s.slug}`, url: `/assets/paint-prologue/${s.slug}.webp`, type: '文学幻想', place: '室内', usage: '原创《请让这幅画老去》序章叙事场景，与入场券、改编稿和未完海景对应。', updatedAt: '2026-11-03' })),
+  ...[
     { slug: 'workshop', name: '春日下午 · 道具工房', description: '旧礼堂侧边的木工桌、茶杯与打开的窗。适合修理道具、排练与朋友拌嘴。', timeOfDay: '白天', moods: ['温暖', '日常'] },
     { slug: 'theatre', name: '八位观众 · 小剧场', description: '低矮舞台、几排木椅与暖灯。适合小规模演出、排戏与散场谈心。', timeOfDay: '黄昏', moods: ['温暖', '演出'] },
     { slug: 'night', name: '灯还亮着 · 深夜工房', description: '同一间工房入夜后的灯与蓝色窗光。适合散场道别与安静伏笔。', timeOfDay: '夜晚', moods: ['静谧', '悬疑'] },
@@ -251,7 +256,8 @@ export function loadLibraryCharacters(): LibraryCharacter[] {
 }
 
 export function loadLibraryScenes(): LibraryScene[] {
-  return addBuiltinOnce(SCENE_KEY, addBuiltinOnce(SCENE_KEY, addBuiltinOnce(SCENE_KEY, normalizeList(SCENE_KEY, defaultScenes, normalizeScene), defaultScenes.filter(s => s.id.startsWith('seventh-')), 'seventh-row'), defaultScenes.filter(s => s.id.startsWith('curtain-')), 'curtain-call'), defaultScenes.filter(s => s.id.startsWith('paint-')), 'paint-prologue')
+  const installed = addBuiltinOnce(SCENE_KEY, addBuiltinOnce(SCENE_KEY, addBuiltinOnce(SCENE_KEY, normalizeList(SCENE_KEY, defaultScenes, normalizeScene), defaultScenes.filter(s => s.id.startsWith('seventh-')), 'seventh-row'), defaultScenes.filter(s => s.id.startsWith('curtain-')), 'curtain-call'), defaultScenes.filter(s => s.id.startsWith('paint-')), 'paint-prologue')
+  return addBuiltinOnce(SCENE_KEY, installed, defaultScenes.filter(s => ['paint-home', 'paint-keepsake', 'paint-theatre-sea'].includes(s.id)), 'paint-prose')
 }
 
 function addBuiltinOnce<T extends { id: string }>(key: string, items: T[], additions: T[], pack: string): T[] {

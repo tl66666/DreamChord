@@ -40,6 +40,7 @@
     "test:curtain": "pnpm --filter @dreamchord/story-domain build && node --test scripts/curtain-call-pack.test.mjs",
     "demo:paint:seed": "pnpm --filter @dreamchord/story-domain build && pnpm --filter dreamchord-server exec tsx prisma/seedPaintPrologue.ts",
     "demo:paint:script": "pnpm --filter @dreamchord/story-domain build && node scripts/export-paint-script.mjs",
+    "demo:paint:upgrade": "pnpm --filter @dreamchord/story-domain build && pnpm --filter dreamchord-server exec tsx prisma/upgradePaintPrologue.ts",
     "test:paint": "pnpm --filter @dreamchord/story-domain build && node --test scripts/paint-prologue-pack.test.mjs scripts/paint-music-sfx.test.mjs"
   },
   "devDependencies": {

@@ -1,9 +1,22 @@
 import { describe, expect, it } from 'vitest'
-import { PAINT_PROLOGUE, PAINT_STARTER_CARD } from './paintPrologue.js'
+import { PAINT_PROLOGUE, PAINT_STARTER_CARD, PAINT_LITERARY_SOURCES } from './paintPrologue.js'
 import { PAINT_LINES } from './paintLines.js'
 import { voiceTextHash } from './voiceDirection.js'
 
 describe('paint prologue canon and performance', () => {
+  it('grounds the invitation and first-person life before speech, with room for prose between exchanges', () => {
+    const playable = PAINT_PROLOGUE.graph.nodes.filter(n => ['dialogue', 'subtitle', 'choice'].includes(n.type))
+    const firstSpeech = playable.findIndex(n => n.type === 'dialogue')
+    expect(firstSpeech).toBeGreaterThanOrEqual(6)
+    expect(playable.slice(0, firstSpeech).every(n => n.type === 'subtitle')).toBe(true)
+    const narration = playable.filter(n => n.type === 'subtitle')
+    expect(narration.length).toBeGreaterThanOrEqual(35)
+    expect(narration.reduce((total, n) => total + String(n.data.text).length, 0)).toBeGreaterThan(2500)
+    let run = 0
+    for (const n of playable) { run = n.type === 'dialogue' ? run + 1 : 0; expect(run).toBeLessThanOrEqual(4) }
+    expect(PAINT_LITERARY_SOURCES.map(s => s.nodeId)).toEqual(['p-epigraph', 'p-wilde-book'])
+    for (const source of PAINT_LITERARY_SOURCES) expect(playable.some(n => n.id === source.nodeId)).toBe(true)
+  })
   it('has reachable action branches that rejoin, and one complete ending', () => {
     const { nodes, edges } = PAINT_PROLOGUE.graph
     const reached = new Set<string>()

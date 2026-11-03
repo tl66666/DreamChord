@@ -4,7 +4,7 @@ import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import type { Prisma, PrismaClient } from '@prisma/client'
 import { PAINT_PROLOGUE, PAINT_STARTER_CARD } from '@dreamchord/story-domain'
-import type { StoryNode } from '@dreamchord/story-domain'
+import type { StoryGraph, StoryNode } from '@dreamchord/story-domain'
 import { z } from 'zod'
 import { prisma } from '../lib/prisma.js'
 
@@ -20,6 +20,7 @@ const starterStage: StoryNode[] = [
   { id: 'your-next-character', type: 'character', position: { x: 2400, y: 110 }, data: { characterId: '夏禾', expression: 'normal', position: 'center', action: 'show', ...starterScene } },
 ]
 export interface PaintOptions { client?: PrismaClient; packRoot?: string; publicRoot?: string; storageRoot?: string }
+export interface PaintDefinition { id: string; title: string; description: string; cover: string; chapterTitle: string; characters: readonly { slug: string; name: string; description: string; color: string; defaultSprite: string }[]; graph: StoryGraph }
 export interface PaintTemplateEntry { id: string; title: string; focusNodeId: string; focusSceneId: string }
 const voiceSchema = z.object({ id: z.string(), role: z.string(), name: z.string(), description: z.string(), genderTone: z.string() })
 const referenceSchema = z.object({ id: z.string(), role: z.string(), language: z.literal('ja'), text: z.string().min(1), outputFile: z.string(), sha256: z.string().regex(/^[a-f0-9]{64}$/), durationSeconds: z.number().min(3).max(10), emotion: z.string().optional(), sourceModel: z.string().optional(), license: z.string().optional(), source: z.string().optional() })
@@ -45,8 +46,7 @@ function takeUrl(value: string) {
 }
 
 /** Validate every required source before copying files or writing database rows. */
-async function preparePaint(ownerId: string, projectId: string, options: PaintOptions, official: boolean): Promise<PreparedPaint> {
-  const definition = builtin()
+async function preparePaint(ownerId: string, projectId: string, options: PaintOptions, official: boolean, definition: PaintDefinition = builtin(), copyReferences = true): Promise<PreparedPaint> {
   const sourceNodes = official ? definition.graph.nodes : [...definition.graph.nodes, ...starterStage, starterCard()]
   const packRoot = options.packRoot || path.join(root, 'assets/voice-packs/paint-prologue')
   const publicRoot = options.publicRoot || path.join(root, 'apps/web/public')
@@ -100,13 +100,18 @@ async function preparePaint(ownerId: string, projectId: string, options: PaintOp
     music.push({ url, name: credit.name || credit.id || '序章配乐', metadata: JSON.stringify({ audioLibrary: { license: `${credit.license} · ${credit.author}`, source: credit.sourceUrl, scene: definition.title, loop: true }, sha256: credit.runtimeSha256, durationSeconds: credit.durationSeconds, generativeAiUsed: false }) })
   }
   const storageRoot = options.storageRoot || process.env.UPLOAD_DIR || './uploads'
-  for (const ref of references) {
+  for (const ref of copyReferences ? references : []) {
     const target = path.join(storageRoot, ref.url.slice('/uploads/'.length))
     await mkdir(path.dirname(target), { recursive: true })
     try { await writeFile(target, ref.bytes, { flag: 'wx' }) }
     catch (error) { if ((error as NodeJS.ErrnoException).code !== 'EEXIST' || hash(await readFile(target)) !== ref.sha256) throw error }
   }
   return { voices: manifest.voices, references, takeReferences, music }
+}
+
+/** Read-only full media verification for an explicit official release upgrade. */
+export async function preflightPaintDefinition(definition: PaintDefinition, options: PaintOptions = {}) {
+  return preparePaint('', definition.id, options, true, definition, false)
 }
 
 async function installProject(tx: Prisma.TransactionClient, ownerId: string, projectId: string, prepared: PreparedPaint, official: boolean) {
