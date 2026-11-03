@@ -235,8 +235,7 @@ export function toChineseNumber(n: number): string {
 }
 
 /**
- * 规范化章节标题：将标题中的阿拉伯数字替换为中文数字。
- * 如果标题无数字且不是"第X章"格式，则用 index+1 生成默认标题。
+ * 只规范章号，保留作者命名和副标题里的日期；空标题按存储顺序补默认名。
  *
  * @param title 原始章节标题
  * @param index 章节序号（0-based），仅在标题无数字时使用
@@ -244,15 +243,8 @@ export function toChineseNumber(n: number): string {
  */
 export function normalizeChapterTitle(title: string, index: number): string {
   const trimmed = title.trim()
-  const match = trimmed.match(/\d+/)
-  if (match) {
-    const num = parseInt(match[0], 10)
-    return trimmed.replace(/\d+/, toChineseNumber(num))
-  }
-  if (/^第.+章$/.test(trimmed)) {
-    return trimmed
-  }
-  return `第${toChineseNumber(index + 1)}章`
+  if (!trimmed) return `第${toChineseNumber(index + 1)}章`
+  return trimmed.replace(/^第(\d+)章/, (_, digits: string) => `第${toChineseNumber(Number(digits))}章`)
 }
 
 export function getNodeChapter(node: Node): string {

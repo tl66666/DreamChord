@@ -4,6 +4,7 @@ import jwt from 'jsonwebtoken'
 import { randomUUID } from 'node:crypto'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { createTemplateRouter } from './templates.js'
+import { DeletedPaintTemplateRequestError } from '../project/paintTemplate.js'
 
 describe('trusted paint template endpoint', () => {
   const createPaint = vi.fn()
@@ -25,5 +26,11 @@ describe('trusted paint template endpoint', () => {
     expect(response.status).toBe(201)
     expect(response.body).toMatchObject({ focusNodeId: 'n', focusSceneId: 's' })
     expect(createPaint).toHaveBeenCalledWith('owner', requestId)
+  })
+  it('exposes a narrowly scoped deleted-copy response so the client can rotate its request once', async () => {
+    createPaint.mockRejectedValueOnce(new DeletedPaintTemplateRequestError())
+    const response = await post({ requestId: randomUUID() })
+    expect(response.status).toBe(409)
+    expect(response.body.code).toBe('TEMPLATE_COPY_DELETED')
   })
 })

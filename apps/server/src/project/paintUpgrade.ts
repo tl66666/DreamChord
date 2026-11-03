@@ -16,6 +16,8 @@ const include = Prisma.validator<Prisma.ProjectInclude>()({
   characters: { include: { sprites: true, voiceBinding: { include: { profile: { include: { references: { include: { asset: true } } } } } } } },
 })
 type StoredProject = Prisma.ProjectGetPayload<{ include: typeof include }>
+// Shared by append-only chapter releases; normalization never writes source data.
+export { include as paintReleaseInclude, expectedDefinition as expectedPaintRelease, storedDefinition as storedPaintRelease, fingerprint as paintReleaseFingerprint }
 const compare = (a: string, b: string) => a < b ? -1 : a > b ? 1 : 0
 function ordered(value: unknown): unknown {
   if (Array.isArray(value)) return value.map(ordered)

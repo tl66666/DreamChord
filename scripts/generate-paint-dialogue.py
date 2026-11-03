@@ -1,14 +1,16 @@
 """Render/resume Japanese dialogue with the local GPT-SoVITS v2ProPlus API.
 
-Input: .runtime/paint-script.json [{id,role,text,ja,emotion}].
-WAV masters and exact provenance stay in assets/voice-packs/paint-prologue.
+Input: [{id,role,text,ja,emotion}] via --script (prologue by default).
+WAV masters and provenance stay in assets/voice-packs/<--pack>.
 """
 import argparse
 import hashlib
 import http.client
 import io
 import json
+import os
 import pathlib
+import re
 import shutil
 import socket
 import time
@@ -19,7 +21,6 @@ import numpy as np
 import soundfile as sf
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
-PACK = ROOT / 'assets/voice-packs/paint-prologue'
 ENGINE = 'GPT-SoVITS-v2ProPlus'
 
 
@@ -27,11 +28,27 @@ def digest(path):
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
+def save_manifest(path, manifest):
+    # Readers (preflight/editor/watchers) must see either complete checkpoint.
+    temporary = path.with_name(path.name + f'.render-{os.getpid()}.tmp')
+    temporary.write_text(json.dumps(manifest, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
+    for attempt in range(8):
+        try:
+            temporary.replace(path)
+            return
+        except OSError:
+            if attempt == 7:
+                raise
+            time.sleep(.2)
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--script', default=str(ROOT / '.runtime/paint-script.json'))
+    parser.add_argument('--pack', default='paint-prologue', help='Voice pack directory id; default preserves the prologue workflow')
     parser.add_argument('--limit', type=int, default=0)
     parser.add_argument('--only', nargs='*', default=[])
+    parser.add_argument('--skip', nargs='*', default=[])
     parser.add_argument('--retake', action='store_true')
     parser.add_argument('--reason', default='Requested alternate take')
     parser.add_argument('--seed-offset', type=int, default=0)
@@ -39,10 +56,15 @@ def main():
     parser.add_argument('--api', default='http://127.0.0.1:9880/tts')
     parser.add_argument('--wait-seconds', type=int, default=90)
     args = parser.parse_args()
-    manifest_path = PACK / 'manifest.json'
+    if not re.fullmatch(r'[a-z0-9]+(?:-[a-z0-9]+)*', args.pack):
+        parser.error('--pack must be a safe lowercase directory id')
+    pack = ROOT / 'assets/voice-packs' / args.pack
+    manifest_path = pack / 'manifest.json'
     manifest = json.loads(manifest_path.read_text(encoding='utf-8'))
+    if manifest.get('packId') != args.pack:
+        raise ValueError('Manifest packId does not match --pack')
     script = json.loads(pathlib.Path(args.script).read_text(encoding='utf-8-sig'))
-    pronunciation_file = PACK / 'pronunciation-overrides.json'
+    pronunciation_file = pack / 'pronunciation-overrides.json'
     pronunciations = json.loads(pronunciation_file.read_text(encoding='utf-8')) if pronunciation_file.exists() else {}
     manifest.update(dialogueEngine='GPT-SoVITS', dialogueVersion='v2ProPlus',
                     dialogueSource='https://github.com/RVC-Boss/GPT-SoVITS', dialogueLicense='MIT',
@@ -55,6 +77,8 @@ def main():
         take_id = node['id'] + '-ja'
         if args.only and node['id'] not in args.only and take_id not in args.only:
             continue
+        if node['id'] in args.skip or take_id in args.skip:
+            continue
         if not all(c in 'abcdefghijklmnopqrstuvwxyz0123456789-' for c in node['id']):
             raise ValueError('Node id must be a safe lowercase filename: ' + node['id'])
         voice = next((v for v in manifest['voices'] if node['role'] in (v['id'], v['role'])), None)
@@ -66,14 +90,14 @@ def main():
         reference = next((r for r in manifest['references'] if r['id'] == reference_id), None)
         if reference is None:
             raise ValueError('Reference not generated: ' + reference_id)
-        reference_path = PACK / reference['outputFile']
+        reference_path = pack / reference['outputFile']
         if digest(reference_path) != reference['sha256']:
             raise ValueError('Reference checksum mismatch: ' + reference_id)
         text = node['ja'].strip()
         pronunciation = pronunciations.get(node['id'], {})
         synthesis_text = pronunciation.get('synthesisText', text)
         split_method = pronunciation.get('textSplitMethod', args.split_method)
-        target = PACK / f'{take_id}.wav'
+        target = pack / f'{take_id}.wav'
         prior = next((t for t in manifest['takes'] if t['id'] == take_id and t['text'] == text and t.get('synthesisText', t['text']) == synthesis_text and t.get('emotion') == emotion and t.get('referenceSha256') == reference['sha256'] and t.get('parameters', {}).get('text_split_method') == split_method and t.get('engine') == ENGINE), None)
         if not args.retake and prior and target.exists() and digest(target) == prior['sha256']:
             continue
@@ -129,10 +153,10 @@ def main():
             raise RuntimeError('Invalid take: ' + take_id)
         previous = next((item for item in manifest['takes'] if item['id'] == take_id), None)
         if previous and target.exists():
-            archive = PACK / 'alternates' / f'{take_id}-{digest(target)[:12]}.wav'
+            archive = pack / 'alternates' / f'{take_id}-{digest(target)[:12]}.wav'
             archive.parent.mkdir(exist_ok=True)
             shutil.copy2(target, archive)
-            archived = dict(previous, outputFile=archive.relative_to(PACK).as_posix(), archiveReason=args.reason)
+            archived = dict(previous, outputFile=archive.relative_to(pack).as_posix(), archiveReason=args.reason)
             if not any(item['id'] == take_id and item['sha256'] == archived['sha256'] for item in manifest.setdefault('alternates', [])):
                 manifest['alternates'].append(archived)
         sf.write(target, samples, rate, subtype='PCM_16')
@@ -146,7 +170,7 @@ def main():
                     sampleRate=rate, rms=round(rms, 5), peak=round(float(np.max(np.abs(samples))), 5),
                     generationSeconds=round(time.monotonic() - started, 2), humanListeningCompleted=False)
         manifest['takes'] = [t for t in manifest['takes'] if t['id'] != take_id] + [take]
-        manifest_path.write_text(json.dumps(manifest, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
+        save_manifest(manifest_path, manifest)
         print(f'READY {take_id} {duration:.2f}s gen {take["generationSeconds"]}s', flush=True)
         count += 1
         if args.limit and count >= args.limit:

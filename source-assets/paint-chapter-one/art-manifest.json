@@ -1,0 +1,424 @@
+{
+  "title": "请让这幅画老去",
+  "chapterTitle": "第一章 · 今天也有一场坏戏",
+  "assetType": "chapter-one original narrative backgrounds and local-anomaly CGs",
+  "createdAt": "2026-11-03",
+  "generator": "built-in image_gen.imagegen",
+  "generationToolParameters": {
+    "transparent_background": false,
+    "brandNewAssets": "shop, river, cup-before omit referenced_image_paths and num_last_images_to_include",
+    "edits": "cup-after and theatre-complete use referenced_image_paths pointing to viewed edit targets"
+  },
+  "qualityNotes": [
+    "Six full-frame 16:9 runtime assets; dusk shop variant has the restored cup. Native intermediate retained for edit provenance.",
+    "Native generated PNGs retained unchanged; production PNG and public WebP are 1920x1080 without cropping.",
+    "Cup-before has a closed raised gray-white rough repair, not an open missing chip; cup-after replaces that local patch with smooth matching glaze.",
+    "Theatre-complete extends only the unfinished seascape painting; hanging-cloth folds and ties remain. Model edits preserve visible composition and object identity; pixel-identical untouched regions are not claimed.",
+    "No story/domain code or existing artwork was modified."
+  ],
+  "assets": [
+    {
+      "id": "shop",
+      "prompt": "Use case: illustration-story. Asset type: original literary visual novel background for Xia He's family general store in the same Chinese small town as the previously viewed home/workshop, wide 16:9 frame, target 1920x1080. Beautiful restrained hand-painted gouache/oil background, warm honey-colored timber, muted slate-teal, warm ivory, tangible ordinary daily life. Early spring MORNING, soft side-window light from the left. A small practical old neighborhood GENERAL STORE, definitely not cafe or magic shop: plain wooden serving counter, old glass-front display cabinet, unlabelled salt jars, spools of sewing thread, folded everyday cotton cloth, neatly tied brown paper parcels, shelves of modest household goods. No modern supermarket refrigerator, no luxury furnishings. Main counter and all important props in UPPER/MIDDLE of composition, keep bottom quarter visually quiet for dialogue; center space readable for three half-body character sprites. On the counter at about x60%, y48% is ONE clearly visible old small ceramic tea mug: PALE MUTED TEAL-GREEN GLAZED body with small IVORY/CREAM five-petal FLOWER sprigs and thin darker teal stems, simple LEFT-side handle. Cup is complete and usable but its near FRONT RIM has ONE dull GRAY-WHITE thick uneven coarse repair putty patch, the old chip fully filled closed up to rim height, not an open missing notch, no golden kintsugi. This exact green floral mug will be shown in later close-up, so keep its simple design clear. Near it lies a small folded ivory COAST MAP with only simple hand-drawn shoreline outlines and a couple of faint unlabelled route marks, plus a blank folded note, absolutely no readable text. Other groceries useful and naturally arranged rather than decorative clutter; slightly worn warm wood with clean cared-for surfaces. Through a modest side window, a hint of old white plaster wall, black tiled roof and green spring foliage. No people, faces, silhouettes, cats or hands. No readable lettering, labels, prices, logos, watermark, border or UI; no ornate cafe, no fantasy or glowing objects, no petal piles, no huge flowers, no shopping-mall look. Whole single scene, no collage, do not crop important props.",
+      "generator": "built-in image_gen.imagegen",
+      "generationSourcePath": "C:\\Users\\唐乐\\.codex\\generated_images\\01a19b9c-bdf3-7791-a80d-b85f04b75da1\\exec-b1e27c9d-49ab-4d2a-9af8-d28f36f8b624.png",
+      "transparentBackground": false,
+      "references": [
+        {
+          "path": "source-assets/paint-prologue/home.png",
+          "role": "Viewed visual style reference",
+          "sha256": "652c1dabea8fdf08da74cb3c28736699486cbd86a804d2276ad18b7ae4855b2b"
+        },
+        {
+          "path": "source-assets/paint-prologue/workshop.png",
+          "role": "Viewed visual style reference",
+          "sha256": "4409105821b05f80df7bc371969364f92da324da529f6afbb25d8011abf6978e"
+        }
+      ],
+      "nativeFile": "source-assets/paint-chapter-one/shop-native.png",
+      "sourceFile": "source-assets/paint-chapter-one/shop.png",
+      "publicFile": "apps/web/public/assets/paint-chapter-one/shop.webp",
+      "publicUrl": "/assets/paint-chapter-one/shop.webp",
+      "native": {
+        "width": 1672,
+        "height": 941,
+        "format": "png",
+        "sha256": "a451447019509e7130c6fdc5dd7a79fe51347e8c9a746ba6ff8a271c7e32f42f"
+      },
+      "sourceSha256": "82569294e02c440ed38b7b8e8dbbf83526405daa66b3b16b9a33a81d5dd8a8c3",
+      "publicSha256": "045eb59373aea07c5e13c12a01db3fcdb3fc2db63337e2be94fdb5f105912d72",
+      "generationSourceSha256": "a451447019509e7130c6fdc5dd7a79fe51347e8c9a746ba6ff8a271c7e32f42f",
+      "runtime": {
+        "width": 1920,
+        "height": 1080,
+        "format": "webp",
+        "bytes": 601882,
+        "sha256": "045eb59373aea07c5e13c12a01db3fcdb3fc2db63337e2be94fdb5f105912d72"
+      },
+      "adaptation": {
+        "parameters": "See productionParameters",
+        "cropped": false,
+        "aspectRoundingCorrectionRatio": 0.0005316321105792721
+      },
+      "visualQa": {
+        "result": "Pass",
+        "checks": [
+          "Practical household general store, not cafe",
+          "Unlabelled jars, thread spools, cloth, parcels, old glass cabinet",
+          "Pale-teal floral cup has rough gray-white closed rim repair",
+          "Folded unlabelled coast map and blank note visible",
+          "Key objects above bottom dialogue area",
+          "No people, readable text or magical decorations"
+        ]
+      },
+      "byteReproductionVerified": true
+    },
+    {
+      "id": "river",
+      "prompt": "Use case: illustration-story. Asset type: original literary visual novel chapter-one background, single 16:9 wide frame target 1920x1080. The same ordinary Chinese white-plaster/black-tiled-roof small town as previously viewed home and theater workshop, hand-painted gouache/oil brush texture, soft muted gray-teal, honey wood and ivory palette. An easily reachable small RIVERBANK at early spring dusk, not the sea. View from a broad quiet stone-paved riverside walkway, LOW worn stone parapet across the middle distance, slow narrow river below, everyday whitewashed homes with weathered dark tiled roofs across the water, one modest small single-arch stone bridge farther left, a few spring trees. A few everyday laundry cloths hang from a line on the opposite bank and one small ordinary wall lamp is just beginning to glow warmly under a nearby eave. The sky is gray-blue mixed with gentle apricot-gold from the departing sun; the horizon remains intimate and local, no vast ocean. Calm specific daily-life place where three friends could walk after rehearsal and make a travel promise, a believable distant possibility within reach. COMPOSITION: center upper-middle has a clear quiet stretch of railing/river and soft sky/reflections suitable behind THREE half-body VN character sprites; buildings frame left/right gently rather than dominating. Lower quarter is quiet unoccupied paving for dialogue overlay, no key small object hidden there. All landscape content within frame, no crop. No people, faces, silhouettes, animals or boats with passengers. No readable signs or lettering, no logo, watermark, border or UI. No railway tracks, train, galaxy, fantasy skyline, huge palace, supernatural illumination, ocean waves, beach, heavy blossom petals or towering cityscape. Natural soft evening light, understated warmth, painterly but grounded.",
+      "generator": "built-in image_gen.imagegen",
+      "generationSourcePath": "C:\\Users\\唐乐\\.codex\\generated_images\\01a19b9c-bdf3-7791-a80d-b85f04b75da1\\exec-a08359f5-9aba-41c6-8efe-942a56761746.png",
+      "transparentBackground": false,
+      "references": [
+        {
+          "path": "source-assets/paint-prologue/home.png",
+          "role": "Viewed visual style reference",
+          "sha256": "652c1dabea8fdf08da74cb3c28736699486cbd86a804d2276ad18b7ae4855b2b"
+        },
+        {
+          "path": "source-assets/paint-prologue/workshop.png",
+          "role": "Viewed visual style reference",
+          "sha256": "4409105821b05f80df7bc371969364f92da324da529f6afbb25d8011abf6978e"
+        }
+      ],
+      "nativeFile": "source-assets/paint-chapter-one/river-native.png",
+      "sourceFile": "source-assets/paint-chapter-one/river.png",
+      "publicFile": "apps/web/public/assets/paint-chapter-one/river.webp",
+      "publicUrl": "/assets/paint-chapter-one/river.webp",
+      "native": {
+        "width": 1672,
+        "height": 941,
+        "format": "png",
+        "sha256": "da561bc910f6ae8fa352411f7a7995f7a49060a5e8dc4f4b679fcd4fe0968034"
+      },
+      "sourceSha256": "eea73b8b6f6d6644f91e5d8d6822f3372594249f49e884ac650de8568bfdc915",
+      "publicSha256": "83d2d9f9ad38f57f1ce0cc67bd728d3f7bf419a82b8d7490d4cfe1dac2757aee",
+      "generationSourceSha256": "da561bc910f6ae8fa352411f7a7995f7a49060a5e8dc4f4b679fcd4fe0968034",
+      "runtime": {
+        "width": 1920,
+        "height": 1080,
+        "format": "webp",
+        "bytes": 578552,
+        "sha256": "83d2d9f9ad38f57f1ce0cc67bd728d3f7bf419a82b8d7490d4cfe1dac2757aee"
+      },
+      "adaptation": {
+        "parameters": "See productionParameters",
+        "cropped": false,
+        "aspectRoundingCorrectionRatio": 0.0005316321105792721
+      },
+      "visualQa": {
+        "result": "Pass",
+        "checks": [
+          "Chinese white walls and dark tiled roofs match town",
+          "Dusk slow river, low stone rail, modest bridge, laundry and ordinary lit lamp",
+          "No sea, railway, galaxy or fantasy architecture",
+          "Central walkway/composition can host three half-body characters",
+          "Bottom paving quiet for dialogue"
+        ]
+      },
+      "byteReproductionVerified": true
+    },
+    {
+      "id": "cup-before",
+      "prompt": "Use case: illustration-story. Asset type: original literary visual novel narrative close-up CG for chapter one of 请让这幅画老去. Single wide 16:9 scene, target 1920x1080. Match the previously viewed small-town theater workshop/home's hand-painted gouache/oil brush treatment, warm honey wood, muted gray-teal and ivory palette, realistic everyday objects. Main subject: ONE modest well-used small ceramic tea mug on Xia He's old honey-colored wooden general-store counter, whole mug and its handle fully visible in the UPPER MIDDLE of the image, roughly centered at x50%, y40%, cup occupies about 40% image height. It has a pale muted TEAL-GREEN glazed body decorated with several small simple ivory/cream five-petal flower sprigs and thin darker teal stems; a short ordinary rounded handle on the viewer's LEFT. Brown tea is visible inside, no steam. Key narrative detail: at ONE place along the NEAR/front rim, slightly to the viewer's right of center, an old chip was ALREADY FILLED with a dull GRAY-WHITE COARSE REPAIR PUTTY patch about 1-2 cm across, slightly thick, raised and uneven against the original glaze. The patch completely closes and fills the old missing part up to rim height: the mug is structurally COMPLETE, no missing open notch, no big bite out of the rim, no crack down the body. Repair material is visibly mismatched in color and texture but functional. Not gold kintsugi, no decorative gold. The entire cup silhouette, floral motif and rough closed repair patch must be easy to compare later to a smoothly restored version. Background and counter: soft daylight from a side window, a blurred folded blank ivory note toward far upper-left, understated general-store wood and a few soft background shapes; no other cups, no hands or people. Bottom 25% of the image is quiet uninterrupted tabletop for a dialogue overlay; DO NOT place cup, patch or key props behind that bottom dialogue area. Intimate ordinary reading-life feeling, soft warm morning light, no dramatic spotlight, no magical effects. No readable words/numbers/letters, no logos, no watermark, no border, no collage, no extra symbolic objects. Preserve the full object, do not crop.",
+      "generator": "built-in image_gen.imagegen",
+      "generationSourcePath": "C:\\Users\\唐乐\\.codex\\generated_images\\01a19b9c-bdf3-7791-a80d-b85f04b75da1\\exec-948eed0b-58eb-434b-aa30-eb22985d06da.png",
+      "transparentBackground": false,
+      "references": [
+        {
+          "path": "source-assets/paint-prologue/home.png",
+          "role": "Viewed visual style reference",
+          "sha256": "652c1dabea8fdf08da74cb3c28736699486cbd86a804d2276ad18b7ae4855b2b"
+        },
+        {
+          "path": "source-assets/paint-prologue/workshop.png",
+          "role": "Viewed visual style reference",
+          "sha256": "4409105821b05f80df7bc371969364f92da324da529f6afbb25d8011abf6978e"
+        }
+      ],
+      "nativeFile": "source-assets/paint-chapter-one/cup-before-native.png",
+      "sourceFile": "source-assets/paint-chapter-one/cup-before.png",
+      "publicFile": "apps/web/public/assets/paint-chapter-one/cup-before.webp",
+      "publicUrl": "/assets/paint-chapter-one/cup-before.webp",
+      "native": {
+        "width": 1672,
+        "height": 941,
+        "format": "png",
+        "sha256": "20c1a54a3cac175db56c6497beef3f52a58c7fab1423d843dfd8d72636de3028"
+      },
+      "sourceSha256": "f338bb6a578f8f00a4053b63876049b296bee17092a7e9dd42eb633ba441adbe",
+      "publicSha256": "689eda385a2fdf068315581f6c5f7184fc86ffe193ff315864edca4231c038ce",
+      "generationSourceSha256": "20c1a54a3cac175db56c6497beef3f52a58c7fab1423d843dfd8d72636de3028",
+      "runtime": {
+        "width": 1920,
+        "height": 1080,
+        "format": "webp",
+        "bytes": 383370,
+        "sha256": "689eda385a2fdf068315581f6c5f7184fc86ffe193ff315864edca4231c038ce"
+      },
+      "adaptation": {
+        "parameters": "See productionParameters",
+        "cropped": false,
+        "aspectRoundingCorrectionRatio": 0.0005316321105792721
+      },
+      "visualQa": {
+        "result": "Pass",
+        "checks": [
+          "Entire teal floral mug and left handle visible",
+          "Rough gray-white raised repair fully fills/closes rim",
+          "No large open missing notch",
+          "Floral details visible with same layout as edited after view",
+          "Bottom quarter clear for dialogue",
+          "No hands, people or readable text"
+        ]
+      },
+      "byteReproductionVerified": true
+    },
+    {
+      "id": "cup-after",
+      "prompt": "Use case: precise-object-edit. Edit this exact tea-mug close-up CG. Make ONE TINY LOCAL CHANGE ONLY: replace the coarse gray-white putty patch on the FRONT RIM (right of center) with smoothly continuous original pale muted teal-green ceramic glaze, so this repaired area becomes an intact smooth normal rim with NO repair mark. Make the affected rim the same material, color, thickness and gentle smooth curve as the neighboring original rim. Remove the raised gray-white repair lump completely; do not leave a crack, notch, seam, scar, highlight halo or gold line. It should look subtly better and unexplained, not magically transformed. Preserve literally everything ELSE unchanged: same exact mug body silhouette and handle on left; identical small cream flowers, leaf/stem positions and worn glaze below the rim; exact tea level/color/reflections; identical camera, perspective, composition and full object size; all same table grain/brush strokes, shadows, soft window daylight, background cupboard, blurred blank folded note, and bottom empty tabletop dialogue area. Do NOT make the whole cup new or spotless, do NOT change flowers, do NOT move any object or camera. No magic, glow, sparkles, text, people or hands. Same single 16:9 full frame; final target 1920x1080, no crop.",
+      "generator": "built-in image_gen.imagegen",
+      "generationSourcePath": "C:\\Users\\唐乐\\.codex\\generated_images\\01a19b9c-bdf3-7791-a80d-b85f04b75da1\\exec-d81c708e-2b7c-420d-a16e-1c4dcaa5414a.png",
+      "transparentBackground": false,
+      "references": [
+        {
+          "path": "C:\\Users\\唐乐\\.codex\\generated_images\\01a19b9c-bdf3-7791-a80d-b85f04b75da1\\exec-948eed0b-58eb-434b-aa30-eb22985d06da.png",
+          "role": "Built-in edit target; change rough rim patch only",
+          "sha256": "20c1a54a3cac175db56c6497beef3f52a58c7fab1423d843dfd8d72636de3028"
+        }
+      ],
+      "editReferenceId": "cup-before",
+      "nativeFile": "source-assets/paint-chapter-one/cup-after-native.png",
+      "sourceFile": "source-assets/paint-chapter-one/cup-after.png",
+      "publicFile": "apps/web/public/assets/paint-chapter-one/cup-after.webp",
+      "publicUrl": "/assets/paint-chapter-one/cup-after.webp",
+      "native": {
+        "width": 1672,
+        "height": 941,
+        "format": "png",
+        "sha256": "2ac090bae4b505b7af3f74c23ecd671ecd4501d0d21a82bbbb710ee1e7507ea6"
+      },
+      "sourceSha256": "e52de0bc57fa4c8d6739a64c8a8273cf5212fb62dbb195f3eb4b1dd69ef25ead",
+      "publicSha256": "812e9866f38ab6a0119ef0c52ebfa29d2dd24489c9f4501a0b1d99c168234def",
+      "generationSourceSha256": "2ac090bae4b505b7af3f74c23ecd671ecd4501d0d21a82bbbb710ee1e7507ea6",
+      "runtime": {
+        "width": 1920,
+        "height": 1080,
+        "format": "webp",
+        "bytes": 306212,
+        "sha256": "812e9866f38ab6a0119ef0c52ebfa29d2dd24489c9f4501a0b1d99c168234def"
+      },
+      "adaptation": {
+        "parameters": "See productionParameters",
+        "cropped": false,
+        "aspectRoundingCorrectionRatio": 0.0005316321105792721
+      },
+      "visualQa": {
+        "result": "Pass",
+        "checks": [
+          "Same mug silhouette, handle, flower pattern, tea, composition and window light",
+          "Only rough patch now smooth matching glaze",
+          "No repair scar, gold seam, magical glow or effects",
+          "Bottom quarter clear for dialogue"
+        ]
+      },
+      "byteReproductionVerified": true
+    },
+    {
+      "id": "theatre-complete",
+      "prompt": "Use case: precise-object-edit. Edit this EXACT existing theater-sea background. Make ONLY ONE LOCAL CHANGE on the hanging seascape stage canvas: paint the currently UNPAINTED IVORY RIGHT END of the cloth with a seamless continuation of the existing gray-blue painted sky above and gray-blue sea with small pale waves below. Continue the existing horizon at precisely the same height and perspective to the cloth's right edge, matching the left painting's brushwork/colors and modest theatrical quality. The painted seascape should now be complete across the whole cloth, quietly prettier and finished. The canvas MUST remain a real visibly hanging cloth with the EXACT same folds, sag, texture, bottom hem, wooden rod and tie strings still visible. Preserve EVERYTHING outside that ivory cloth region as unchanged as possible: exact camera/framing, old door, cupboard and all objects, stools, buckets, eight worn audience chairs and arrangement, carpet and floor grain, warm lamps, slate-teal curtains, fake wooden window frame and support feet, actual high right windows and their town evening view, all shadow/light/color, same architectural proportions. Do not make the sea a real window view or portal; it remains a hand-painted backdrop behind the same freestanding fake frame. Do not remove wrinkles/rigging, enlarge the cloth, alter any furniture, move camera or crop. No people, hands, text, glow, sparkles or supernatural effect. Single wide 16:9 whole scene, target 1920x1080. Only the blank canvas portion has gained matching seascape paint; everything else stays.",
+      "generator": "built-in image_gen.imagegen",
+      "generationSourcePath": "C:\\Users\\唐乐\\.codex\\generated_images\\01a19b9c-bdf3-7791-a80d-b85f04b75da1\\exec-043d7810-ccc4-4ef3-9d7c-2e4130a2bb69.png",
+      "transparentBackground": false,
+      "references": [
+        {
+          "path": "source-assets/paint-prologue/theatre-sea.png",
+          "role": "Viewed built-in edit target; paint unpainted right cloth only",
+          "sha256": "c33f14b91127417a6a47dd07a6798216c1c7b6fa5d8e7f1b4b44055c0b5cb96b"
+        }
+      ],
+      "nativeFile": "source-assets/paint-chapter-one/theatre-complete-native.png",
+      "sourceFile": "source-assets/paint-chapter-one/theatre-complete.png",
+      "publicFile": "apps/web/public/assets/paint-chapter-one/theatre-complete.webp",
+      "publicUrl": "/assets/paint-chapter-one/theatre-complete.webp",
+      "native": {
+        "width": 1672,
+        "height": 941,
+        "format": "png",
+        "sha256": "3b065d7e556be46d97ce0d3d92c5773d09d9715e409d8795c1a199e83f9f7400"
+      },
+      "sourceSha256": "ea7cd7d85a5f31f6466aff69383d63b48701ffbbe85b6bc3daa915e1135b5aeb",
+      "publicSha256": "4c8c17a35ec041a77a21b799bb09e40fce698bfe8e474233b5e3f02b2b2759d1",
+      "generationSourceSha256": "3b065d7e556be46d97ce0d3d92c5773d09d9715e409d8795c1a199e83f9f7400",
+      "runtime": {
+        "width": 1920,
+        "height": 1080,
+        "format": "webp",
+        "bytes": 479366,
+        "sha256": "4c8c17a35ec041a77a21b799bb09e40fce698bfe8e474233b5e3f02b2b2759d1"
+      },
+      "adaptation": {
+        "parameters": "See productionParameters",
+        "cropped": false,
+        "aspectRoundingCorrectionRatio": 0.0005316321105792721
+      },
+      "visualQa": {
+        "result": "Pass",
+        "checks": [
+          "Unpainted right cloth now painted with continuous matching sea/sky/horizon",
+          "Cloth folds, hem and tie strings preserved",
+          "Room, lights, curtains, faux window, real high window, furniture and audience arrangement remain",
+          "No people, readable text, portal or supernatural light"
+        ]
+      },
+      "byteReproductionVerified": true
+    },
+    {
+      "id": "shop-evening",
+      "generator": "built-in image_gen.imagegen",
+      "transparentBackground": false,
+      "prompt": "Edit exact shop.png to closing time: same stock, counter, cup, map, camera and architecture; blue twilight outside, no sunlight shafts, one practical warm lantern inside. No people or text. Then edit only the rough gray-white lip repair to a smooth intact matching green rim, preserving the same floral mug and all dusk composition.",
+      "references": [
+        {
+          "path": "source-assets/paint-chapter-one/shop.png",
+          "sha256": "82569294e02c440ed38b7b8e8dbbf83526405daa66b3b16b9a33a81d5dd8a8c3"
+        },
+        {
+          "path": "source-assets/paint-chapter-one/shop-evening-intermediate-native.png",
+          "sha256": "c6b89307901c3787d15722284adebd5d86b0788b7fcef661a85a2f8b10e4c4c6"
+        }
+      ],
+      "nativeFile": "source-assets/paint-chapter-one/shop-evening-native.png",
+      "sourceFile": "source-assets/paint-chapter-one/shop-evening.png",
+      "publicFile": "apps/web/public/assets/paint-chapter-one/shop-evening.webp",
+      "publicUrl": "/assets/paint-chapter-one/shop-evening.webp",
+      "native": {
+        "width": 1672,
+        "height": 941,
+        "format": "png",
+        "sha256": "d87e4ea21d40cde109135b3bbb0f71ea926b857604c31c6526a8c73586797286"
+      },
+      "sourceSha256": "21e251cc305ce005f8433d22dccbc0a1468a83825e4a0534f5290049def7b10b",
+      "publicSha256": "b9bad1c3ef32abb65597dc4467318702b3aee0feed1fd3a450b5345b926bdb36",
+      "runtime": {
+        "width": 1920,
+        "height": 1080,
+        "format": "webp",
+        "bytes": 321400,
+        "sha256": "b9bad1c3ef32abb65597dc4467318702b3aee0feed1fd3a450b5345b926bdb36"
+      },
+      "adaptation": {
+        "cropped": false,
+        "parameters": "native→resize1920×1080 fit:fill kernel:lanczos3→removeAlpha→PNG; sourcePNG→WebP quality94 effort6"
+      },
+      "visualQa": {
+        "result": "Pass",
+        "checks": [
+          "Same shop at dusk",
+          "No morning sun shafts",
+          "Smooth restored cup rim",
+          "Important counter props above dialogue"
+        ]
+      },
+      "byteReproductionVerified": true,
+      "generationSteps": [
+        {
+          "output": "source-assets/paint-chapter-one/shop-evening-intermediate-native.png",
+          "prompt": "Edit this exact quiet illustrated Chinese old-town general store background into its closing-time evening variant for an original literary visual novel. Preserve identical camera, all shelves, stock, wooden counter, rice sack, green floral cup, paper map, architecture, hand-painted textured style and 16:9 composition. Time is shortly after sunset. Remove every shaft of bright morning sunlight from floor and counter. Outside the left window is muted cool blue twilight, the same building and tree silhouettes. Inside a small practical warm lamp softly lights the counter; gentle dusk shadow, legible and tranquil rather than ominous. No people, no new signage or text, no magical glow, no dramatic neon. Keep the visual continuity precise. This is an evening environment variation, not a redesign.",
+          "reference": "source-assets/paint-chapter-one/shop.png",
+          "sha256": "c6b89307901c3787d15722284adebd5d86b0788b7fcef661a85a2f8b10e4c4c6",
+          "referenceSha256": "82569294e02c440ed38b7b8e8dbbf83526405daa66b3b16b9a33a81d5dd8a8c3",
+          "transparent_background": false
+        },
+        {
+          "output": "source-assets/paint-chapter-one/shop-evening-native.png",
+          "prompt": "Make one very small continuity edit to this exact dusk Chinese general store illustration. Preserve absolutely the same composition, camera, twilight lighting, warm lantern, all stock, map and furniture. ONLY change the chipped/repaired raised gray-white patch on the lip of the green floral mug on the counter: replace it with a smooth intact rounded matching green glazed rim. The mug is still the same object, same white floral pattern, same position, handle and size. The story now needs the smoothly restored cup. No other deliberate changes, no text or people.",
+          "reference": "source-assets/paint-chapter-one/shop-evening-intermediate-native.png",
+          "sha256": "d87e4ea21d40cde109135b3bbb0f71ea926b857604c31c6526a8c73586797286",
+          "referenceSha256": "c6b89307901c3787d15722284adebd5d86b0788b7fcef661a85a2f8b10e4c4c6",
+          "transparent_background": false
+        }
+      ]
+    }
+  ],
+  "productionParameters": {
+    "modulePath": "./node_modules/.pnpm/sharp@0.33.5/node_modules/sharp",
+    "versions": {
+      "aom": "3.9.1",
+      "archive": "3.7.4",
+      "cairo": "1.18.0",
+      "cgif": "0.4.1",
+      "exif": "0.6.24",
+      "expat": "2.6.2",
+      "ffi": "3.4.6",
+      "fontconfig": "2.15.0",
+      "freetype": "2.13.2",
+      "fribidi": "1.0.15",
+      "glib": "2.81.1",
+      "harfbuzz": "9.0.0",
+      "heif": "1.18.2",
+      "highway": "1.2.0",
+      "imagequant": "2.4.1",
+      "lcms": "2.16",
+      "mozjpeg": "4.1.5",
+      "pango": "1.54.0",
+      "pixman": "0.43.4",
+      "png": "1.6.43",
+      "proxy-libintl": "0.4",
+      "rsvg": "2.58.93",
+      "spng": "0.7.4",
+      "tiff": "4.6.0",
+      "vips": "8.15.3",
+      "webp": "1.4.0",
+      "xml": "2.13.3",
+      "zlib-ng": "2.2.1",
+      "sharp": "0.33.5"
+    },
+    "pipeline": [
+      "await sharp(nativeFile).resize(1920,1080,{fit:\"fill\",kernel:\"lanczos3\"}).removeAlpha().png().toFile(sourceFile)",
+      "await sharp(sourceFile).webp({quality:94,effort:6}).toFile(publicFile)"
+    ],
+    "resize": {
+      "width": 1920,
+      "height": 1080,
+      "fit": "fill",
+      "kernel": "lanczos3",
+      "crop": false
+    },
+    "png": {
+      "removeAlpha": true,
+      "otherParameters": "Sharp defaults"
+    },
+    "webp": {
+      "quality": 94,
+      "effort": 6,
+      "smartSubsample": "not specified; Sharp default false",
+      "otherParameters": "Sharp defaults"
+    },
+    "metadata": {
+      "withMetadata": false,
+      "keepMetadata": false,
+      "explicitColorTransform": false,
+      "note": "No withMetadata/keepMetadata/toColourspace/colourTransform calls; default Sharp metadata behavior"
+    },
+    "note": "WebP stage reads the saved production PNG, not the native file in a single chain."
+  },
+  "validation": {
+    "sourceCount": 5,
+    "nativeFilesUnchanged": true,
+    "allOutputDimensions": "1920x1080",
+    "noCropping": true,
+    "reencodedSourceAndRuntimeByteHashesMatch": true,
+    "visualQa": "Final encoded runtime contact sheet inspected: all five scenes, both cup states, complete seascape; lower dialogue space and key objects visible."
+  }
+}

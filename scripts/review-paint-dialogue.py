@@ -10,13 +10,18 @@ import soundfile as sf
 from faster_whisper import WhisperModel
 
 root = pathlib.Path(__file__).resolve().parent.parent
-pack = root / 'assets/voice-packs/paint-prologue'
 parser = argparse.ArgumentParser()
 parser.add_argument('--only', nargs='*', default=[])
+parser.add_argument('--pack', default='paint-prologue')
 args = parser.parse_args()
+if not re.fullmatch(r'[a-z0-9]+(?:-[a-z0-9]+)*', args.pack):
+    parser.error('--pack must be a safe lowercase directory id')
+pack = root / 'assets/voice-packs' / args.pack
 output = pack / 'asr-review.json'
 report = json.loads(output.read_text(encoding='utf-8')) if output.exists() else []
 manifest = json.loads((pack / 'manifest.json').read_text(encoding='utf-8'))
+if manifest.get('packId') != args.pack:
+    raise ValueError('Manifest packId does not match --pack')
 model = WhisperModel('base', device='cpu', compute_type='int8', cpu_threads=3, download_root='D:/DreamChordRuntime/asr-review')
 
 

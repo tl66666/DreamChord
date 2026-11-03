@@ -1,6 +1,6 @@
 # 《请让这幅画老去》序章定稿
 
-本文件由 `node scripts/export-paint-script.mjs --docs` 从正式图谱导出。包含两个行动分支；它们在开场排练结束后汇合。后续正式章节尚未发布。
+本文件由 `node scripts/export-paint-script.mjs --docs` 从正式图谱导出。包含两个行动分支；它们在开场排练结束后汇合。第一章另见 `01-chapter-one.md`。
 
 ## 一张没有剪口的票
 

@@ -137,6 +137,15 @@ describe('paint prologue trusted seed and private template', () => {
     expect(await client.project.findUniqueOrThrow({ where: { id: before.id }, include: { chapters: { include: { nodes: true, edges: true } } } })).toEqual(before)
   })
 
+  it('identifies a deleted copy with retained voice-library rows without overwriting those rows', async () => {
+    const requestId = randomUUID()
+    const entry = await createPaintTemplate('alice', requestId, options)
+    await client.project.delete({ where: { id: entry.id } })
+    const profiles = await client.voiceProfile.findMany({ where: { ownerId: 'alice' }, include: { references: true } })
+    await expect(createPaintTemplate('alice', requestId, options)).rejects.toMatchObject({ code: 'TEMPLATE_COPY_DELETED' })
+    expect(await client.voiceProfile.findMany({ where: { ownerId: 'alice' }, include: { references: true } })).toEqual(profiles)
+    expect((await createPaintTemplate('alice', randomUUID(), options)).id).not.toBe(entry.id)
+  })
   it('rejects invalid idempotency keys and unsafe manifest reference paths without database writes', async () => {
     await expect(createPaintTemplate('alice', '../not-a-uuid', options)).rejects.toThrow(/请求/)
     const count = await client.project.count()

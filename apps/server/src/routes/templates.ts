@@ -2,7 +2,7 @@ import { Router, type Router as ExpressRouter, type Response } from 'express'
 import { z } from 'zod'
 import { authenticateToken, type AuthRequest } from '../middleware/auth.js'
 import { createCurtainTemplate } from '../project/curtainTemplate.js'
-import { createPaintTemplate } from '../project/paintTemplate.js'
+import { createPaintTemplate, DeletedPaintTemplateRequestError } from '../project/paintTemplate.js'
 
 export function createTemplateRouter(create = createCurtainTemplate, createPaint = createPaintTemplate): ExpressRouter {
   const router = Router()
@@ -21,6 +21,7 @@ export function createTemplateRouter(create = createCurtainTemplate, createPaint
     if (!input.success) return res.status(400).json({ error: '创建请求无效，请返回序章结尾重试。' })
     try { return res.status(201).json(await createPaint(req.userId!, input.data.requestId)) }
     catch (error) {
+      if (error instanceof DeletedPaintTemplateRequestError) return res.status(409).json({ code: error.code, error: error.message })
       console.error('[序章模板]', error instanceof Error ? error.message : '模板准备失败')
       return res.status(503).json({ error: '序章素材暂未就绪，请稍后重试。已有作品不会受影响。' })
     }

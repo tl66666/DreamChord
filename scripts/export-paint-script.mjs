@@ -5,7 +5,7 @@ await mkdir(dir, { recursive: true })
 await writeFile(new URL('paint-script.json', dir), JSON.stringify(PAINT_LINES, null, 2) + '\n')
 console.log(`Exported ${PAINT_LINES.length} authored lines for resumable voice generation.`)
 if (process.argv.includes('--docs')) {
-  const sections = ['# 《请让这幅画老去》序章定稿', '', '本文件由 `node scripts/export-paint-script.mjs --docs` 从正式图谱导出。包含两个行动分支；它们在开场排练结束后汇合。后续正式章节尚未发布。', '']
+  const sections = ['# 《请让这幅画老去》序章定稿', '', '本文件由 `node scripts/export-paint-script.mjs --docs` 从正式图谱导出。包含两个行动分支；它们在开场排练结束后汇合。第一章另见 `01-chapter-one.md`。', '']
   let group = ''
   for (const n of PAINT_PROLOGUE.graph.nodes) {
     if (n.data.sceneGroupId !== group) { group = n.data.sceneGroupId; sections.push(`## ${n.data.sceneTitle}`, '') }

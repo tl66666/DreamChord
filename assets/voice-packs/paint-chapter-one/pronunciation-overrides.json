@@ -1,0 +1,5 @@
+{
+  "pc1-dinner-9": { "synthesisText": "さんじで、いい？", "textSplitMethod": "cut0", "note": "Kana direction for the short time question; retain the authored subtitle." },
+  "pc1-river-5": { "synthesisText": "じゃあ、にほんめ。", "textSplitMethod": "cut0", "note": "Explicit kana for second bus; retain the authored subtitle." },
+  "pc1-plan-2": { "synthesisText": "うん。あさ、はなすね。", "textSplitMethod": "cut0", "note": "Remove only the silent leading ellipsis for clear short-line synthesis." }
+}

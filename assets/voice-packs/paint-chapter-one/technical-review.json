@@ -1,0 +1,20 @@
+{
+  "date": "2026-11-03",
+  "dialogueCount": 68,
+  "durationSeconds": 359.7,
+  "runtimeDecoding": {
+    "tool": "ffmpeg",
+    "verified": 68,
+    "result": "pass"
+  },
+  "currentAsrCoverage": 76,
+  "clippedSourceSamples": 0,
+  "priorPrologueFilesUnchanged": 166,
+  "humanListeningCompleted": false,
+  "shortLinesPendingListening": [
+    "pc1-sea-6-ja",
+    "pc1-dinner-9-ja",
+    "pc1-river-5-ja"
+  ],
+  "limitation": "ASR and decoding are technical checks, not acting or pronunciation acceptance."
+}

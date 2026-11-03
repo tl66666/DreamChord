@@ -22,6 +22,10 @@ const starterStage: StoryNode[] = [
 export interface PaintOptions { client?: PrismaClient; packRoot?: string; publicRoot?: string; storageRoot?: string }
 export interface PaintDefinition { id: string; title: string; description: string; cover: string; chapterTitle: string; characters: readonly { slug: string; name: string; description: string; color: string; defaultSprite: string }[]; graph: StoryGraph }
 export interface PaintTemplateEntry { id: string; title: string; focusNodeId: string; focusSceneId: string }
+export class DeletedPaintTemplateRequestError extends Error {
+  readonly code = 'TEMPLATE_COPY_DELETED'
+  constructor() { super('这个续写副本已删除，请使用新的创建请求。') }
+}
 const voiceSchema = z.object({ id: z.string(), role: z.string(), name: z.string(), description: z.string(), genderTone: z.string() })
 const referenceSchema = z.object({ id: z.string(), role: z.string(), language: z.literal('ja'), text: z.string().min(1), outputFile: z.string(), sha256: z.string().regex(/^[a-f0-9]{64}$/), durationSeconds: z.number().min(3).max(10), emotion: z.string().optional(), sourceModel: z.string().optional(), license: z.string().optional(), source: z.string().optional() })
 const takeSchema = z.object({ runtimeFile: z.string().optional(), runtimeSha256: z.string().regex(/^[a-f0-9]{64}$/).optional(), referenceId: z.string().optional(), purpose: z.string().optional() }).passthrough()
@@ -182,6 +186,14 @@ export async function installPaintPrologue(client: PrismaClient, ownerId: string
   if (exists) {
     if (!official && exists.authorId !== ownerId) throw new Error('模板副本归属异常。')
     return exists
+  }
+  if (!official) {
+    const retained = await client.voiceProfile.findFirst({ where: { ownerId, id: { in: builtin().characters.map(c => scoped(projectId, `voice-${c.slug}`)) } }, select: { id: true } })
+    if (retained) {
+      const raced = await client.project.findUnique({ where: { id: projectId } })
+      if (raced?.authorId === ownerId) return raced
+      throw new DeletedPaintTemplateRequestError()
+    }
   }
   const prepared = await preparePaint(ownerId, projectId, options, official)
   try {

@@ -5,7 +5,7 @@ import { useLocation, useNavigate, useParams } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { History, SkipForward, Play, Pause, Settings, RotateCcw, Compass, PenLine, ChevronDown } from 'lucide-react'
 import { getProject, type ProjectDetail } from '../api/client'
-import { safeJsonParse } from '../lib/safeJsonParse'
+import { chapterStartId, mergeChaptersForPreview } from './chapterPreview'
 import { createRuntimeEngine } from '../engine/runtime'
 import { convertFlowToRuntime } from '../engine/converter'
 import { createAudioDirector } from './audioDirector'
@@ -16,6 +16,7 @@ import { projectLanguageSettings } from './projectLanguage'
 import { useAuthStore } from '../stores/authStore'
 import { beginCurtainTemplate, beginPaintTemplate } from '../lib/templateEntry'
 import { startPreviewAt } from '../engine/previewStart'
+import { splitReadingPages } from './readingPages'
 
 interface HistoryItem {
   sceneId: string
@@ -89,6 +90,7 @@ export default function VisualNovelPlayer() {
   const [showHistory, setShowHistory] = useState(false)
   const [showSettings, setShowSettings] = useState(false)
   const [history, setHistory] = useState<HistoryItem[]>([])
+  const [readingPage, setReadingPage] = useState({ key: '', index: 0 })
   const [isAuto, setIsAuto] = useState(false)
   const [isSkip, setIsSkip] = useState(false)
   const [finished, setFinished] = useState(false)
@@ -156,7 +158,17 @@ export default function VisualNovelPlayer() {
   useEffect(() => {
     if (!projectId) return
     let active = true
+    audioDirectorRef.current?.dispose()
+    audioDirectorRef.current = createAudioDirector()
+    lastAudioScene.current = null
+    setAudioDirectorGeneration(value => value + 1)
+    setEngine(null)
     setLoading(true)
+    setFinished(false)
+    setIsAuto(false)
+    setIsSkip(false)
+    setHistory([])
+    setReadingPage({ key: '', index: 0 })
 
     getProject(projectId)
       .then((data) => {
@@ -168,8 +180,9 @@ export default function VisualNovelPlayer() {
         const { nodes, edges } = mergeChaptersForPreview(data)
         const runtimeStory = convertFlowToRuntime(data.id, data.title, nodes, edges, data.characters)
         const params = new URLSearchParams(location.search)
-        const previewStart = data.authorId === useAuthStore.getState().user?.id && params.has('preview') ? params.get('from') : null
-        setEngine(createRuntimeEngine(startPreviewAt(runtimeStory, previewStart)))
+        const viewerId = useAuthStore.getState().user?.id
+        const previewStart = viewerId && data.authorId === viewerId && params.has('preview') ? params.get('from') : null
+        setEngine(createRuntimeEngine(startPreviewAt(runtimeStory, previewStart || chapterStartId(runtimeStory, data.chapters, location.search))))
       })
       .catch((err) => {
         if (!active) return
@@ -185,12 +198,17 @@ export default function VisualNovelPlayer() {
     text: sourceScene?.dialogue?.text, role: sourceScene?.dialogue?.role, choices: sourceScene?.choices,
     localizations: sourceScene?.localizations, voiceTracks: sourceScene?.voiceTracks, originalVoice: sourceScene?.audio?.voice,
   }, settings.subtitleLocale, settings.voiceLocale), [sourceScene, settings.subtitleLocale, settings.voiceLocale])
+  // Voiced lines keep a complete subtitle so the actor cannot read ahead of a hidden page.
+  const readingPages = useMemo(() => localized.voice?.url ? [localized.text] : splitReadingPages(localized.text || ''), [localized.text, localized.voice?.url])
+  const readingKey = `${sourceScene?.id || ''}:${settings.subtitleLocale}`
+  const readingIndex = readingPage.key === readingKey ? Math.min(readingPage.index, readingPages.length - 1) : 0
+  useEffect(() => { setReadingPage({ key: readingKey, index: 0 }) }, [readingKey])
   const currentScene = useMemo(() => sourceScene ? {
     ...sourceScene,
-    ...(sourceScene.dialogue ? { dialogue: { ...sourceScene.dialogue, text: localized.text } } : {}),
+    ...(sourceScene.dialogue ? { dialogue: { ...sourceScene.dialogue, text: readingPages[readingIndex] || '' } } : {}),
     ...(sourceScene.choices ? { choices: localized.choices } : {}),
     audio: { ...sourceScene.audio, voice: localized.voice },
-  } : null, [sourceScene, localized])
+  } : null, [sourceScene, localized, readingPages, readingIndex])
   activeSceneIdRef.current = currentScene?.id || null
 
   useEffect(() => {
@@ -251,17 +269,17 @@ export default function VisualNovelPlayer() {
   const pushHistory = useCallback((scene: RuntimeScene) => {
     const dialogue = scene.dialogue
     if (!dialogue?.text) return
-    const content = resolveLocalizedContent({ text: dialogue.text, role: dialogue.role, localizations: scene.localizations }, settings.subtitleLocale, settings.voiceLocale)
+    const role = project?.characters.find(c => c.id === dialogue.role || c.name === dialogue.role)?.name || resolveCharacterName(dialogue.role)
     setHistory((prev) => [
       ...prev,
       {
         sceneId: scene.id,
-        role: resolveCharacterName(content.role),
-        text: content.text,
+        role,
+        text: dialogue.text,
         speakerColor: resolveCharacterColor(dialogue.role),
       },
     ])
-  }, [settings.subtitleLocale, settings.voiceLocale])
+  }, [project])
 
   const advance = useCallback(() => {
     if (!engine) return
@@ -273,15 +291,20 @@ export default function VisualNovelPlayer() {
     }
     if (currentScene?.choices) return
 
+    if (currentScene && readingIndex < readingPages.length - 1) {
+      pushHistory(currentScene)
+      setReadingPage({ key: readingKey, index: readingIndex + 1 })
+      return
+    }
+
     audioDirectorRef.current?.stopTransient({ fadeOutMs: isSkip ? 0 : 100 })
 
-    const scene = engine.currentScene()
-    if (scene) pushHistory(scene)
+    if (currentScene) pushHistory(currentScene)
 
     const hasMore = engine.next()
     setTick((value) => value + 1)
     if (!hasMore) setFinished(true)
-  }, [currentScene, engine, isSkip, isTyping, playTone, pushHistory, stopTyping])
+  }, [currentScene, engine, isSkip, isTyping, playTone, pushHistory, stopTyping, readingIndex, readingKey, readingPages.length])
 
   const startTyping = useCallback(
     (text: string) => {
@@ -364,6 +387,7 @@ export default function VisualNovelPlayer() {
     lastAudioScene.current = null
     setAudioDirectorGeneration((value) => value + 1)
     setVoiceEndedSceneId(null)
+    setReadingPage({ key: '', index: 0 })
     setHistory([])
     setFinished(false)
     setIsAuto(false)
@@ -379,7 +403,7 @@ export default function VisualNovelPlayer() {
       setDisplayedText('')
       return
     }
-    playTone('scene')
+    if (readingIndex === 0) playTone('scene')
     setFinished(false)
     const text = currentScene.dialogue?.text || ''
     if (text) startTyping(text)
@@ -387,7 +411,7 @@ export default function VisualNovelPlayer() {
       setDisplayedText('')
       setIsTyping(false)
     }
-  }, [engine, currentScene, playTone, startTyping])
+  }, [engine, currentScene, playTone, startTyping, readingIndex])
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
@@ -398,6 +422,7 @@ export default function VisualNovelPlayer() {
         }
         return
       }
+      if (event.target instanceof HTMLElement && event.target.closest('button,input,select,textarea,[contenteditable="true"]')) return
       if (finished) return
       if (event.key === ' ' || event.key === 'Enter') {
         event.preventDefault()
@@ -476,6 +501,13 @@ export default function VisualNovelPlayer() {
       <div className="pointer-events-none absolute left-1/2 top-5 z-40 hidden -translate-x-1/2 rounded-full border border-white/12 bg-black/32 px-4 py-1.5 text-xs text-white/70 backdrop-blur-md md:block">
         {project?.title || 'DreamChord'}
       </div>
+
+      {project && project.chapters.length > 1 && <label className="absolute left-4 top-16 z-40 max-w-[calc(100vw-2rem)]" onClick={event => event.stopPropagation()}>
+        <span className="sr-only">阅读章节</span>
+        <select aria-label="阅读章节" value={Math.max(0, [...project.chapters].sort((a, b) => a.order - b.order).findIndex(c => (sourceScene?.id || history[history.length - 1]?.sceneId)?.startsWith(`${c.id}:`)))} onChange={event => { setShowHistory(false); navigate(`${location.pathname}?chapter=${event.target.value}`) }} className="h-10 w-full max-w-64 truncate rounded-xl border border-white/20 bg-black/65 px-3 text-xs text-white/90 backdrop-blur-md focus:outline-none focus:ring-2 focus:ring-dream-300">
+          {[...project.chapters].sort((a, b) => a.order - b.order).map((chapter, index) => <option key={chapter.id} value={index}>{chapter.title}</option>)}
+        </select>
+      </label>}
 
       <div className="absolute right-4 top-4 z-40 flex items-center gap-2">
         <IconButton title="历史 (H)" onClick={() => setShowHistory(true)} icon={<History className="h-4 w-4" />} />
@@ -598,8 +630,8 @@ export default function VisualNovelPlayer() {
           >
             <div className="max-w-md rounded-2xl border border-white/10 bg-black/64 p-8 text-center shadow-2xl">
               <h2 className="mb-2 text-2xl font-bold text-white">{project?.title || '故事'} · 本次阅读结束</h2>
-              <p className="mb-6 text-sm leading-7 text-white/60">{projectId === 'dreamchord-paint-prologue' ? '序章到这里暂告一段落。那把椅子为什么变了？你也可以把角色和场景带进自己的工作台，从下一句开始续写。' : projectId === 'dreamchord-curtain-call' ? '如果是你，会在谢幕词上留下哪一句？把这个故事带进工作台，写下你的第三种结局。' : '谢谢你读到这里。重新阅读，可以尝试另一种选择。'}</p>
-              {projectId === 'dreamchord-paint-prologue' && <p className="mb-5 text-xs leading-6 text-white/40">原创文学幻想 · 当前收录序章<br />GPT-SoVITS 日语合成配音 · 原创生成插画<br />配乐 TERNOX（CC0）· 音效 OtoLogic（CC BY 4.0）</p>}
+              <p className="mb-6 text-sm leading-7 text-white/60">{projectId === 'dreamchord-paint-prologue' ? (project && project.chapters.length > 1 ? '第一章到这里结束。明天三点还有一场未排完的戏；那只杯子的变化，留到下一章继续。你也可以回到序章，将角色与场景带入自己的工作台续写。' : '序章到这里暂告一段落。那把椅子为什么变了？你也可以把角色和场景带进自己的工作台，从下一句开始续写。') : projectId === 'dreamchord-curtain-call' ? '如果是你，会在谢幕词上留下哪一句？把这个故事带进工作台，写下你的第三种结局。' : '谢谢你读到这里。重新阅读，可以尝试另一种选择。'}</p>
+              {projectId === 'dreamchord-paint-prologue' && <p className="mb-5 text-xs leading-6 text-white/40">原创文学幻想 · {project && project.chapters.length > 1 ? '序章与第一章' : '序章'}<br />GPT-SoVITS 日语合成配音 · 原创生成插画<br />配乐 TERNOX（CC0）· 音效 OtoLogic（CC BY 4.0）</p>}
               {projectId === 'dreamchord-curtain-call' && <p className="mb-5 text-xs leading-6 text-white/40">原创短篇 · 两个结局<br />GPT-SoVITS 角色配音 · 原创生成插画<br />配乐 TERNOX · CC0</p>}
               {projectId === 'dreamchord-seventh-row' && <p className="mb-5 text-xs leading-6 text-white/40">原创短篇《第七排，空座》<br />配乐 TERNOX · CC0<br />原创生成插画 · Qwen3-TTS 合成角色配音</p>}
               <div className="flex flex-col gap-3">
@@ -791,70 +823,4 @@ function SidePanel({
       </div>
     </motion.div>
   )
-}
-
-function mergeChaptersForPreview(project: ProjectDetail) {
-  const nodes: Array<{
-    id: string
-    type: string
-    position: { x: number; y: number }
-    data: Record<string, unknown>
-  }> = []
-  const edges: Array<{
-    id: string
-    source: string
-    target: string
-    label?: string
-    sourceHandle?: string
-    animated?: boolean
-  }> = []
-
-  const sortedChapters = [...project.chapters].sort((a, b) => a.order - b.order)
-  let previousTerminalIds: string[] = []
-
-  sortedChapters.forEach((chapter) => {
-    const prefix = `${chapter.id}:`
-    const chapterNodes = chapter.nodes.map((node) => ({
-      id: `${prefix}${node.nodeId}`,
-      type: node.type,
-      position: { x: node.positionX, y: node.positionY },
-      data: safeJsonParse<Record<string, unknown>>(node.data, {}),
-    }))
-    const chapterEdges = chapter.edges.map((edge) => ({
-      id: `${prefix}${edge.edgeId}`,
-      source: `${prefix}${edge.source}`,
-      target: `${prefix}${edge.target}`,
-      label: edge.label || undefined,
-      sourceHandle: edge.sourceHandle || undefined,
-      animated: edge.animated,
-    }))
-    const chapterStart = findPreviewStart(chapterNodes, chapterEdges)
-    if (chapterStart) {
-      previousTerminalIds.forEach((terminalId) => {
-        edges.push({
-          id: `chapter-link-${terminalId}-${chapterStart.id}`,
-          source: terminalId,
-          target: chapterStart.id,
-          animated: true,
-        })
-      })
-    }
-
-    nodes.push(...chapterNodes)
-    edges.push(...chapterEdges)
-    previousTerminalIds = findPreviewTerminals(chapterNodes, chapterEdges)
-  })
-
-  return { nodes, edges }
-}
-
-function findPreviewStart(nodes: Array<{ id: string }>, edges: Array<{ target: string }>) {
-  const targets = new Set(edges.map((edge) => edge.target))
-  return nodes.find((node) => !targets.has(node.id)) || nodes[0]
-}
-
-function findPreviewTerminals(nodes: Array<{ id: string }>, edges: Array<{ source: string }>) {
-  const sources = new Set(edges.map((edge) => edge.source))
-  const terminals = nodes.filter((node) => !sources.has(node.id)).map((node) => node.id)
-  return terminals.length > 0 ? terminals : nodes.slice(-1).map((node) => node.id)
 }
