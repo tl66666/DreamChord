@@ -16,6 +16,8 @@
 - [x] Review duplicate groups, verify full local backups and portable exports, remove five curated obsolete QA/empty/older-replaced projects; preserve edited/independent works.
 - [x] Independent prose and backend review; full lint/tests/build/media plus desktop/mobile/branch/chapter QA.
 - [x] User follow-up: short reading pages, localized page history, genuine page reset on language change, no repeated BGM; real-player and full-canon paging tests.
-- [ ] Update manuscript, reading copy, handover and current screenshots. Commit/push and verify remote CI/Pages.
+- [x] Update manuscript, reading copy, handover and current screenshots. Commit/push and verify remote CI/Pages.
 
 Local evidence: full core suite 600 tests passed, followed by an additional full-canon paging test; media pack 9 tests, native-art byte reproduction, 68 runtime audio decodes, presentation 39 resource references, production build and lint passed. Manual 1440×900 / 390×844, both chapter-one branches, chapter zero/one/invalid URL, anonymous preview denial, focused settings Escape. Prior prologue 166 audio files unchanged. Synthesized acting still requires human listening; three short ASR flags are documented, not waived as human acceptance.
+
+Release evidence: code commit `4a04bc0` pushed to main; clean Ubuntu/Node20 [CI run 41600887115](https://github.com/tl66666/DreamChord/actions/runs/41600887115) and [Pages run 41600886181](https://github.com/tl66666/DreamChord/actions/runs/41600886181) both succeeded. Live showcase returned HTTP200 with the new chapter screenshot and short-page description. Original Hero retained. Pre-existing external changes in `docs/CURRENT_HANDOFF.md` were preserved and excluded from the release commit.
