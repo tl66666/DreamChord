@@ -17,6 +17,6 @@
 - [x] Render fixed-role Japanese chapter audio with existing references, package and check current text/voice hashes/decoding; disclose listening boundary.
 - [x] Preflight all media, backup current official snapshot, apply release only if live guard permits; verify same project and stable voice/character IDs.
 - [x] Review prose and music usage; independently review installer and runtime changes; fix concrete blockers, run lint/tests/build/media and desktop/mobile/branch QA.
-- [ ] Export Chinese reading copy and bilingual performance draft, maintain handoff/credits/screenshots, prepare push and verify CI/Pages after publication.
+- [x] Export Chinese reading copy and bilingual performance draft, maintain handoff/credits/screenshots, push and verify CI/Pages (feature aa13745: both success).
 
 File ownership: root owns domain prose/chapters/cues and final docs; backend worker owns new server book-release service/tests/CLI and preflight music-credit support; music worker owns new book audio assets/credits and evidence (no source graph edits); audio/art worker owns new chapter assets and production scripts. No worker edits `docs/CURRENT_HANDOFF.md`, database schema, another worker's files or private projects.

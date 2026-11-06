@@ -68,3 +68,4 @@ pnpm test:paint
 - `pnpm test:paint`：16项；`pnpm test:voice-runtime`：25项。
 - 浏览器实机：1440×900与390×844；第二章两分支到达章末，字幕与新图片正常；8首配乐运行URL均200；音乐署名页正常；未登录者不能通过作者预览参数跳到指定节点。
 - 实际截图：`docs/screenshots/paint-chapter-two-{reading,corridor,mobile}.webp`。独立静态代码审查未发现阻断问题；该审查不包含听觉验收。
+- 功能提交 `aa13745`：[GitHub CI](https://github.com/tl66666/DreamChord/actions/runs/42201879945) 与 [Pages部署](https://github.com/tl66666/DreamChord/actions/runs/42201878685) 均通过。展示页保留原Hero，新旧截图按原比例缩放；桌面双列与手机单列无横向溢出。
