@@ -1,0 +1,298 @@
+{
+  "title": "请让这幅画老去",
+  "chapterTitle": "第二章 · 她今天不想笑",
+  "createdAt": "2026-11-03",
+  "assetType": "Three original chapter-two narrative backgrounds/CGs",
+  "generator": "built-in image_gen.imagegen",
+  "assets": [
+    {
+      "id": "audition-letter",
+      "prompt": "Use case: illustration-story. Asset type: original literary visual novel narrative CG, one complete wide 16:9 frame target 1920x1080. Continuity with the previously viewed warm Chinese small-town general store: honey-colored worn wooden serving counter, muted gray-teal old wood, warm ivory papers, softly textured hand-painted oil/gouache and watercolor edges, grounded gentle daily life. MORNING after the previous night. A moderately close slightly elevated view of the counter near an unlabelled folded coast map. Main subject: ONE opened and unfolded modest paper AUDITION REPLY LETTER, recently received after a girl applied one week ago to a local community touring theatre audition. The letter is aged cream stationery with natural fold lines and only faint NONREADABLE incidental strokes; no readable characters, no certificate layout, no embossed seal or fancy ornament, no modern form boxes. An old plain cream envelope lies beside it, its flap open, a simple pencil and one dog-eared page of a play script beside the letter. Nearby stands the SAME small pale muted TEAL-GREEN ceramic mug with ivory five-petal floral sprigs and fine dark teal stems, simple handle at left, tea inside, rim NOW COMPLETELY SMOOTH INTACT matching green glaze, NO rough white repair patch and NO missing chip. A few modest general-store shelves/glass cupboard softly out of focus behind, same old Chinese white-plaster town beyond a modest side window. Clear narrative objects all in UPPER/MIDDLE, roughly y28%-65%; keep LOWER QUARTER quiet warm counter wood with subtle brush grain only for future dialogue overlay. Natural window light, no dramatic glow. Letter is a practical invitation to audition, not acceptance or award. No people, hands, faces, silhouettes, animals, UI, icons, borders, watermarks, logos or readable writing. No decorative magic, floating petals, gold kintsugi, horror or modern office. Single coherent illustration, no collage, retain all main props within frame.",
+      "generationSourcePath": "C:\\Users\\唐乐\\.codex\\generated_images\\01a1a08d-669c-7921-9569-6ce7a06880aa\\exec-97acc667-ec12-4a76-816f-21e813c01c18.png",
+      "references": [
+        {
+          "path": "source-assets/paint-prologue/home.png",
+          "role": "Viewed style/continuity reference only; not passed as tool input",
+          "sha256": "652c1dabea8fdf08da74cb3c28736699486cbd86a804d2276ad18b7ae4855b2b"
+        },
+        {
+          "path": "source-assets/paint-prologue/workshop.png",
+          "role": "Viewed style/continuity reference only; not passed as tool input",
+          "sha256": "4409105821b05f80df7bc371969364f92da324da529f6afbb25d8011abf6978e"
+        },
+        {
+          "path": "source-assets/paint-chapter-one/shop.png",
+          "role": "Viewed style/continuity reference only; not passed as tool input",
+          "sha256": "82569294e02c440ed38b7b8e8dbbf83526405daa66b3b16b9a33a81d5dd8a8c3"
+        },
+        {
+          "path": "source-assets/paint-chapter-one/cup-after.png",
+          "role": "Viewed style/continuity reference only; not passed as tool input",
+          "sha256": "e52de0bc57fa4c8d6739a64c8a8273cf5212fb62dbb195f3eb4b1dd69ef25ead"
+        }
+      ],
+      "generator": "built-in image_gen.imagegen",
+      "generationToolParameters": {
+        "transparent_background": false
+      },
+      "nativeFile": "source-assets/paint-chapter-two/audition-letter-native.png",
+      "sourceFile": "source-assets/paint-chapter-two/audition-letter.png",
+      "publicFile": "apps/web/public/assets/paint-chapter-two/audition-letter.webp",
+      "publicUrl": "/assets/paint-chapter-two/audition-letter.webp",
+      "native": {
+        "width": 1672,
+        "height": 941,
+        "format": "png",
+        "bytes": 2764732,
+        "sha256": "0bf0484e7c205b8e837d4beeb75603fd120437a07ebd1943175f5ae03806262e"
+      },
+      "source": {
+        "width": 1920,
+        "height": 1080,
+        "format": "png",
+        "bytes": 5209682,
+        "sha256": "9cd9f815d55af44b2f02264765eb9fb6779668a96cae29bd6ed8de674839ed59"
+      },
+      "runtime": {
+        "width": 1920,
+        "height": 1080,
+        "format": "webp",
+        "bytes": 538690,
+        "sha256": "67352fb95408a6c230615451bf26d640cce0156e7e439158ad72e16928d11665"
+      },
+      "generationSourceSha256": "0bf0484e7c205b8e837d4beeb75603fd120437a07ebd1943175f5ae03806262e",
+      "sourceSha256": "9cd9f815d55af44b2f02264765eb9fb6779668a96cae29bd6ed8de674839ed59",
+      "publicSha256": "67352fb95408a6c230615451bf26d640cce0156e7e439158ad72e16928d11665",
+      "adaptation": {
+        "cropped": false,
+        "aspectRoundingCorrectionRatio": 0.0005313496280551222
+      },
+      "byteReproductionVerified": true,
+      "visualQa": {
+        "result": "Pass: final 1920x1080 encoded WebP directly viewed and inspected",
+        "checks": [
+          "Opened folded audition reply with old envelope, pencil and dog-eared play page; no certificate/form layout",
+          "Pale muted teal floral mug has smooth intact green rim",
+          "Map and store context visible; bottom quarter quiet counter; no readable text or people"
+        ]
+      }
+    },
+    {
+      "id": "audition-corridor",
+      "prompt": "Use case: illustration-story. Asset type: original literary visual novel background, a single wide 16:9 frame target 1920x1080. In the same Chinese small town as the previously viewed honey-wood/ivory old home, theater workshop, general store and riverside. Quiet spring AFTERNOON corridor of an ordinary local public CULTURAL STATION where a modest theatre audition is happening. Understated hand-painted oil/gouache/watercolor texture, tangible worn materials, honey timber, muted gray teal, warm ivory. Cream-white gently worn plaster walls, deep muted GREEN wooden doors with ordinary brass/iron handles, simple cared-for wooden waiting bench or two wooden chairs against the wall. One REAL HUMAN-SIZED green wooden door in the upper-middle/right is standing naturally partly open, fully connected to a real frame, hinges and floor threshold visible, a person could choose to walk through it. THROUGH THE GAP: only a modest small rehearsal-stage edge, an old upright piano and quiet warm window light, modest practical public room, no concert hall or luxury. A plain tall corridor window at the side admits afternoon sunshine and hints of Chinese black-tiled roofs/young spring leaves outside. The doorway is the compositional focus at x55%-70%, y20%-65%; waiting seats and threshold legible above y72%. Lower quarter is uncluttered muted old timber floor with gentle light/shadow for dialogue overlay. Calm anticipation, an accessible everyday place, no ominous or triumphal mood. Space usable behind VN character sprites. No people, silhouettes, shadows shaped like people, faces, hands or animals. No readable signs, letters, posters, logos, watermark, border or UI. No modern corporate office, no reception counter, no glass skyscraper, no shrine, torii, kimono, Japanese architecture or decorative cherry blossom petals. No gold palace, ornate theater, fantasy portal, floating objects or supernatural glow. Single coherent real room perspective, full scene without collage.",
+      "generationSourcePath": "C:\\Users\\唐乐\\.codex\\generated_images\\01a1a08d-669c-7921-9569-6ce7a06880aa\\exec-226ee404-c699-485f-aa0d-404a85d7d6e4.png",
+      "references": [
+        {
+          "path": "source-assets/paint-prologue/home.png",
+          "role": "Viewed style/continuity reference only; not passed as tool input",
+          "sha256": "652c1dabea8fdf08da74cb3c28736699486cbd86a804d2276ad18b7ae4855b2b"
+        },
+        {
+          "path": "source-assets/paint-prologue/workshop.png",
+          "role": "Viewed style/continuity reference only; not passed as tool input",
+          "sha256": "4409105821b05f80df7bc371969364f92da324da529f6afbb25d8011abf6978e"
+        },
+        {
+          "path": "source-assets/paint-chapter-one/river.png",
+          "role": "Viewed style/continuity reference only; not passed as tool input",
+          "sha256": "eea73b8b6f6d6644f91e5d8d6822f3372594249f49e884ac650de8568bfdc915"
+        }
+      ],
+      "generator": "built-in image_gen.imagegen",
+      "generationToolParameters": {
+        "transparent_background": false
+      },
+      "nativeFile": "source-assets/paint-chapter-two/audition-corridor-native.png",
+      "sourceFile": "source-assets/paint-chapter-two/audition-corridor.png",
+      "publicFile": "apps/web/public/assets/paint-chapter-two/audition-corridor.webp",
+      "publicUrl": "/assets/paint-chapter-two/audition-corridor.webp",
+      "native": {
+        "width": 1672,
+        "height": 941,
+        "format": "png",
+        "bytes": 2443417,
+        "sha256": "dbac70ca9b78972fb2f5293417b31e2d6597cd2215d5c2a286886da414490c15"
+      },
+      "source": {
+        "width": 1920,
+        "height": 1080,
+        "format": "png",
+        "bytes": 5119552,
+        "sha256": "6069595c67f9d2538e86bd771ef5818b398f5293f590ecf940611f4407877dfa"
+      },
+      "runtime": {
+        "width": 1920,
+        "height": 1080,
+        "format": "webp",
+        "bytes": 451250,
+        "sha256": "5d14a01e3ba6e6bdab4282f614728d92f03951b8a800d19c31cca07721ee3bb4"
+      },
+      "generationSourceSha256": "dbac70ca9b78972fb2f5293417b31e2d6597cd2215d5c2a286886da414490c15",
+      "sourceSha256": "6069595c67f9d2538e86bd771ef5818b398f5293f590ecf940611f4407877dfa",
+      "publicSha256": "5d14a01e3ba6e6bdab4282f614728d92f03951b8a800d19c31cca07721ee3bb4",
+      "adaptation": {
+        "cropped": false,
+        "aspectRoundingCorrectionRatio": 0.0005313496280551222
+      },
+      "byteReproductionVerified": true,
+      "visualQa": {
+        "result": "Pass: final 1920x1080 encoded WebP directly viewed and inspected",
+        "checks": [
+          "Modest plaster and green-wood public cultural-station corridor",
+          "Bench, real partly open doorway, small stage and old piano visible",
+          "No signs/people/Japanese shrine elements; lower floor suitable for dialogue"
+        ]
+      }
+    },
+    {
+      "id": "restoration-studies",
+      "prompt": "Use case: illustration-story / continuity edit. Asset type: original literary VN chapter-two outside-the-painting CG, wide 16:9 target 1920x1080. Reference image 1 is the EXACT existing outside.png restoration room and work desk to continue; references 2 xia-normal.png and 3 xia-smile.png define the SAME girl's face/hairstyle for artwork ON PAPER only. Create the next close narrative shot at this SAME wooden restoration desk at night, change camera to a modest elevated close 3/4 view so documents are legible as physical objects. Preserve room identity: honey-brown scarred workbench, black articulated metal desk lamp at LEFT with ordinary warm bulb, glass water jar, brushes and cotton swabs, night blue window/Chinese tiled roofs at back-left, original large easel at right with the same textured painting of EMPTY theater workshop/chairs/windows, no newly added person in that painting. Retain restrained hand-painted oil/gouache texture, slate blue night and warm amber lamp palette. Main new subject on upper-middle desk under lamp: TWO SEPARATE ordinary rectangular paper restoration-study documents naturally laid side-by-side with a little space, not joined into a single face. LEFT sheet is an aged color reproduction of an old painting/photograph, showing head-and-shoulders portrait of Xia He SMILING gently: same youthful East Asian woman, short dark-brown slightly wavy bob with small side braid, soft green-teal eyes, ivory collared shirt, muted blue pinafore and beige cardigan, as reference 3. RIGHT sheet is a graphite underdrawing study of EXACTLY THE SAME GIRL, matching facial structure, hair, clothing and head angle, but relaxed CLOSED neutral mouth and NO SMILE, as reference 2 neutral expression. Both are small tangible images drawn/printed ON PAPER with clearly visible ivory margins and slight paper curl/shadow; neither is a real person standing in the room, no human body outside the paper, no artist at table, no hands. The two drawings provide contradictory source evidence about her original expression. A single fine brush rests laid down beside the documents, no brush touching faces: conservator has paused face retouching to verify sources, no face editing apparatus or magic. Composition: two faces large enough to compare but completely in UPPER/MIDDLE y25%-62%, main paper edges end above y72%; bottom quarter quiet plain warm workbench for dialogue overlay; lamp and desk environment frame main documents, easel only secondary context in background. No readable words anywhere, only very faint nonlinguistic study marks if needed. No split-face, no merged heads, no uncanny doubles, no horror, no tears, no glowing faces, no magic, no floating symbols, no UI, no watermark or frame. This is careful physical art-conservation research, not changing a real person's face. Keep the original background painting's workshop empty and the physical room unoccupied.",
+      "generationSourcePath": "C:\\Users\\唐乐\\.codex\\generated_images\\01a1a08d-669c-7921-9569-6ce7a06880aa\\exec-b58607d3-8cc5-4590-a276-93366efbb586.png",
+      "references": [
+        {
+          "path": "source-assets/paint-prologue/outside.png",
+          "role": "Viewed edit target: same conservation studio and work desk; next close shot",
+          "sha256": "81dc8636c9eeaa49f8a2b890a6c2b3a6d2759d8ac52f7d2db417de4ffd9e82c0"
+        },
+        {
+          "path": "source-assets/paint-prologue/xia-normal.png",
+          "role": "Viewed identity/expression supporting reference: neutral graphite paper study",
+          "sha256": "8575865ee037f598abcec8d6b8dbfba68769277d04369d88705098472e246578"
+        },
+        {
+          "path": "source-assets/paint-prologue/xia-smile.png",
+          "role": "Viewed identity/expression supporting reference: smiling color paper reproduction",
+          "sha256": "fa2b96ad3f0daba4a91ec979f9bd8cd8d31cf8bd6777f0f34867a1307c0c808b"
+        }
+      ],
+      "generator": "built-in image_gen.imagegen",
+      "generationToolParameters": {
+        "transparent_background": false,
+        "referenced_image_paths": [
+          "C:/Users/唐乐/Desktop/实训2/项目/source-assets/paint-prologue/outside.png",
+          "C:/Users/唐乐/Desktop/实训2/项目/source-assets/paint-prologue/xia-normal.png",
+          "C:/Users/唐乐/Desktop/实训2/项目/source-assets/paint-prologue/xia-smile.png"
+        ]
+      },
+      "nativeFile": "source-assets/paint-chapter-two/restoration-studies-native.png",
+      "sourceFile": "source-assets/paint-chapter-two/restoration-studies.png",
+      "publicFile": "apps/web/public/assets/paint-chapter-two/restoration-studies.webp",
+      "publicUrl": "/assets/paint-chapter-two/restoration-studies.webp",
+      "native": {
+        "width": 1672,
+        "height": 941,
+        "format": "png",
+        "bytes": 2902578,
+        "sha256": "58bb9e8189ec95748f7d5488cc2ecc692d6692caab76f4415759ef6136749b77"
+      },
+      "source": {
+        "width": 1920,
+        "height": 1080,
+        "format": "png",
+        "bytes": 5455260,
+        "sha256": "bdcb541686ceecc0ce62b61bef1debb79b5ed7d1fde334d11f2faaf186dcba67"
+      },
+      "runtime": {
+        "width": 1920,
+        "height": 1080,
+        "format": "webp",
+        "bytes": 663954,
+        "sha256": "a1f386b5692c8aa982c46e7563fbf409f43ceece6dafe4896542ea2d1c77e15b"
+      },
+      "generationSourceSha256": "58bb9e8189ec95748f7d5488cc2ecc692d6692caab76f4415759ef6136749b77",
+      "sourceSha256": "bdcb541686ceecc0ce62b61bef1debb79b5ed7d1fde334d11f2faaf186dcba67",
+      "publicSha256": "a1f386b5692c8aa982c46e7563fbf409f43ceece6dafe4896542ea2d1c77e15b",
+      "adaptation": {
+        "cropped": false,
+        "aspectRoundingCorrectionRatio": 0.0005313496280551222
+      },
+      "byteReproductionVerified": true,
+      "visualQa": {
+        "result": "Pass: final 1920x1080 encoded WebP directly viewed and inspected",
+        "checks": [
+          "Same conservation-room lamp/window/easel/desk identity continues in a closer shot",
+          "Two separate physical sheets show same Xia He identity; left color smile, right graphite neutral mouth",
+          "No human in room; brush laid down; no split-face/horror/glow; main faces above dialogue area"
+        ]
+      }
+    }
+  ],
+  "productionParameters": {
+    "modulePath": "./node_modules/.pnpm/sharp@0.33.5/node_modules/sharp",
+    "versions": {
+      "aom": "3.9.1",
+      "archive": "3.7.4",
+      "cairo": "1.18.0",
+      "cgif": "0.4.1",
+      "exif": "0.6.24",
+      "expat": "2.6.2",
+      "ffi": "3.4.6",
+      "fontconfig": "2.15.0",
+      "freetype": "2.13.2",
+      "fribidi": "1.0.15",
+      "glib": "2.81.1",
+      "harfbuzz": "9.0.0",
+      "heif": "1.18.2",
+      "highway": "1.2.0",
+      "imagequant": "2.4.1",
+      "lcms": "2.16",
+      "mozjpeg": "4.1.5",
+      "pango": "1.54.0",
+      "pixman": "0.43.4",
+      "png": "1.6.43",
+      "proxy-libintl": "0.4",
+      "rsvg": "2.58.93",
+      "spng": "0.7.4",
+      "tiff": "4.6.0",
+      "vips": "8.15.3",
+      "webp": "1.4.0",
+      "xml": "2.13.3",
+      "zlib-ng": "2.2.1",
+      "sharp": "0.33.5"
+    },
+    "pipeline": [
+      "await fs.copyFile(generationSourcePath,nativeFile,fs.constants.COPYFILE_EXCL)",
+      "await sharp(nativeFile).resize(1920,1080,{fit:'fill',kernel:'lanczos3'}).removeAlpha().png().toFile(sourceFile)",
+      "await sharp(sourceFile).webp({quality:94,effort:6}).toFile(publicFile)"
+    ],
+    "resize": {
+      "width": 1920,
+      "height": 1080,
+      "fit": "fill",
+      "kernel": "lanczos3",
+      "crop": false
+    },
+    "png": {
+      "removeAlpha": true,
+      "otherParameters": "Sharp defaults"
+    },
+    "webp": {
+      "quality": 94,
+      "effort": 6,
+      "otherParameters": "Sharp defaults"
+    },
+    "metadata": {
+      "withMetadata": false,
+      "keepMetadata": false,
+      "explicitColorTransform": false
+    },
+    "note": "Native generated PNGs preserved byte-for-byte; runtime WebP reads saved production PNG. Any subpixel 16:9 aspect rounding is corrected with fit:fill; no cropping."
+  },
+  "validation": {
+    "assetCount": 3,
+    "nativeFilesUnchanged": true,
+    "sourceAndRuntimeDimensions": "1920x1080",
+    "sourceFormat": "png",
+    "runtimeFormat": "webp",
+    "reencodedSourceAndRuntimeByteHashesMatch": true,
+    "noStoryOrDatabaseChanges": true,
+    "visualQa": "All three final encoded WebPs directly inspected with view_image: consistent style, appropriate ordinary objects and room identity, no readable text/UI/people, main story evidence clear above bottom dialogue region.",
+    "finalDecodedAndReferenceHashChecksPassed": true
+  },
+  "qualityNotes": [
+    "No existing image overwritten. No web pictures or CLI generation used.",
+    "First two assets generated from text after viewing local style references, no image tool input paths. Restoration-studies uses the three viewed local images as tool inputs.",
+    "Room continuity is visually checked; pixel-identical preservation outside changed regions is not claimed.",
+    "Documents have nonreadable incidental strokes; plot-specific readable text remains in story dialogue."
+  ]
+}

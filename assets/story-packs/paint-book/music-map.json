@@ -1,0 +1,89 @@
+{
+  "schemaVersion": 1,
+  "story": "请让这幅画老去",
+  "usage": "story-bgm-only",
+  "creditsUrl": "/assets/audio/paint-book/music-credits.json",
+  "creditsPage": "/assets/audio/paint-book/credits.html",
+  "tracks": [
+    {
+      "id": "tam-atelier",
+      "name": "アトリエの日常",
+      "url": "/assets/audio/paint-book/tam-atelier.ogg",
+      "author": "多夢（TAM Music Factory）",
+      "purpose": "修道具、工房日常与吃饭",
+      "durationSeconds": 139.969887,
+      "sha256": "18598c29fb3a78c3fa5fc33ea4cb8f00ab1d9f43d86821be86496d56ffa61783",
+      "creditsPage": "/assets/audio/paint-book/credits.html"
+    },
+    {
+      "id": "tam-ame",
+      "name": "やさしい雨",
+      "url": "/assets/audio/paint-book/tam-ame.ogg",
+      "author": "多夢（TAM Music Factory）",
+      "purpose": "河岸车次表、重演与接近",
+      "durationSeconds": 140.617143,
+      "sha256": "c018dbe4de8d36dda1ce27ddd83fe826ae53902ca2c096afe548f1e730626ff3",
+      "creditsPage": "/assets/audio/paint-book/credits.html"
+    },
+    {
+      "id": "maou-acoustic29",
+      "name": "アコースティック29",
+      "url": "/assets/audio/paint-book/maoudamashii-acoustic29.ogg",
+      "author": "森田交一（魔王魂）",
+      "purpose": "杂货铺与青年日常",
+      "durationSeconds": 175.751837,
+      "sha256": "3a3bfdaba0931224f99dc57a4eeb6dd4d3f6e0a9f6b4028fee903c9e8486b6a2",
+      "creditsPage": "/assets/audio/paint-book/credits.html"
+    },
+    {
+      "id": "maou-piano12",
+      "name": "ピアノ12",
+      "url": "/assets/audio/paint-book/maoudamashii-piano12.ogg",
+      "author": "森田交一（魔王魂）",
+      "purpose": "抱旧布的试演、未说完的话之后",
+      "durationSeconds": 74.004898,
+      "sha256": "87da0a81b03a3a6178f87ecd9e21d55df82c284e4bf48514e1119a169757e63d",
+      "creditsPage": "/assets/audio/paint-book/credits.html"
+    },
+    {
+      "id": "maou-healing15",
+      "name": "ヒーリング15",
+      "url": "/assets/audio/paint-book/maoudamashii-healing15.ogg",
+      "author": "森田交一（魔王魂）",
+      "purpose": "自己作出决定之后的行动与出发",
+      "durationSeconds": 130.063673,
+      "sha256": "14b5b413ecbf4dc6c15442aa002cccbe2bb035ab0bf20af3f164c071b8cd6a01",
+      "creditsPage": "/assets/audio/paint-book/credits.html"
+    },
+    {
+      "id": "ds-chaolu",
+      "name": "朝露",
+      "url": "/assets/audio/paint-book/dragonic-symphony-chaolu.ogg",
+      "author": "藤村ほわん（龍的交響楽）",
+      "purpose": "房间票根、早晨与中国旧街",
+      "durationSeconds": 238.2,
+      "sha256": "661905b25121ab660d5ee44352fe15e85bb076c7114f0ab1752788bdeb1a80c7",
+      "creditsPage": "/assets/audio/paint-book/credits.html"
+    },
+    {
+      "id": "amacha-tanken",
+      "name": "夏休みの探検",
+      "url": "/assets/audio/paint-book/amacha-tanken.ogg",
+      "author": "甘茶（甘茶の音楽工房）",
+      "purpose": "后台忙乱与轻松对词",
+      "durationSeconds": 91.062857,
+      "sha256": "d7e1bdc210cf83850ab6365575f763874016f57b4b1d2d5e5d25fb90d1520ae4",
+      "creditsPage": "/assets/audio/paint-book/credits.html"
+    },
+    {
+      "id": "amacha-yume",
+      "name": "夢",
+      "url": "/assets/audio/paint-book/amacha-yume.ogg",
+      "author": "甘茶（甘茶の音楽工房）",
+      "purpose": "画作的吸引力、私下愿望与留白",
+      "durationSeconds": 157.1,
+      "sha256": "85a0d9f2e3ce4415847a4b3507cb7771da3c07f94809636051ce03b2d91fd2d1",
+      "creditsPage": "/assets/audio/paint-book/credits.html"
+    }
+  ]
+}

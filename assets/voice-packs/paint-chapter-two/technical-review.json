@@ -1,0 +1,51 @@
+{
+  "date": "2026-11-03",
+  "dialogueCount": 68,
+  "durationSeconds": 291.18,
+  "referenceCount": 8,
+  "referenceShaReusedFrom": [
+    "paint-prologue",
+    "paint-chapter-one"
+  ],
+  "actorCount": 4,
+  "speakingActors": [
+    "程见",
+    "夏禾",
+    "许野"
+  ],
+  "noNewDialogueActor": "陆青",
+  "backendHealth": {
+    "provider": "gpt-sovits",
+    "ok": true,
+    "managedState": "running",
+    "existingPid": 39900,
+    "port": 9880
+  },
+  "runtimeDecoding": {
+    "tool": "ffmpeg",
+    "verified": 68,
+    "result": "pass",
+    "finiteNonSilent": true
+  },
+  "currentAsrCoverage": 76,
+  "asrModel": "faster-whisper base, CPU int8",
+  "clippedSourceSamples": 0,
+  "sourcePeak": 0.52881,
+  "minimumRms": 0.01161,
+  "priorFilesUnchanged": 318,
+  "priorRuntimeDialogueFilesUnchanged": 127,
+  "alternateTakeCount": 6,
+  "alternatesHaveHashAndAsrEvidence": true,
+  "humanListeningCompleted": false,
+  "auxiliaryAsrFlags": [
+    {
+      "id": "pc2-read-2-ja",
+      "sha256": "be9aa2a5e596c27cfcead72015ddadec52e2e2c72544b0988b0d27495484ed03",
+      "expected": "私はカモメ……いいえ、違う。私は女優なの。",
+      "recognized": "わたしはかもめ、いえ、ちがわたしはじょいゆなの",
+      "similarity": 0.324
+    }
+  ],
+  "limitation": "ASR and successful decoding are technical evidence only; short lines and Nina delivery still require human listening. Character-specific weights were not trained.",
+  "priorRuntimeOggFilesUnchanged": 132
+}

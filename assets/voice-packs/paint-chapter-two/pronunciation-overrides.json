@@ -1,0 +1,27 @@
+{
+  "pc2-home-4": {
+    "synthesisText": "カップのこと？",
+    "textSplitMethod": "cut0",
+    "note": "Final alternate keeps the authored orthography, unsplit short question. Both prior seeds retained because auxiliary ASR is uncertain; human listening pending."
+  },
+  "pc2-shop-2": {
+    "synthesisText": "いつ？",
+    "textSplitMethod": "cut0",
+    "note": "Very short question; no text expansion. Unsplit alternate seed after auxiliary ASR flagged the initial take."
+  },
+  "pc2-hall-7": {
+    "synthesisText": "いくって、きめたの？",
+    "textSplitMethod": "cut0",
+    "note": "Kana guidance for 行く/決めた plus unsplit question; subtitle unchanged. Retake is an ASR aid, not human approval."
+  },
+  "pc2-read-2": {
+    "synthesisText": "私はカモメ……いいえ、違う。私はじょゆうなの。",
+    "textSplitMethod": "cut0",
+    "note": "Guide 女優 as じょゆう in the self-translated public-domain Nina line; authored subtitle and meaning unchanged. Initial base ASR had vowel/kanji ambiguity, human listening pending."
+  },
+  "pc2-read-1": {
+    "synthesisText": "チェーホフの、かもめ。最後の、ニーナのところ。",
+    "textSplitMethod": "cut0",
+    "note": "Unsplit literary title/name phrase with original orthography; initial auxiliary ASR uncertain. Human listening pending."
+  }
+}

@@ -1,0 +1,80 @@
+[
+  {
+    "id": "pc2-home-4-ja",
+    "sha256": "6d28b6171883dc1df8cff736bad3583d6edb311be18ce6ded3c8c48bfd35987b",
+    "expected": "カップのこと？",
+    "recognized": "かってんのかと",
+    "similarity": 0.308,
+    "review": "check",
+    "durationSeconds": 1.14,
+    "rms": 0.02133,
+    "clippedSampleCount": 0,
+    "humanListeningCompleted": false,
+    "limitation": "Small CPU ASR can misrecognize natural Japanese. This is not a pronunciation or acting verdict."
+  },
+  {
+    "id": "pc2-shop-2-ja",
+    "sha256": "8bb0936a18e4dd2c46af185ce1cc2617789f3a8e72102939c9f83ffe5d27b616",
+    "expected": "いつ？",
+    "recognized": "ビッツ",
+    "similarity": 0.0,
+    "review": "check",
+    "durationSeconds": 0.78,
+    "rms": 0.04362,
+    "clippedSampleCount": 0,
+    "humanListeningCompleted": false,
+    "limitation": "Small CPU ASR can misrecognize natural Japanese. This is not a pronunciation or acting verdict."
+  },
+  {
+    "id": "pc2-hall-7-ja",
+    "sha256": "7960b5126eba0f74499978df4ff47f88fe6578afb7deb50b140372f7ddd9c537",
+    "expected": "行くって、決めたの？",
+    "recognized": "にこった、じめたの?",
+    "similarity": 0.5,
+    "review": "check",
+    "durationSeconds": 2.48,
+    "rms": 0.01437,
+    "clippedSampleCount": 0,
+    "humanListeningCompleted": false,
+    "limitation": "Small CPU ASR can misrecognize natural Japanese. This is not a pronunciation or acting verdict."
+  },
+  {
+    "id": "pc2-read-2-ja",
+    "sha256": "dcf43d214a72e0c928baf92233c4a948e5a63545a62847355b12d3c400441e18",
+    "expected": "私はカモメ……いいえ、違う。私は女優なの。",
+    "recognized": "わたしはかもめいえ違うわたしはジョイユーナの",
+    "similarity": 0.368,
+    "review": "check",
+    "durationSeconds": 5.18,
+    "rms": 0.01138,
+    "clippedSampleCount": 0,
+    "humanListeningCompleted": false,
+    "limitation": "Small CPU ASR can misrecognize natural Japanese. This is not a pronunciation or acting verdict."
+  },
+  {
+    "id": "pc2-read-1-ja",
+    "sha256": "3c9a97d709ed5007d2a635c21033e884294de505de929a1dba05f47ad1590a67",
+    "expected": "チェーホフの、かもめ。最後の、ニーナのところ。",
+    "recognized": "チェーハフな カモメ 最後の ニーナだったから",
+    "similarity": 0.513,
+    "review": "check",
+    "durationSeconds": 5.5,
+    "rms": 0.01413,
+    "clippedSampleCount": 0,
+    "humanListeningCompleted": false,
+    "limitation": "Small CPU ASR can misrecognize natural Japanese. This is not a pronunciation or acting verdict."
+  },
+  {
+    "id": "pc2-home-4-ja",
+    "sha256": "231326e08de9de708e8b83037deac44c0fdd53684b675d99e757df4c3af6436f",
+    "expected": "カップのこと？",
+    "recognized": "立てるかと",
+    "similarity": 0.182,
+    "review": "check",
+    "durationSeconds": 1.14,
+    "rms": 0.0211,
+    "clippedSampleCount": 0,
+    "humanListeningCompleted": false,
+    "limitation": "Small CPU ASR can misrecognize natural Japanese. This is not a pronunciation or acting verdict."
+  }
+]

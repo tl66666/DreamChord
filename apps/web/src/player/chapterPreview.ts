@@ -35,7 +35,8 @@ export function mergeChaptersForPreview(project: ProjectDetail) {
       id: `${prefix}${node.nodeId}`,
       type: node.type,
       position: { x: node.positionX, y: node.positionY },
-      data: safeJsonParse<Record<string, unknown>>(node.data, {}),
+      // Runtime-only scope: chapter stage direction matches its standalone editor preview.
+      data: { ...safeJsonParse<Record<string, unknown>>(node.data, {}), __previewChapterId: chapter.id },
     }))
     const chapterEdges = chapter.edges.map((edge) => ({
       id: `${prefix}${edge.edgeId}`,

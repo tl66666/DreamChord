@@ -2,6 +2,7 @@ import type { StoryGraph, StoryNode, StoryNodeType, StoryEdge } from './types.js
 import { voiceTextHash, directVoiceLine } from './voiceDirection.js'
 import { PAINT_LINES } from './paintLines.js'
 import { PAINT_NARRATION } from './paintNarration.js'
+import { applyPaintScore } from './paintScore.js'
 
 type Role = '程见' | '夏禾' | '许野' | '陆青'
 const art = '/assets/paint-prologue', sound = '/assets/audio/paint-prologue'
@@ -168,6 +169,21 @@ lines('p-outside-1', 'p-outside-2')
 note('p-outside-close')
 bg('p-back-to-hall', 'chair-erased')
 note('p-ending')
+
+applyPaintScore(nodes, [
+  { nodeId: 'p-invitation', track: 'ds-chaolu', volume: .48 },
+  { nodeId: 'p-first-afternoon', track: 'tam-atelier', volume: .52 },
+  { nodeId: 'p-ye-paper', track: 'amacha-tanken', volume: .4 },
+  { nodeId: 'p-repair-work', track: 'tam-atelier', volume: .48 },
+  { nodeId: 'p-wilde-book', track: 'maou-piano12', volume: .32 },
+  { nodeId: 'p-before-choice', track: 'tam-atelier', volume: .46 },
+  { nodeId: 'p-after-show', track: 'amacha-tanken', volume: .38 },
+  { nodeId: 'p-chair-offer', track: 'tam-ame', volume: .52 },
+  { nodeId: 'p-wilde-return', track: 'maou-piano12', volume: .3 },
+  { nodeId: 'p-open-window', track: 'maou-acoustic29', volume: .45 },
+  { nodeId: 'p-another-room', track: 'amacha-yume', volume: .28 },
+  { nodeId: 'p-ending', stop: true },
+])
 
 export const PAINT_LITERARY_SOURCES = [
   { nodeId: 'p-epigraph', author: '宫泽贤治', title: '银河铁道之夜', url: 'https://www.aozora.gr.jp/cards/000081/files/456_15050.html', use: '公开原文的一句问句，自译中文；侍奉与接受关爱的行动线在序章回应，未宣称回答全篇问题。' },

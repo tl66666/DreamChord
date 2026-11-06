@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { splitReadingPages } from './readingPages'
-import { PAINT_PROLOGUE, PAINT_CHAPTER_ONE } from '@dreamchord/story-domain'
+import { PAINT_PROLOGUE, PAINT_CHAPTER_ONE, PAINT_CHAPTER_TWO } from '@dreamchord/story-domain'
 
 describe('short visual novel reading pages', () => {
   it('keeps short dialogue intact and splits long prose at natural breaks without losing text', () => {
@@ -20,8 +20,8 @@ describe('short visual novel reading pages', () => {
     expect(splitReadingPages(ja).join('').replace(/\s/g, '')).toBe(ja.replace(/\s/g, ''))
     expect(splitReadingPages('😀'.repeat(150)).every(p => !p.includes('\uFFFD') && Array.from(p).length <= 66)).toBe(true)
   })
-  it('keeps every Chinese and Japanese narration page within the reading budget across both chapters', () => {
-    for (const node of [...PAINT_PROLOGUE.graph.nodes, ...PAINT_CHAPTER_ONE.graph.nodes].filter(n => n.type === 'subtitle')) {
+  it('keeps every Chinese and Japanese narration page within the reading budget across all three chapters', () => {
+    for (const node of [PAINT_PROLOGUE, PAINT_CHAPTER_ONE, PAINT_CHAPTER_TWO].flatMap(c => c.graph.nodes).filter(n => n.type === 'subtitle')) {
       const texts = [node.data.text, (node.data.localizations as { ja: { text: string } }).ja.text] as string[]
       for (const text of texts) {
         const pages = splitReadingPages(text)

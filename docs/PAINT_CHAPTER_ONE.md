@@ -1,6 +1,6 @@
 # 《请让这幅画老去》第一章交接
 
-当前官方作品收录序章与第一章，固定项目 ID 仍为 `dreamchord-paint-prologue`。第一章为《今天也有一场坏戏》，数据库 order=1、场景编号 `2-1` 至 `2-5`。没有另建一张同名作品卡。
+当前官方作品已收录序章至第二章，固定项目 ID 仍为 `dreamchord-paint-prologue`。第一章为《今天也有一场坏戏》，数据库 order=1、场景编号 `2-1` 至 `2-5`。本页保留第一章制作记录；三章安装、前文修订和新配乐以[第二章交接](PAINT_CHAPTER_TWO.md)为准。已装三章的环境不再运行旧的追加安装或序章升级命令。
 
 - [第一章中文连续阅读稿](story/paint/reading-chapter-one.zh.md)
 - [第一章中日演出稿与节点编号](story/paint/01-chapter-one.md)

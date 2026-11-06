@@ -94,14 +94,16 @@ async function preparePaint(ownerId: string, projectId: string, options: PaintOp
     return audio?.bgm?.url ? [audio.bgm.url] : []
   }))
   type Credit = { runtimeFile?: string; runtimeSha256?: string; id?: string; name?: string; author?: string; license?: string; sourceUrl?: string; durationSeconds?: number }
-  let credits: Credit[] = []
-  try { credits = JSON.parse(await readFile(path.join(publicRoot, 'assets/audio/paint-prologue/music-credits.json'), 'utf8')) as Credit[] }
-  catch (error) { if ((error as NodeJS.ErrnoException).code !== 'ENOENT') throw error }
+  const credits: Credit[] = []
+  for (const directory of ['paint-prologue', 'paint-book']) {
+    try { credits.push(...JSON.parse(await readFile(path.join(publicRoot, `assets/audio/${directory}/music-credits.json`), 'utf8')) as Credit[]) }
+    catch (error) { if ((error as NodeJS.ErrnoException).code !== 'ENOENT') throw error }
+  }
   const music = []
   for (const url of musicUrls) {
     const credit = credits.find(c => c.runtimeFile && takeUrl(c.runtimeFile) === url)
     if (!credit?.runtimeSha256 || !credit.license || !credit.author || !credit.sourceUrl || hash(await readFile(publicPath(publicRoot, url))) !== credit.runtimeSha256) throw new Error(`官方配乐署名或校验不完整：${url}`)
-    music.push({ url, name: credit.name || credit.id || '序章配乐', metadata: JSON.stringify({ audioLibrary: { license: `${credit.license} · ${credit.author}`, source: credit.sourceUrl, scene: definition.title, loop: true }, sha256: credit.runtimeSha256, durationSeconds: credit.durationSeconds, generativeAiUsed: false }) })
+    music.push({ url, name: credit.name || credit.id || '序章配乐', metadata: JSON.stringify({ audioLibrary: { license: `${credit.license} · ${credit.author}`, source: credit.sourceUrl, scene: definition.title, loop: true }, musicCredit: credit, sha256: credit.runtimeSha256, durationSeconds: credit.durationSeconds, generativeAiUsed: false }) })
   }
   const storageRoot = options.storageRoot || process.env.UPLOAD_DIR || './uploads'
   for (const ref of copyReferences ? references : []) {

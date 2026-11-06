@@ -241,13 +241,28 @@ export function convertFlowToRuntime(
   }
 
   const scenes: RuntimeScene[] = []
+  // Chapter links route the reader forward; they must not become stage history.
+  // These scopes are attached only to the in-memory merged preview graph.
+  const stageScopes = new Map<string, { nodes: Node[]; edges: Edge[] }>()
+  for (const node of nodes) {
+    const scope = node.data.__previewChapterId
+    if (typeof scope !== 'string') continue
+    const group = stageScopes.get(scope) || { nodes: [], edges: [] }
+    group.nodes.push(node)
+    stageScopes.set(scope, group)
+  }
+  for (const group of stageScopes.values()) {
+    const ids = new Set(group.nodes.map(n => n.id))
+    group.edges = edges.filter(e => ids.has(e.source) && ids.has(e.target))
+  }
 
   for (const node of ordered) {
     const data = node.data as Record<string, unknown>
 
     if (!PLAYABLE_NODE_TYPES.has(node.type || 'dialogue')) continue
 
-    const stage = resolveStageStateAfterNode(nodes, edges, node.id)
+    const scope = typeof data.__previewChapterId === 'string' ? stageScopes.get(data.__previewChapterId) : undefined
+    const stage = resolveStageStateAfterNode(scope?.nodes || nodes, scope?.edges || edges, node.id)
     const stageCharacters = stage.characters.flatMap((character) => {
       const parsed = parseCharacterOnStage({
         id: `runtime-${node.id}-${character.characterId}`,
