@@ -54,3 +54,5 @@ pnpm test:paint
 `node scripts/export-paint-chapter-three.mjs`导出中日稿和配音脚本；`node scripts/export-paint-chapter-two.mjs`同时更新四章配乐表。`node scripts/package-paint-chapter-three-art.mjs`从仓库生产PNG重建WebP，`--ingest`仅初次导入原生结果。
 
 `pnpm test`672项、lint/build/readiness通过；`pnpm test:paint`18项，声音运行配置25项通过。四章16种选择组合、中文/日文短框文本保全、发布并发/私人改稿保护均有回归。独立叙事/发布审查未发现阻断问题。实机1440×900与390×844检查正文、新图和章节入口，两个分支可到章末。截图在`docs/screenshots/paint-chapter-three-*.webp`。
+
+功能提交`4212368`的[GitHub CI](https://github.com/tl66666/DreamChord/actions/runs/42349219859)与[Pages部署](https://github.com/tl66666/DreamChord/actions/runs/42349219553)均通过；线上新增截图已验证加载、原比例与无横向溢出，原Hero保留。
