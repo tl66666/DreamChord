@@ -12,6 +12,7 @@ export { PAINT_PROLOGUE, PAINT_STARTER_CARD, PAINT_LITERARY_SOURCES } from './pa
 export { PAINT_LINES } from './paintLines.js'
 export { PAINT_CHAPTER_ONE, PAINT_CHAPTER_ONE_LINES } from './paintChapterOne.js'
 export { PAINT_CHAPTER_TWO, PAINT_CHAPTER_TWO_LINES, PAINT_CHAPTER_TWO_SOURCES } from './paintChapterTwo.js'
+export { PAINT_CHAPTER_THREE, PAINT_CHAPTER_THREE_LINES, PAINT_CHAPTER_THREE_SOURCES } from './paintChapterThree.js'
 export { PAINT_SCORE } from './paintScore.js'
 export { PAINT_PROLOGUE as FEATURED_DEMO } from './paintPrologue.js'
 export const FEATURED_DEMO_ID = 'dreamchord-paint-prologue'

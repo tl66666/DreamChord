@@ -7,6 +7,7 @@
 import { useState, useEffect } from 'react'
 import { voiceTextHash } from '@dreamchord/story-domain'
 import type { Edge } from '@xyflow/react'
+import type { ShotCardEditOptions } from './shotGraphOperations'
 import {
   ImageIcon, Users, X, Wand2, ArrowRight, GitMerge, Plus, Sparkles, GitBranch, AlertTriangle, FolderOpen, Music, Volume2, Mic, RotateCcw,
 } from 'lucide-react'
@@ -30,7 +31,7 @@ export function CardEditor({
   allScenes: Scene[]
   allEdges: Edge[]
   convergenceMap: Map<string, string[]>
-  onUpdate: (updates: Partial<ShotCard>) => void
+  onUpdate: (updates: Partial<ShotCard>, options?: ShotCardEditOptions) => void
   onSetChoiceTarget: (choiceIndex: number, targetSceneId: string) => void
   onCreateBranch: (choiceIndex: number, choiceText: string) => void
   onNavigateToScene: (sceneId: string) => void
@@ -100,7 +101,7 @@ export function CardEditor({
   const removeChoice = (index: number) => {
     const newChoices = localChoices.filter((_, i) => i !== index)
     setLocalChoices(newChoices)
-    onUpdate({ choices: newChoices })
+    onUpdate({ choices: newChoices }, { removedChoiceIndex: index })
   }
 
   // 获取选项的当前去向

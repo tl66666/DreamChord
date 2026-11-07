@@ -18,6 +18,18 @@ export default function ConversationTranscript({ conversation, messages, loading
   const [editingDraftId, setEditingDraftId] = useState<string | null>(null)
   const [editedDraft, setEditedDraft] = useState('')
   const [savingDraft, setSavingDraft] = useState(false)
+  const [draftSaveError, setDraftSaveError] = useState('')
+
+  const saveDraft = async (messageId: string) => {
+    if (!onDraftEdit || savingDraft) return
+    setSavingDraft(true)
+    setDraftSaveError('')
+    try {
+      await onDraftEdit(messageId, editedDraft)
+      setEditingDraftId(null)
+    } catch { setDraftSaveError('草稿保存失败，修改已保留，请重试。') }
+    finally { setSavingDraft(false) }
+  }
 
   useLayoutEffect(() => {
     const scroller = scrollRef.current
@@ -53,11 +65,11 @@ export default function ConversationTranscript({ conversation, messages, loading
               <article key={message.id} className={`flex gap-3 ${user ? 'justify-end' : 'justify-start'}`}>
                 {!user && <span className="grid h-8 w-8 shrink-0 place-items-center rounded-md bg-slate-950 text-white"><Icon className="h-4 w-4" /></span>}
                 <div className={`max-w-[82%] border px-4 py-3 text-sm leading-6 ${user ? 'border-dream-200 bg-dream-50 text-slate-900' : 'border-slate-200 bg-white text-slate-800 shadow-sm'}`}>
-                  {editingDraftId === message.id ? <div className="space-y-2"><label className="sr-only" htmlFor={`draft-${message.id}`}>草稿正文</label><textarea id={`draft-${message.id}`} aria-label="草稿正文" value={editedDraft} onChange={(event) => setEditedDraft(event.target.value)} rows={8} className="w-full resize-y border border-slate-300 bg-white px-3 py-2 text-sm leading-6 text-slate-900 outline-none focus:border-dream-500" /><div className="flex gap-2"><button type="button" aria-label="取消编辑草稿" onClick={() => setEditingDraftId(null)} className="border border-slate-200 px-2.5 py-1.5 text-[11px] font-semibold text-slate-600 hover:bg-slate-50">取消</button><button type="button" aria-label="保存草稿" disabled={savingDraft || !editedDraft.trim()} onClick={() => { if (!onDraftEdit) return; setSavingDraft(true); void onDraftEdit(message.id, editedDraft).finally(() => { setSavingDraft(false); setEditingDraftId(null) }) }} className="bg-slate-950 px-2.5 py-1.5 text-[11px] font-semibold text-white hover:bg-slate-800 disabled:opacity-50">保存草稿</button></div></div> : <p className="whitespace-pre-wrap break-words">{message.content}</p>}
+                  {editingDraftId === message.id ? <div className="space-y-2"><label className="sr-only" htmlFor={`draft-${message.id}`}>草稿正文</label><textarea id={`draft-${message.id}`} aria-label="草稿正文" value={editedDraft} disabled={savingDraft} onChange={(event) => setEditedDraft(event.target.value)} rows={8} className="w-full resize-y border border-slate-300 bg-white px-3 py-2 text-sm leading-6 text-slate-900 outline-none focus:border-dream-500" />{draftSaveError && <p role="alert" className="text-xs text-red-700">{draftSaveError}</p>}<div className="flex gap-2"><button type="button" aria-label="取消编辑草稿" disabled={savingDraft} onClick={() => setEditingDraftId(null)} className="border border-slate-200 px-2.5 py-1.5 text-[11px] font-semibold text-slate-600 hover:bg-slate-50 disabled:opacity-50">取消</button><button type="button" aria-label="保存草稿" disabled={savingDraft || !editedDraft.trim()} onClick={() => void saveDraft(message.id)} className="bg-slate-950 px-2.5 py-1.5 text-[11px] font-semibold text-white hover:bg-slate-800 disabled:opacity-50">保存草稿</button></div></div> : <p className="whitespace-pre-wrap break-words">{message.content}</p>}
                   {!user && isCreativeDraft(message.content) && editingDraftId !== message.id && <div className="mt-3 flex flex-wrap gap-2 border-t border-slate-100 pt-2">
                     <button type="button" onClick={() => onDraftAction({ scope: 'chapter', draft: message.content, prompt: '根据用户选择的续写草稿，创建可编辑的工作台场景；把角色台词拆成对话卡、叙述拆成旁白卡，只复用与草稿匹配的素材，并生成可审批补丁。' })} className="rounded-md bg-slate-950 px-2.5 py-1.5 text-[11px] font-semibold text-white hover:bg-slate-800">生成工作台场景</button>
                     <button type="button" onClick={() => onDraftAction({ scope: 'chapter', draft: message.content, prompt: '基于用户选择的续写草稿继续完善人物动作、台词节奏和剧情推进，并生成可审批的镜头卡。' })} className="rounded-md border border-slate-200 bg-white px-2.5 py-1.5 text-[11px] font-semibold text-slate-700 hover:bg-slate-50">继续完善草稿</button>
-                    {onDraftEdit && <button type="button" aria-label="编辑草稿" onClick={() => { setEditingDraftId(message.id); setEditedDraft(message.content) }} className="border border-slate-200 bg-white px-2.5 py-1.5 text-[11px] font-semibold text-slate-700 hover:bg-slate-50">编辑草稿</button>}
+                    {onDraftEdit && <button type="button" aria-label="编辑草稿" onClick={() => { setEditingDraftId(message.id); setEditedDraft(message.content); setDraftSaveError('') }} className="border border-slate-200 bg-white px-2.5 py-1.5 text-[11px] font-semibold text-slate-700 hover:bg-slate-50">编辑草稿</button>}
                   </div>}
                   <ArtifactRefs metadata={message.metadata} />
                   <time className="mt-2 block text-[10px] text-slate-400">{formatMessageTime(message.createdAt)}</time>

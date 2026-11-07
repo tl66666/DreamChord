@@ -1,0 +1,80 @@
+[
+  {
+    "id": "pc3-after-5-ja",
+    "sha256": "166b1d82a8426885a5cdac409120e3353411029269142c7948d72e9d265b6455",
+    "expected": "一週間以内に手紙で知らせるって。今日は、まだ。",
+    "recognized": "一週間イナーにたがめだ知らされた今日まだ",
+    "similarity": 0.5,
+    "review": "check",
+    "durationSeconds": 4.72,
+    "rms": 0.01444,
+    "clippedSampleCount": 0,
+    "humanListeningCompleted": false,
+    "limitation": "Small CPU ASR can misrecognize natural Japanese. This is not a pronunciation or acting verdict."
+  },
+  {
+    "id": "pc3-after-8-ja",
+    "sha256": "34c266f7c5ebaaff0472b80181acce25320e46e583c182b47df1df757538789d",
+    "expected": "うん。でも、三時は先にイエの芝居ね。",
+    "recognized": "うーんでも散治は酒に家のしばえな",
+    "similarity": 0.452,
+    "review": "check",
+    "durationSeconds": 6.16,
+    "rms": 0.01609,
+    "clippedSampleCount": 0,
+    "humanListeningCompleted": false,
+    "limitation": "Small CPU ASR can misrecognize natural Japanese. This is not a pronunciation or acting verdict."
+  },
+  {
+    "id": "pc3-after-11-ja",
+    "sha256": "b9d2903785d6108f6774b271f1c2d7a349884fa15d30153f1f8c46904cff94aa",
+    "expected": "六日、二本目。イエには、何も書いてない絵葉書。",
+    "recognized": "むいかあにほめ、家には何も書いてないはがち",
+    "similarity": 0.462,
+    "review": "check",
+    "durationSeconds": 5.02,
+    "rms": 0.07122,
+    "clippedSampleCount": 0,
+    "humanListeningCompleted": false,
+    "limitation": "Small CPU ASR can misrecognize natural Japanese. This is not a pronunciation or acting verdict."
+  },
+  {
+    "id": "pc3-return-4-ja",
+    "sha256": "7c78d20f33de45d44bd74302519cc2e542daa910fe3b7fcefccc95dce6d48119",
+    "expected": "行く。四月二十日、三時。",
+    "recognized": "行く、知らずあつか、3時",
+    "similarity": 0.316,
+    "review": "check",
+    "durationSeconds": 3.02,
+    "rms": 0.01309,
+    "clippedSampleCount": 0,
+    "humanListeningCompleted": false,
+    "limitation": "Small CPU ASR can misrecognize natural Japanese. This is not a pronunciation or acting verdict."
+  },
+  {
+    "id": "pc3-return-8-ja",
+    "sha256": "df06e3e23e3a753bc85dcb41c22d7a1692fed32d62ebcd989e3c5de130ec52e6",
+    "expected": "開いてくれよ。演じる前に、台本まで直す気か？",
+    "recognized": "知られてくれよ、レンジル前に、大本までんなおすきか。",
+    "similarity": 0.524,
+    "review": "check",
+    "durationSeconds": 6.14,
+    "rms": 0.0585,
+    "clippedSampleCount": 0,
+    "humanListeningCompleted": false,
+    "limitation": "Small CPU ASR can misrecognize natural Japanese. This is not a pronunciation or acting verdict."
+  },
+  {
+    "id": "pc3-return-17-ja",
+    "sha256": "cba4f177f991663e53b91c17fc9e3f83ddcdabb69228fa753c370f2610a2df90",
+    "expected": "台本、どけて。お椀を置くから。",
+    "recognized": "大本届けた 終わろうから",
+    "similarity": 0.348,
+    "review": "check",
+    "durationSeconds": 3.24,
+    "rms": 0.01361,
+    "clippedSampleCount": 0,
+    "humanListeningCompleted": false,
+    "limitation": "Small CPU ASR can misrecognize natural Japanese. This is not a pronunciation or acting verdict."
+  }
+]

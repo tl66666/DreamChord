@@ -1,0 +1,83 @@
+{
+  "title": "请让这幅画老去",
+  "chapterTitle": "第三章 · 画外的夏天",
+  "createdAt": "2026-11-07",
+  "generator": "built-in image_gen.imagegen",
+  "assets": [
+    {
+      "id": "summer-atelier",
+      "prompt": "Use case: illustration-story. Create one original literary visual novel environment background, complete wide 16:9 composition, aim 1920x1080, painterly detailed hand-painted gouache anime scenic art. A modest lived-in Chinese old-town female painter's atelier in a past ordinary midsummer afternoon. Honey-colored aged wood, ivory plaster, desaturated grey-blue cloth, warm natural light, consistent grounded visual style with DreamChord's old-town literary story. Open wooden casement window and leafy roofline, small working desk at left with washed brushes in a jar, imperfect palette with dried paint, ordinary bowl and spoon left after a simple meal, plain cream towel on a chair, modest floor fan. On an easel at the right is a SMALL unfinished painting of an old town and theatre doorway; visible cream-primed unpainted corner is deliberate and clean, not torn or damaged. Human absence feels ordinary, not a memorial display. Important objects in upper/middle 65 percent, bottom quarter spacious quiet wooden floor for a future translucent dialogue overlay. Subtle wear, quiet heat, coherent perspective, no dramatic magical lighting. No person, hands, faces, silhouettes, portraits, ghosts, flowers decorating every edge, candles, readable lettering, UI, logos, borders or watermarks. Full frame environment, no collage, no giant hero props, no text.",
+      "generationSourcePath": "C:\\Users\\唐乐\\.codex\\generated_images\\01a1680b-608f-7291-9d58-1375c80be01e\\exec-ad3920a1-1cd0-4905-971b-3fff97c1d4b7.png",
+      "generator": "built-in image_gen.imagegen",
+      "nativeFile": "source-assets/paint-chapter-three/summer-atelier-native.png",
+      "sourceFile": "source-assets/paint-chapter-three/summer-atelier.png",
+      "publicFile": "apps/web/public/assets/paint-chapter-three/summer-atelier.webp",
+      "publicUrl": "/assets/paint-chapter-three/summer-atelier.webp",
+      "native": {
+        "width": 1672,
+        "height": 941,
+        "format": "png",
+        "sha256": "fa739a1dbd42da4831802f9ad73927e64f894bdd98d082ba360235655b47faca"
+      },
+      "sourceSha256": "a9532a728d1e8d36998f5a907cbb64f80c4760a1cb427898f62259508f37ca3d",
+      "publicSha256": "a34333055e683be9031ac9d4bf0e38dc97e2b627bf55e39f10feb1f0876c772b",
+      "adaptation": {
+        "width": 1920,
+        "height": 1080,
+        "fit": "fill",
+        "cropped": false,
+        "note": "Complete native frame resampled to runtime 16:9; no crop or compositing."
+      }
+    },
+    {
+      "id": "seaside-afternoon",
+      "prompt": "Use case: illustration-story. Original literary visual novel scenic background, one complete wide 16:9 frame aim 1920x1080. Grounded detailed painterly gouache anime environment, muted honey wood, ivory, grey blue, late-summer sun after a brief shower. A small older Chinese coastal bus waiting shelter, plain wooden bench in the midground under a weathered timber roof, a LIGHT CREAM damp jacket hung from a simple wood peg, a closed plain umbrella leaning safely by bench, quiet uneven stone path and a low seawall, distant soft sea and small white clouds. Clear modest space, no tourists or humans. A warm ordinary afternoon remembered, not a tragic farewell, no train tracks or supernatural elements. Light reflected in small remaining puddles, summer breeze suggested only by distant foliage. Keep main bench, jacket and shelter visible across upper/middle area, bottom quarter mostly simple shaded stone foreground for dialogue, respect full landscape composition. Do not include a bus timetable, signage, license plate or any readable text. No people, hands, faces, figures, ghosts, huge flowers, fancy ribbons, sunset fireball, photographic realism, split panels, UI, logos, watermarks, border.",
+      "generationSourcePath": "C:\\Users\\唐乐\\.codex\\generated_images\\01a1680b-608f-7291-9d58-1375c80be01e\\exec-a23ec9b5-1880-4cf1-9483-589bb0bd57e4.png",
+      "generator": "built-in image_gen.imagegen",
+      "nativeFile": "source-assets/paint-chapter-three/seaside-afternoon-native.png",
+      "sourceFile": "source-assets/paint-chapter-three/seaside-afternoon.png",
+      "publicFile": "apps/web/public/assets/paint-chapter-three/seaside-afternoon.webp",
+      "publicUrl": "/assets/paint-chapter-three/seaside-afternoon.webp",
+      "native": {
+        "width": 1672,
+        "height": 941,
+        "format": "png",
+        "sha256": "73ef5d007e92ca17bf365ce81674123a7d0f263d715a31493e5ad0f9e689b7e6"
+      },
+      "sourceSha256": "5078a92acc4efe31bcc0b0d965a80454758b3ce9534cfdd348f32a9dcd4643d9",
+      "publicSha256": "8ca7ba952097dea46a6910fbdffbbe438385c234b26701d68751375af909608a",
+      "adaptation": {
+        "width": 1920,
+        "height": 1080,
+        "fit": "fill",
+        "cropped": false,
+        "note": "Complete native frame resampled to runtime 16:9; no crop or compositing."
+      }
+    },
+    {
+      "id": "archive-window",
+      "prompt": "Use case: illustration-story. Original literary visual novel narrative environment CG, one complete 16:9 wide image target 1920x1080. Same grounded detailed hand-painted gouache anime old Chinese town, honey worn wood, grey-blue dusk and warm ivory lamp light. Present-day restorer's workshop beside a casement window at blue evening. A wooden worktable with two OLD photographic prints lying FACE DOWN so only blank aged paper backs visible, a small CLOSED box of photographs, a naturally open clothbound notebook with faint abstract marks but absolutely no legible writing, plain paper clips, a simple archival folder, pencil set down near its edge. Background right an upright unfinished painting of an old-town theatre, its frame not sealed, a clean blank primed small corner retained; background left the same old slate-tiled roof town outside, distant warmly lit windows. Quiet practical restoration work, no detective crime-board and no memorial altar. The two face-down prints and archive folder clearly distinct, modest scale. Full coherent room perspective, important objects upper/middle 65 percent; lower quarter quiet empty desk grain suitable for readable dialogue overlay. No people, hands, human faces on photographs, portraits, ghosts, readable labels/text, UI, collage, magical particles, decorative flowers, neon, logos, watermarks or borders.",
+      "generationSourcePath": "C:\\Users\\唐乐\\.codex\\generated_images\\01a1680b-608f-7291-9d58-1375c80be01e\\exec-abb21304-aac5-4404-9304-5c0620499d16.png",
+      "generator": "built-in image_gen.imagegen",
+      "nativeFile": "source-assets/paint-chapter-three/archive-window-native.png",
+      "sourceFile": "source-assets/paint-chapter-three/archive-window.png",
+      "publicFile": "apps/web/public/assets/paint-chapter-three/archive-window.webp",
+      "publicUrl": "/assets/paint-chapter-three/archive-window.webp",
+      "native": {
+        "width": 1672,
+        "height": 941,
+        "format": "png",
+        "sha256": "5cfef2f5c5763165dab95b1616d551b449938ea5aafbb9abe315295e9a50d5d9"
+      },
+      "sourceSha256": "732dfb3cf6693f48c8533b64eac7a97c189f98b3a8f45becf8522c4e4abdf634",
+      "publicSha256": "4b9106a380334c49e6e0ed47dcad3d6724b84263ad0dd457e7cd9bd4a5c93c9f",
+      "adaptation": {
+        "width": 1920,
+        "height": 1080,
+        "fit": "fill",
+        "cropped": false,
+        "note": "Complete native frame resampled to runtime 16:9; no crop or compositing."
+      }
+    }
+  ]
+}

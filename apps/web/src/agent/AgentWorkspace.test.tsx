@@ -1,12 +1,12 @@
 // @vitest-environment jsdom
-import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { FeedbackProvider } from '../components/FeedbackProvider'
 import AgentWorkspace from './AgentWorkspace'
 
 const api = vi.hoisted(() => ({
   conversations: [{ id: 'conversation', title: '第一章续写', scope: 'chapter', chapterId: 'chapter', isPinned: false, summary: '', createdAt: '2026-07-12T00:00:00.000Z', updatedAt: '2026-07-12T00:00:00.000Z' }],
-  getConversations: vi.fn(), getMessages: vi.fn(), create: vi.fn(), update: vi.fn(), remove: vi.fn(),
+  getConversations: vi.fn(), getMessages: vi.fn(), create: vi.fn(), update: vi.fn(), remove: vi.fn(), updateMessage: vi.fn(),
 }))
 
 vi.mock('../api/client', () => ({
@@ -15,6 +15,7 @@ vi.mock('../api/client', () => ({
   createAgentConversation: (...args: unknown[]) => api.create(...args),
   updateAgentConversation: (...args: unknown[]) => api.update(...args),
   deleteAgentConversation: (...args: unknown[]) => api.remove(...args),
+  updateAgentMessage: (...args: unknown[]) => api.updateMessage(...args),
 }))
 vi.mock('./AgentPanel', () => ({ default: ({ taskRequest, onTaskConsumed }: { taskRequest?: { id: number; prompt: string; draft?: string; autoRun?: boolean }; onTaskConsumed?: (id: number) => void }) => <div data-testid="agent-composer">{taskRequest?.autoRun ? <><span>{`${taskRequest.prompt}\n${taskRequest.draft || ''}`}</span><button onClick={() => onTaskConsumed?.(taskRequest.id)}>标记任务已处理</button></> : 'Agent composer'}</div> }))
 
@@ -26,7 +27,107 @@ function renderWorkspace(chapterId: string | null = 'chapter') {
 }
 
 describe('agent workspace', () => {
-  afterEach(() => { cleanup(); vi.clearAllMocks() })
+  afterEach(() => { cleanup(); vi.useRealTimers(); vi.clearAllMocks() })
+
+  it('ignores a previous conversation response after switching chats', async () => {
+    let resolveOld!: (value: unknown) => void
+    const oldRequest = new Promise((resolve) => { resolveOld = resolve })
+    api.getConversations.mockResolvedValue([...api.conversations, { ...api.conversations[0], id: 'other', title: '另一条对话' }])
+    api.getMessages.mockImplementation((id: string) => id === 'conversation' ? oldRequest : Promise.resolve({ items: [{ id: 'other-message', role: 'assistant', content: '另一条对话正文', metadata: {}, createdAt: '' }], nextCursor: null }))
+    renderWorkspace()
+    fireEvent.click(await screen.findByRole('button', { name: /另一条对话/ }))
+    expect(await screen.findByText('另一条对话正文')).toBeTruthy()
+
+    await act(async () => resolveOld({ items: [{ id: 'old-message', role: 'assistant', content: '旧对话的延迟正文', metadata: {}, createdAt: '' }], nextCursor: null }))
+
+    expect(screen.queryByText('旧对话的延迟正文')).toBeNull()
+    expect(screen.getByText('另一条对话正文')).toBeTruthy()
+  })
+
+  it('preserves loaded history and its cursor while refreshing recent messages', async () => {
+    vi.useFakeTimers()
+    api.getConversations.mockResolvedValue(api.conversations)
+    const message = (id: string) => ({ id, role: 'assistant', content: id, metadata: {}, createdAt: '' })
+    api.getMessages.mockImplementation(async (_id: string, cursor?: string) => cursor
+      ? { items: [message('较早正文')], nextCursor: 'oldest-cursor' }
+      : { items: [message('最新正文')], nextCursor: 'recent-cursor' })
+    await act(async () => { renderWorkspace() })
+    await act(async () => fireEvent.click(screen.getByRole('button', { name: '加载更早消息' })))
+    expect(screen.getByText('较早正文')).toBeTruthy()
+    await act(async () => { await vi.advanceTimersByTimeAsync(3000) })
+    expect(screen.getByText('较早正文')).toBeTruthy()
+    await act(async () => fireEvent.click(screen.getByRole('button', { name: '加载更早消息' })))
+    expect(api.getMessages).toHaveBeenLastCalledWith('conversation', 'oldest-cursor')
+  })
+
+  it('shows replies when each response takes four seconds and polling runs every three seconds', async () => {
+    vi.useFakeTimers()
+    api.getConversations.mockResolvedValue(api.conversations)
+    let responseNumber = 0
+    api.getMessages.mockImplementation(() => {
+      const content = `慢速正文${++responseNumber}`
+      return new Promise((resolve) => window.setTimeout(() => resolve({ items: [{ id: 'message', role: 'assistant', content, metadata: {}, createdAt: '' }], nextCursor: null }), 4000))
+    })
+    await act(async () => { renderWorkspace() })
+    await act(async () => { await vi.advanceTimersByTimeAsync(4000) })
+    expect(screen.queryByText('慢速正文1')).not.toBeNull()
+    await act(async () => { await vi.advanceTimersByTimeAsync(6000) })
+    expect(screen.queryByText('慢速正文2')).not.toBeNull()
+    await act(async () => { await vi.advanceTimersByTimeAsync(6000) })
+    expect(screen.queryByText('慢速正文3')).not.toBeNull()
+  })
+
+  it('waits for the current poll before requesting a newer reply in the same conversation', async () => {
+    vi.useFakeTimers()
+    let resolveOld!: (value: unknown) => void
+    const oldRequest = new Promise((resolve) => { resolveOld = resolve })
+    const page = (content: string) => ({ items: [{ id: 'message', role: 'assistant', content, metadata: {}, createdAt: '' }], nextCursor: null })
+    api.getConversations.mockResolvedValue(api.conversations)
+    api.getMessages.mockResolvedValueOnce(page('原文')).mockReturnValueOnce(oldRequest).mockResolvedValue(page('新版正文'))
+    await act(async () => { renderWorkspace() })
+    await act(async () => { await vi.advanceTimersByTimeAsync(6000) })
+    expect(api.getMessages).toHaveBeenCalledTimes(2)
+    expect(screen.getByText('原文')).toBeTruthy()
+    await act(async () => resolveOld(page('旧版正文')))
+    expect(screen.getByText('旧版正文')).toBeTruthy()
+    await act(async () => { await vi.advanceTimersByTimeAsync(3000) })
+    expect(api.getMessages).toHaveBeenCalledTimes(3)
+    expect(screen.getByText('新版正文')).toBeTruthy()
+  })
+
+  it('does not let an in-flight poll overwrite a successfully saved draft', async () => {
+    vi.useFakeTimers()
+    let resolvePoll!: (value: unknown) => void
+    const poll = new Promise((resolve) => { resolvePoll = resolve })
+    const draft = { id: 'draft', role: 'assistant', content: '林宇：旧正文', metadata: {}, createdAt: '' }
+    api.getConversations.mockResolvedValue(api.conversations)
+    api.getMessages.mockResolvedValueOnce({ items: [draft], nextCursor: null }).mockReturnValueOnce(poll)
+    api.updateMessage.mockResolvedValueOnce({ ...draft, content: '林宇：已保存的新正文' })
+    await act(async () => { renderWorkspace() })
+    await act(async () => { await vi.advanceTimersByTimeAsync(3000) })
+    fireEvent.click(screen.getByRole('button', { name: '编辑草稿' }))
+    fireEvent.change(screen.getByLabelText('草稿正文'), { target: { value: '林宇：已保存的新正文' } })
+    await act(async () => fireEvent.click(screen.getByRole('button', { name: '保存草稿' })))
+    await act(async () => resolvePoll({ items: [draft], nextCursor: null }))
+    expect(screen.getByText('林宇：已保存的新正文')).toBeTruthy()
+    expect(screen.queryByText('林宇：旧正文')).toBeNull()
+  })
+
+  it('keeps failed draft edits visible and allows retrying the same text', async () => {
+    api.getConversations.mockResolvedValue(api.conversations)
+    api.getMessages.mockResolvedValue({ items: [{ id: 'draft', role: 'assistant', content: '林宇：原始正文', metadata: {}, createdAt: '' }], nextCursor: null })
+    api.updateMessage.mockRejectedValueOnce(new Error('离线')).mockResolvedValueOnce({ id: 'draft', role: 'assistant', content: '林宇：需要保留的新正文', metadata: {}, createdAt: '' })
+    renderWorkspace()
+    fireEvent.click(await screen.findByRole('button', { name: '编辑草稿' }))
+    fireEvent.change(screen.getByLabelText('草稿正文'), { target: { value: '林宇：需要保留的新正文' } })
+    fireEvent.click(screen.getByRole('button', { name: '保存草稿' }))
+    await screen.findByText('草稿保存失败')
+    expect((screen.getByLabelText('草稿正文') as HTMLTextAreaElement).value).toBe('林宇：需要保留的新正文')
+    fireEvent.click(screen.getByRole('button', { name: '保存草稿' }))
+    await waitFor(() => expect(api.updateMessage).toHaveBeenCalledTimes(2))
+    expect(api.updateMessage).toHaveBeenLastCalledWith('conversation', 'draft', '林宇：需要保留的新正文')
+    await waitFor(() => expect(screen.queryByLabelText('草稿正文')).toBeNull())
+  })
 
   it('renames and pins a persisted conversation', async () => {
     api.getConversations.mockResolvedValue(api.conversations)

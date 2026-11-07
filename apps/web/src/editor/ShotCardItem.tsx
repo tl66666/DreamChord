@@ -5,6 +5,7 @@
  */
 
 import type { Edge } from '@xyflow/react'
+import type { ShotCardEditOptions } from './shotGraphOperations'
 import {
   Trash2, ChevronUp, ChevronDown, MessageSquare, GitBranch,
   Copy, Eye, ArrowRight, ChevronRight, AlertTriangle, ImageIcon,
@@ -39,7 +40,7 @@ export interface ShotCardItemProps {
   convergenceMap: Map<string, string[]>
   onSelect: () => void
   onEdit: () => void
-  onUpdate: (updates: Partial<ShotCard>) => void
+  onUpdate: (updates: Partial<ShotCard>, options?: ShotCardEditOptions) => void
   onDelete: () => void
   onDuplicate: () => void
   onMove: (dir: 'up' | 'down') => void

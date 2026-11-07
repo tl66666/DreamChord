@@ -28,6 +28,7 @@ import {
 import { resolveStageStateAfterNode } from './workbench/storyEditorGraph'
 import { loadLibraryCharacters, loadLibraryScenes, loadStoryTemplates } from '../lib/libraryData'
 import { ShotCardItem } from './ShotCardItem'
+import { moveShotCard, deleteShotCard, removeShotChoice, type ShotCardEditOptions } from './shotGraphOperations'
 import { parseManuscriptToShotCards } from './manuscriptUtils'
 import ManuscriptImporter from './ManuscriptImportPreview'
 import type { Asset, Character } from '../api/client'
@@ -99,7 +100,7 @@ export default function ShotCardEditor({
       && card.type !== 'choice'
   }), [cards])
 
-  const updateCard = useCallback((cardId: string, updates: Partial<ShotCard>) => {
+  const updateCard = useCallback((cardId: string, updates: Partial<ShotCard>, options?: ShotCardEditOptions) => {
     const card = cards.find((c) => c.id === cardId)
     if (!card) return
 
@@ -110,6 +111,12 @@ export default function ShotCardEditor({
     const existingBg = cardNodes.find((n) => n.type === 'background')
     const existingText = cardNodes.find((n) => n.type !== 'background' && n.type !== 'character')
     if (!existingText) return
+
+    if (options && updates.choices && existingText.type === 'choice') {
+      const graph = removeShotChoice(existingText.id, options.removedChoiceIndex, updates.choices, nodes, edges)
+      onUpdateGraph(graph.nodes, graph.edges)
+      return
+    }
 
     const updateKeys = Object.keys(updates)
 
@@ -561,45 +568,8 @@ export default function ShotCardEditor({
     const card = cards.find((c) => c.id === cardId)
     if (!card) return
 
-    // 按 type 分类旧节点
-    const cardNodes = card.nodeIds
-      .map((id) => nodes.find((n) => n.id === id))
-      .filter((n): n is Node => Boolean(n))
-    const bgNode = cardNodes.find((n) => n.type === 'background')
-    const textNode = cardNodes.find((n) => n.type !== 'background' && n.type !== 'character')
-    const charIds = new Set(cardNodes.filter((n) => n.type === 'character').map((n) => n.id))
-
-    // 检查 bg 是否被其他卡片共享（groupNodesToCards 的 lastBg 机制）
-    const otherCards = cards.filter((c) => c.id !== cardId)
-    const bgIsShared = bgNode ? otherCards.some((c) => c.nodeIds.includes(bgNode.id)) : false
-
-    // 需要删除的节点：text + chars，bg 仅在不被共享时删除
-    const idsToDelete = new Set<string>()
-    if (textNode) idsToDelete.add(textNode.id)
-    charIds.forEach((id) => idsToDelete.add(id))
-    if (bgNode && !bgIsShared) idsToDelete.add(bgNode.id)
-
-    const remainingNodes = nodes.filter((n) => !idsToDelete.has(n.id))
-    const remainingEdges = edges.filter((e) => !idsToDelete.has(e.source) && !idsToDelete.has(e.target))
-
-    // 重连边
-    const outgoingEdge = textNode
-      ? edges.find((e) => e.source === textNode.id && !e.sourceHandle)
-      : undefined
-
-    if (bgNode && bgIsShared && outgoingEdge) {
-      // bg 保留，连接 bg → 下一个节点
-      remainingEdges.push(normalEdge(bgNode.id, outgoingEdge.target))
-    } else if (bgNode && !bgIsShared) {
-      // bg 也删除，连接入边 → 出边
-      const incomingEdge = edges.find((e) => e.target === bgNode.id)
-      if (incomingEdge && outgoingEdge) {
-        remainingEdges.push(normalEdge(incomingEdge.source, outgoingEdge.target))
-      }
-    }
-
-    const laidOut = layoutNodes(remainingNodes, remainingEdges)
-    onUpdateGraph(laidOut, remainingEdges)
+    const graph = deleteShotCard(card, cards, nodes, edges)
+    onUpdateGraph(layoutNodes(graph.nodes, graph.edges), graph.edges)
   }, [cards, nodes, edges, onUpdateGraph])
 
   const duplicateCard = useCallback((cardId: string) => {
@@ -643,90 +613,8 @@ export default function ShotCardEditor({
   }, [cards, nodes, edges, onSelectCard, onUpdateGraph, characters])
 
   const moveCard = useCallback((cardId: string, direction: 'up' | 'down') => {
-    const index = cards.findIndex((c) => c.id === cardId)
-    if (index < 0) return
-    const targetIndex = direction === 'up' ? index - 1 : index + 1
-    if (targetIndex < 0 || targetIndex >= cards.length) return
-
-    const cardA = cards[index]!
-    const cardB = cards[targetIndex]!
-
-    const cardANodeIds = new Set(cardA.nodeIds)
-    const cardBNodeIds = new Set(cardB.nodeIds)
-    const allMovedIds = new Set([...cardANodeIds, ...cardBNodeIds])
-
-    const cardAFirstNodeId = cardA.nodeIds[0]!
-    const cardALastNodeId = cardA.nodeIds[cardA.nodeIds.length - 1]!
-    const cardBFirstNodeId = cardB.nodeIds[0]!
-    const cardBLastNodeId = cardB.nodeIds[cardB.nodeIds.length - 1]!
-
-    // 检测是否共享 bg（groupNodesToCards 的 lastBg 机制）
-    const sharedBg = cardAFirstNodeId === cardBFirstNodeId
-
-    // 确定排列顺序：上移 → B在前A在后；下移 → A在前B在后
-    const firstCard = direction === 'up' ? cardB : cardA
-    const secondCard = direction === 'up' ? cardA : cardB
-    const firstNodeIds = firstCard.nodeIds
-    const secondNodeIds = secondCard.nodeIds
-    const firstFirstNodeId = firstNodeIds[0]!
-    const firstTailNodeId = firstNodeIds[firstNodeIds.length - 1]!
-    const secondTailNodeId = secondNodeIds[secondNodeIds.length - 1]!
-
-    // 找到进入这对卡片区域的入边（来自区域外的源）
-    const incomingEdge = edges.find((e) =>
-      e.target === (direction === 'up' ? cardAFirstNodeId : cardBFirstNodeId) &&
-      !e.sourceHandle &&
-      !allMovedIds.has(e.source),
-    )
-    // 找到离开这对卡片区域的出边（指向区域外的目标）
-    const outgoingEdge = edges.find((e) =>
-      e.source === (direction === 'up' ? cardBLastNodeId : cardALastNodeId) &&
-      !e.sourceHandle &&
-      !allMovedIds.has(e.target),
-    )
-
-    // 移除涉及移动节点的所有普通边（保留 choice 边）
-    const newEdges = edges.filter((e) => {
-      if (e.sourceHandle?.startsWith('choice-')) return true
-      if (!allMovedIds.has(e.source) && !allMovedIds.has(e.target)) return true
-      return false
-    })
-
-    // 获取节点对象用于构建内部链
-    const firstNodes = firstNodeIds.map((id) => nodes.find((n) => n.id === id)).filter(Boolean) as Node[]
-    const secondNodes = secondNodeIds.map((id) => nodes.find((n) => n.id === id)).filter(Boolean) as Node[]
-
-    // 入边 → 第一张卡片头部
-    if (incomingEdge && incomingEdge.target !== firstFirstNodeId) {
-      newEdges.push(normalEdge(incomingEdge.source, firstFirstNodeId))
-    } else if (incomingEdge && incomingEdge.target === firstFirstNodeId) {
-      // 入边已指向正确节点，保留
-      newEdges.push(incomingEdge)
-    }
-
-    // 第一张卡片内部链
-    newEdges.push(...chainEdges(firstNodes))
-
-    // 第一张卡片尾部 → 第二张卡片头部
-    if (sharedBg) {
-      // 共享 bg 时，第二张卡片跳过 bg 节点
-      const secondNodesAfterBg = secondNodes.slice(1)
-      if (secondNodesAfterBg.length > 0) {
-        newEdges.push(normalEdge(firstTailNodeId, secondNodesAfterBg[0]!.id))
-        newEdges.push(...chainEdges(secondNodesAfterBg))
-      }
-    } else {
-      newEdges.push(normalEdge(firstTailNodeId, secondNodeIds[0]!))
-      newEdges.push(...chainEdges(secondNodes))
-    }
-
-    // 第二张卡片尾部 → 出边目标
-    if (outgoingEdge && outgoingEdge.target !== secondTailNodeId) {
-      newEdges.push(normalEdge(secondTailNodeId, outgoingEdge.target))
-    }
-
-    const laidOut = layoutNodes(nodes, newEdges)
-    onUpdateGraph(laidOut, newEdges)
+    const graph = moveShotCard(cards, cardId, direction, nodes, edges)
+    if (graph) onUpdateGraph(layoutNodes(graph.nodes, graph.edges), graph.edges)
   }, [cards, nodes, edges, onUpdateGraph])
 
   /** 设置选项的分支去向 */
@@ -1106,7 +994,7 @@ export default function ShotCardEditor({
               convergenceMap={convergenceMap}
               onSelect={() => { onSelectCard(card.id); if (editingCardId !== card.id) setEditingCardId(null) }}
               onEdit={() => { onSelectCard(card.id); setEditingCardId(editingCardId === card.id ? null : card.id) }}
-              onUpdate={(updates) => updateCard(card.id, updates)}
+              onUpdate={(updates, options) => updateCard(card.id, updates, options)}
               onDelete={() => deleteCard(card.id)}
               onDuplicate={() => duplicateCard(card.id)}
               onMove={(dir) => moveCard(card.id, dir)}

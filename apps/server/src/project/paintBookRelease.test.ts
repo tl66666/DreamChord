@@ -30,6 +30,15 @@ const options = { releaseDefinitions, currentDefinitions, packRoots, publicRoot 
 const snapshot = () => client.project.findUniqueOrThrow({ where: { id }, include: { chapters: { orderBy: { order: 'asc' }, include: { nodes: { orderBy: { nodeId: 'asc' } }, edges: true } }, characters: { include: { sprites: true, voiceBinding: true } }, assets: true } })
 
 describe('guarded whole paint book release', () => {
+  function fourthChapterOptions() {
+    const next = definition(3), packRoot = path.join(dir, 'paint-chapter-three')
+    mkdirSync(packRoot, { recursive: true })
+    mkdirSync(path.join(publicRoot, 'assets/audio/paint-3'), { recursive: true })
+    writeFileSync(path.join(packRoot, 'ref.wav'), bytes)
+    writeFileSync(path.join(publicRoot, 'assets/audio/paint-3/line.ogg'), bytes)
+    writeFileSync(path.join(packRoot, 'manifest.json'), JSON.stringify({ voices: [{ id: 'cheng', role: '程见', name: '程见', description: 'voice', genderTone: '男声' }], references: [{ id: 'cheng-natural', role: 'cheng', language: 'ja', text: '参考句', outputFile: 'ref.wav', sha256, durationSeconds: 5 }], takes: [{ nodeId: 'line-3', role: 'cheng', language: 'ja', text: '直したよ。', referenceId: 'cheng-natural', runtimeFile: '/assets/audio/paint-3/line.ogg', runtimeSha256: sha256 }] }))
+    return { ...options, releaseDefinitions: structuredClone(currentDefinitions), currentDefinitions: [...structuredClone(currentDefinitions), next], packRoots: [...packRoots, packRoot] }
+  }
   beforeAll(async () => {
     mkdirSync(dir, { recursive: true })
     const sql = readdirSync('prisma/migrations').filter(n => /^\d/.test(n)).sort().map(n => readFileSync(`prisma/migrations/${n}/migration.sql`, 'utf8')).join('\n')
@@ -77,6 +86,43 @@ describe('guarded whole paint book release', () => {
     expect(result.status).toBe('ready')
     expect(result.beforeFingerprint).not.toBe(result.targetFingerprint)
     expect(await snapshot()).toEqual(before)
+  })
+  it('supports the registered three-to-four chapter release without rewriting the prior three chapters', async () => {
+    await releasePaintBook(client, 'official', options)
+    const before = await snapshot(), next = fourthChapterOptions()
+    expect((await releasePaintBook(client, 'official', { ...next, checkOnly: true })).status).toBe('ready')
+    expect(await snapshot()).toEqual(before)
+    expect((await releasePaintBook(client, 'official', next)).status).toBe('released')
+    const after = await snapshot()
+    expect(after.chapters.slice(0, 3)).toEqual(before.chapters)
+    expect(after.chapters[3]).toMatchObject({ order: 3, version: 1 })
+    expect(after.characters).toEqual(before.characters)
+    expect(JSON.parse(after.chapters[3].nodes[0].data).voiceTracks.ja).toMatchObject({ profileId: 'paint-voice-cheng', referenceId: 'original-reference' })
+    expect((await releasePaintBook(client, 'official', next)).status).toBe('current')
+    expect(await snapshot()).toEqual(after)
+  })
+  it.each(['author', 'reference', 'fourth-pack', 'race'])('protects %s changes during a three-to-four chapter release', async kind => {
+    await releasePaintBook(client, 'official', options)
+    const next = fourthChapterOptions()
+    if (kind === 'author') await client.project.update({ where: { id }, data: { description: '作者自己的简介' } })
+    if (kind === 'reference') await client.asset.update({ where: { id: 'voice-asset' }, data: { metadata: '{}' } })
+    if (kind === 'fourth-pack') next.packRoots[3] = path.join(dir, 'absent')
+    const before = await snapshot()
+    const real = media.preflightPaintDefinition
+    const spy = kind === 'race' ? vi.spyOn(media, 'preflightPaintDefinition').mockImplementationOnce(async (...args) => {
+      const prepared = await real(...args)
+      await client.chapter.update({ where: { id: 'chapter-1' }, data: { version: { increment: 1 } } })
+      return prepared
+    }) : undefined
+    try { await expect(releasePaintBook(client, 'official', next)).rejects.toThrow() }
+    finally { spy?.mockRestore() }
+    const after = await snapshot()
+    expect(after.chapters).toHaveLength(3)
+    if (kind !== 'race') expect(after).toEqual(before)
+    else {
+      expect(after.chapters[1].version).toBe(before.chapters[1].version + 1)
+      expect(after.chapters.map(c => c.nodes)).toEqual(before.chapters.map(c => c.nodes))
+    }
   })
   it('links each credited project BGM once while preserving old author assets and the global library', async () => {
     const definitions = structuredClone(currentDefinitions)

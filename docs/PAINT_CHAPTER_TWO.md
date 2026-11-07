@@ -1,6 +1,6 @@
 # 《请让这幅画老去》第二章与整书配乐交接
 
-2026-11-06 发布。固定作品仍为 `dreamchord-paint-prologue`，同一作品包含序章、第一章、第二章《她今天不想笑》，没有增加同名故事卡。默认中文字幕、固定角色日语配音。
+2026-11-06 发布。本页保留第二章及三章版本记录；当前已安全追加[第三章《画外的夏天》](PAINT_CHAPTER_THREE.md)，四章环境以新交接为准。固定作品仍为 `dreamchord-paint-prologue`，没有增加同名故事卡。默认中文字幕、固定角色日语配音。
 
 - [第二章中文阅读稿](story/paint/reading-chapter-two.zh.md)
 - [中日演出稿、全部分支与节点编号](story/paint/02-chapter-two.md)

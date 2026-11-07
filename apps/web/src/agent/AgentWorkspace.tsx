@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { BookOpenCheck, MessagesSquare, PanelRight, Rows3, X } from 'lucide-react'
 import type { StoryGraph } from '@dreamchord/story-domain'
 import { createAgentConversation, deleteAgentConversation, getAgentConversations, getAgentMessages, updateAgentConversation, updateAgentMessage } from '../api/client'
@@ -25,6 +25,8 @@ export default function AgentWorkspace({
 }) {
   const confirm = useConfirm()
   const toast = useToast()
+  const toastRef = useRef(toast)
+  toastRef.current = toast
   const [conversations, setConversations] = useState<AgentConversationDto[]>([])
   const [activeId, setActiveId] = useState(initialConversationId || '')
   const [messages, setMessages] = useState<AgentMessageDto[]>([])
@@ -34,6 +36,7 @@ export default function AgentWorkspace({
   const [pane, setPane] = useState<Pane>('chat')
   const [draftTask, setDraftTask] = useState<{ id: number; conversationId: string; prompt: string; scope: AgentScope; draft: string; autoRun: boolean } | null>(null)
   const [consumedTasks, setConsumedTasks] = useState(() => new Set<number>())
+  const messageSession = useRef<{ conversationId: string; alive: boolean; refresh: number; history: number; hasHistory: boolean } | null>(null)
 
   const activeConversation = useMemo(() => conversations.find((item) => item.id === activeId) ?? null, [activeId, conversations])
   const candidateTask = draftTask ? draftTask.conversationId === activeId ? draftTask : undefined : taskRequest
@@ -50,10 +53,26 @@ export default function AgentWorkspace({
   }, [activeId, onConversationChange, projectId])
 
   const loadMessages = useCallback(async (conversationId: string, cursor?: string) => {
-    if (!conversationId) { setMessages([]); setNextCursor(null); return }
-    const page = await getAgentMessages(conversationId, cursor)
-    setMessages((current) => cursor ? [...page.items, ...current] : page.items)
-    setNextCursor(page.nextCursor)
+    const session = messageSession.current
+    if (!conversationId || !session?.alive || session.conversationId !== conversationId) return
+    const lane = cursor ? 'history' : 'refresh'
+    const request = ++session[lane]
+    try {
+      const page = await getAgentMessages(conversationId, cursor)
+      if (!session.alive || messageSession.current !== session || request !== session[lane]) return
+      setMessages((current) => {
+        const incomingIds = new Set(page.items.map((item) => item.id))
+        if (cursor) {
+          const currentIds = new Set(current.map((item) => item.id))
+          return [...page.items.filter((item) => !currentIds.has(item.id)), ...current]
+        }
+        return [...current.filter((item) => !incomingIds.has(item.id)), ...page.items]
+      })
+      if (cursor) session.hasHistory = true
+      if (cursor || !session.hasHistory) setNextCursor(page.nextCursor)
+    } catch {
+      if (session.alive && messageSession.current === session && request === session[lane]) toastRef.current.error('消息加载失败，请重试')
+    }
   }, [])
 
   useEffect(() => {
@@ -65,15 +84,25 @@ export default function AgentWorkspace({
       const selected = (initialConversationId && items.some((item) => item.id === initialConversationId) ? initialConversationId : items[0]?.id) || ''
       setActiveId(selected)
       if (selected) onConversationChange(selected)
-    }).catch(() => alive && toast.error('会话加载失败')).finally(() => alive && setLoading(false))
+    }).catch(() => alive && toastRef.current.error('会话加载失败')).finally(() => alive && setLoading(false))
     return () => { alive = false }
-  }, [initialConversationId, onConversationChange, projectId, toast])
+  }, [initialConversationId, onConversationChange, projectId])
 
   useEffect(() => {
-    void loadMessages(activeId)
-    if (!activeId) return
-    const timer = window.setInterval(() => { void loadMessages(activeId) }, 3000)
-    return () => window.clearInterval(timer)
+    const session = { conversationId: activeId, alive: true, refresh: 0, history: 0, hasHistory: false }
+    messageSession.current = session
+    setMessages([])
+    setNextCursor(null)
+    let refreshing = false
+    const refresh = () => {
+      // Slow responses must finish before another poll can supersede them.
+      if (!session.alive || refreshing) return
+      refreshing = true
+      void loadMessages(activeId).finally(() => { refreshing = false })
+    }
+    refresh()
+    const timer = activeId ? window.setInterval(refresh, 3000) : undefined
+    return () => { session.alive = false; window.clearInterval(timer) }
   }, [activeId, loadMessages])
 
   useEffect(() => {
@@ -118,6 +147,18 @@ export default function AgentWorkspace({
     catch { toast.error('删除对话失败') }
   }
 
+  const saveDraft = async (messageId: string, content: string) => {
+    const session = messageSession.current
+    try {
+      const updated = await updateAgentMessage(activeId, messageId, content)
+      if (session?.alive && messageSession.current === session) {
+        // A poll started before the save must not restore its stale message text.
+        session.refresh += 1
+        setMessages((items) => items.map((item) => item.id === messageId ? updated : item))
+      }
+    } catch (error) { toast.error('草稿保存失败'); throw error }
+  }
+
   const panelClass = (target: Pane, desktop: string) => `${pane === target ? 'flex' : 'hidden'} ${desktop} min-h-0 flex-col`
 
   return (
@@ -142,7 +183,7 @@ export default function AgentWorkspace({
           <ConversationSidebar conversations={conversations} activeId={activeId} busy={busy} onCreate={() => void createConversation()} onSelect={selectConversation} onRename={(id, title) => void renameConversation(id, title)} onPin={(item) => void pinConversation(item)} onDelete={(item) => void removeConversation(item)} />
         </div>
         <div className={panelClass('chat', 'xl:flex')}>
-          <ConversationTranscript conversation={activeConversation} messages={messages} loading={loading} hasMore={Boolean(nextCursor)} onLoadMore={() => nextCursor && void loadMessages(activeId, nextCursor)} onDraftAction={(request) => setDraftTask({ ...request, conversationId: activeId, id: Date.now(), autoRun: true })} onDraftEdit={async (messageId, content) => { try { await updateAgentMessage(activeId, messageId, content); await loadMessages(activeId) } catch { toast.error('草稿保存失败') } }}>
+          <ConversationTranscript key={activeId} conversation={activeConversation} messages={messages} loading={loading} hasMore={Boolean(nextCursor)} onLoadMore={() => nextCursor && void loadMessages(activeId, nextCursor)} onDraftAction={(request) => setDraftTask({ ...request, conversationId: activeId, id: Date.now(), autoRun: true })} onDraftEdit={saveDraft}>
             {activeId ? <AgentPanel key={`${projectId}:${chapterId}:${activeId}`} projectId={projectId} chapterId={chapterId} chapterVersion={chapterVersion} selectedNodeId={selectedNodeId} selectedSceneId={selectedSceneId ?? null} graph={graph} getGraphMutationBlockedReason={getGraphMutationBlockedReason} taskRequest={effectiveTaskRequest} onTaskConsumed={(id) => { setConsumedTasks((current) => new Set([...current, id])); setDraftTask(null) }} initialConversationId={activeId} onConversationChange={selectConversation} onApplyGraph={onApplyGraph} onSelectNode={onSelectNode} compact /> : <div className="p-4 text-center text-sm text-slate-500"><button type="button" aria-label="新建对话" onClick={() => void createConversation()} className="rounded-md bg-slate-950 px-4 py-2 text-white">新建对话</button></div>}
           </ConversationTranscript>
         </div>

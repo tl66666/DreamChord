@@ -1,0 +1,30 @@
+{
+  "date": "2026-11-07",
+  "dialogueCount": 30,
+  "durationSeconds": 126.78,
+  "dialogueEngine": "GPT-SoVITS v2ProPlus",
+  "trainedCharacterWeights": false,
+  "referenceCount": 8,
+  "currentAsrCoverage": 38,
+  "runtimeDecoding": {
+    "verified": 30,
+    "tool": "ffmpeg",
+    "result": "pass"
+  },
+  "minimumRms": 0.01228,
+  "sourcePeak": 0.46118,
+  "clippedSourceSamples": 0,
+  "priorDialogueFilesUnchanged": 195,
+  "alternateTakeCount": 6,
+  "humanListeningCompleted": false,
+  "auxiliaryAsrFlags": [
+    {
+      "id": "pc3-return-4-ja",
+      "expected": "行く。四月二十日、三時。",
+      "recognized": "行く4月初か3時",
+      "sha256": "f001c671349274ed8798130447894ac056361e4802957e0f105be89ea9a99a3c",
+      "similarity": 0.471
+    }
+  ],
+  "limitation": "Text/SHA/decoding and ASR are technical evidence, not human pronunciation or acting acceptance. The April 20 rehearsal date line still needs human listening."
+}

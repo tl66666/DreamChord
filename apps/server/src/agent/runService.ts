@@ -1,5 +1,5 @@
 import { applyStoryPatch, createStoryPatchDiff, type StoryGraph } from '@dreamchord/story-domain'
-import type { PrismaClient } from '@prisma/client'
+import type { Prisma, PrismaClient } from '@prisma/client'
 import { prisma } from '../lib/prisma.js'
 import { createProvider, type LLMMessage, type LLMOptions } from '../llm/providers.js'
 import { applyPersistedStoryPatch, undoPersistedStoryPatch } from '../story/patchService.js'
@@ -44,6 +44,7 @@ interface AgentRunDependencies {
   createProvider: (provider: string, config: ProviderSecretConfig) => { chat: (messages: LLMMessage[], options?: LLMOptions) => Promise<string> }
 }
 const ACTIVE_STATUSES: AgentRunStatus[] = ['queued', 'planning', 'gathering_context', 'drafting', 'validating']
+class RunStoppedError extends Error {}
 
 export class RunAbortRegistry {
   private readonly controllers = new Map<string, AbortController>()
@@ -160,20 +161,35 @@ export class PrismaAgentRunService implements AgentRunService {
     const run = await this.client.agentRun.findFirst({ where: { id: runId, userId } })
     if (!run) throw new Error('Agent 任务不存在')
     if (![...ACTIVE_STATUSES, 'awaiting_approval'].includes(run.status as AgentRunStatus)) throw new Error('任务当前不可取消')
-    await this.client.agentRun.update({ where: { id: runId }, data: { status: 'cancelled', completedAt: new Date() } })
+    const stopped = await this.client.agentRun.updateMany({
+      where: { id: runId, status: { in: [...ACTIVE_STATUSES, 'awaiting_approval'] } },
+      data: { status: 'cancelled', completedAt: new Date() },
+    })
+    if (stopped.count !== 1) throw new Error('任务当前不可取消')
     this.aborts.abort(runId)
     return this.getRun(runId, userId)
+  }
+  private async requireActiveRun(runId: string, signal: AbortSignal): Promise<void> {
+    if (signal.aborted) throw new RunStoppedError('任务已停止')
+    const current = await this.client.agentRun.findUnique({ where: { id: runId }, select: { status: true } })
+    if (signal.aborted || !current || !ACTIVE_STATUSES.includes(current.status as AgentRunStatus)) throw new RunStoppedError('任务已停止')
+  }
+  private async updateActiveRun(runId: string, data: Prisma.AgentRunUpdateManyMutationInput): Promise<void> {
+    const updated = await this.client.agentRun.updateMany({ where: { id: runId, status: { in: ACTIVE_STATUSES } }, data })
+    if (updated.count !== 1) throw new RunStoppedError('任务已停止')
   }
   private async appendTimeline(runId: string, event: unknown): Promise<void> {
     const run = await this.client.agentRun.findUniqueOrThrow({ where: { id: runId }, select: { timeline: true } })
     const timeline = parseJson(run.timeline, []) as unknown[]
     timeline.push({ ...event as object, at: new Date().toISOString() })
-    await this.client.agentRun.update({ where: { id: runId }, data: { timeline: JSON.stringify(timeline) } })
+    await this.updateActiveRun(runId, { timeline: JSON.stringify(timeline) })
   }
   private async executeRun(job: AgentQueueJob): Promise<void> {
     const controller = this.aborts.create(job.id)
     try {
       await this.executeRunWithSignal(job, controller.signal)
+    } catch (error) {
+      if (!(error instanceof RunStoppedError) && !controller.signal.aborted) throw error
     } finally {
       this.aborts.release(job.id)
     }
@@ -181,11 +197,12 @@ export class PrismaAgentRunService implements AgentRunService {
   private async executeRunWithSignal(job: AgentQueueJob, signal: AbortSignal): Promise<void> {
     if (!job.secretConfig) throw new Error('模型密钥已释放')
     const run = await this.client.agentRun.findUniqueOrThrow({ where: { id: job.id } })
-    if (run.status === 'cancelled') return
-    await this.client.agentRun.update({ where: { id: run.id }, data: { status: 'planning' } })
+    if (!ACTIVE_STATUSES.includes(run.status as AgentRunStatus)) return
+    await this.updateActiveRun(run.id, { status: 'planning' })
     const snapshot = await this.dependencies.loadSnapshot(run.projectId)
+    await this.requireActiveRun(run.id, signal)
     if (!snapshot) throw new Error('项目上下文不存在')
-    await this.client.agentRun.update({ where: { id: run.id }, data: { status: 'gathering_context' } })
+    await this.updateActiveRun(run.id, { status: 'gathering_context' })
     const contextRequest = run.chapterId
       ? { scope: run.scope as AgentScope, chapterId: run.chapterId, targetId: run.targetId ?? undefined }
       : { scope: 'project' as const }
@@ -193,7 +210,8 @@ export class PrismaAgentRunService implements AgentRunService {
       ...buildInitialContext(snapshot, contextRequest),
       ...await this.loadConversationSources(run.conversationId, run.projectId, run.prompt),
     ]
-    await this.client.agentRun.update({ where: { id: run.id }, data: { sources: JSON.stringify(initialContext), status: 'drafting' } })
+    await this.requireActiveRun(run.id, signal)
+    await this.updateActiveRun(run.id, { sources: JSON.stringify(initialContext), status: 'drafting' })
     const rawTools = createAgentToolRegistry({
       snapshot, chapterId: run.chapterId ?? undefined, conversationContext: initialContext.filter((source) => source.kind === 'conversation-history' || source.kind === 'conversation-summary'),
       memories: initialContext.filter((source) => source.kind === 'memory').map((source) => ({ id: source.id, title: source.title, content: source.content })),
@@ -234,11 +252,17 @@ export class PrismaAgentRunService implements AgentRunService {
       try {
         result = await execute({
           prompt: actionPrompt, initialContext, tools: toUniformAgentToolRegistry(rawTools),
-          chat: (messages) => provider.chat(messages, { temperature: 0.7, maxTokens: 4096, signal }),
-          onEvent: (event) => this.appendTimeline(run.id, event),
+          chat: async (messages) => {
+            await this.requireActiveRun(run.id, signal)
+            const response = await provider.chat(messages, { temperature: 0.7, maxTokens: 4096, signal })
+            await this.requireActiveRun(run.id, signal)
+            return response
+          },
+          onEvent: async (event) => { await this.requireActiveRun(run.id, signal); await this.appendTimeline(run.id, event) },
         })
       } catch (error) {
-        if (!actionRequested) throw error
+        await this.requireActiveRun(run.id, signal)
+        if (!actionRequested || error instanceof RunStoppedError || (error instanceof Error && error.name === 'AbortError')) throw error
         executionMode = 'fallback'
         usedFallback = true
         await this.appendTimeline(run.id, { type: 'response_fallback' })
@@ -249,6 +273,7 @@ export class PrismaAgentRunService implements AgentRunService {
         })
       }
     }
+    await this.requireActiveRun(run.id, signal)
     if (actionRequested && run.chapterId && !result.patch) {
       executionMode = 'fallback'
       usedFallback = true
@@ -267,18 +292,23 @@ export class PrismaAgentRunService implements AgentRunService {
         }
       }
     }
+    await this.requireActiveRun(run.id, signal)
     if (result.memorySuggestions.length > 0) {
       await this.client.agentMemory.createMany({ data: result.memorySuggestions.map((memory) => ({
         projectId: run.projectId, userId: run.userId, conversationId: run.conversationId, kind: memory.kind,
         status: 'suggested', title: memory.title, content: memory.content, tags: JSON.stringify(memory.tags ?? []),
         importance: memory.importance ?? 50, sourceType: 'assistant', sourceId: run.id,
       })) })
+      await this.requireActiveRun(run.id, signal)
       await this.appendTimeline(run.id, { type: 'memory_suggestions', count: result.memorySuggestions.length })
     }
     await this.writeUsage(run.id, { mode: executionMode, provider: run.provider, model: run.model, memorySuggestions: result.memorySuggestions.length, patch: Boolean(result.patch), fallback: usedFallback })
-    await this.client.agentRun.update({ where: { id: run.id }, data: { status: 'validating', plan: JSON.stringify(result.plan) } })
+    await this.requireActiveRun(run.id, signal)
+    await this.updateActiveRun(run.id, { status: 'validating', plan: JSON.stringify(result.plan) })
     if (!result.patch) {
+      await this.requireActiveRun(run.id, signal)
       await this.client.agentMessage.create({ data: { conversationId: run.conversationId, role: 'assistant', content: result.summary, metadata: JSON.stringify({ runId: run.id, artifactRefs: result.artifactRefs }) } })
+      await this.requireActiveRun(run.id, signal)
       await this.refreshConversationSummary(run.conversationId)
       await this.client.agentRun.updateMany({ where: { id: run.id, status: 'validating' }, data: { status: 'completed', completedAt: new Date() } })
       return
@@ -289,8 +319,11 @@ export class PrismaAgentRunService implements AgentRunService {
     let sequence = 0
     const preview = applyStoryPatch(chapter.graph, result.patch, () => `preview-${sequence++}`)
     if (!preview.validation.valid) throw new Error('Agent 补丁未通过图结构校验')
+    await this.requireActiveRun(run.id, signal)
     await this.client.storyPatch.create({ data: { runId: run.id, projectId: run.projectId, chapterId: chapter.id, baseVersion: chapter.version, payload: JSON.stringify(result.patch), validation: JSON.stringify(preview.validation), diff: JSON.stringify(createStoryPatchDiff(chapter.graph, preview.graph)) } })
+    await this.requireActiveRun(run.id, signal)
     await this.client.agentMessage.create({ data: { conversationId: run.conversationId, role: 'assistant', content: result.summary, metadata: JSON.stringify({ runId: run.id, artifactRefs: result.artifactRefs }) } })
+    await this.requireActiveRun(run.id, signal)
     await this.refreshConversationSummary(run.conversationId)
     await this.client.agentRun.updateMany({ where: { id: run.id, status: 'validating' }, data: { status: 'awaiting_approval', validation: JSON.stringify(preview.validation) } })
   }
@@ -318,27 +351,28 @@ export class PrismaAgentRunService implements AgentRunService {
   }
   private async failRun(runId: string, error: unknown): Promise<void> {
     const current = await this.client.agentRun.findUnique({ where: { id: runId }, select: { status: true, conversationId: true } }).catch(() => null)
-    if (current?.status === 'cancelled') return
+    if (!current || !ACTIVE_STATUSES.includes(current.status as AgentRunStatus)) return
     const message = (error instanceof Error ? error.message : 'Agent 执行失败').slice(0, 1_000)
-    if (current?.conversationId) {
-      await this.client.$transaction([
-        this.client.agentRun.update({ where: { id: runId }, data: { status: 'failed', errorCode: error instanceof Error && 'code' in error ? String(error.code) : 'agent-failed', errorMessage: message, completedAt: new Date() } }),
-        this.client.agentMessage.create({ data: {
+    await this.client.$transaction(async (tx) => {
+      const failed = await tx.agentRun.updateMany({
+        where: { id: runId, status: { in: ACTIVE_STATUSES } },
+        data: { status: 'failed', errorCode: error instanceof Error && 'code' in error ? String(error.code) : 'agent-failed', errorMessage: message, completedAt: new Date() },
+      })
+      if (failed.count === 1) {
+        await tx.agentMessage.create({ data: {
           conversationId: current.conversationId,
           role: 'assistant',
           content: `这次没有完成：${message}\n\n项目内容没有被修改。你可以直接换一种说法重试，或检查模型设置后继续。`,
           metadata: JSON.stringify({ runId, error: true, artifactRefs: [] }),
-        } }),
-      ]).catch(() => undefined)
-      return
-    }
-    await this.client.agentRun.update({ where: { id: runId }, data: { status: 'failed', errorCode: error instanceof Error && 'code' in error ? String(error.code) : 'agent-failed', errorMessage: message, completedAt: new Date() } }).catch(() => undefined)
+        } })
+      }
+    }).catch(() => undefined)
   }
   private async writeUsage(runId: string, input: Omit<AgentRunUsageDto, 'toolCalls' | 'tools'>): Promise<void> {
     const row = await this.client.agentRun.findUnique({ where: { id: runId }, select: { timeline: true } })
     const timeline = parseJson(row?.timeline ?? '[]', []) as Array<{ type?: string; tool?: string }>
     const tools = [...new Set(timeline.filter((item) => item.type === 'tool_started' && item.tool).map((item) => item.tool!))]
-    await this.client.agentRun.update({ where: { id: runId }, data: { usage: JSON.stringify({ ...input, toolCalls: tools.length, tools }) } })
+    await this.updateActiveRun(runId, { usage: JSON.stringify({ ...input, toolCalls: tools.length, tools }) })
   }
 }
 

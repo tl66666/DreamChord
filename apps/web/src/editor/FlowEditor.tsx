@@ -88,6 +88,9 @@ export default function FlowEditor() {
   const [activeChapterId, setActiveChapterId] = useState<string | null>(null)
   const [saveState, setSaveState] = useState<SaveState>('clean')
   const autoSaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const chapterOperation = useRef(false)
+  const deletingChapter = useRef<string | null>(null)
+  const [deletingChapterId, setDeletingChapterId] = useState<string | null>(null)
   const toastRef = useRef(toast)
   toastRef.current = toast
   const handleProjectCharacterAccepted = (accepted: AcceptedAssetVariant) => {
@@ -109,8 +112,11 @@ export default function FlowEditor() {
     save: async (payload) => {
       if (!projectId || projectId === 'new' || !payload.chapterId) throw new Error('当前章节不可保存')
       const saved = await saveChapter(projectId, payload)
-      useEditorStore.getState().setChapterVersion(saved.version)
-      useEditorStore.getState().setLastSavedAt(new Date())
+      const current = useEditorStore.getState()
+      if (current.project?.id === projectId && current.chapterId === payload.chapterId) {
+        current.setChapterVersion(saved.version)
+        current.setLastSavedAt(new Date())
+      }
     },
     onStateChange: (state) => { setSaveState(state); useEditorStore.getState().setSaving(state === 'saving') },
     onError: (error, state) => toastRef.current.error(state === 'conflict' ? '章节已发生变化，请重新打开项目后再继续编辑。' : getApiError(error, '保存失败')),
@@ -153,6 +159,8 @@ export default function FlowEditor() {
   }
 
   const loadChapterIntoEditor = (chapter: ProjectDetail['chapters'][number]) => {
+    if (autoSaveTimer.current) clearTimeout(autoSaveTimer.current)
+    autoSaveTimer.current = null
     setActiveChapterId(chapter.id)
     store.setChapterId(chapter.id)
     store.setChapterVersion(chapter.version || 1)
@@ -161,6 +169,9 @@ export default function FlowEditor() {
     store.hydrateGraph(flowNodes, flowEdges)
     saveCoordinator.reset()
     store.setSelectedNodeId(null)
+    setSelectedCardId(null)
+    setAutoEditCardId(null)
+    setSelectedSceneId(null)
     // 自动选中第一个场景
     const scenes = buildSceneList(flowNodes, flowEdges)
     const focus = !creatorFocusApplied.current && ['curtain', 'paint'].includes(searchParams.get('welcome') || '') ? flowNodes.find(n => n.data.creatorStarter === true) : undefined
@@ -487,6 +498,7 @@ export default function FlowEditor() {
   }
 
   const handleUpdateGraph = (newNodes: Node[], newEdges: Edge[]) => {
+    if (deletingChapter.current === useEditorStore.getState().chapterId) return
     store.commitGraph(newNodes, newEdges)
     triggerAutoSave()
   }
@@ -518,6 +530,7 @@ export default function FlowEditor() {
   // === 保存/预览/发布 ===
 
   const handleSave = async () => {
+    if (deletingChapter.current === useEditorStore.getState().chapterId) return false
     if (!projectId || projectId === 'new') { toast.info('请先从首页新建故事项目，再保存编辑内容。'); return false }
     if (!store.chapterId) { toast.info('当前项目还没有可保存的章节，请重新打开项目后再试。'); return false }
     saveCoordinator.markDirty()
@@ -527,6 +540,7 @@ export default function FlowEditor() {
 
   const triggerAutoSave = () => {
     if (!projectId || projectId === 'new') return
+    if (deletingChapter.current === useEditorStore.getState().chapterId) return
     saveCoordinator.markDirty()
     if (autoSaveTimer.current) clearTimeout(autoSaveTimer.current)
     autoSaveTimer.current = setTimeout(() => { void saveCoordinator.flush() }, 3000)
@@ -544,71 +558,97 @@ export default function FlowEditor() {
   }
 
   const handleSwitchChapter = async (chapterId: string) => {
-    if (!project) return
+    if (!project || chapterOperation.current) return
     if (chapterId === store.chapterId) return
 
-    // 正式项目：先保存当前章节，再从服务器获取最新数据
-    if (projectId && projectId !== 'new') {
-      const saved = await handleSave()
-      if (!saved) return
-      try {
-        const freshProject = await getProject(projectId)
-        setProject(freshProject)
-        const chapter = freshProject.chapters.find((item) => item.id === chapterId)
+    chapterOperation.current = true
+    try {
+      // 正式项目：先保存当前章节，再从服务器获取最新数据
+      if (projectId && projectId !== 'new') {
+        const saved = await handleSave()
+        if (!saved) return
+        try {
+          const freshProject = await getProject(projectId)
+          setProject(freshProject)
+          const chapter = freshProject.chapters.find((item) => item.id === chapterId)
+          if (chapter) {
+            loadChapterIntoEditor(chapter)
+          } else {
+            console.warn('切换章节失败：服务器返回的项目中找不到章节', chapterId)
+          }
+        } catch (err) {
+          console.error('切换章节失败：', err)
+          toast.error('切换章节失败，请重试')
+        }
+      } else {
+        // 草稿模式：直接从本地 project 数据中加载
+        const chapter = project.chapters.find((item) => item.id === chapterId)
         if (chapter) {
           loadChapterIntoEditor(chapter)
-        } else {
-          console.warn('切换章节失败：服务器返回的项目中找不到章节', chapterId)
         }
-      } catch (err) {
-        console.error('切换章节失败：', err)
-        toast.error('切换章节失败，请重试')
       }
-    } else {
-      // 草稿模式：直接从本地 project 数据中加载
-      const chapter = project.chapters.find((item) => item.id === chapterId)
-      if (chapter) {
-        loadChapterIntoEditor(chapter)
-      }
-    }
+    } finally { chapterOperation.current = false }
   }
 
   const handleCreateChapter = async () => {
     if (!projectId || projectId === 'new') { toast.info('请先创建正式故事项目，再新增章节。'); return }
-    const saved = await handleSave()
-    if (!saved) return
-    const nextIndex = (project?.chapters.length || 0) + 1
-    const created = await createChapter(projectId, { title: `第${toChineseNumber(nextIndex)}章` })
-    const freshProject = await getProject(projectId)
-    setProject(freshProject)
-    const chapter = freshProject.chapters.find((item) => item.id === created.id) || freshProject.chapters[freshProject.chapters.length - 1]
-    if (chapter) loadChapterIntoEditor(chapter)
+    if (chapterOperation.current) return
+    chapterOperation.current = true
+    try {
+      const saved = await handleSave()
+      if (!saved) return
+      const nextIndex = (project?.chapters.length || 0) + 1
+      const created = await createChapter(projectId, { title: `第${toChineseNumber(nextIndex)}章` })
+      const freshProject = await getProject(projectId)
+      setProject(freshProject)
+      const chapter = freshProject.chapters.find((item) => item.id === created.id) || freshProject.chapters[freshProject.chapters.length - 1]
+      if (chapter) loadChapterIntoEditor(chapter)
+    } finally { chapterOperation.current = false }
   }
 
   const handleDeleteChapter = async (chapterId: string) => {
-    if (!projectId || projectId === 'new' || !project) return
+    if (!projectId || projectId === 'new' || !project || chapterOperation.current) return
     if (project.chapters.length <= 1) {
       toast.error('至少保留一个章节，无法删除。')
       return
     }
     const chapter = project.chapters.find((c) => c.id === chapterId)
     if (!chapter) return
-    if (!await confirm({ message: `确定删除「${chapter.title}」吗？该章节下的所有场景和镜头卡都会被删除。`, danger: true })) return
+    chapterOperation.current = true
     try {
+      if (!await confirm({ message: `确定删除「${chapter.title}」吗？该章节下的所有场景和镜头卡都会被删除。`, danger: true })) return
+      deletingChapter.current = chapterId
+      setDeletingChapterId(chapterId)
+      const isCurrentChapter = useEditorStore.getState().chapterId === chapterId
+      if (isCurrentChapter) {
+        if (autoSaveTimer.current) clearTimeout(autoSaveTimer.current)
+        autoSaveTimer.current = null
+        // An older save must finish against this chapter before it can be deleted.
+        await saveCoordinator.whenIdle()
+      }
       await deleteChapter(projectId, chapterId)
       const freshProject = await getProject(projectId)
       setProject(freshProject)
-      // 切换到剩余的第一个章节
+      // Deleting a different chapter only updates the list; preserve the live graph and history.
+      if (useEditorStore.getState().chapterId !== chapterId) return
       const remainingChapter = freshProject.chapters[0]
       if (remainingChapter) {
         loadChapterIntoEditor(remainingChapter)
       } else {
+        store.setChapterId(null)
         store.hydrateGraph([], [])
         saveCoordinator.reset()
         setSelectedSceneId(null)
+        setSelectedCardId(null)
       }
     } catch (err: unknown) {
       toast.error(getApiError(err, '删除章节失败'))
+    } finally {
+      const resumeSave = deletingChapter.current === useEditorStore.getState().chapterId && saveCoordinator.isDirty
+      deletingChapter.current = null
+      setDeletingChapterId(null)
+      chapterOperation.current = false
+      if (resumeSave) autoSaveTimer.current = setTimeout(() => { void saveCoordinator.flush() }, 3000)
     }
   }
 
@@ -648,12 +688,12 @@ export default function FlowEditor() {
   }, [saveCoordinator, saveState])
 
   const undoGraph = () => {
-    if (!store.canUndo) return
+    if (!store.canUndo || deletingChapter.current === useEditorStore.getState().chapterId) return
     store.undo()
     triggerAutoSave()
   }
   const redoGraph = () => {
-    if (!store.canRedo) return
+    if (!store.canRedo || deletingChapter.current === useEditorStore.getState().chapterId) return
     store.redo()
     triggerAutoSave()
   }
@@ -777,14 +817,14 @@ export default function FlowEditor() {
           <button onClick={handlePreview} className="inline-flex items-center gap-1.5 rounded-lg bg-dream-600 px-3 py-1.5 text-sm font-medium text-white transition hover:bg-dream-700">
             <Play className="h-4 w-4" /> 预览
           </button>
-          <button onClick={handleSave} disabled={store.isSaving} className="inline-flex items-center gap-1.5 rounded-lg border border-dream-200 bg-white px-3 py-1.5 text-sm font-medium text-slate-700 transition hover:bg-dream-50 disabled:opacity-50">
+          <button onClick={handleSave} disabled={store.isSaving || deletingChapterId === store.chapterId} className="inline-flex items-center gap-1.5 rounded-lg border border-dream-200 bg-white px-3 py-1.5 text-sm font-medium text-slate-700 transition hover:bg-dream-50 disabled:opacity-50">
             <Save className={`h-4 w-4 ${store.isSaving ? 'animate-spin' : ''}`} />
             {saveState === 'saving' ? '保存中' : saveState === 'conflict' ? '版本冲突' : saveState === 'error' ? '重试保存' : store.lastSavedAt ? '已保存' : '保存'}
           </button>
         </div>
       </div>
 
-      <AutomaticVoiceBar projectId={projectId || ''} preferredSceneId={selectedSceneId} suspended={showVoices} onApplied={triggerAutoSave} onManage={() => setShowVoices(true)} />
+      <AutomaticVoiceBar projectId={projectId || ''} preferredSceneId={selectedSceneId} suspended={showVoices || deletingChapterId === store.chapterId} onApplied={triggerAutoSave} onManage={() => setShowVoices(true)} />
       {/* === 主体内容 === */}
       {viewMode === 'flow' ? (
         /* 剧情流程图视图 — galgame 风格总览 */
@@ -828,7 +868,7 @@ export default function FlowEditor() {
 
           {/* 中栏：镜头卡编辑器 */}
           <div className={paneClasses.center}>
-            <ShotCardEditor
+            {deletingChapterId === store.chapterId ? <p role="status" className="p-4 text-sm text-slate-500">正在删除章节…</p> : <ShotCardEditor
               projectId={projectId}
               nodes={nodes}
               edges={edges}
@@ -848,7 +888,7 @@ export default function FlowEditor() {
               assetSelection={assetSelection}
               onAssetApplied={() => setAssetSelection(null)}
               projectCharacters={project?.characters}
-            />
+            />}
           </div>
 
           {/* 右栏：根据面板状态切换 MiniPreview / 素材库 / AI助手 */}

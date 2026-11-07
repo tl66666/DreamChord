@@ -21,9 +21,9 @@ function fingerprint(project: Stored) {
   try { return hash(storedPaintRelease(project)) }
   catch { throw new Error('拒绝发布：官方作品数据无法与发布稿核对。') }
 }
-function guard(project: Stored | null, ownerId: string, characters: PaintDefinition['characters']): asserts project is Stored {
+function guard(project: Stored | null, ownerId: string, characters: PaintDefinition['characters'], releasedCount: number): asserts project is Stored {
   if (!project || project.id !== id || project.authorId !== ownerId || project.author.username !== 'demo' || !project.isPublic || !project.isPublished) throw new Error('拒绝发布：仅允许原 demo 作者公开发布的固定官方作品。')
-  if (project.chapters.length < 2 || project.chapters.length > 3 || project.chapters.some((c, _, all) => c.order < 0 || c.order >= all.length || all.filter(d => d.order === c.order).length !== 1)) throw new Error('拒绝发布：作品存在额外章节或章节顺序异常。')
+  if (![releasedCount, releasedCount + 1].includes(project.chapters.length) || project.chapters.some((c, _, all) => c.order < 0 || c.order >= all.length || all.filter(d => d.order === c.order).length !== 1)) throw new Error('拒绝发布：作品存在额外章节或章节顺序异常。')
   if (project.characters.length !== characters.length || project.characters.some(c => {
     const slug = characters.find(d => d.name === c.name)?.slug, binding = c.voiceBinding
     return !slug || !binding || binding.characterId !== c.id || binding.projectId !== id || binding.profile.ownerId !== ownerId || binding.profileId !== `paint-voice-${slug}` || binding.profile.language !== 'ja'
@@ -97,16 +97,16 @@ export async function releasePaintBook(client: PrismaClient, ownerId: string, op
   const release = options.releaseDefinitions || (JSON.parse(await readFile(path.join(root, 'assets/story-packs/paint-book/release-two-chapters-v1.json'), 'utf8')) as { chapters: PaintDefinition[] }).chapters
   const chapterTwo = (story as typeof story & { PAINT_CHAPTER_TWO?: PaintDefinition }).PAINT_CHAPTER_TWO
   const definitions = options.currentDefinitions || (chapterTwo ? [story.PAINT_PROLOGUE, story.PAINT_CHAPTER_ONE, chapterTwo] : [])
-  if (release.length !== 2 || definitions.length !== 3 || [...release, ...definitions].some(d => d.id !== id)) throw new Error('拒绝发布：必须是固定作品的旧两章与当前三章。')
+  if (![2, 3].includes(release.length) || definitions.length !== release.length + 1 || [...release, ...definitions].some(d => d.id !== id)) throw new Error('拒绝发布：仅支持固定作品已登记的两章至三章、三章至四章版本。')
   const oldBook = expectedPaintBook(release), newBook = expectedPaintBook(definitions)
   if ([...release, ...definitions].some(d => hash(expectedPaintRelease(d).characters) !== hash(oldBook.characters))) throw new Error('拒绝发布：本次版本不得改写原角色设定。')
   const project = await client.project.findUnique({ where: { id }, include })
-  guard(project, ownerId, release[0].characters)
+  guard(project, ownerId, release[0].characters, release.length)
   const before = fingerprint(project), target = hash(newBook)
-  const currentTwoChapterFingerprint = hash(expectedPaintBook(definitions.slice(0, 2)))
-  if (before !== target && before !== hash(oldBook) && before !== currentTwoChapterFingerprint) throw new Error('拒绝发布：作品已有改写或额外章节，与冻结旧稿或当前两章发布指纹不匹配。')
+  const currentBaseFingerprint = hash(expectedPaintBook(definitions.slice(0, -1)))
+  if (before !== target && before !== hash(oldBook) && before !== currentBaseFingerprint) throw new Error('拒绝发布：作品已有改写或额外章节，与冻结旧稿或当前基础章节发布指纹不匹配。')
   const packRoots = options.packRoots || ['paint-prologue', 'paint-chapter-one', 'paint-chapter-two'].map(name => path.join(root, 'assets/voice-packs', name))
-  if (packRoots.length !== 3) throw new Error('拒绝发布：必须预检全部三个音色包。')
+  if (packRoots.length !== definitions.length) throw new Error('拒绝发布：必须预检本次发布全部章节音色包。')
   const prepared: Prepared[] = []
   for (const [index, definition] of definitions.entries()) prepared.push(await preflightPaintDefinition(definition, { ...options, packRoot: packRoots[index] }))
   verifyReferences(project, definitions, prepared, ownerId)
@@ -114,7 +114,7 @@ export async function releasePaintBook(client: PrismaClient, ownerId: string, op
   const result = (status: 'released' | 'current' | 'ready', after: Stored) => ({ status, projectId: id, beforeFingerprint: before, afterFingerprint: fingerprint(after), targetFingerprint: target, chapters: after.chapters.sort((a, b) => a.order - b.order).map(c => ({ id: c.id, order: c.order, previousVersion: versions.get(c.id) ?? null, version: c.version })) })
   return client.$transaction(async tx => {
     const fresh = await tx.project.findUnique({ where: { id }, include })
-    guard(fresh, ownerId, release[0].characters)
+    guard(fresh, ownerId, release[0].characters, release.length)
     if (fingerprint(fresh) !== before || fresh.chapters.some(c => versions.get(c.id) !== c.version)) throw new Error('拒绝发布：预检期间作品指纹或章节版本已变化。')
     verifyReferences(fresh, definitions, prepared, ownerId)
     if (before === target) return result('current', fresh)

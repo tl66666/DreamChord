@@ -1,0 +1,8 @@
+{
+  "pc3-after-5": { "synthesisText": "いっしゅうかん以内に、手紙で知らせるって。今日は、まだ。", "textSplitMethod": "cut0", "note": "Clarify date interval; authored Japanese subtitle unchanged." },
+  "pc3-after-8": { "synthesisText": "うん。でも、さんじは先に、イエの芝居ね。", "textSplitMethod": "cut0", "note": "Clarify the agreed rehearsal time and proper name; subtitle unchanged." },
+  "pc3-after-11": { "synthesisText": "むいか、にほんめ。イエには、何も書いてない、えはがき。", "textSplitMethod": "cut0", "note": "Clarify 六日 / second bus / postcard, preserving meaning and authored subtitle." },
+  "pc3-return-4": { "synthesisText": "行く。しがつ、はつか。さんじ。", "textSplitMethod": "cut0", "note": "Explicit April 20, three o'clock reading; subtitle unchanged." },
+  "pc3-return-8": { "synthesisText": "ひらいてくれよ。演じる前に、だいほんまで直す気か？", "textSplitMethod": "cut0", "note": "Clarify script-related vocabulary; subtitle unchanged." },
+  "pc3-return-17": { "synthesisText": "だいほん、どけて。おわんを置くから。", "textSplitMethod": "cut0", "note": "Clarify the ordinary bowl/script line; subtitle unchanged." }
+}

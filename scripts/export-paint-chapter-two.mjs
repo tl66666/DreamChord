@@ -1,5 +1,5 @@
 import { mkdir, readFile, writeFile } from 'node:fs/promises'
-import { PAINT_PROLOGUE, PAINT_CHAPTER_ONE, PAINT_CHAPTER_TWO, PAINT_CHAPTER_TWO_LINES, PAINT_CHAPTER_TWO_SOURCES } from '../packages/story-domain/dist/index.js'
+import { PAINT_PROLOGUE, PAINT_CHAPTER_ONE, PAINT_CHAPTER_TWO, PAINT_CHAPTER_TWO_LINES, PAINT_CHAPTER_TWO_SOURCES, PAINT_CHAPTER_THREE } from '../packages/story-domain/dist/index.js'
 const root = new URL('../', import.meta.url), dir = new URL('docs/story/paint/', root)
 await mkdir(dir, { recursive: true })
 await mkdir(new URL('.runtime/', root), { recursive: true })
@@ -41,8 +41,8 @@ await writeFile(new URL('02-chapter-two.md', dir), bilingual.join('\n'))
 const credits = JSON.parse(await readFile(new URL('apps/web/public/assets/audio/paint-book/music-credits.json', root), 'utf8'))
 const legacy = JSON.parse(await readFile(new URL('apps/web/public/assets/audio/paint-prologue/music-credits.json', root), 'utf8'))
 const all = [...credits, ...legacy]
-const sheet = ['# 整书配乐节点表', '', '从三章正式图谱导出。按情境切换与复现主题，人物拒绝及实物核对保留停乐，不把音乐响起当作关系已经和解。', '', '| 章节 / 场景 | 节点 | 方向 | 原曲 / 作者 | 段内音量 |', '| --- | --- | --- | --- | --- |']
-for (const chapter of [PAINT_PROLOGUE, PAINT_CHAPTER_ONE, PAINT_CHAPTER_TWO]) for (const node of chapter.graph.nodes) {
+const sheet = ['# 整书配乐节点表', '', '从四章正式图谱导出。按情境切换与复现主题，人物拒绝及实物核对保留停乐，不把音乐响起当作关系已经和解。', '', '| 章节 / 场景 | 节点 | 方向 | 原曲 / 作者 | 段内音量 |', '| --- | --- | --- | --- | --- |']
+for (const chapter of [PAINT_PROLOGUE, PAINT_CHAPTER_ONE, PAINT_CHAPTER_TWO, PAINT_CHAPTER_THREE]) for (const node of chapter.graph.nodes) {
   const cue = node.data.audio?.bgm
   if (!cue) continue
   const credit = all.find(c => c.runtimeFile === cue.url)
