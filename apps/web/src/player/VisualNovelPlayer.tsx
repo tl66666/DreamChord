@@ -17,6 +17,7 @@ import { useAuthStore } from '../stores/authStore'
 import { beginCurtainTemplate, beginPaintTemplate } from '../lib/templateEntry'
 import { startPreviewAt } from '../engine/previewStart'
 import { splitReadingPages } from './readingPages'
+import { PaintWorldPanel } from './PaintWorldPanel'
 
 interface HistoryItem {
   sceneId: string
@@ -89,6 +90,8 @@ export default function VisualNovelPlayer() {
   const [isTyping, setIsTyping] = useState(false)
   const [showHistory, setShowHistory] = useState(false)
   const [showSettings, setShowSettings] = useState(false)
+  const [showWorld, setShowWorld] = useState(false)
+  const closeWorld = useCallback(() => setShowWorld(false), [])
   const [history, setHistory] = useState<HistoryItem[]>([])
   const [readingPage, setReadingPage] = useState({ key: '', index: 0 })
   const [isAuto, setIsAuto] = useState(false)
@@ -168,6 +171,7 @@ export default function VisualNovelPlayer() {
     setIsAuto(false)
     setIsSkip(false)
     setHistory([])
+    setShowWorld(false)
     setReadingPage({ key: '', index: 0 })
 
     getProject(projectId)
@@ -415,6 +419,7 @@ export default function VisualNovelPlayer() {
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
+      if (showWorld) return
       if (showHistory || showSettings) {
         if (event.key === 'Escape') {
           setShowHistory(false)
@@ -439,7 +444,7 @@ export default function VisualNovelPlayer() {
     }
     window.addEventListener('keydown', onKeyDown)
     return () => window.removeEventListener('keydown', onKeyDown)
-  }, [advance, finished, selectChoice, showHistory, showSettings])
+  }, [advance, finished, selectChoice, showHistory, showSettings, showWorld])
 
   useEffect(() => {
     return () => {
@@ -458,7 +463,16 @@ export default function VisualNovelPlayer() {
   }
 
   return (
-    <div className="relative h-screen w-screen overflow-hidden bg-black text-white" onClick={() => advance()}>
+    <div className="relative h-screen w-screen overflow-hidden bg-black text-white" onClick={() => { if (!showWorld) advance() }}>
+      {showWorld && <PaintWorldPanel onClose={closeWorld} />}
+      {projectId === 'dreamchord-paint-prologue' && <button title="镇子与人物" className="absolute left-4 top-28 z-40 flex items-center gap-2 rounded-xl border border-white/20 bg-black/65 px-3 py-2 text-xs text-white/90 backdrop-blur-md hover:bg-black/80" onClick={event => {
+        event.stopPropagation()
+        setIsAuto(false); setIsSkip(false)
+        if (autoTimer.current) clearTimeout(autoTimer.current)
+        if (skipTimer.current) clearTimeout(skipTimer.current)
+        audioDirectorRef.current?.stopTransient()
+        setShowWorld(true)
+      }}>镇子与人物</button>}
       <AnimatePresence mode="wait">
         <motion.div
           key={backgroundUrl}

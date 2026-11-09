@@ -546,12 +546,11 @@ export default function FlowEditor() {
     autoSaveTimer.current = setTimeout(() => { void saveCoordinator.flush() }, 3000)
   }
 
-  const handlePreview = async () => {
+  const handlePreview = async (fromCardId?: string) => {
     if (projectId && projectId !== 'new') {
       const saved = await handleSave()
       if (!saved) return
-      const from = selectedCardId || nodes.find(n => getNodeSceneGroupId(n) === selectedSceneId && ['dialogue', 'subtitle', 'choice'].includes(String(n.type)))?.id
-      navigate(`/play/${projectId}?preview=${Date.now()}${from ? `&from=${encodeURIComponent(`${store.chapterId}:${from}`)}` : ''}`)
+      navigate(`/play/${projectId}?preview=${Date.now()}${fromCardId ? `&from=${encodeURIComponent(`${store.chapterId}:${fromCardId}`)}` : ''}`)
       return
     }
     toast.info('请先从首页新建故事项目并保存，再进入预览。')
@@ -814,8 +813,11 @@ export default function FlowEditor() {
           <button onClick={() => { const next = !showAI; setShowAI(next); if (next) setShowAssets(false) }} className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium transition ${showAI ? 'bg-dream-600 text-white' : 'border border-dream-200 bg-white text-slate-700 hover:bg-dream-50'}`}>
             <Sparkles className="h-4 w-4" /> 创作 Agent
           </button>
-          <button onClick={handlePreview} className="inline-flex items-center gap-1.5 rounded-lg bg-dream-600 px-3 py-1.5 text-sm font-medium text-white transition hover:bg-dream-700">
-            <Play className="h-4 w-4" /> 预览
+          <button onClick={() => { void handlePreview(selectedCard?.id) }} disabled={!selectedCard} title={selectedCard ? '从选中的镜头开始播放' : '请先选择一张镜头卡'} className="inline-flex items-center gap-1.5 rounded-lg border border-dream-200 bg-white px-3 py-1.5 text-sm font-medium text-slate-700 transition hover:bg-dream-50 disabled:opacity-50">
+            <Play className="h-4 w-4" /> 从当前镜头预览
+          </button>
+          <button onClick={() => { void handlePreview() }} title="从作品开头完整播放" className="inline-flex items-center gap-1.5 rounded-lg bg-dream-600 px-3 py-1.5 text-sm font-medium text-white transition hover:bg-dream-700">
+            <Play className="h-4 w-4" /> 完整预览
           </button>
           <button onClick={handleSave} disabled={store.isSaving || deletingChapterId === store.chapterId} className="inline-flex items-center gap-1.5 rounded-lg border border-dream-200 bg-white px-3 py-1.5 text-sm font-medium text-slate-700 transition hover:bg-dream-50 disabled:opacity-50">
             <Save className={`h-4 w-4 ${store.isSaving ? 'animate-spin' : ''}`} />
@@ -909,7 +911,7 @@ export default function FlowEditor() {
                 projectCharacters={project?.characters.map((character) => ({ id: character.id, name: character.name }))}
               />
             ) : (
-              <MiniPreview card={selectedCard} onFullScreen={handlePreview} projectCharacters={project?.characters} />
+              <MiniPreview card={selectedCard} onFullScreen={() => { void handlePreview() }} projectCharacters={project?.characters} />
             )}
           </div>
         </div>

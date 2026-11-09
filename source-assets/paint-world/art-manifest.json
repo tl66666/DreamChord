@@ -1,0 +1,31 @@
+{
+  "createdAt": "2026-11-09",
+  "generator": "built-in image_gen.imagegen",
+  "purpose": "Original supporting-character archive portraits; opaque, not stage sprites or trained voice identities.",
+  "assets": [
+    {
+      "id": "liu-jian",
+      "prompt": "Use case: original literary visual novel supporting character archive portrait. Square image, 1024x1024 desired. Detailed warm hand-painted gouache anime illustration consistent with a honey-wood ivory grey-blue old Chinese small-town theatre. A Chinese man aged 58, weathered kind but practical face, short greying hair, visible normal age lines, not a glamorous young man, no resemblance to a celebrity. Worn indigo work jacket over plain warm grey shirt, simple carpenter apron, one hand holding a small ring of ordinary keys, relaxed natural half-body waist-up pose. Thoughtful expression with a slightly wry smile, physically ordinary, respectful age depiction. Quiet softly painted old wooden workshop shelves behind him, background subdued without looking like a pasted sticker; no heavy outline or artificial halo, full coherent lighting. Face and hands clearly visible, head not cropped, good breathing room at top and sides. No text, readable signs, UI, watermarks, logos, magic, flowers, swords or fantasy props. One person only.",
+      "generationSourcePath": "C:\\Users\\唐乐\\.codex\\generated_images\\01a1680b-608f-7291-9d58-1375c80be01e\\exec-5d7da4d1-4b2f-4832-90c4-e609636f6d46.png",
+      "nativeFile": "source-assets/paint-world/liu-jian-native.png",
+      "nativeSha256": "4ffefd1cb2df220b6c9593b4f663565742520e4e399ea6c6954999a7c1c10013",
+      "nativeWidth": 1254,
+      "nativeHeight": 1254,
+      "publicFile": "apps/web/public/assets/paint-world/liu-jian.webp",
+      "cropped": false,
+      "publicSha256": "773a72e88a026779180147c5db2b8a4e11d9d2179f0696a9ad2626fa46776b7b"
+    },
+    {
+      "id": "shen-yun",
+      "prompt": "Use case: original literary visual novel supporting character archive portrait. Square image, 1024x1024 desired. Detailed warm hand-painted gouache anime illustration matching honey wooden shelves, ivory plaster and desaturated grey-blue Chinese old-town visual novel. A Chinese woman shopkeeper aged 49, short dark hair with a few greys neatly tucked behind ears, mature ordinary face with gentle eye lines, alert practical friendly expression, distinct from the young dark-haired heroine. She wears a muted warm beige-brown cardigan and a faded moss-green working apron over cream blouse. Natural waist-up half-body portrait, one hand loosely holding a closed small ledger at waist, no visible writing, other hand resting naturally. Warm daylight in a small lived-in general store with blurred jars/cloth on wooden shelves. Coherent environment and character lighting, natural tonal blending, no pasted cutout halo. Head and both hands fully within frame, generous top/side room. No readable text, shop signs, UI, border, watermark, logos, magical effects, decorative flower clouds or celebrity resemblance. One person only.",
+      "generationSourcePath": "C:\\Users\\唐乐\\.codex\\generated_images\\01a1680b-608f-7291-9d58-1375c80be01e\\exec-6076a0ab-8d0b-49b7-8e95-e95e858dd99a.png",
+      "nativeFile": "source-assets/paint-world/shen-yun-native.png",
+      "nativeSha256": "6e7636ed4854ec780c07857f697b2fc3f2d0e71fc8c5114394bdc37b93b6e03a",
+      "nativeWidth": 1254,
+      "nativeHeight": 1254,
+      "publicFile": "apps/web/public/assets/paint-world/shen-yun.webp",
+      "cropped": false,
+      "publicSha256": "7334be8ebb84f962800fabb1415ab9053b979e79d8611d7c227b39b5abf6a33e"
+    }
+  ]
+}

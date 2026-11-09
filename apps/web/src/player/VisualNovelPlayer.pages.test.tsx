@@ -38,6 +38,19 @@ const openPlayer = async () => {
 describe('reader pages with real player navigation', () => {
   beforeEach(() => { vi.useFakeTimers(); vi.clearAllMocks(); localStorage.clear(); mocks.getProject.mockResolvedValue(project) })
   afterEach(() => { cleanup(); vi.useRealTimers() })
+  it('opens the town archive without advancing the current reading page', async () => {
+    mocks.getProject.mockResolvedValue({ ...project, id: 'dreamchord-paint-prologue' })
+    await act(async () => { render(<MemoryRouter initialEntries={['/play/dreamchord-paint-prologue']}><Routes><Route path="/play/:projectId" element={<VisualNovelPlayer />} /></Routes></MemoryRouter>) })
+    finishTyping()
+    const first = splitReadingPages(ja)[0]
+    fireEvent.click(screen.getByTitle('镇子与人物'))
+    expect(screen.getByRole('dialog', { name: '镇子与人物' })).toBeTruthy()
+    nextPage()
+    expect(screen.getByText(first)).toBeTruthy()
+    fireEvent.click(screen.getByRole('button', { name: '关闭镇子与人物' }))
+    expect(screen.queryByRole('dialog', { name: '镇子与人物' })).toBeNull()
+    expect(screen.getByText(first)).toBeTruthy()
+  })
   it('shows every translated page before advancing, records each once, and does not replay the source music', async () => {
     await openPlayer()
     const pages = splitReadingPages(ja)
