@@ -1,5 +1,5 @@
 import { CHARACTER_REGISTRY, resolveCharacterUrl } from '../engine/characters'
-import { SEVENTH_ROW_DEMO, CURTAIN_CALL_DEMO, PAINT_PROLOGUE } from '@dreamchord/story-domain'
+import { SEVENTH_ROW_DEMO, CURTAIN_CALL_DEMO, PAINT_PROLOGUE, PAINT_CHAPTER_FOUR } from '@dreamchord/story-domain'
 
 export interface LibraryCharacter {
   id: string
@@ -97,7 +97,15 @@ const paintCharacters: LibraryCharacter[] = PAINT_PROLOGUE.characters.map(c => (
   usage: '原创文学幻想、朋友日常与小剧场；同名日语音色可试听并绑定角色。', conflicts: [c.slug === 'cheng' ? '总替别人解决问题，偶尔忘了问对方是否愿意。' : c.slug === 'xia' ? '希望自己的愿望被当作现在要做的事。' : c.slug === 'ye' ? '需要募款，也希望大家是真心喜欢他的戏。' : '草图的定稿与画面上的新痕迹并不一致。'],
   color: c.color, defaultExpression: 'normal', expressions: (c.slug === 'lu' ? ['normal'] : ['normal', 'smile', 'serious']).map(id => ({ id, label: ({ normal: '平静', smile: '微笑', serious: '认真' } as Record<string, string>)[id]!, url: `/assets/paint-prologue/${c.slug}-${id}.png` })), updatedAt: '2026-11-02',
 }))
-export const defaultCharacters: LibraryCharacter[] = [...paintCharacters, ...curtainCharacters, ...cinemaCharacters, ...Object.values(CHARACTER_REGISTRY).map((character) => {
+const paintSupportingCharacters: LibraryCharacter[] = PAINT_CHAPTER_FOUR.characters.slice(4).map(c => ({
+  id: `paint-${c.slug}`, name: c.name, role: '夏日来信与未完之画 · 官方角色', description: c.description,
+  biography: c.description,
+  outline: c.slug === 'liu' ? '修凳、管理礼堂，在工作和借用之间为自己的时间留出边界。' : '核账、照看杂货铺，也为排练和自己散步的时间作安排。',
+  usage: '小镇群像、生活场景；提供单张半身立绘。',
+  conflicts: [c.slug === 'liu' ? '礼堂需要修缮，他也有自己的生计和交付期限。' : '她关心朋友，但不能替别人做决定，也不愿放弃自己的时间。'],
+  color: c.color, defaultExpression: 'normal', expressions: [{ id: 'normal', label: '平静', url: c.defaultSprite }], updatedAt: '2026-11-10',
+}))
+export const defaultCharacters: LibraryCharacter[] = [...paintCharacters, ...paintSupportingCharacters, ...curtainCharacters, ...cinemaCharacters, ...Object.values(CHARACTER_REGISTRY).map((character) => {
   const extra = characterExtra[character.id]
   return {
     id: character.id,
@@ -128,7 +136,12 @@ export const defaultCharacters: LibraryCharacter[] = [...paintCharacters, ...cur
   }
 })]
 
+const paintChapterFourScenes: LibraryScene[] = [
+  { id: 'paint4-commission', name: '画外 · 委托与草图', url: '/assets/paint-chapter-four/commission-desk.webp', type: '文学幻想', place: '室内', timeOfDay: '白天', moods: ['静谧', '细节'], description: '画桌上摊着委托材料和草图，适合调查、工作与内心独白。', usage: '原创《夏日来信与未完之画》第四章背景。', updatedAt: '2026-11-10' },
+  { id: 'paint4-hall', name: '三点以前 · 午后礼堂', url: '/assets/paint-chapter-four/hall-afternoon.webp', type: '文学幻想', place: '室内', timeOfDay: '白天', moods: ['温暖', '日常'], description: '午后礼堂与排练台前，适合朋友排戏、日常对话与演出准备。', usage: '原创《夏日来信与未完之画》第四章背景。', updatedAt: '2026-11-10' },
+]
 export const defaultScenes: LibraryScene[] = [
+  ...paintChapterFourScenes,
   ...[
     { slug: 'home', name: '一张入场券 · 程见的居室', description: '门闩、冷茶、书架与下午的窗光。适合人物入场、收信和第一人称日常。', timeOfDay: '白天', moods: ['温暖', '日常'] },
     { slug: 'keepsake', name: '没写完的改编 · 书与票根', description: '旧散文诗、完整票根与铅笔痕的道具特写。适合阅读、回忆与创作停顿。', timeOfDay: '白天', moods: ['细节', '静谧'] },
@@ -252,12 +265,14 @@ export const conflictTemplates: ConflictTemplate[] = [
 ]
 
 export function loadLibraryCharacters(): LibraryCharacter[] {
-  return addBuiltinOnce(CHARACTER_KEY, addBuiltinOnce(CHARACTER_KEY, addBuiltinOnce(CHARACTER_KEY, normalizeList(CHARACTER_KEY, defaultCharacters, normalizeCharacter), cinemaCharacters, 'seventh-row'), curtainCharacters, 'curtain-call'), paintCharacters, 'paint-prologue')
+  const existing = addBuiltinOnce(CHARACTER_KEY, addBuiltinOnce(CHARACTER_KEY, addBuiltinOnce(CHARACTER_KEY, normalizeList(CHARACTER_KEY, defaultCharacters, normalizeCharacter), cinemaCharacters, 'seventh-row'), curtainCharacters, 'curtain-call'), paintCharacters, 'paint-prologue')
+  return addBuiltinOnce(CHARACTER_KEY, existing, paintSupportingCharacters, 'paint-chapter-four')
 }
 
 export function loadLibraryScenes(): LibraryScene[] {
   const installed = addBuiltinOnce(SCENE_KEY, addBuiltinOnce(SCENE_KEY, addBuiltinOnce(SCENE_KEY, normalizeList(SCENE_KEY, defaultScenes, normalizeScene), defaultScenes.filter(s => s.id.startsWith('seventh-')), 'seventh-row'), defaultScenes.filter(s => s.id.startsWith('curtain-')), 'curtain-call'), defaultScenes.filter(s => s.id.startsWith('paint-')), 'paint-prologue')
-  return addBuiltinOnce(SCENE_KEY, installed, defaultScenes.filter(s => ['paint-home', 'paint-keepsake', 'paint-theatre-sea'].includes(s.id)), 'paint-prose')
+  const withProse = addBuiltinOnce(SCENE_KEY, installed, defaultScenes.filter(s => ['paint-home', 'paint-keepsake', 'paint-theatre-sea'].includes(s.id)), 'paint-prose')
+  return addBuiltinOnce(SCENE_KEY, withProse, paintChapterFourScenes, 'paint-chapter-four')
 }
 
 function addBuiltinOnce<T extends { id: string }>(key: string, items: T[], additions: T[], pack: string): T[] {

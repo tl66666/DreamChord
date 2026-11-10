@@ -43,6 +43,15 @@ function sceneCards() {
 describe('shot graph author operations', () => {
   afterEach(() => { cleanup(); localStorage.clear() })
 
+  it('switches a dialogue card to narration without changing its routing', () => {
+    const nodes = [node('bg', 'background'), node('A'), node('B')]
+    const edges = chain('bg', 'A', 'B')
+    mount(nodes, edges, 'A')
+    fireEvent.click(screen.getByTitle('叙述动作、环境和剧情推进'))
+    expect(useEditorStore.getState().nodes.find(item => item.id === 'A')).toMatchObject({ type: 'subtitle', data: { lensType: 'narration' } })
+    expect(useEditorStore.getState().edges).toEqual(edges)
+  })
+
   it.each([['A', '下移'], ['B', '上移']])('moves %s with both scene boundaries and one undo', (id, title) => {
     const nodes = [node('P', 'dialogue', 'previous'), node('Abg', 'background'), node('A'), node('Bbg', 'background'), node('B'), node('Q', 'dialogue', 'next')]
     const entry: Edge = { ...edge('P', 'Abg'), sourceHandle: 'choice-1', label: '进入' }
