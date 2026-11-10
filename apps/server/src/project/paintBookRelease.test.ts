@@ -1,6 +1,6 @@
 import { execFileSync } from 'node:child_process'
 import { createHash, randomUUID } from 'node:crypto'
-import { mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdirSync, readFileSync, readdirSync, renameSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import path from 'node:path'
 import { PrismaClient } from '@prisma/client'
@@ -123,6 +123,132 @@ describe('guarded whole paint book release', () => {
       expect(after.chapters[1].version).toBe(before.chapters[1].version + 1)
       expect(after.chapters.map(c => c.nodes)).toEqual(before.chapters.map(c => c.nodes))
     }
+  })
+  function fifthChapterOptions() {
+    const four = fourthChapterOptions(), next = definition(4), packRoot = path.join(dir, 'paint-chapter-four')
+    const additions = [
+      { slug: 'liu', name: '刘济安', description: '58岁，木匠', color: '#8b735a', defaultSprite: '/assets/paint-world/liu-jian-stage.webp' },
+      { slug: 'shen', name: '沈芸', description: '49岁，杂货铺', color: '#767c5c', defaultSprite: '/assets/paint-world/shen-yun-stage.webp' },
+    ]
+    next.characters = [character, ...additions]
+    next.graph.nodes.push(...additions.map(c => ({ ...structuredClone(next.graph.nodes[0]), id: `line-4-${c.slug}`, data: { ...structuredClone(next.graph.nodes[0].data), role: c.name, voiceTracks: { ja: { url: `/assets/audio/paint-4/${c.slug}.ogg` } } } })))
+    mkdirSync(packRoot, { recursive: true }); mkdirSync(path.join(publicRoot, 'assets/audio/paint-4'), { recursive: true }); mkdirSync(path.join(publicRoot, 'assets/paint-world'), { recursive: true })
+    for (const c of next.characters) { writeFileSync(path.join(packRoot, `${c.slug}.wav`), bytes); writeFileSync(path.join(publicRoot, `assets/audio/paint-4/${c.slug === 'cheng' ? 'line' : c.slug}.ogg`), bytes) }
+    for (const c of additions) writeFileSync(path.join(publicRoot, c.defaultSprite.slice(1)), bytes)
+    writeFileSync(path.join(packRoot, 'manifest.json'), JSON.stringify({
+      voices: next.characters.map(c => ({ id: c.slug, role: c.name, name: c.name, description: 'voice', genderTone: c.slug === 'shen' ? '女声' : '男声' })),
+      references: next.characters.map(c => ({ id: `${c.slug}-natural`, role: c.slug, language: 'ja', text: '参考句', outputFile: `${c.slug}.wav`, sha256, durationSeconds: 5 })),
+      takes: next.graph.nodes.map(n => ({ nodeId: n.id, role: next.characters.find(c => c.name === n.data.role)!.slug, language: 'ja', text: '直したよ。', runtimeFile: (n.data.voiceTracks as { ja: { url: string } }).ja.url, runtimeSha256: sha256 })),
+    }))
+    return { ...options, storageRoot: path.join(dir, `uploads-${randomUUID()}`), releaseDefinitions: four.currentDefinitions, currentDefinitions: [...structuredClone(four.currentDefinitions), next], packRoots: [...four.packRoots, packRoot] }
+  }
+  async function installFour() { await releasePaintBook(client, 'official', options); await releasePaintBook(client, 'official', fourthChapterOptions()) }
+  it('appends the fifth chapter and two bounded NPCs while preserving every existing chapter and voice identity', async () => {
+    await installFour()
+    const before = await snapshot(), voices = await client.voiceProfile.findMany({ include: { references: true, bindings: true } }), next = fifthChapterOptions()
+    expect((await releasePaintBook(client, 'official', { ...next, checkOnly: true })).status).toBe('ready')
+    expect(await snapshot()).toEqual(before)
+    expect(await client.voiceProfile.findMany({ include: { references: true, bindings: true } })).toEqual(voices)
+    expect((await releasePaintBook(client, 'official', next)).status).toBe('released')
+    const after = await snapshot()
+    expect(after.chapters.slice(0, 4)).toEqual(before.chapters)
+    expect(after.characters.filter(c => c.name === character.name)).toEqual(before.characters)
+    expect(after.characters.map(c => c.name).sort()).toEqual(['程见', '刘济安', '沈芸'].sort())
+    for (const slug of ['liu', 'shen']) {
+      const profile = await client.voiceProfile.findUniqueOrThrow({ where: { id: `paint-voice-${slug}` }, include: { references: { include: { asset: true } }, bindings: true } })
+      expect(profile.references).toHaveLength(1)
+      expect(profile.bindings).toHaveLength(1)
+      expect(readFileSync(path.join(next.storageRoot, profile.references[0].asset.url.slice('/uploads/'.length)))).toEqual(bytes)
+      expect(JSON.parse(after.chapters[4].nodes.find(n => n.nodeId === `line-4-${slug}`)!.data).voiceTracks.ja).toMatchObject({ profileId: profile.id, referenceId: profile.references[0].id })
+    }
+    expect(await client.voiceProfile.findMany({ where: { id: 'paint-voice-cheng' }, include: { references: true, bindings: true } })).toEqual(voices)
+    expect((await releasePaintBook(client, 'official', next)).status).toBe('current')
+    expect(await snapshot()).toEqual(after)
+  })
+  it('rolls back additive registration when an NPC profile ID already belongs to another owner', async () => {
+    await installFour()
+    const next = fifthChapterOptions()
+    await client.voiceProfile.create({ data: { id: 'paint-voice-shen', ownerId: 'private', name: '私有音色', language: 'ja', authorizationNote: 'private' } })
+    const before = await snapshot(), profiles = await client.voiceProfile.findMany(), refs = await client.voiceReference.findMany(), assets = await client.asset.findMany()
+    await expect(releasePaintBook(client, 'official', next)).rejects.toThrow()
+    expect(await snapshot()).toEqual(before)
+    expect(await client.voiceProfile.findMany()).toEqual(profiles)
+    expect(await client.voiceReference.findMany()).toEqual(refs)
+    expect(await client.asset.findMany()).toEqual(assets)
+    expect(existsSync(next.storageRoot) ? readdirSync(next.storageRoot) : []).toEqual([])
+  })
+  it('revalidates an installed NPC reference on idempotent checks', async () => {
+    await installFour()
+    const next = fifthChapterOptions()
+    await releasePaintBook(client, 'official', next)
+    const ref = await client.voiceReference.findFirstOrThrow({ where: { profileId: 'paint-voice-liu' } })
+    await client.voiceReference.update({ where: { id: ref.id }, data: { transcript: '作者重新录音' } })
+    const before = await snapshot()
+    await expect(releasePaintBook(client, 'official', { ...next, checkOnly: true })).rejects.toThrow(/参考/)
+    expect(await snapshot()).toEqual(before)
+  })
+  it.each(['profile-status', 'reference-status', 'asset-url', 'asset-type', 'missing-file', 'changed-file'])('rejects installed NPC %s even with unchanged metadata SHA', async kind => {
+    await installFour()
+    const next = fifthChapterOptions()
+    await releasePaintBook(client, 'official', next)
+    const ref = await client.voiceReference.findFirstOrThrow({ where: { profileId: 'paint-voice-liu' }, include: { asset: true } })
+    const file = path.join(next.storageRoot, ref.asset.url.slice('/uploads/'.length))
+    if (kind === 'profile-status') await client.voiceProfile.update({ where: { id: ref.profileId }, data: { status: 'disabled' } })
+    if (kind === 'reference-status') await client.voiceReference.update({ where: { id: ref.id }, data: { status: 'revoked' } })
+    if (kind === 'asset-url') await client.asset.update({ where: { id: ref.assetId }, data: { url: '/uploads/other.wav' } })
+    if (kind === 'asset-type') await client.asset.update({ where: { id: ref.assetId }, data: { type: 'OTHER' } })
+    if (kind === 'missing-file') renameSync(file, `${file}.missing`)
+    if (kind === 'changed-file') writeFileSync(file, 'corrupted')
+    const before = await snapshot()
+    await expect(releasePaintBook(client, 'official', { ...next, checkOnly: true })).rejects.toThrow()
+    expect(await snapshot()).toEqual(before)
+  })
+  it('cleans only newly created reference files when a later release write fails', async () => {
+    await installFour()
+    const next = fifthChapterOptions(), prepared = await media.preflightPaintDefinition(next.currentDefinitions[4], { ...next, packRoot: next.packRoots[4] })
+    const liu = prepared.references.find(r => r.role === 'liu')!, shen = prepared.references.find(r => r.role === 'shen')!
+    const liuFile = path.join(next.storageRoot, liu.url.slice('/uploads/'.length)), shenFile = path.join(next.storageRoot, shen.url.slice('/uploads/'.length))
+    mkdirSync(path.dirname(liuFile), { recursive: true }); writeFileSync(liuFile, bytes)
+    const before = await snapshot()
+    const spy = vi.spyOn(client, '$transaction').mockImplementationOnce(async callback => client.$transaction(async tx => {
+      const wrapped = { ...tx, project: { ...tx.project, update: async () => { throw Error('forced later failure') } } }
+      return (callback as (tx: unknown) => Promise<unknown>)(wrapped)
+    }) as never)
+    try { await expect(releasePaintBook(client, 'official', next)).rejects.toThrow('forced later failure') } finally { spy.mockRestore() }
+    expect(await snapshot()).toEqual(before)
+    expect(readFileSync(liuFile)).toEqual(bytes)
+    expect(existsSync(shenFile)).toBe(false)
+    expect(await client.voiceProfile.count()).toBe(1)
+  })
+  it('rejects duplicate manifest voice IDs before NPC registration', async () => {
+    await installFour()
+    const next = fifthChapterOptions(), manifestPath = path.join(next.packRoots[4], 'manifest.json'), manifest = JSON.parse(readFileSync(manifestPath, 'utf8'))
+    manifest.voices.unshift({ ...manifest.voices.find((v: { id: string }) => v.id === 'liu'), role: '冒名', name: '错误音色' })
+    writeFileSync(manifestPath, JSON.stringify(manifest))
+    const before = await snapshot()
+    await expect(releasePaintBook(client, 'official', next)).rejects.toThrow()
+    expect(await snapshot()).toEqual(before)
+    expect(await client.voiceProfile.count()).toBe(1)
+  })
+  it.each(['private', 'author', 'old-cast', 'old-graph', 'unknown-npc', 'reference', 'track', 'pack', 'race', 'cas'])('rejects unsafe fifth-chapter %s without release writes', async kind => {
+    await installFour()
+    const next = fifthChapterOptions()
+    if (kind === 'private') await client.project.update({ where: { id }, data: { isPublic: false } })
+    if (kind === 'author') await client.project.update({ where: { id }, data: { description: '作者改写' } })
+    if (kind === 'old-cast') next.currentDefinitions[4].characters = [{ ...character, description: 'changed' }, ...next.currentDefinitions[4].characters.slice(1)]
+    if (kind === 'old-graph') next.currentDefinitions[0].graph.nodes[0].data.text = 'changed'
+    if (kind === 'unknown-npc') next.currentDefinitions[4].characters = [...next.currentDefinitions[4].characters, { ...character, slug: 'other', name: '其他角色' }]
+    if (kind === 'reference') await client.asset.update({ where: { id: 'voice-asset' }, data: { metadata: '{}' } })
+    if (kind === 'track') { const node = (await snapshot()).chapters[0].nodes[0], data = JSON.parse(node.data); data.voiceTracks.ja.referenceId = 'changed'; await client.flowNode.update({ where: { id: node.id }, data: { data: JSON.stringify(data) } }) }
+    if (kind === 'pack') next.packRoots[4] = path.join(dir, 'absent')
+    const before = await snapshot(), count = await client.voiceProfile.count()
+    const real = media.preflightPaintDefinition
+    const race = kind === 'race' ? vi.spyOn(media, 'preflightPaintDefinition').mockImplementationOnce(async (...args) => { const p = await real(...args); await client.chapter.update({ where: { id: 'chapter-0' }, data: { version: { increment: 1 } } }); return p }) : undefined
+    const cas = kind === 'cas' ? vi.spyOn(client, '$transaction').mockImplementationOnce(async callback => client.$transaction(async tx => { const wrapped = { ...tx, chapter: { ...tx.chapter, updateMany: async () => ({ count: 0 }) } }; return (callback as (tx: unknown) => Promise<unknown>)(wrapped) }) as never) : undefined
+    try { await expect(releasePaintBook(client, 'official', next)).rejects.toThrow() } finally { race?.mockRestore(); cas?.mockRestore() }
+    expect((await snapshot()).chapters).toHaveLength(4)
+    expect(await client.voiceProfile.count()).toBe(count)
+    if (kind !== 'race') expect(await snapshot()).toEqual(before)
   })
   it('links each credited project BGM once while preserving old author assets and the global library', async () => {
     const definitions = structuredClone(currentDefinitions)

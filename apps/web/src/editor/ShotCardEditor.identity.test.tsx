@@ -5,6 +5,7 @@ import { FeedbackProvider } from '../components/FeedbackProvider'
 import { CHARACTER_KEY } from '../lib/libraryData'
 import ShotCardEditor from './ShotCardEditor'
 import type { Node } from '@xyflow/react'
+import { voiceTextHash } from '@dreamchord/story-domain'
 vi.mock('./NodeLocalizationEditor', () => ({ default: () => null }))
 
 describe('legacy graph character edits', () => {
@@ -27,5 +28,17 @@ describe('legacy graph character edits', () => {
     fireEvent.change(positions.at(-1)!, { target: { value: 'right' } })
     const next = update.mock.calls.at(-1)![0] as Node[]
     expect(next.find(n => n.id === 'char')!.data.position).toBe('right')
+  })
+  it('replaces the Chinese voice track together with an asset selection while preserving Japanese audio', () => {
+    const text = '雨停了。'
+    const japanese = { url: '/ja.wav', textHash: 'original-ja' }
+    const nodes: Node[] = [{ id: 'line', type: 'subtitle', position: { x: 0, y: 0 }, data: { text, sceneGroupId: 's', sceneCode: '1-1', voiceTracks: { zh: { url: '/old.wav', textHash: voiceTextHash(text) }, ja: japanese }, audio: { voice: { url: '/old.wav' }, bgm: { action: 'keep' } } } }]
+    const update = vi.fn()
+    const applied = vi.fn()
+    render(<FeedbackProvider><ShotCardEditor nodes={nodes} edges={[]} selectedSceneId="s" selectedCardId="line" autoEditCardId={null} onConsumeAutoEdit={vi.fn()} onSelectCard={vi.fn()} onUpdateGraph={update} onRequestAI={vi.fn()} onSetSceneExit={vi.fn()} scenes={[]} onCreateBranch={vi.fn()} onNavigateToScene={vi.fn()} onOpenAssetPicker={vi.fn()} onAssetApplied={applied} convergenceMap={new Map()} assetSelection={{ target: { cardId: 'line', field: 'voice' }, asset: { id: 'voice-new', name: '配音', type: 'VOICE', url: '/new.wav', createdAt: '' } }} /></FeedbackProvider>)
+    const next = update.mock.calls.at(-1)![0] as Node[]
+    expect(next[0]!.data.voiceTracks).toEqual({ zh: { url: '/new.wav', textHash: voiceTextHash(text) }, ja: japanese })
+    expect(next[0]!.data.audio).toEqual({ voice: { url: '/new.wav' }, bgm: { action: 'keep' } })
+    expect(applied).toHaveBeenCalledOnce()
   })
 })

@@ -175,7 +175,7 @@ applyPaintScore(nodes, [
 /** Same book identity; revisions are installed by an explicit guarded release. */
 export const PAINT_CHAPTER_ONE = {
   id: PAINT_PROLOGUE.id, title: PAINT_PROLOGUE.title,
-  chapterTitle: '第一章 · 今天也有一场坏戏',
+  chapterTitle: '第一章 · 为六月留一张明信片',
   description: '一把修补后又断裂的椅子，一幅无人承认补完的海景。程见、夏禾与许野继续排一出不太成功的戏，也试着给自己的明天留一个位置。原创文学幻想 · 序章与第一章 · 中文字幕 / 日语角色配音。',
   cover: PAINT_PROLOGUE.cover, characters: PAINT_PROLOGUE.characters,
   graph: { nodes, edges } as StoryGraph,

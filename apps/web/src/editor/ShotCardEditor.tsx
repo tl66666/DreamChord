@@ -87,7 +87,11 @@ export default function ShotCardEditor({
     const sceneStart = findSceneStartNode(selectedSceneId, nodes, edges)
     if (!sceneStart) return []
     const sceneNodes = getSceneGroupNodes(sceneStart, nodes, edges)
-    return groupNodesToCards(sceneNodes).map((card) => resolveProjectShotCard(applyStageToShotCard(card, resolveStageStateAfterNode(nodes, edges, card.id)), projectCharacters))
+    return groupNodesToCards(sceneNodes).map((card) => {
+      const staged = resolveProjectShotCard(applyStageToShotCard(card, resolveStageStateAfterNode(nodes, edges, card.id)), projectCharacters)
+      const speaker = staged.characters.find((character) => character.characterId === staged.speaker && character.action !== 'hide')
+      return speaker ? { ...staged, speakerExpression: speaker.expression, speakerPosition: speaker.position } : staged
+    })
   }, [nodes, edges, selectedSceneId, projectCharacters])
 
   // 对话连续性标记：与前卡相同 speaker + background + 同场景 + 非选项
@@ -120,8 +124,8 @@ export default function ShotCardEditor({
 
     const updateKeys = Object.keys(updates)
 
-    // Language edits only touch the playable node; staging and routing keep their IDs.
-    if (updateKeys.length > 0 && updateKeys.every((key) => key === 'localizations' || key === 'voiceTracks')) {
+    // Content metadata only touches the playable node; staging and routing keep their IDs.
+    if (updateKeys.length > 0 && updateKeys.every((key) => key === 'localizations' || key === 'voiceTracks' || key === 'audio')) {
       onUpdateGraph(nodes.map((node) => node.id === existingText.id ? { ...node, data: { ...node.data, ...updates } } : node), edges)
       return
     }
@@ -162,14 +166,14 @@ export default function ShotCardEditor({
         data: { backgroundId: updates.background, sceneGroupId: card.sceneGroupId, sceneCode: card.sceneCode },
       }
       const firstNonBgNode = cardNodes.find((n) => n.type !== 'background')
-      const incomingEdge = firstNonBgNode
-        ? edges.find((e) => e.target === firstNonBgNode.id && !e.sourceHandle && !card.nodeIds.includes(e.source))
-        : undefined
-      let newEdges = edges
-      if (incomingEdge && firstNonBgNode) {
-        newEdges = newEdges.filter((e) => e.id !== incomingEdge.id)
-        newEdges = [...newEdges, normalEdge(incomingEdge.source, newBgId), normalEdge(newBgId, firstNonBgNode.id)]
-      }
+      const ownedIds = new Set(card.nodeIds.filter((id) => id !== existingBg.id))
+      const incomingEdges = edges.filter((edge) => ownedIds.has(edge.target) && !ownedIds.has(edge.source))
+      const incomingIds = new Set(incomingEdges.map((edge) => edge.id))
+      const newEdges = [
+        ...edges.filter((edge) => !incomingIds.has(edge.id)),
+        ...incomingEdges.map((edge) => ({ ...edge, target: newBgId })),
+        ...(firstNonBgNode ? [normalEdge(newBgId, firstNonBgNode.id)] : []),
+      ]
       const laidOut = layoutNodes([...nodes, newBgNode], newEdges)
       onUpdateGraph(laidOut, newEdges)
       return
@@ -211,7 +215,7 @@ export default function ShotCardEditor({
 
       let newNodes = nodes.map((n) =>
         n.id === existingText.id
-          ? { ...n, data: { ...n.data, role: newRole } }
+          ? { ...n, data: { ...n.data, role: newRole, autoStageSpeaker: updatedCard.autoStageSpeaker } }
           : n,
       )
 
@@ -235,9 +239,10 @@ export default function ShotCardEditor({
                 ? { ...n, data: { ...n.data, expression: speakerSlot.expression, position: speakerSlot.position } }
                 : n,
             )
+            onUpdateGraph(newNodes, edges)
+            return
           }
-          onUpdateGraph(newNodes, edges)
-          return
+          // An inherited speaker has no event in this card; create one below.
         }
       } else {
         onUpdateGraph(newNodes, edges)
@@ -287,18 +292,14 @@ export default function ShotCardEditor({
     // 4. 重建边
     // 4a. 在移除旧边之前，找到进入此卡片的入边
     const cardNodeIdsSet = new Set(card.nodeIds)
-    const cardEntryNode = bgIsShared
-      ? (cardNodes.find((n) => n.type === 'character') || existingText)
-      : (existingBg || existingText)
-    const incomingEdge = cardEntryNode
-      ? edges.find((e) =>
-          e.target === cardEntryNode.id && !e.sourceHandle && !cardNodeIdsSet.has(e.source))
-      : undefined
+    const ownedNodeIds = new Set(card.nodeIds.filter((id) => !bgIsShared || id !== existingBg?.id))
+    const incomingEdges = edges.filter((edge) => ownedNodeIds.has(edge.target) && !ownedNodeIds.has(edge.source))
+    const incomingIds = new Set(incomingEdges.map((edge) => edge.id))
 
     // 4b. 移除涉及旧 char 节点的边 + 入边
     let allEdges = edges.filter((e) => {
       if (oldCharIds.has(e.source) || oldCharIds.has(e.target)) return false
-      if (incomingEdge && e.id === incomingEdge.id) return false
+      if (incomingIds.has(e.id)) return false
       return true
     })
 
@@ -323,7 +324,7 @@ export default function ShotCardEditor({
     }
 
     // 4e. bg 新建时重连入边（existingBg 不存在时）
-    if (!existingBg && bgId && card.nodeIds[0] && !incomingEdge) {
+    if (!existingBg && bgId && card.nodeIds[0] && incomingEdges.length === 0) {
       const oldIncoming = edges.find((e) => e.target === card.nodeIds[0])
       if (oldIncoming) {
         allEdges = allEdges.filter((e) => e.id !== oldIncoming.id)
@@ -357,8 +358,8 @@ export default function ShotCardEditor({
     allEdges.push(...chainEdges(chainNodes))
 
     // 4h. 重连入边到新链首节点
-    if (incomingEdge && chainNodes.length > 0) {
-      allEdges.push(normalEdge(incomingEdge.source, chainNodes[0]!.id))
+    if (chainNodes.length > 0) {
+      allEdges.push(...incomingEdges.map((edge) => ({ ...edge, target: chainNodes[0]!.id })))
     }
 
     // 4i. 保留选项边（更新标签）
@@ -388,7 +389,10 @@ export default function ShotCardEditor({
     if (field === 'background') updateCard(assetSelection.target.cardId, { background: assetSelection.asset.url })
     if (field === 'bgm' || field === 'sfx' || field === 'voice') {
       const card = cards.find((item) => item.id === assetSelection.target.cardId)
-      if (card) updateCard(card.id, { audio: applyAudioAssetToShotCard(card, field, assetSelection.asset.url).audio })
+      if (card) {
+        const applied = applyAudioAssetToShotCard(card, field, assetSelection.asset.url)
+        updateCard(card.id, { audio: applied.audio, ...(field === 'voice' ? { voiceTracks: applied.voiceTracks } : {}) })
+      }
     }
     onAssetApplied()
   }, [assetSelection, cards, onAssetApplied, updateCard])
@@ -592,7 +596,7 @@ export default function ShotCardEditor({
     )
 
     const allNodes = [...nodes, ...newNodes]
-    let allEdges = edges
+    let allEdges = [...edges]
 
     // 移除旧出边，在副本后面重新连接
     if (outgoingEdge) {

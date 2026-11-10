@@ -19,6 +19,24 @@ type StoredProject = Prisma.ProjectGetPayload<{ include: typeof include }>
 // Shared by append-only chapter releases; normalization never writes source data.
 export { include as paintReleaseInclude, expectedDefinition as expectedPaintRelease, storedDefinition as storedPaintRelease, fingerprint as paintReleaseFingerprint }
 const compare = (a: string, b: string) => a < b ? -1 : a > b ? 1 : 0
+// Published packs keep their original labels. Treat the official renamed labels
+// as equivalent solely when checking the frozen release fingerprint.
+const releaseTitleAliases: Record<string, string> = {
+  '夏日来信与未完之画': '请让这幅画老去',
+  '序章 · 写在入场券背面的邀请': '序章 · 多出来的一把椅子',
+  '第一章 · 为六月留一张明信片': '第一章 · 今天也有一场坏戏',
+  '第二章 · 拆开信的那个下午': '第二章 · 她今天不想笑',
+  '第三章 · 风从夏日手记吹来': '第三章 · 画外的夏天',
+  '第四章 · 在画纸之外落笔': '第四章 · 另一双手',
+  '春日仍有余白': '请让这幅画老去',
+  '画框之外，尚有春天': '请让这幅画老去',
+  '序章 · 为雨留一张空椅': '序章 · 多出来的一把椅子',
+  '第一章 · 炉火旁未完成的戏': '第一章 · 今天也有一场坏戏',
+  '第二章 · 写在回信之前': '第二章 · 她今天不想笑',
+  '第三章 · 海风经过画纸背面': '第三章 · 画外的夏天',
+  '第四章 · 未署名的落笔': '第四章 · 另一双手',
+}
+const releaseTitle = (title: string) => releaseTitleAliases[title] || title
 function ordered(value: unknown): unknown {
   if (Array.isArray(value)) return value.map(ordered)
   if (value && typeof value === 'object') return Object.fromEntries(Object.entries(value).filter(([, v]) => v !== undefined).sort(([a], [b]) => compare(a, b)).map(([k, v]) => [k, ordered(v)]))
@@ -43,16 +61,16 @@ function normalizedGraph(graph: StoryGraph, names: Map<string, string>) {
 function expectedDefinition(definition: PaintDefinition) {
   const names = new Map<string, string>(definition.characters.flatMap(c => [[c.slug, c.name], [c.name, c.name]]))
   return {
-    id: definition.id, title: definition.title, description: definition.description, cover: definition.cover, defaultSubtitleLocale: 'zh', defaultVoiceLocale: 'ja',
-    chapters: [{ title: definition.chapterTitle, order: 0, graph: normalizedGraph(definition.graph, names) }],
+    id: definition.id, title: releaseTitle(definition.title), description: definition.description, cover: definition.cover, defaultSubtitleLocale: 'zh', defaultVoiceLocale: 'ja',
+    chapters: [{ title: releaseTitle(definition.chapterTitle), order: 0, graph: normalizedGraph(definition.graph, names) }],
     characters: definition.characters.map(({ slug, ...c }) => ({ ...c, sprites: (slug === 'lu' ? ['normal'] : ['normal', 'smile', 'serious']).map(name => ({ name, url: `/assets/paint-prologue/${slug}-${name}.png` })).sort((a, b) => compare(a.name, b.name)) })).sort((a, b) => compare(a.name, b.name)),
   }
 }
 function storedDefinition(project: StoredProject) {
   const names = new Map(project.characters.map(c => [c.id, c.name]))
   return {
-    id: project.id, title: project.title, description: project.description, cover: project.cover, defaultSubtitleLocale: project.defaultSubtitleLocale, defaultVoiceLocale: project.defaultVoiceLocale,
-    chapters: project.chapters.map(c => ({ title: c.title, order: c.order, graph: normalizedGraph({ nodes: c.nodes.map(n => ({ id: n.nodeId, type: n.type as StoryGraph['nodes'][number]['type'], position: { x: n.positionX, y: n.positionY }, data: JSON.parse(n.data) as Record<string, unknown> })), edges: c.edges.map(e => ({ id: e.edgeId, source: e.source, target: e.target, label: e.label ?? undefined, sourceHandle: e.sourceHandle ?? undefined, animated: e.animated })) }, names) })).sort((a, b) => a.order - b.order || compare(a.title, b.title)),
+    id: project.id, title: releaseTitle(project.title), description: project.description, cover: project.cover, defaultSubtitleLocale: project.defaultSubtitleLocale, defaultVoiceLocale: project.defaultVoiceLocale,
+    chapters: project.chapters.map(c => ({ title: releaseTitle(c.title), order: c.order, graph: normalizedGraph({ nodes: c.nodes.map(n => ({ id: n.nodeId, type: n.type as StoryGraph['nodes'][number]['type'], position: { x: n.positionX, y: n.positionY }, data: JSON.parse(n.data) as Record<string, unknown> })), edges: c.edges.map(e => ({ id: e.edgeId, source: e.source, target: e.target, label: e.label ?? undefined, sourceHandle: e.sourceHandle ?? undefined, animated: e.animated })) }, names) })).sort((a, b) => a.order - b.order || compare(a.title, b.title)),
     characters: project.characters.map(c => ({ name: c.name, description: c.description, color: c.color, defaultSprite: c.defaultSprite, sprites: c.sprites.map(s => ({ name: s.name, url: s.url })).sort((a, b) => compare(a.name, b.name)) })).sort((a, b) => compare(a.name, b.name)),
   }
 }

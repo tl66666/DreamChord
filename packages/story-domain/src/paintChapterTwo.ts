@@ -155,7 +155,7 @@ n('ending', '她写下：“面部补色暂缓。待查底稿。”\n写完，�
 
 export const PAINT_CHAPTER_TWO_SOURCES = [{ nodeId: 'pc2-read-1', author: 'Anton Chekhov', title: 'The Sea-Gull', url: 'https://www.gutenberg.org/cache/epub/1754/pg1754-images.html', use: '妮娜关于自己仍是演员的极短语句为自译，试演与角色关系为原创；没有借用现成中文译文或商业Galgame演出。' }] as const
 export const PAINT_CHAPTER_TWO = {
-  id: PAINT_PROLOGUE.id, title: PAINT_PROLOGUE.title, chapterTitle: '第二章 · 她今天不想笑',
+  id: PAINT_PROLOGUE.id, title: PAINT_PROLOGUE.title, chapterTitle: '第二章 · 拆开信的那个下午',
   description: '那把椅子失去了补痕，海景却被补得更完整。一次小戏、一张未剪口的票、一封拆晚的试演回信，让程见、夏禾与许野重新商量各自的明天。原创文学幻想 · 序章至第二章 · 中文字幕 / 固定角色日语配音。',
   cover: PAINT_PROLOGUE.cover, characters: PAINT_PROLOGUE.characters, graph: { nodes, edges } as StoryGraph,
 } as const

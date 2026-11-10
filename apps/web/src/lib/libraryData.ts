@@ -79,20 +79,20 @@ const characterExtra: Record<string, Pick<LibraryCharacter, 'biography' | 'outli
 }
 
 const cinemaCharacters: LibraryCharacter[] = SEVENTH_ROW_DEMO.characters.map(c => ({
-  id: `seventh-${c.slug}`, name: c.name, role: '第七排，空座 · 官方角色', description: c.description,
+  id: `seventh-${c.slug}`, name: c.name, role: '放映结束后的七秒 · 官方角色', description: c.description,
   biography: c.description, outline: '影院停业前夜重逢，重新听完那卷录音，并决定如何开始明天。',
   usage: '成年角色、现实题材、旧友重逢；配音库同名音色支持中日双语。',
   conflicts: [c.slug === 'chenyu' ? '擅长修复声音，却剪掉了自己不愿听见的话。' : c.slug === 'luyao' ? '替朋友保存原带多年，却始终没有说出自己要离开的计划。' : '朋友仍把她当作那个等待的人，她已经开始了自己的生活。'],
   color: c.color, defaultExpression: 'normal', expressions: ['normal', 'sad', 'smile'].map((id, i) => ({ id, label: ['平静', '难言', '释然'][i]!, url: `/assets/seventh-row/${c.slug}-${id}.png` })), updatedAt: '2026-10-29',
 }))
 const curtainCharacters: LibraryCharacter[] = CURTAIN_CALL_DEMO.characters.map(c => ({
-  id: `curtain-${c.slug}`, name: c.name, role: '谢幕词上的那一句 · 官方角色', description: c.description, biography: c.description,
+  id: `curtain-${c.slug}`, name: c.name, role: '明日列车与未完的谢幕 · 官方角色', description: c.description, biography: c.description,
   outline: c.slug === 'zhi' ? '准备离校入职，在最后一次搭档主持前，问清两个人未来如何联系。' : c.slug === 'lin' ? '从客套祝福到说出自己的心意，为下一次见面作出具体行动。' : '负责晚会顺利谢幕，也给两位朋友留下一点说话的时间。',
   usage: '校园毕业、自然对话、分别与重逢；声音库同名音色可直接绑定。', conflicts: [c.slug === 'zhi' ? '想开始新生活，也不愿与熟悉的人渐渐失去联系。' : c.slug === 'lin' ? '习惯替对方考虑，却一直没有问过她的真实想法。' : '催场和关灯之外，朋友还有没来得及说完的话。'],
   color: c.color, defaultExpression: 'normal', expressions: ['normal', 'sad', 'smile'].map((id, i) => ({ id, label: ['平静', '难言', '微笑'][i]!, url: `/assets/curtain-call/${c.slug}-${id}.png` })), updatedAt: '2026-10-29',
 }))
 const paintCharacters: LibraryCharacter[] = PAINT_PROLOGUE.characters.map(c => ({
-  id: `paint-${c.slug}`, name: c.name, role: '请让这幅画老去 · 官方角色', description: c.description, biography: c.description,
+  id: `paint-${c.slug}`, name: c.name, role: '夏日来信与未完之画 · 官方角色', description: c.description, biography: c.description,
   outline: c.slug === 'cheng' ? '为排戏修好椅子，接受朋友留给自己的座位，然后发现修补被抹去。' : c.slug === 'xia' ? '完成一场小戏，邀请程见坐下，并约定夏天去海边。' : c.slug === 'ye' ? '为漏雨的礼堂排戏筹钱，认真听取朋友的临时改词。' : '受托整理与续作画稿，记录深色补笔与草图的差异。',
   usage: '原创文学幻想、朋友日常与小剧场；同名日语音色可试听并绑定角色。', conflicts: [c.slug === 'cheng' ? '总替别人解决问题，偶尔忘了问对方是否愿意。' : c.slug === 'xia' ? '希望自己的愿望被当作现在要做的事。' : c.slug === 'ye' ? '需要募款，也希望大家是真心喜欢他的戏。' : '草图的定稿与画面上的新痕迹并不一致。'],
   color: c.color, defaultExpression: 'normal', expressions: (c.slug === 'lu' ? ['normal'] : ['normal', 'smile', 'serious']).map(id => ({ id, label: ({ normal: '平静', smile: '微笑', serious: '认真' } as Record<string, string>)[id]!, url: `/assets/paint-prologue/${c.slug}-${id}.png` })), updatedAt: '2026-11-02',
@@ -133,7 +133,7 @@ export const defaultScenes: LibraryScene[] = [
     { slug: 'home', name: '一张入场券 · 程见的居室', description: '门闩、冷茶、书架与下午的窗光。适合人物入场、收信和第一人称日常。', timeOfDay: '白天', moods: ['温暖', '日常'] },
     { slug: 'keepsake', name: '没写完的改编 · 书与票根', description: '旧散文诗、完整票根与铅笔痕的道具特写。适合阅读、回忆与创作停顿。', timeOfDay: '白天', moods: ['细节', '静谧'] },
     { slug: 'theatre-sea', name: '半幅海 · 小剧场', description: '家常戏的假窗、只画一半的海景布、八把观众椅与暖灯。适合舞台演出与散场后重演。', timeOfDay: '黄昏', moods: ['温暖', '演出'] },
-  ].map(s => ({ ...s, id: `paint-${s.slug}`, url: `/assets/paint-prologue/${s.slug}.webp`, type: '文学幻想', place: '室内', usage: '原创《请让这幅画老去》序章叙事场景，与入场券、改编稿和未完海景对应。', updatedAt: '2026-11-03' })),
+  ].map(s => ({ ...s, id: `paint-${s.slug}`, url: `/assets/paint-prologue/${s.slug}.webp`, type: '文学幻想', place: '室内', usage: '原创《夏日来信与未完之画》序章叙事场景，与入场券、改编稿和未完海景对应。', updatedAt: '2026-11-03' })),
   ...[
     { slug: 'workshop', name: '春日下午 · 道具工房', description: '旧礼堂侧边的木工桌、茶杯与打开的窗。适合修理道具、排练与朋友拌嘴。', timeOfDay: '白天', moods: ['温暖', '日常'] },
     { slug: 'theatre', name: '八位观众 · 小剧场', description: '低矮舞台、几排木椅与暖灯。适合小规模演出、排戏与散场谈心。', timeOfDay: '黄昏', moods: ['温暖', '演出'] },
@@ -141,13 +141,13 @@ export const defaultScenes: LibraryScene[] = [
     { slug: 'chair-repaired', name: '深色补木 · 椅子特写', description: '左后腿接上深色木料，地面留着木屑。剧情道具特写，与缺失版成对使用。', timeOfDay: '夜晚', moods: ['细节', '温暖'] },
     { slug: 'chair-erased', name: '消失的修补 · 椅子特写', description: '同机位的椅子，补木消失，旧断口露出。适合对照演出与局部异常。', timeOfDay: '夜晚', moods: ['细节', '悬疑'] },
     { slug: 'outside', name: '画布之外 · 续作工作室', description: '画架、未完的画、录音笔与台灯。适合画外视角和工作记录。', timeOfDay: '夜晚', moods: ['静谧', '悬疑'] },
-  ].map(s => ({ ...s, id: `paint-${s.slug}`, url: `/assets/paint-prologue/${s.slug}.webp`, type: '文学幻想', place: '室内', usage: '原创《请让这幅画老去》序章；同一美术世界的场景与线索特写。', updatedAt: '2026-11-02' })),
+  ].map(s => ({ ...s, id: `paint-${s.slug}`, url: `/assets/paint-prologue/${s.slug}.webp`, type: '文学幻想', place: '室内', usage: '原创《夏日来信与未完之画》序章；同一美术世界的场景与线索特写。', updatedAt: '2026-11-02' })),
   ...[
     { slug: 'backstage', name: '毕业晚会 · 幕后', place: '室内', timeOfDay: '黄昏', moods: ['日常', '告别'], description: '两支话筒、修改过的稿纸和敞开的侧门。适合上台前的拌嘴、排练与谈心。' },
     { slug: 'stage', name: '散场以后 · 礼堂', place: '室内', timeOfDay: '夜晚', moods: ['静谧', '余韵'], description: '灯光未熄的空礼堂，台下已无人。适合收拾舞台、说出心意和约定。' },
     { slug: 'campus', name: '夏夜校园 · 岔路', place: '校园', timeOfDay: '夜晚', moods: ['浪漫', '温暖'], description: '礼堂外的夏夜小路、长椅与自行车。适合散场同行和下一次见面的约定。' },
     { slug: 'station', name: '清晨六点 · 站台', place: '车站', timeOfDay: '清晨', moods: ['告别', '希望'], description: '晨光照进车窗，列车即将出发。适合送行、坦白与留下余韵的结尾。' },
-  ].map(s => ({ ...s, id: `curtain-${s.slug}`, url: `/assets/curtain-call/${s.slug}.webp`, type: '现实', usage: '原创短篇《谢幕词上的那一句》；也可用于自己的校园与现实题材故事。', updatedAt: '2026-10-29' })),
+  ].map(s => ({ ...s, id: `curtain-${s.slug}`, url: `/assets/curtain-call/${s.slug}.webp`, type: '现实', usage: '原创短篇《明日列车与未完的谢幕》；也可用于自己的校园与现实题材故事。', updatedAt: '2026-10-29' })),
   {
     id: 'bg-classroom',
     name: '黄昏教室',
@@ -188,7 +188,7 @@ export const defaultScenes: LibraryScene[] = [
     { slug: 'cinema-rain', name: '白帆影院 · 雨夜门廊', description: '海边旧影院的最后一个营业夜，暖灯照着被雨打湿的街道。', place: '街道', moods: ['重逢', '静谧'] },
     { slug: 'projection-room', name: '白帆影院 · 放映室', description: '旧放映机、磁带与暖台灯，适合两三人的近距离谈话。', place: '室内', moods: ['回忆', '悬念'] },
     { slug: 'auditorium', name: '白帆影院 · 第七排', description: '空银幕与深青座椅，最后一场放映开始前的观众席。', place: '室内', moods: ['告别', '释然'] },
-  ].map(s => ({ id: `seventh-${s.slug}`, name: s.name, description: s.description, url: `/assets/seventh-row/${s.slug}.webp`, type: '现实', place: s.place, timeOfDay: '夜晚', moods: s.moods, usage: '原创短篇《第七排，空座》；重逢、录音揭晓、告别与片尾。', updatedAt: '2026-10-29' })),
+  ].map(s => ({ id: `seventh-${s.slug}`, name: s.name, description: s.description, url: `/assets/seventh-row/${s.slug}.webp`, type: '现实', place: s.place, timeOfDay: '夜晚', moods: s.moods, usage: '原创短篇《放映结束后的七秒》；重逢、录音揭晓、告别与片尾。', updatedAt: '2026-10-29' })),
 ]
 
 export const defaultTemplates: StoryTemplate[] = [

@@ -203,7 +203,14 @@ export default function VisualNovelPlayer() {
     localizations: sourceScene?.localizations, voiceTracks: sourceScene?.voiceTracks, originalVoice: sourceScene?.audio?.voice,
   }, settings.subtitleLocale, settings.voiceLocale), [sourceScene, settings.subtitleLocale, settings.voiceLocale])
   // Voiced lines keep a complete subtitle so the actor cannot read ahead of a hidden page.
-  const readingPages = useMemo(() => localized.voice?.url ? [localized.text] : splitReadingPages(localized.text || ''), [localized.text, localized.voice?.url])
+  const readingPages = useMemo(() => {
+    // The original prologue's title card is embedded in a frozen narration node.
+    // Present the renamed edition without changing its archived text or voice hashes.
+    const text = projectId === 'dreamchord-paint-prologue'
+      ? (localized.text || '').replace('——序章 · 多出来的一把椅子——\n《请让这幅画老去》', '——序章 · 写在入场券背面的邀请——\n《夏日来信与未完之画》').replace('——序章・もう一脚の椅子——\n『どうか、この絵を老いさせて』', '——序章・入場券の裏に書いた招待——\n『夏の手紙と未完成の絵』')
+      : localized.text || ''
+    return localized.voice?.url ? [text] : splitReadingPages(text)
+  }, [localized.text, localized.voice?.url, projectId])
   const readingKey = `${sourceScene?.id || ''}:${settings.subtitleLocale}`
   const readingIndex = readingPage.key === readingKey ? Math.min(readingPage.index, readingPages.length - 1) : 0
   useEffect(() => { setReadingPage({ key: readingKey, index: 0 }) }, [readingKey])
@@ -647,7 +654,7 @@ export default function VisualNovelPlayer() {
               <p className="mb-6 text-sm leading-7 text-white/60">{projectId === 'dreamchord-paint-prologue' ? (project && project.chapters.length > 3 ? '第三章到这里结束。闻砚留下的夏天仍有未读完的页，陆青也还有一份委托要核对。画内，明天下午三点的排练照常。你也可以把角色与场景带入自己的工作台续写。' : project && project.chapters.length > 2 ? '第二章到这里结束。夏禾走进了试演的门，程见留在外面等她。那两张不同的“原貌”，还需要有人继续查下去。你也可以回到序章，把角色与场景带入自己的工作台续写。' : project && project.chapters.length > 1 ? '第一章到这里结束。明天三点还有一场未排完的戏；那只杯子的变化，留到下一章继续。你也可以回到序章，将角色与场景带入自己的工作台续写。' : '序章到这里暂告一段落。那把椅子为什么变了？你也可以把角色和场景带进自己的工作台，从下一句开始续写。') : projectId === 'dreamchord-curtain-call' ? '如果是你，会在谢幕词上留下哪一句？把这个故事带进工作台，写下你的第三种结局。' : '谢谢你读到这里。重新阅读，可以尝试另一种选择。'}</p>
               {projectId === 'dreamchord-paint-prologue' && <p className="mb-5 text-xs leading-6 text-white/40">原创文学幻想 · {project && project.chapters.length > 3 ? '序章至第三章' : project && project.chapters.length > 2 ? '序章至第二章' : project && project.chapters.length > 1 ? '序章与第一章' : '序章'}<br />GPT-SoVITS 日语合成配音 · 原创生成插画<br />配乐：TAM Music Factory · 魔王魂（森田交一）· 龍的交響楽 · 甘茶の音楽工房<br />早期版本配乐：TERNOX（CC0）· 音效：OtoLogic（CC BY 4.0）<br /><a href="/assets/audio/paint-book/credits.html" target="_blank" rel="noreferrer" className="underline underline-offset-4 hover:text-white/80">配乐与素材署名</a></p>}
               {projectId === 'dreamchord-curtain-call' && <p className="mb-5 text-xs leading-6 text-white/40">原创短篇 · 两个结局<br />GPT-SoVITS 角色配音 · 原创生成插画<br />配乐 TERNOX · CC0</p>}
-              {projectId === 'dreamchord-seventh-row' && <p className="mb-5 text-xs leading-6 text-white/40">原创短篇《第七排，空座》<br />配乐 TERNOX · CC0<br />原创生成插画 · Qwen3-TTS 合成角色配音</p>}
+              {projectId === 'dreamchord-seventh-row' && <p className="mb-5 text-xs leading-6 text-white/40">原创短篇《放映结束后的七秒》<br />配乐 TERNOX · CC0<br />原创生成插画 · Qwen3-TTS 合成角色配音</p>}
               <div className="flex flex-col gap-3">
                 {projectId === 'dreamchord-paint-prologue' && <button onClick={() => navigate(beginPaintTemplate())} className="inline-flex items-center justify-center gap-2 rounded-xl bg-dream-600 px-5 py-3 text-sm font-medium text-white transition hover:bg-dream-700"><PenLine className="h-4 w-4" />带入工作台，写下下一句</button>}
                 {projectId === 'dreamchord-curtain-call' && <button onClick={() => navigate(beginCurtainTemplate())} className="inline-flex items-center justify-center gap-2 rounded-xl bg-dream-600 px-5 py-3 text-sm font-medium text-white transition hover:bg-dream-700"><PenLine className="h-4 w-4" />写下你的第三种结局</button>}

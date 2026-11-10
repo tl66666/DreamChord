@@ -24,7 +24,7 @@ if (existing) {
   if (existing.packId !== 'paint-chapter-three' || existing.references.some(r => !old.references.some(o => o.id === r.id && o.sha256 === r.sha256))) throw Error('Existing reference identity changed')
   console.log('Existing voice manifest preserved; script and exact original references checked.')
 } else {
-  const manifest = { schemaVersion: 1, packId: 'paint-chapter-three', chapterTitle: '第三章 · 画外的夏天', createdAt: '2026-11-07', referenceModel: old.referenceModel, referenceLicense: old.referenceLicense, referenceSource: old.referenceSource, identityNotice: old.identityNotice, voices: old.voices, references: old.references, takes: [], trainedCharacterWeights: false, humanListeningCompleted: false }
+  const manifest = { schemaVersion: 1, packId: 'paint-chapter-three', chapterTitle: '第三章 · 风从夏日手记吹来', createdAt: '2026-11-07', referenceModel: old.referenceModel, referenceLicense: old.referenceLicense, referenceSource: old.referenceSource, identityNotice: old.identityNotice, voices: old.voices, references: old.references, takes: [], trainedCharacterWeights: false, humanListeningCompleted: false }
   await writeFile(target, JSON.stringify(manifest, null, 2) + '\n')
   console.log(`Prepared ${PAINT_CHAPTER_THREE_LINES.length} lines with ${old.references.length} unchanged original references.`)
 }

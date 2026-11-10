@@ -1,0 +1,67 @@
+{
+  "createdAt": "2026-11-09",
+  "generator": "built-in image_gen.imagegen",
+  "chapterTitle": "第四章 · 另一双手",
+  "assets": [
+    {
+      "id": "liu-jian-stage",
+      "kind": "sprite",
+      "prompt": "Use the attached image as the exact identity and clothing reference for Liu Ji'an, an original 58-year-old Chinese carpenter in a literary visual novel. Create a single transparent-background character sprite, portrait 2:3 canvas. Same weathered mature face, short grey dark hair, indigo work jacket, warm grey shirt, brown worn apron, natural grey stubble, gentle wry practical expression. No age regression. Single person standing upright, shown from head to upper thighs with entire head and both hands inside frame, generous top margin; slightly three-quarter facing viewer. Right hand holds a small ordinary ring of keys at waist, left relaxed. Detailed warm hand-painted anime/gouache rendering matching the reference, soft balanced daylight without directional colored cast. Clean transparent alpha background, no workshop, no floor shadow, no white rectangle, no vignette, no border, no text, no floating decorations. The body silhouette is complete within frame; no second person or duplicated arms.",
+      "referenceFile": "source-assets/paint-world/liu-jian-native.png",
+      "nativeFile": "source-assets/paint-chapter-four/liu-jian-stage-native.png",
+      "publicFile": "apps/web/public/assets/paint-world/liu-jian-stage.webp",
+      "publicUrl": "/assets/paint-world/liu-jian-stage.webp",
+      "nativeSha256": "4bfff6390353e56e37a7482a1ad529108945ad9ef6d6cf85c7ed82de684917c4",
+      "nativeWidth": 1024,
+      "nativeHeight": 1536,
+      "generatedAlpha": true,
+      "cropped": false,
+      "publicSha256": "cc3be3462649d9db073fa1f0a08d29b10e30283d7f2c796afe2621e0db1bbca9"
+    },
+    {
+      "id": "shen-yun-stage",
+      "kind": "sprite",
+      "prompt": "Use the attached image as exact original character identity and clothing reference for Shen Yun, a 49-year-old Chinese general-store worker in a literary visual novel. Create one transparent-background character sprite on portrait 2:3 canvas. Preserve mature face, fine normal age lines, short swept dark hair with a few greys, warm beige brown cardigan, cream blouse and faded moss green apron. Quiet alert practical friendly expression, not young/idealized. Stand naturally upright from head to upper thighs, head and both hands fully within frame and headroom. One hand holds a closed small brown ledger at waist, other hand relaxed free. Warm detailed hand-painted anime/gouache style, same soft daylight, coherent anatomy. Transparent alpha around the entire silhouette. No store background, no floor, no chair, no white rectangle, no border or decorative halo, no text or watermark. A complete clean stage sprite, single person.",
+      "referenceFile": "source-assets/paint-world/shen-yun-native.png",
+      "nativeFile": "source-assets/paint-chapter-four/shen-yun-stage-native.png",
+      "publicFile": "apps/web/public/assets/paint-world/shen-yun-stage.webp",
+      "publicUrl": "/assets/paint-world/shen-yun-stage.webp",
+      "nativeSha256": "5aced86d3dcbc9c0c4305198fd78bf8b098ea732869c4c938c54f70748a0de86",
+      "nativeWidth": 1024,
+      "nativeHeight": 1536,
+      "generatedAlpha": true,
+      "cropped": false,
+      "publicSha256": "89c28550fa81c5527b3429a8f046bad473a5698dd191de45f46139b48528c011"
+    },
+    {
+      "id": "commission-desk",
+      "kind": "background",
+      "prompt": "Use attached image only as visual style and continuity reference for a literary visual novel restoration room. Create new widescreen 16:9 original scene in the same warm painterly gouache anime style, honey old wood, ivory plaster, muted grey blue. Close low angle over Lu Qing's restoration desk the following morning: open plain cream commission folder, several sheets with subtle indistinct pencil lines NO legible text, a small closed photograph box, gloves laid aside, a pencil placed across a clean notes sheet, glass water jar and brushes to one side. Daylight through old Chinese wooden window, calmer neutral morning rather than previous evening. At right edge a small partially seen easel with the same old-town painting and clearly unpainted pale corner; do not render a face or add magical glow. Composition emphasizes two separated piles of material and the space between, leaves lower 25 percent relatively uncluttered for VN text overlay. No people, no hands, no printed typography, no UI, no frame, no watermark. A lived-in continuous environment, not a pasted collage.",
+      "referenceFile": "source-assets/paint-chapter-three/archive-window.png",
+      "nativeFile": "source-assets/paint-chapter-four/commission-desk-native.png",
+      "publicFile": "apps/web/public/assets/paint-chapter-four/commission-desk.webp",
+      "publicUrl": "/assets/paint-chapter-four/commission-desk.webp",
+      "nativeSha256": "06e79cd77d1d3e6dc1f04fea2dcb625b4f23a0e3009d365d59175fe3b158a6bb",
+      "nativeWidth": 1672,
+      "nativeHeight": 941,
+      "generatedAlpha": false,
+      "cropped": false,
+      "publicSha256": "18088a07cd48b32ff82a3c51eba15e9f561484dc61d4d08c0a0174e9844db1c5"
+    },
+    {
+      "id": "hall-afternoon",
+      "kind": "background",
+      "prompt": "Use attached image as layout/style continuity reference for the same small old Chinese warehouse-turned-theatre. Create an original 16:9 literary visual novel background in warm detailed hand-painted gouache anime style. April afternoon rehearsal in natural daylight, not an evening show: same weathered wood plank stage, worn deep slate-blue curtains, ivory peeling wall and old door, eight modest mismatched wooden audience chairs, simple wooden work table to side, swept pale wood shavings gathered near side wall, a repaired ordinary small stool beside carpenter tool bag. Existing partly finished sea-blue cloth backdrop visible modestly at back, visibly cloth not portal; no new decorative fantasy. A small kettle and plain two cups on side work table. Clear empty stage center for character sprites; chair seats at bottom don't crowd overlay region. Soft sunlight through high right windows, muted sage/blue and amber accents, believable humble shared community room. No people, no readable text, no writing, no logos, no UI, no glowing magical effects. Maintain room proportions and curtains without copying screen UI.",
+      "referenceFile": "source-assets/paint-prologue/theatre.png",
+      "nativeFile": "source-assets/paint-chapter-four/hall-afternoon-native.png",
+      "publicFile": "apps/web/public/assets/paint-chapter-four/hall-afternoon.webp",
+      "publicUrl": "/assets/paint-chapter-four/hall-afternoon.webp",
+      "nativeSha256": "2429a167a6d031999051cbe19e334c5cd7183b7dfdc18a1ed2d9c74538ffb6d8",
+      "nativeWidth": 1672,
+      "nativeHeight": 941,
+      "generatedAlpha": false,
+      "cropped": false,
+      "publicSha256": "9e71b20ffcff7083c832a99844b98f0ba693176e5954d4ce90b2526ed8bf472e"
+    }
+  ]
+}

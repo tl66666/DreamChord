@@ -105,9 +105,9 @@ note('ending-station', '列车开走以后，我才发现自己还拿着昨晚�
 
 export const CURTAIN_STARTER_ENDING = speech('your-first-line', '许栀', '那你呢？最后这一句，你想怎么写？', '君ならどうする？　最後の一行、何て書きたい？', { creatorStarter: true, audio: music('backstage') })
 export const CURTAIN_CALL_DEMO = {
-  id: 'dreamchord-curtain-call', title: '谢幕词上的那一句',
+  id: 'dreamchord-curtain-call', title: '明日列车与未完的谢幕',
   description: '毕业晚会结束前，她划掉了“明年，也一起站在这里吧”。明早六点的列车，留给两位老搭档最后一次排练。约 5–8 分钟 · 两个结局 · 玩完写下你的第三种结局。',
-  cover: `${root}/backstage.webp`, chapterTitle: '上台以前', graph: { nodes, edges } as StoryGraph,
+  cover: `${root}/backstage.webp`, chapterTitle: '序章 · 六点以前的返场', graph: { nodes, edges } as StoryGraph,
   characters: [
     { slug: 'zhi', name: '许栀', description: '22 岁，设计专业毕业生，明早去外省入职。林澈搭档了四年的主持人。话说得轻，但不愿再替对方猜答案。', color: '#75698b', defaultSprite: `${root}/zhi-normal.png` },
     { slug: 'tang', name: '唐棠', description: '22 岁，毕业晚会舞台执行，二人的朋友。手拿场记板，嘴上催场，还是给他们留出了一分钟。', color: '#bc9561', defaultSprite: `${root}/tang-normal.png` },

@@ -100,9 +100,9 @@ line('live-6', '程夏', '来吧。椅子只有两把，你帮我带一把。', 
 note('ending-live', '我按下录音。两个人为带哪把椅子商量了好久，直到外面的观众催开场。\n这段片尾没有音乐，听得见雨，也听得见她们拉开门的声音。\n光标经过第七秒。我看着它，走到了第八秒。\n\n——今晚的片尾 · 完——', '録音を始めた。どの椅子を持っていくか、二人は客に開映を催促されるまで相談していた。\nこのエンドロールには音楽がない。雨と、扉を開ける二人の音がある。\nカーソルが七秒を過ぎる。そのまま、八秒へ進んだ。\n\n——今夜のエンドロール・了——', { audio: { bgm: { action: 'stop', fadeOutMs: 2000 } } })
 
 export const SEVENTH_ROW_DEMO = {
-  id: 'dreamchord-seventh-row', title: '第七排，空座',
+  id: 'dreamchord-seventh-row', title: '放映结束后的七秒',
   description: '旧影院停业前夜，一段被换成七秒空白的演出录音，把三位旧友带回那张无人坐下的椅子。约 6–8 分钟 · 两个结局 · 完整中日配音。',
-  cover: `${root}/cinema-rain.webp`, chapterTitle: '最后一场', graph: { nodes, edges } as StoryGraph,
+  cover: `${root}/cinema-rain.webp`, chapterTitle: '终章 · 声音抵达之前', graph: { nodes, edges } as StoryGraph,
   characters: [
     { slug: 'luyao', name: '陆遥', description: '24 岁，白帆影院放映员。习惯替别人留一盏灯，也已经买好了离开的车票。', color: '#55766e', defaultSprite: `${root}/luyao-normal.png` },
     { slug: 'chengxia', name: '程夏', description: '24 岁，独立歌手。八年前在这里唱过一首没练熟的歌，今晚回来拿走属于自己的原带。', color: '#9c5962', defaultSprite: `${root}/chengxia-normal.png` },

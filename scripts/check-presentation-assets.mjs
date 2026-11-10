@@ -20,7 +20,7 @@ for (const match of html.matchAll(/(?:src|data-zoom|poster)="([^"]+)"/g)) {
   assert.ok(existsSync(resolve(dirname(page), match[1])), `Missing showcase resource: ${match[1]}`)
   assets++
 }
-for (const [file, anchor, count] of [['story-paint.html', 'paint-prologue', 7], ['story-curtain.html', 'official-short', 4]]) {
+for (const [file, anchor, count] of [['story-paint.html', 'paint-prologue', 8], ['story-curtain.html', 'official-short', 4]]) {
   const detail = readFileSync(resolve(root, 'docs', file), 'utf8')
   assert.ok(html.includes(`href="${file}"`), `Story card must open ${file}`)
   const card = html.match(new RegExp(`<article[^>]+id="${anchor}"[\\s\\S]*?</article>`))?.[0] || ''

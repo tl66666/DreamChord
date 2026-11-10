@@ -49,7 +49,7 @@ export async function installCurtainCast(tx: Prisma.TransactionClient, ownerId: 
     profiles.set(voice.id, profileId)
     await tx.voiceProfile.upsert({ where: { id: profileId }, update: {}, create: {
       id: profileId, ownerId, name: voice.name, description: voice.description, language: 'zh', ageTone: '青年', genderTone: voice.genderTone,
-      provider: 'gpt-sovits', tags: JSON.stringify([official ? '官方短篇' : '示例副本', '谢幕词上的那一句', '中日双语', '自然对话', '合成音色']),
+      provider: 'gpt-sovits', tags: JSON.stringify([official ? '官方短篇' : '示例副本', '明日列车与未完的谢幕', '中日双语', '自然对话', '合成音色']),
       previewUrl: cast.references.find(r => r.role === voice.id && r.language === 'zh')!.url,
       authorizationNote: '原创角色；Qwen3-TTS CustomVoice 预置合成参考音色（Apache-2.0），GPT-SoVITS 生成对白。非真人克隆，未使用商业游戏演员录音。',
     } })
@@ -68,7 +68,7 @@ export async function createCurtainTemplate(ownerId: string, requestId: string, 
   const projectId = scoped(ownerId, requestId)
   const focusSceneId = scoped(projectId, 'your-ending')
   const focusNodeId = scoped(projectId, CURTAIN_STARTER_ENDING.id)
-  const entry = { id: projectId, title: '我的第三种结局 · 谢幕词上的那一句', focusSceneId, focusNodeId }
+  const entry = { id: projectId, title: '我的第三种结局 · 明日列车与未完的谢幕', focusSceneId, focusNodeId }
   const existing = await client.project.findUnique({ where: { id: projectId } })
   if (existing) {
     if (existing.authorId !== ownerId) throw new Error('模板副本归属异常。')
@@ -107,7 +107,7 @@ export async function createCurtainTemplate(ownerId: string, requestId: string, 
         assets: { create: [
           { id: 'backstage', name: '谢幕之前 · 排练与拌嘴', mood: '日常' }, { id: 'unsaid', name: '没说出口 · 上台前一分钟', mood: '忧郁' },
           { id: 'invitation', name: '下一次见面 · 夏夜约定', mood: '温柔' }, { id: 'station', name: '话还没说完 · 清晨送行', mood: '治愈' },
-        ].map(t => ({ ownerId, name: t.name, type: 'BGM', url: `/assets/audio/curtain-call/${t.id}.ogg`, mimeType: 'audio/ogg', metadata: JSON.stringify({ audioLibrary: { mood: t.mood, style: '视觉小说原声', scene: '谢幕词上的那一句', loop: true, license: 'CC0-1.0 · TERNOX', source: 'https://ternox.itch.io/vn-music' }, generativeAiUsed: false }) })) },
+        ].map(t => ({ ownerId, name: t.name, type: 'BGM', url: `/assets/audio/curtain-call/${t.id}.ogg`, mimeType: 'audio/ogg', metadata: JSON.stringify({ audioLibrary: { mood: t.mood, style: '视觉小说原声', scene: '明日列车与未完的谢幕', loop: true, license: 'CC0-1.0 · TERNOX', source: 'https://ternox.itch.io/vn-music' }, generativeAiUsed: false }) })) },
         characters: { create: CURTAIN_CALL_DEMO.characters.map(({ slug, ...c }) => ({ ...c, id: characterId.get(c.name), sprites: { create: ['normal', 'sad', 'smile'].map(expression => ({ name: expression, url: `/assets/curtain-call/${slug}-${expression}.png` })) } })) },
         chapters: { create: { title: CURTAIN_CALL_DEMO.chapterTitle, order: 0, nodes: { create: nodes.map(n => ({ nodeId: n.id, type: n.type, positionX: n.position.x, positionY: n.position.y, data: JSON.stringify(n.data) })) }, edges: { create: edges.map(e => ({ edgeId: nodeId(e.id), source: nodeId(e.source), target: nodeId(e.target), sourceHandle: e.sourceHandle, label: e.label, animated: e.animated })) } } },
       } })

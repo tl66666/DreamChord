@@ -191,7 +191,7 @@ export const PAINT_LITERARY_SOURCES = [
 ] as const
 export const PAINT_STARTER_CARD: StoryNode = { ...speech('your-next-line'), data: { ...speech('your-next-line').data, creatorStarter: true, audio: music('afterglow', .5) } }
 export const PAINT_PROLOGUE = {
-  id: 'dreamchord-paint-prologue', title: '请让这幅画老去', chapterTitle: '序章 · 多出来的一把椅子',
+  id: 'dreamchord-paint-prologue', title: '夏日来信与未完之画', chapterTitle: '序章 · 写在入场券背面的邀请',
   description: '“七点，第一排。今天不许帮忙。”夏禾在入场券背面这样写。可散场时，我口袋里的票仍没有剪口。一张未用的票、一场小戏与被抹去的生活痕迹。文学幻想序章 · 中文字幕 / 日语角色配音。',
   cover: `${art}/home.webp`, graph: { nodes, edges } as StoryGraph,
   characters: [

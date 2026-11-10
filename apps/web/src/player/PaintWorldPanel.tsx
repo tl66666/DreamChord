@@ -54,7 +54,7 @@ export function PaintWorldPanel({ onClose }: { onClose: () => void }) {
       <div ref={dialogRef} role="dialog" aria-modal="true" aria-label="镇子与人物" aria-labelledby={`${id}-title`} aria-describedby={`${id}-intro`} className="flex max-h-[94dvh] w-full max-w-5xl flex-col overflow-hidden rounded-2xl border border-[#c4b9d2]/20 bg-[#25222e] text-[#ece8f0] shadow-2xl">
         <header className="flex shrink-0 items-start justify-between gap-3 px-5 pb-4 pt-5 sm:px-8 sm:pt-7">
           <div className="min-w-0">
-            <p className="mb-1 text-xs tracking-[0.16em] text-[#bcb0cc]">请让这幅画老去</p>
+            <p className="mb-1 text-xs tracking-[0.16em] text-[#bcb0cc]">夏日来信与未完之画</p>
             <h2 id={`${id}-title`} className="text-xl font-medium sm:text-2xl">镇子与人物</h2>
             <p id={`${id}-intro`} className="mt-2 max-w-2xl text-sm leading-relaxed text-[#c4bdce]">从柜台、钥匙和一笔还没结清的账，认识住在这里的人。</p>
           </div>

@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "packId": "paint-chapter-three",
-  "chapterTitle": "第三章 · 画外的夏天",
+  "chapterTitle": "第三章 · 风从夏日手记吹来",
   "createdAt": "2026-11-07",
   "referenceModel": "Qwen/Qwen3-TTS-12Hz-1.7B-CustomVoice",
   "referenceLicense": "Apache-2.0",

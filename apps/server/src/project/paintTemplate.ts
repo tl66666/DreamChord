@@ -55,6 +55,7 @@ async function preparePaint(ownerId: string, projectId: string, options: PaintOp
   const packRoot = options.packRoot || path.join(root, 'assets/voice-packs/paint-prologue')
   const publicRoot = options.publicRoot || path.join(root, 'apps/web/public')
   const manifest = manifestSchema.parse(JSON.parse(await readFile(path.join(packRoot, 'manifest.json'), 'utf8')))
+  if (new Set(manifest.voices.map(voice => voice.id)).size !== manifest.voices.length) throw new Error('官方音色标识重复。')
   const directory = `templates/paint-prologue/${hash(`${ownerId}\0${projectId}`).slice(0, 32)}`
   const references: PreparedReference[] = []
   const referenceIds = new Set<string>()
@@ -72,7 +73,7 @@ async function preparePaint(ownerId: string, projectId: string, options: PaintOp
     }
   }
   const urls = new Set(urlsIn([definition.cover, sourceNodes, definition.characters.map(c => c.defaultSprite)]))
-  for (const c of definition.characters.filter(c => c.slug !== 'lu')) for (const expression of ['normal', 'smile', 'serious']) urls.add(`/assets/paint-prologue/${c.slug}-${expression}.png`)
+  for (const c of definition.characters.filter(c => !['lu', 'liu', 'shen'].includes(c.slug))) for (const expression of ['normal', 'smile', 'serious']) urls.add(`/assets/paint-prologue/${c.slug}-${expression}.png`)
   for (const url of urls) if (!(await readFile(publicPath(publicRoot, url))).length) throw new Error(`官方媒体为空：${url}`)
   const takeReferences = new Map<string, string>()
   for (const node of sourceNodes.filter(n => n.type === 'dialogue')) {

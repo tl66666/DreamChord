@@ -126,7 +126,7 @@ export const PAINT_CHAPTER_THREE_SOURCES = [{
   use: '仅极短自译“我们的大作品，是好好过日子”；闻砚的读后异议、工作、海边记忆及手记均为原创，不使用现代中文译文。',
 }] as const
 export const PAINT_CHAPTER_THREE = {
-  id: PAINT_PROLOGUE.id, title: PAINT_PROLOGUE.title, chapterTitle: '第三章 · 画外的夏天',
+  id: PAINT_PROLOGUE.id, title: PAINT_PROLOGUE.title, chapterTitle: '第三章 · 风从夏日手记吹来',
   description: '试演结束，夏禾带回自己的练习意见。画外的陆青从照片与手记里查找闻砚主动留白的依据，画内仍有明天下午三点的排练。原创文学幻想 · 序章至第三章 · 中文字幕 / 固定角色日语配音。',
   cover: PAINT_PROLOGUE.cover, characters: PAINT_PROLOGUE.characters, graph: { nodes, edges } as StoryGraph,
 } as const

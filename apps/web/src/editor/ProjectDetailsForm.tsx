@@ -5,15 +5,15 @@ import type { ProjectData } from '../stores/editorStore'
 import { projectCover } from '../lib/projectCover'
 
 const covers = [
-  { name: '请让这幅画老去', url: '/assets/paint-prologue/home.webp' },
+  { name: '夏日来信与未完之画', url: '/assets/paint-prologue/home.webp' },
   { name: '春日工房', url: '/assets/paint-prologue/workshop.webp' },
   { name: '小剧场的暖灯', url: '/assets/paint-prologue/theatre.webp' },
-  { name: '谢幕词上的那一句', url: '/assets/curtain-call/backstage.webp' },
+  { name: '明日列车与未完的谢幕', url: '/assets/curtain-call/backstage.webp' },
   { name: '夏夜校园', url: '/assets/curtain-call/campus.webp' },
   { name: '清晨的车站', url: '/assets/curtain-call/station.webp' },
-  { name: '第七排，空座', url: '/assets/seventh-row/cinema-rain.webp' },
+  { name: '放映结束后的七秒', url: '/assets/seventh-row/cinema-rain.webp' },
   { name: '留白手稿', url: '/assets/covers/story-draft.webp' },
-  { name: '消失的终页', url: '/assets/covers/first-thread.webp' },
+  { name: '未写完的我们，仍在纸上', url: '/assets/covers/first-thread.webp' },
   { name: '樱花来信', url: '/assets/backgrounds/bg-sakura.png' },
   { name: '星夜约定', url: '/assets/backgrounds/bg-starry.png' },
 ]

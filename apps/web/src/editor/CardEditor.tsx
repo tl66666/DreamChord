@@ -57,8 +57,18 @@ export function CardEditor({
 
   const updateCharacter = (index: number, updates: Partial<CharacterSlot>) => {
     const newChars = [...card.characters]
-    newChars[index] = { ...newChars[index]!, ...updates }
-    onUpdate({ characters: newChars })
+    const previous = newChars[index]!
+    const changesAppearance = 'expression' in updates || 'position' in updates
+    const next = { ...previous, ...(previous.action === 'keep' && changesAppearance ? { action: 'change' as const } : {}), ...updates }
+    newChars[index] = next
+    onUpdate({
+      characters: newChars,
+      ...(next.characterId === card.speaker ? {
+        speakerExpression: next.expression,
+        speakerPosition: next.position,
+        ...(next.action === 'hide' || next.action === 'keep' ? { autoStageSpeaker: false } : {}),
+      } : {}),
+    })
   }
 
   const addCharacter = (charId: string) => {
@@ -77,6 +87,7 @@ export function CardEditor({
       characters: target?.action === 'keep'
         ? card.characters.map((character, itemIndex) => itemIndex === index ? { ...character, action: 'hide' } : character)
         : card.characters.filter((_, itemIndex) => itemIndex !== index),
+      ...(target?.characterId === card.speaker ? { autoStageSpeaker: false } : {}),
     })
   }
 

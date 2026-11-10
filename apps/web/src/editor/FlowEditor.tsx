@@ -849,7 +849,7 @@ export default function FlowEditor() {
         />
       ) : (
         /* 场景编辑三栏布局 */
-        <div className="flex flex-1 overflow-hidden">
+        <div className="flex min-h-0 flex-1 overflow-hidden">
           {/* 左栏：场景树 */}
           <div className={paneClasses.tree}>
             <SceneTree

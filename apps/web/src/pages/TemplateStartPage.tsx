@@ -46,7 +46,7 @@ export default function TemplateStartPage({ kind = 'curtain' }: { kind?: 'curtai
       <p className="mb-2 text-xs font-semibold tracking-widest text-dream-600">故事还可以继续</p>
       <h1 className="text-2xl font-bold text-slate-950">这一次，把笔交给你</h1>
       <p className="mt-3 text-xs leading-6 text-dream-700">已创建过这个副本时，会继续打开它，保留你的改写。</p>
-      <p className="mt-4 text-sm leading-7 text-slate-600">{paint ? '正在为你准备《请让这幅画老去》序章的个人副本。角色、场景、日语音色与配乐都会带入。先写下夏禾的下一句，再预览你的续写。原作会完整保留。' : '正在为你准备《谢幕词上的那一句》的个人副本。角色、场景、中日音色和配乐都会带入，进入后就能改写第三种结局。'}</p>
+      <p className="mt-4 text-sm leading-7 text-slate-600">{paint ? '正在为你准备《夏日来信与未完之画》序章的个人副本。角色、场景、日语音色与配乐都会带入。先写下夏禾的下一句，再预览你的续写。原作会完整保留。' : '正在为你准备《明日列车与未完的谢幕》的个人副本。角色、场景、中日音色和配乐都会带入，进入后就能改写第三种结局。'}</p>
       {error ? <div role="alert" className="mt-6 space-y-4"><p className="text-sm text-rose-700">{error}</p><button className="dc-primary w-full" onClick={() => { task.current = null; setError(''); setAttempt(n => n + 1) }}>重新准备</button></div> : <p role="status" className="mt-7 flex items-center gap-2 text-sm text-dream-700"><Loader2 className="h-4 w-4 animate-spin" />准备你的故事工作台…</p>}
       <Link to="/" className="mt-7 inline-flex items-center gap-2 text-sm text-slate-500 hover:text-dream-700"><ArrowLeft className="h-4 w-4" />返回首页</Link>
     </section>

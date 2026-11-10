@@ -2,6 +2,6 @@ export function editorPaneClasses(sidePanelOpen: boolean) {
   return {
     tree: 'hidden shrink-0 border-r border-dream-100 lg:block lg:w-64',
     center: `${sidePanelOpen ? 'hidden lg:block' : 'block'} min-w-0 flex-1 overflow-hidden`,
-    side: `${sidePanelOpen ? 'block w-full' : 'hidden'} shrink-0 border-l border-dream-100 lg:block lg:w-80`,
+    side: `${sidePanelOpen ? 'block w-full' : 'hidden'} h-full min-h-0 overflow-hidden shrink-0 border-l border-dream-100 lg:block lg:w-80`,
   }
 }

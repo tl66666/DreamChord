@@ -9,7 +9,7 @@ describe('story details form', () => {
   it('submits a chosen built-in cover and independent defaults, waiting for actual save', async () => {
     const save = vi.fn(async () => {})
     render(<ProjectDetailsForm project={project} onSave={save} onCancel={() => {}} />)
-    fireEvent.click(screen.getByRole('button', { name: '使用消失的终页封面' }))
+    fireEvent.click(screen.getByRole('button', { name: '使用未写完的我们，仍在纸上封面' }))
     fireEvent.change(screen.getByLabelText('默认配音语言'), { target: { value: 'ja' } })
     fireEvent.click(screen.getByRole('button', { name: '保存故事设置' }))
     await waitFor(() => expect(save).toHaveBeenCalledWith(expect.objectContaining({ cover: '/assets/covers/first-thread.webp', defaultVoiceLocale: 'ja', defaultSubtitleLocale: 'zh' })))

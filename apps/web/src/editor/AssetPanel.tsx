@@ -206,8 +206,8 @@ export default function AssetPanel({
   }
 
   return (<>
-    <aside className="flex w-80 flex-col border-l border-dream-200 bg-white/95 backdrop-blur-sm">
-      <div className="border-b border-dream-100 p-4">
+    <aside aria-label="编辑器素材库" className="flex h-full min-h-0 w-full min-w-0 flex-col overflow-hidden bg-white/95 backdrop-blur-sm">
+      <div className="shrink-0 border-b border-dream-100 p-4">
         <div className="mb-3 flex items-center justify-between">
           <div>
             <h3 className="font-semibold text-dream-900">{isSceneImageSelection ? '选择背景 / CG' : '素材库'}</h3>
@@ -247,6 +247,7 @@ export default function AssetPanel({
         <input ref={replaceInputRef} type="file" accept={activeTab.accept} className="hidden" onChange={handleReplace} />
       </div>
 
+      <div role="region" aria-label="素材列表" tabIndex={0} className="min-h-0 flex-1 overflow-y-auto overscroll-contain focus-visible:outline focus-visible:outline-2 focus-visible:outline-inset focus-visible:outline-dream-400">
       <div className={`grid gap-1 border-b border-dream-100 p-3 ${visibleTabs.length === 2 ? 'grid-cols-2' : 'grid-cols-4'}`}>
         {visibleTabs.map((tab) => {
           const Icon = tab.icon
@@ -267,7 +268,7 @@ export default function AssetPanel({
         })}
       </div>
 
-      <div className="flex-1 overflow-y-auto p-4">
+      <div className="p-4">
         {activeType === 'SETTING' ? (
           <SettingLibrary nodes={nodes} query={query} />
         ) : loading ? (
@@ -381,6 +382,7 @@ export default function AssetPanel({
           </>
         )}
       </div>
+      </div>
     </aside>
     {processingAsset && <AssetProcessingSheet asset={processingAsset} projectId={project?.id} onClose={() => setProcessingAsset(null)} onAccepted={(accepted) => { void loadAssets(); onProjectCharacterAccepted?.(accepted) }} />}
     {pendingVoiceSample && <VoiceSampleSheet file={pendingVoiceSample} characters={projectCharacters || []} characterId={voiceCharacterId} transcript={voiceTranscript} language={voiceLanguage} style={voiceStyle} consent={voiceConsent} submitting={uploading} onCharacterChange={setVoiceCharacterId} onTranscriptChange={setVoiceTranscript} onLanguageChange={setVoiceLanguage} onStyleChange={setVoiceStyle} onConsentChange={setVoiceConsent} onCancel={() => setPendingVoiceSample(null)} onSubmit={() => void uploadVoiceSample()} />}
@@ -389,7 +391,7 @@ export default function AssetPanel({
 
 function VoiceSampleSheet({ file, characters, characterId, transcript, language, style, consent, submitting, onCharacterChange, onTranscriptChange, onLanguageChange, onStyleChange, onConsentChange, onCancel, onSubmit }: { file: File; characters: Array<{ id: string; name: string }>; characterId: string; transcript: string; language: string; style: string; consent: boolean; submitting: boolean; onCharacterChange: (value: string) => void; onTranscriptChange: (value: string) => void; onLanguageChange: (value: string) => void; onStyleChange: (value: string) => void; onConsentChange: (value: boolean) => void; onCancel: () => void; onSubmit: () => void }) {
   return <div className="fixed inset-0 z-[80] flex items-center justify-center bg-slate-950/45 p-4">
-    <section role="dialog" aria-modal="true" aria-label="登记角色声音样本" className="w-full max-w-lg rounded-lg bg-white p-5 shadow-xl">
+    <section role="dialog" aria-modal="true" aria-label="登记角色声音样本" className="max-h-[calc(100dvh-2rem)] w-full max-w-lg overflow-y-auto overscroll-contain rounded-lg bg-white p-5 shadow-xl">
       <div className="flex items-start justify-between gap-4">
         <div><h3 className="text-base font-semibold text-slate-950">登记角色声音样本</h3><p className="mt-1 text-sm leading-6 text-slate-600">“{file.name}”只作为声线参考，不会直接作为播放器台词配音。</p></div>
         <button onClick={onCancel} className="rounded-md p-1 text-slate-500 hover:bg-slate-100" title="取消"><X className="h-5 w-5" /></button>

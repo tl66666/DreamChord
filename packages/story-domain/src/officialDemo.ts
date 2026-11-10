@@ -275,10 +275,10 @@ ending({ prefix: 'ending-agency', handle: 'choice-2', label: '交还选择', mus
 
 export const OFFICIAL_DEMO: { id: string; title: string; description: string; cover: string; chapterTitle: string; graph: StoryGraph; characters: Array<{ name: string; description: string; color: string; defaultSprite: string }> } = {
   id: 'dreamchord-first-thread',
-  title: '第一根弦：消失的终页',
+  title: '未写完的我们，仍在纸上',
   description: '日落之前，雪必须找回被自己删除的终页，并决定作者是否有权替角色和共同创作者选择遗忘。',
   cover: '/assets/covers/first-thread.webp',
-  chapterTitle: '第一章：消失的终页',
+  chapterTitle: '第一章 · 在终页消失以前',
   graph: { nodes: nodes.map(withOfficialJapanese), edges },
   characters: [
     { name: '雪', description: '轻小说部主笔，能够看见故事节点，也必须学习为每次删改负责。', color: '#7c3aed', defaultSprite: '/assets/characters/yuki_normal.png' },
