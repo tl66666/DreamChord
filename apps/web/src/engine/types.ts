@@ -86,6 +86,7 @@ export interface RuntimeScene extends Pick<LocalizableContent, 'localizations' |
   choices?: string[]
   choiceTargets?: (string | undefined)[]
   choiceEffects?: RuntimeEffect[][]
+  choiceConditionalTargets?: RuntimeConditionTarget[][]
   conditionalTargets?: RuntimeConditionTarget[]
   nextSceneId?: string | null
 }

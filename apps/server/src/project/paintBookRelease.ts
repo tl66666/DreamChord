@@ -137,7 +137,7 @@ export async function releasePaintBook(client: PrismaClient, ownerId: string, op
   const release = options.releaseDefinitions || (JSON.parse(await readFile(path.join(root, 'assets/story-packs/paint-book/release-two-chapters-v1.json'), 'utf8')) as { chapters: PaintDefinition[] }).chapters
   const chapterTwo = (story as typeof story & { PAINT_CHAPTER_TWO?: PaintDefinition }).PAINT_CHAPTER_TWO
   const definitions = options.currentDefinitions || (chapterTwo ? [story.PAINT_PROLOGUE, story.PAINT_CHAPTER_ONE, chapterTwo] : [])
-  if (![2, 3, 4].includes(release.length) || definitions.length !== release.length + 1 || [...release, ...definitions].some(d => d.id !== id)) throw new Error('拒绝发布：仅支持固定作品已登记的两章至三章、三章至四章、四章至五章版本。')
+  if (![2, 3, 4, 5].includes(release.length) || definitions.length !== release.length + 1 || [...release, ...definitions].some(d => d.id !== id)) throw new Error('拒绝发布：仅支持固定作品已登记的连续章节版本。')
   const oldBook = expectedPaintBook(release), newBook = expectedPaintBook(definitions)
   const additions = release.length === 4 ? definitions.at(-1)!.characters.filter(c => !release[0].characters.some(old => old.slug === c.slug)) : []
   if (release.length === 4) {
@@ -145,9 +145,12 @@ export async function releasePaintBook(client: PrismaClient, ownerId: string, op
     if (additions.length !== 2 || !additions.some(c => c.slug === 'liu' && c.name === '刘济安' && c.defaultSprite === '/assets/paint-world/liu-jian-stage.webp') || !additions.some(c => c.slug === 'shen' && c.name === '沈芸' && c.defaultSprite === '/assets/paint-world/shen-yun-stage.webp') || definitions.at(-1)!.characters.length !== cast.length + 2 || cast.some(c => hash(c) !== hash(definitions.at(-1)!.characters.find(n => n.slug === c.slug)))) throw new Error('拒绝发布：第四章仅允许追加已登记的刘济安、沈芸，原角色设定必须不变。')
     if (hash(expectedPaintBook(definitions.slice(0, -1))) !== hash(oldBook)) throw new Error('拒绝发布：第四章发布不得改写前四章或原角色。')
   }
-  if ([...release, ...definitions.slice(0, additions.length ? -1 : undefined)].some(d => hash(expectedPaintRelease(d).characters) !== hash(oldBook.characters))) throw new Error('拒绝发布：本次版本不得改写原角色设定。')
+  if (release.length === 5) {
+    if (hash(expectedPaintBook(definitions.slice(0, -1))) !== hash(oldBook) || hash(definitions.at(-1)!.characters) !== hash(release.at(-1)!.characters)) throw new Error('拒绝发布：第五章不得改写已发布章节或原角色。')
+  } else if ([...release, ...definitions.slice(0, additions.length ? -1 : undefined)].some(d => hash(expectedPaintRelease(d).characters) !== hash(oldBook.characters))) throw new Error('拒绝发布：本次版本不得改写原角色设定。')
+  const supporting = release.length === 5 ? release.at(-1)!.characters.filter(c => !release[0].characters.some(old => old.slug === c.slug)) : additions
   const project = await client.project.findUnique({ where: { id }, include })
-  guard(project, ownerId, release[0].characters, release.length, definitions.at(-1)!.characters)
+  guard(project, ownerId, release.length === 5 ? release.at(-1)!.characters : release[0].characters, release.length, definitions.at(-1)!.characters)
   const before = fingerprint(project), target = hash(newBook)
   const currentBaseFingerprint = hash(expectedPaintBook(definitions.slice(0, -1)))
   if (before !== target && before !== hash(oldBook) && before !== currentBaseFingerprint) throw new Error('拒绝发布：作品已有改写或额外章节，与冻结旧稿或当前基础章节发布指纹不匹配。')
@@ -156,17 +159,17 @@ export async function releasePaintBook(client: PrismaClient, ownerId: string, op
   const prepared: Prepared[] = []
   for (const [index, definition] of definitions.entries()) prepared.push(await preflightPaintDefinition(definition, { ...options, packRoot: packRoots[index] }))
   verifyReferences(project, definitions, prepared, ownerId, additions)
-  await verifySupportingReferences(project, additions, prepared.at(-1)!, options)
+  await verifySupportingReferences(project, supporting, prepared.at(-1)!, options)
   const versions = new Map(project.chapters.map(c => [c.id, c.version]))
   const result = (status: 'released' | 'current' | 'ready', after: Stored) => ({ status, projectId: id, beforeFingerprint: before, afterFingerprint: fingerprint(after), targetFingerprint: target, chapters: after.chapters.sort((a, b) => a.order - b.order).map(c => ({ id: c.id, order: c.order, previousVersion: versions.get(c.id) ?? null, version: c.version })) })
   const createdFiles: string[] = []
   try { return await client.$transaction(async tx => {
     let fresh = await tx.project.findUnique({ where: { id }, include })
-    guard(fresh, ownerId, release[0].characters, release.length, definitions.at(-1)!.characters)
+    guard(fresh, ownerId, release.length === 5 ? release.at(-1)!.characters : release[0].characters, release.length, definitions.at(-1)!.characters)
     if (fingerprint(fresh) !== before || fresh.chapters.some(c => versions.get(c.id) !== c.version)) throw new Error('拒绝发布：预检期间作品指纹或章节版本已变化。')
     if (hash(fresh.characters) !== hash(project.characters) || hash(fresh.chapters) !== hash(project.chapters)) throw new Error('拒绝发布：预检期间原章节或角色引用已变化。')
     verifyReferences(fresh, definitions, prepared, ownerId, additions)
-    await verifySupportingReferences(fresh, additions, prepared.at(-1)!, options)
+    await verifySupportingReferences(fresh, supporting, prepared.at(-1)!, options)
     if (before === target) return result('current', fresh)
     if (options.checkOnly) return result('ready', fresh)
     // Acquire the SQLite write lock with a version CAS before any release writes.

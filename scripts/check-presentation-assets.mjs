@@ -11,7 +11,7 @@ const paintDetail = readFileSync(resolve(root, 'docs/story-paint.html'), 'utf8')
 for (const [label, text] of [['README', readme], ['showcase', html], ['story detail', paintDetail]]) {
   assert.ok(text.includes('夏日来信与未完之画') || text.includes('夏日来信与<span'), `${label} must show the current story title`)
 }
-for (const title of ['写在入场券背面的邀请', '为六月留一张明信片', '拆开信的那个下午', '风从夏日手记吹来', '在画纸之外落笔']) {
+for (const title of ['写在入场券背面的邀请', '为六月留一张明信片', '拆开信的那个下午', '风从夏日手记吹来', '在画纸之外落笔', '给尚未寄出的回信']) {
   assert.ok(readme.includes(title) && paintDetail.includes(title), `Story chapter title missing: ${title}`)
 }
 // The existing showcase identity is part of the delivery: enrich it without replacing its Hero.
@@ -28,7 +28,7 @@ for (const match of html.matchAll(/(?:src|data-zoom|poster)="([^"]+)"/g)) {
   assert.ok(existsSync(resolve(dirname(page), match[1])), `Missing showcase resource: ${match[1]}`)
   assets++
 }
-for (const [file, anchor, count] of [['story-paint.html', 'paint-prologue', 8], ['story-curtain.html', 'official-short', 4]]) {
+for (const [file, anchor, count] of [['story-paint.html', 'paint-prologue', 9], ['story-curtain.html', 'official-short', 4]]) {
   const detail = readFileSync(resolve(root, 'docs', file), 'utf8')
   assert.ok(html.includes(`href="${file}"`), `Story card must open ${file}`)
   const card = html.match(new RegExp(`<article[^>]+id="${anchor}"[\\s\\S]*?</article>`))?.[0] || ''

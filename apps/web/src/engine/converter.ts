@@ -236,10 +236,6 @@ export function convertFlowToRuntime(
     return resolveRouting(nextEdge?.target, nextSeen)
   }
 
-  function resolvePlayableTargetId(targetId?: string | null): string {
-    return resolveRouting(targetId).targetId
-  }
-
   const scenes: RuntimeScene[] = []
   // Chapter links route the reader forward; they must not become stage history.
   // These scopes are attached only to the in-memory merged preview graph.
@@ -316,9 +312,9 @@ export function convertFlowToRuntime(
         const edge = outEdges.find((item) => item.sourceHandle === `choice-${index}`)
         return edge?.target
       })
-      scene.choiceTargets = targets.map((target) =>
-        target ? resolvePlayableTargetId(target) : undefined,
-      )
+      const routes = targets.map(target => resolveRouting(target))
+      scene.choiceTargets = routes.map(route => route.targetId || undefined)
+      if (routes.some(route => route.conditionalTargets.length)) scene.choiceConditionalTargets = routes.map(route => route.conditionalTargets)
     }
     if (node.type !== 'choice') {
       const routing = resolveRouting(outEdges[0]?.target)

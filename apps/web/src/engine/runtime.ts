@@ -124,7 +124,7 @@ export function createRuntimeEngine(story: RuntimeStory) {
     for (const effect of scene.choiceEffects?.[index] || []) {
       if (effect.kind === 'setVariable') state.variables[effect.variable] = effect.value
     }
-    const targetId = scene.choiceTargets?.[index]
+    const targetId = scene.choiceConditionalTargets?.[index]?.find(matchesCondition)?.target || scene.choiceTargets?.[index]
     if (targetId) {
       const targetIndex = findSceneIndex(targetId)
       if (targetIndex >= 0) {

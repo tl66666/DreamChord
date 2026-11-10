@@ -7,6 +7,23 @@ import { SEVENTH_ROW_DEMO } from '@dreamchord/story-domain'
 import { groupNodesToCards } from '../editor/sceneGraph'
 
 describe('flow runtime stage continuity', () => {
+  it.each([['paper', 0], ['card', 1]])('routes a direct conditional after applying the %s choice effect', (expected, index) => {
+    const nodes: Node[] = [
+      { id: 'pick', type: 'choice', position: { x: 0, y: 0 }, data: { choices: ['稿页', '明信片'], effects: [[{ kind: 'setVariable', variable: 'item', value: 'paper' }], [{ kind: 'setVariable', variable: 'item', value: 'card' }]] } },
+      { id: 'gate', type: 'condition', position: { x: 0, y: 0 }, data: { variable: 'item', operator: '==', value: 'paper' } },
+      { id: 'paper', type: 'subtitle', position: { x: 0, y: 0 }, data: { text: '稿页' } },
+      { id: 'card', type: 'subtitle', position: { x: 0, y: 0 }, data: { text: '明信片' } },
+    ]
+    const edges: Edge[] = [
+      { id: 'one', source: 'pick', target: 'gate', sourceHandle: 'choice-0' },
+      { id: 'two', source: 'pick', target: 'gate', sourceHandle: 'choice-1' },
+      { id: 'yes', source: 'gate', target: 'paper', sourceHandle: 'true' },
+      { id: 'no', source: 'gate', target: 'card', sourceHandle: 'false' },
+    ]
+    const engine = createRuntimeEngine(convertFlowToRuntime('p', '分支', nodes, edges))
+    expect(engine.choose(index)).toBe(true)
+    expect(engine.currentScene()?.id).toBe(expected)
+  })
   it('preserves the volume of continuing BGM and the fade duration of stopping BGM', () => {
     const nodes: Node[] = [
       { id: 'keep', type: 'subtitle', position: { x: 0, y: 0 }, data: { text: '安静', audio: { bgm: { action: 'keep', volume: 0, fadeInMs: 600 } } } },

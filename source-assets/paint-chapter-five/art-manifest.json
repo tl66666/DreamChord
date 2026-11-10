@@ -1,0 +1,22 @@
+{
+  "generator": "OpenAI image_gen; shop cup rim corrected in a subsequent image edit",
+  "packaging": "Full-frame resize to 1920x1080, WebP",
+  "assets": [
+    {
+      "id": "shop-letter",
+      "nativeFile": "source-assets/paint-chapter-five/shop-letter-native.png",
+      "nativeSha256": "a0e58b4eab322d4f0c86399f099e42ae95880539898462b8c4f75fa5e6f88843",
+      "publicFile": "apps/web/public/assets/paint-chapter-five/shop-letter.webp",
+      "publicSha256": "5663674df212ebf1c970bebccd58a5a0ee72cd020e183c78de7e632be980684e",
+      "reference": "apps/web/public/assets/paint-chapter-one/shop.webp"
+    },
+    {
+      "id": "river-after-rain",
+      "nativeFile": "source-assets/paint-chapter-five/river-after-rain-native.png",
+      "nativeSha256": "e8b21d68cef6c2402ace1adfa575555550b1c2d23f2e7869757b1608847b7b37",
+      "publicFile": "apps/web/public/assets/paint-chapter-five/river-after-rain.webp",
+      "publicSha256": "568d70329268fb1cff388fcdb21da83f17c1de95ab84eb1e968048538f49adb6",
+      "reference": "apps/web/public/assets/paint-chapter-one/river.webp"
+    }
+  ]
+}

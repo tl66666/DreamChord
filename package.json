@@ -44,7 +44,8 @@
     "demo:paint:chapter-one": "pnpm --filter @dreamchord/story-domain build && pnpm --filter dreamchord-server exec tsx prisma/installPaintChapterOne.ts",
     "demo:paint:chapter-three": "pnpm --filter @dreamchord/story-domain build && pnpm --filter dreamchord-server exec tsx prisma/installPaintChapterThree.ts",
     "demo:paint:release": "pnpm --filter @dreamchord/story-domain build && pnpm --filter dreamchord-server exec tsx prisma/releasePaintBook.ts",
-    "test:paint": "pnpm --filter @dreamchord/story-domain build && node --test scripts/paint-prologue-pack.test.mjs scripts/paint-music-sfx.test.mjs scripts/paint-chapter-one-pack.test.mjs scripts/paint-chapter-two-pack.test.mjs scripts/paint-chapter-three-pack.test.mjs scripts/paint-chapter-four-pack.test.mjs scripts/paint-book-music.test.mjs"
+    "test:paint": "pnpm --filter @dreamchord/story-domain build && node --test scripts/paint-prologue-pack.test.mjs scripts/paint-music-sfx.test.mjs scripts/paint-chapter-one-pack.test.mjs scripts/paint-chapter-two-pack.test.mjs scripts/paint-chapter-three-pack.test.mjs scripts/paint-chapter-four-pack.test.mjs scripts/paint-chapter-five-pack.test.mjs scripts/paint-book-music.test.mjs",
+    "demo:paint:chapter-five": "pnpm --filter @dreamchord/story-domain build && pnpm --filter dreamchord-server exec tsx prisma/installPaintChapterFive.ts"
   },
   "devDependencies": {
     "@eslint/js": "9.39.1",

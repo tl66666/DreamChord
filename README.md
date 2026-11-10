@@ -19,14 +19,15 @@
 | 第二章 | 拆开信的那个下午 | 夏禾的试演、排练与一封迟来的回信 |
 | 第三章 | 风从夏日手记吹来 | 画外的档案与闻砚记下的海边往事 |
 | 第四章 | 在画纸之外落笔 | 陆青核对委托，镇上的朋友继续各自的工作与排练 |
+| 第五章 | 给尚未寄出的回信 | 夏禾确认新的排练机会，陆青追查委托记录，两条行动线留下不同回应 |
 
 播放器“镇子与人物”补充刘叔、杂货铺沈芸的日常与两篇生活短篇，配有原创半身档案肖像；栖川镇的路线、营生与礼堂借用关系分开说明既有事实和新增设定。第四章中刘济安与沈芸正式参与故事并拥有固定日语声线；陶宁、周岑仍标为后续登场。[世界与人物档案](docs/story/paint/WORLD_AND_CAST.md) · [故事详情与实机截图](https://tl66666.github.io/DreamChord/story-paint.html) · [本轮交接](docs/WORLD_PREVIEW_SHOWCASE_2026-11-09.md)
 
 ![序章真实开场：程见的房间与新作品标题](docs/screenshots/paint-renamed-opening.png)
 
-默认中文字幕与日语配音；原四位角色沿用既有声线，第四章为两位新登场人物各增加固定声线，并新增36句预录日语对白。第二章新增回信、候场走廊与修复资料三张叙事图，第三章新增夏日工作室、海边候车处与档案桌。Qwen3-TTS 提供原创合成参考，GPT-SoVITS v2ProPlus 合成正式对白，角色绑定一次，续写沿用。从已有音乐中选8首 TAM Music Factory、魔王魂、龍的交響楽与甘茶の音楽工房的作品，按场景切换、复现并留出静默；音效 OtoLogic（CC BY 4.0），保留旧 TERNOX 配乐供既有副本使用。技术校验已完成，尚未完成人耳听感验收，不承诺真人级表演。
+默认中文字幕与日语配音；原四位角色沿用既有声线，第四章为两位新登场人物各增加固定声线，并新增36句预录日语对白；第五章沿用这些声线，新增24句预录对白与两张叙事背景。第二章新增回信、候场走廊与修复资料三张叙事图，第三章新增夏日工作室、海边候车处与档案桌。Qwen3-TTS 提供原创合成参考，GPT-SoVITS v2ProPlus 合成正式对白，角色绑定一次，续写沿用。从已有音乐中选8首 TAM Music Factory、魔王魂、龍的交響楽与甘茶の音楽工房的作品，按场景切换、复现并留出静默；音效 OtoLogic（CC BY 4.0），保留旧 TERNOX 配乐供既有副本使用。技术校验已完成，尚未完成人耳听感验收，不承诺真人级表演。
 
-读完序章可带入自己的私有工作台继续创作，保留角色、声音、背景与音乐。已有四个篇章的官方作品可执行 `pnpm --filter dreamchord-server exec tsx prisma/installPaintChapterFour.ts --check` 预检第四章，再以 `--apply` 显式追加；安装前会校验旧章、媒体、音色绑定和作者改动，不覆盖私人副本。首次安装与素材说明见[第四章交接](docs/PAINT_CHAPTER_FOUR.md)；`pnpm test:paint` 验证素材与配音包。
+读完序章可带入自己的私有工作台继续创作，保留角色、声音、背景与音乐。已有四个篇章的官方作品可执行 `pnpm --filter dreamchord-server exec tsx prisma/installPaintChapterFour.ts --check` 预检第四章，再以 `--apply` 显式追加；安装前会校验旧章、媒体、音色绑定和作者改动，不覆盖私人副本。已有序章至第四章的官方作品可用 `pnpm --filter dreamchord-server exec tsx prisma/installPaintChapterFive.ts --check` 检查，再以 `--apply` 追加第五章。首次安装与素材说明见[第五章制作记录](docs/PAINT_CHAPTER_FIVE.md)；`pnpm test:paint` 验证素材与配音包。
 
 ![第一章实机：许野的炉前试排，完成后的海景与半身立绘](docs/screenshots/paint-chapter-one-rehearsal.webp)
 
@@ -35,6 +36,8 @@
 ![第三章实机：闻砚手记中的夏日工作室与短框叙述](docs/screenshots/paint-chapter-three-atelier.webp)
 
 ![第四章实机：陆青在画桌前核对委托与草图](docs/screenshots/paint-chapter-four-opening.png)
+
+![第五章实机：画外的回执与工作记录](docs/screenshots/paint-chapter-five-opening.png)
 
 本轮修复镜头移动断线、删除选项错接、删除其他章节清空当前修改，以及Agent取消复活、会话迟到响应、慢网轮询与失败保存丢正文。[创作流程复查记录](docs/STUDIO_RELIABILITY_2026-11-07.md) · [第三章中文阅读稿](docs/story/paint/reading-chapter-three.zh.md)。
 

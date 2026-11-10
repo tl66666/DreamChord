@@ -83,12 +83,13 @@ describe('reader pages with real player navigation', () => {
     fireEvent.keyDown(screen.getByLabelText('字幕语言'), { key: 'Escape' })
     expect(screen.queryByRole('dialog', { name: '播放设置' })).toBeNull()
   })
-  it.each([[3, '第二章'], [4, '第三章'], [5, '第四章']])('credits the book score and identifies the %s chapter release ending', async (count, title) => {
+  it.each([[3, '第二章'], [4, '第三章'], [5, '第四章'], [6, '第五章']])('credits the book score and identifies the %s chapter release ending', async (count, title) => {
     mocks.getProject.mockResolvedValue({ ...project, id: 'dreamchord-paint-prologue', chapters: Array.from({ length: count as number }, (_, order) => ({ ...project.chapters[0], id: `ch-${order}`, order })) })
     await act(async () => { render(<MemoryRouter initialEntries={['/play/dreamchord-paint-prologue']}><Routes><Route path="/play/:projectId" element={<VisualNovelPlayer />} /></Routes></MemoryRouter>) })
     finishTyping()
     for (let i = 0; i < 30; i++) nextPage()
     expect(screen.getByText(new RegExp(`${title}到这里结束`))).toBeTruthy()
+    if (count === 6) expect(screen.getByText(/序章至第五章/)).toBeTruthy()
     if (count === 5) expect(screen.getByText(/序章至第四章/)).toBeTruthy()
     expect(screen.getByRole('link', { name: '配乐与素材署名' }).getAttribute('href')).toBe('/assets/audio/paint-book/credits.html')
     expect(screen.getByText(/TAM Music Factory/)).toBeTruthy()
