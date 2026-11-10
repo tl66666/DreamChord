@@ -6,6 +6,14 @@ import { createHash } from 'node:crypto'
 const root = fileURLToPath(new URL('..', import.meta.url))
 const page = resolve(root, 'docs/showcase.html')
 const html = readFileSync(page, 'utf8')
+const readme = readFileSync(resolve(root, 'README.md'), 'utf8')
+const paintDetail = readFileSync(resolve(root, 'docs/story-paint.html'), 'utf8')
+for (const [label, text] of [['README', readme], ['showcase', html], ['story detail', paintDetail]]) {
+  assert.ok(text.includes('夏日来信与未完之画') || text.includes('夏日来信与<span'), `${label} must show the current story title`)
+}
+for (const title of ['写在入场券背面的邀请', '为六月留一张明信片', '拆开信的那个下午', '风从夏日手记吹来', '在画纸之外落笔']) {
+  assert.ok(readme.includes(title) && paintDetail.includes(title), `Story chapter title missing: ${title}`)
+}
 // The existing showcase identity is part of the delivery: enrich it without replacing its Hero.
 for (const section of ['project-overview', 'agent-core', 'philosophy', 'characters', 'scenes', 'tech', 'faq', 'roadmap']) {
   assert.ok(html.includes(`id="${section}"`), `Preserve original showcase section: ${section}`)

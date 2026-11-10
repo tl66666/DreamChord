@@ -651,7 +651,7 @@ pnpm test:voice-runtime    # 校验各包 manifest 与文件哈希（CI 也会�
 许可细节与再分发边界见 `assets/music-packs/community-vn/LICENSE-SOURCE.md`、`assets/voice-packs/dreamchord-human/LICENSE-SOURCE.md` 与 `assets/voice-packs/dreamchord-dialogue/LICENSE-SOURCE.md`。
 
 
-## 第七排，空座（2026-10-29）
+## 放映结束后的七秒（2026-10-29）
 
 - `apps/web/public/assets/seventh-row/`：内置 image_gen 原创场景三张、角色三位各三表情，统一透明全身源图与正式舞台半身显示；来源哈希见 `provenance.json`。
 - `assets/voice-packs/seventh-row/`：Qwen3-TTS CustomVoice 预置合成角色录音 70 条（中日各 35），Apache-2.0 基础模型，非真人克隆、未宣称重新训练专属权重。每条文本、speaker、生成指令、处理记录、WAV/Ogg 哈希均可追溯。运行时在 `/assets/audio/seventh-row/`。

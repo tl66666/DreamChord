@@ -8,6 +8,46 @@
 
 ![DreamChord 新版首页与故事书架](docs/screenshots/home-1440.png)
 
+## 官方故事：夏日来信与未完之画
+
+一张写着邀约的入场券、一封迟迟没有拆开的回信、一幅尚未完成的海景。夏禾、程见和许野在小镇里排戏、修补，也为各自的明天作决定。画外，修复者陆青循着闻砚的夏日手记与委托书，辨认画面背后的生活。故事以中文字幕、日语配音展开，可连续阅读或选择章节进入。
+
+| 篇章 | 标题 | 故事线索 |
+|---|---|---|
+| 序章 | 写在入场券背面的邀请 | 一张未剪口的票，一场重新演给朋友的小戏 |
+| 第一章 | 为六月留一张明信片 | 炉前试排、被修补的痕迹与出游的约定 |
+| 第二章 | 拆开信的那个下午 | 夏禾的试演、排练与一封迟来的回信 |
+| 第三章 | 风从夏日手记吹来 | 画外的档案与闻砚记下的海边往事 |
+| 第四章 | 在画纸之外落笔 | 陆青核对委托，镇上的朋友继续各自的工作与排练 |
+
+播放器“镇子与人物”补充刘叔、杂货铺沈芸的日常与两篇生活短篇，配有原创半身档案肖像；栖川镇的路线、营生与礼堂借用关系分开说明既有事实和新增设定。第四章中刘济安与沈芸正式参与故事并拥有固定日语声线；陶宁、周岑仍标为后续登场。[世界与人物档案](docs/story/paint/WORLD_AND_CAST.md) · [故事详情与实机截图](https://tl66666.github.io/DreamChord/story-paint.html) · [本轮交接](docs/WORLD_PREVIEW_SHOWCASE_2026-11-09.md)
+
+![序章真实开场：程见的房间与新作品标题](docs/screenshots/paint-renamed-opening.png)
+
+默认中文字幕与日语配音；原四位角色沿用既有声线，第四章为两位新登场人物各增加固定声线，并新增36句预录日语对白。第二章新增回信、候场走廊与修复资料三张叙事图，第三章新增夏日工作室、海边候车处与档案桌。Qwen3-TTS 提供原创合成参考，GPT-SoVITS v2ProPlus 合成正式对白，角色绑定一次，续写沿用。从已有音乐中选8首 TAM Music Factory、魔王魂、龍的交響楽与甘茶の音楽工房的作品，按场景切换、复现并留出静默；音效 OtoLogic（CC BY 4.0），保留旧 TERNOX 配乐供既有副本使用。技术校验已完成，尚未完成人耳听感验收，不承诺真人级表演。
+
+读完序章可带入自己的私有工作台继续创作，保留角色、声音、背景与音乐。已有四个篇章的官方作品可执行 `pnpm --filter dreamchord-server exec tsx prisma/installPaintChapterFour.ts --check` 预检第四章，再以 `--apply` 显式追加；安装前会校验旧章、媒体、音色绑定和作者改动，不覆盖私人副本。首次安装与素材说明见[第四章交接](docs/PAINT_CHAPTER_FOUR.md)；`pnpm test:paint` 验证素材与配音包。
+
+![第一章实机：许野的炉前试排，完成后的海景与半身立绘](docs/screenshots/paint-chapter-one-rehearsal.webp)
+
+![第二章实机：试演门外的约定，沿用角色日语配音与短框中文字幕](docs/screenshots/paint-chapter-two-corridor.webp)
+
+![第三章实机：闻砚手记中的夏日工作室与短框叙述](docs/screenshots/paint-chapter-three-atelier.webp)
+
+![第四章实机：陆青在画桌前核对委托与草图](docs/screenshots/paint-chapter-four-opening.png)
+
+本轮修复镜头移动断线、删除选项错接、删除其他章节清空当前修改，以及Agent取消复活、会话迟到响应、慢网轮询与失败保存丢正文。[创作流程复查记录](docs/STUDIO_RELIABILITY_2026-11-07.md) · [第三章中文阅读稿](docs/story/paint/reading-chapter-three.zh.md)。
+
+## 官方短篇：明日列车与未完的谢幕
+
+毕业晚会前，她划掉了谢幕词的最后一句。约 5–8 分钟、两个完整结局；三位原创角色、四个场景、九张透明表情立绘。默认中文字幕与日语配音，切换直接播放现成音轨。读完点击「写下你的第三种结局」，登录后带着角色、音色、音乐进入自己的私有副本，改一句就能从当前镜头预览。
+
+![官方短篇真实游玩画面](docs/screenshots/curtain-player-1440.png)
+
+角色音色绑定一次，后续台词由后台自动准备。中文原稿保留，日语翻译与配音独立缓存；改动只更新对应片段。新示例用 GPT-SoVITS v2ProPlus 合成对白，Qwen3-TTS 提供可追溯的预置合成参考音色，配乐选用 TERNOX CC0 真人作曲作品。正文和创作起始对白共 62 条中日音轨；不宣称已训练角色专属权重或达到真人表演水平。
+
+本机使用项目管理的声音引擎，无需另开配音页面。新环境可执行 `pnpm voice:setup`；已有 ProPlus 权重可执行 `pnpm voice:pro:configure`。`pnpm demo:curtain:seed` 补充新演示与官方音色，`pnpm test:curtain` 检查音轨、美术及来源。旧示例和已有作品保留。[故事与接手说明](docs/CURTAIN_CALL_DEMO.md)。
+
 ## 声音库是怎样融入创作的
 
 **试听声线 → 分配到故事角色 → 开启自动配音 → 继续写中文 → 预览已保存的对白。**
@@ -170,34 +210,3 @@ Windows 开发服务运行时，`pnpm test` 的准备步骤可能因 Prisma 引�
 ## 许可证
 
 [MIT](LICENSE)
-
-
-## 新官方故事：请让这幅画老去
-
-“七点，第一排。今天不许帮忙。”一张未剪口的入场券，把程见从自己的房间带到朋友的小剧场。人物的行动、内心与舞台演出共同推进故事；宫泽贤治、王尔德与契诃夫的互文通过题记、未完成改编稿和试演进入剧情。当前同一作品收录序章至第三章《画外的夏天》。夏禾的试演撞上朋友的排练；画外，陆青从闻砚留下的夏日手记追查主动留白的来处。可以连续阅读或选章进入，长旁白按自然停顿分成短框。
-
-播放器“镇子与人物”补充刘叔、杂货铺沈芸的日常与两篇生活短篇，配有原创半身档案肖像；栖川镇的路线、营生与礼堂借用关系分开说明既有事实和新增设定。陶宁、周岑标为后续登场，本轮未新增主线章或NPC配音。[世界与人物档案](docs/story/paint/WORLD_AND_CAST.md) · [故事详情与实机截图](https://tl66666.github.io/DreamChord/story-paint.html) · [本轮交接](docs/WORLD_PREVIEW_SHOWCASE_2026-11-09.md)
-
-![新序章真实开场：一张没有剪口的入场券](docs/screenshots/paint-invitation-1440.png)
-
-默认中文字幕与日语配音；4位角色、10张透明表情立绘，225句预录对白（含个人续写起始句），第一、二章各新增68句，第三章新增30句，沿用同一组角色声线。第二章新增回信、候场走廊与修复资料三张叙事图，第三章新增夏日工作室、海边候车处与档案桌。Qwen3-TTS 提供原创合成参考，GPT-SoVITS v2ProPlus 合成正式对白，角色绑定一次，续写沿用。从已有音乐中选8首 TAM Music Factory、魔王魂、龍的交響楽与甘茶の音楽工房的作品，按场景切换、复现并留出静默；音效 OtoLogic（CC BY 4.0），保留旧 TERNOX 配乐供既有副本使用。技术校验已完成，尚未完成人耳听感验收，不承诺真人级表演。
-
-读完可从序章带入自己的私有工作台，自动定位下一句，保留角色、声音、背景与音乐；重复进入续写时继续同一副本。`pnpm demo:paint:release --check` 预检官方两章到三章的修订，`--apply` 显式发布；不会覆盖作者改写或私人副本。`pnpm test:paint` 验证素材、配乐与音轨。已有三章可用 `pnpm demo:paint:chapter-three --check` 预检，再以 `--apply` 安全追加第三章。首次安装步骤见[四章发布交接](docs/PAINT_CHAPTER_THREE.md) · [第二章中文阅读稿](docs/story/paint/reading-chapter-two.zh.md) · [整书配乐节点表](docs/story/paint/MUSIC-CUE-SHEET.md)。
-
-![第一章实机：许野的炉前试排，完成后的海景与半身立绘](docs/screenshots/paint-chapter-one-rehearsal.webp)
-
-![第二章实机：试演门外的约定，沿用角色日语配音与短框中文字幕](docs/screenshots/paint-chapter-two-corridor.webp)
-
-![第三章实机：闻砚手记中的夏日工作室与短框叙述](docs/screenshots/paint-chapter-three-atelier.webp)
-
-本轮修复镜头移动断线、删除选项错接、删除其他章节清空当前修改，以及Agent取消复活、会话迟到响应、慢网轮询与失败保存丢正文。[创作流程复查记录](docs/STUDIO_RELIABILITY_2026-11-07.md) · [第三章中文阅读稿](docs/story/paint/reading-chapter-three.zh.md)。
-
-## 其他官方短篇：谢幕词上的那一句
-
-毕业晚会前，她划掉了谢幕词的最后一句。约 5–8 分钟、两个完整结局；三位原创角色、四个场景、九张透明表情立绘。默认中文字幕与日语配音，切换直接播放现成音轨。读完点击「写下你的第三种结局」，登录后带着角色、音色、音乐进入自己的私有副本，改一句就能从当前镜头预览。
-
-![官方短篇真实游玩画面](docs/screenshots/curtain-player-1440.png)
-
-角色音色绑定一次，后续台词由后台自动准备。中文原稿保留，日语翻译与配音独立缓存；改动只更新对应片段。新示例用 GPT-SoVITS v2ProPlus 合成对白，Qwen3-TTS 提供可追溯的预置合成参考音色，配乐选用 TERNOX CC0 真人作曲作品。正文和创作起始对白共 62 条中日音轨；不宣称已训练角色专属权重或达到真人表演水平。
-
-本机使用项目管理的声音引擎，无需另开配音页面。新环境可执行 `pnpm voice:setup`；已有 ProPlus 权重可执行 `pnpm voice:pro:configure`。`pnpm demo:curtain:seed` 补充新演示与官方音色，`pnpm test:curtain` 检查音轨、美术及来源。旧示例和已有作品保留。[故事与接手说明](docs/CURTAIN_CALL_DEMO.md)。
