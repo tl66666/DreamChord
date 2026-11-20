@@ -156,7 +156,11 @@ const paintLaterChapterScenes: LibraryScene[] = [
   { id: 'paint5-shop', name: '街口 · 收信的午后', url: '/assets/paint-chapter-five/shop-letter.webp', type: '文学幻想', place: '室内', timeOfDay: '白天', moods: ['温暖', '日常'], description: '柜台上的信与秤，适合收信、等待和日常对话。', usage: '《夏日来信与未完之画》第五章。', updatedAt: '2026-11-20' },
   { id: 'paint5-river', name: '镇边 · 雨后的河岸', url: '/assets/paint-chapter-five/river-after-rain.webp', type: '文学幻想', place: '户外', timeOfDay: '黄昏', moods: ['静谧', '日常'], description: '雨后河岸的暮色，适合谈心与道别。', usage: '《夏日来信与未完之画》第五章。', updatedAt: '2026-11-20' },
 ]
+const paintChapterSixScenes: LibraryScene[] = [
+  { id: 'paint6-archive', name: '画外 · 雨中的档案室', url: '/assets/paint-chapter-six/archive-room.webp', type: '文学幻想', place: '室内', timeOfDay: '白天', moods: ['静谧', '细节'], description: '雨天的档案阅览室，桌上有布盒和记录纸，适合查阅与谈话。', usage: '《夏日来信与未完之画》第六章。', updatedAt: '2026-11-20' },
+]
 export const defaultScenes: LibraryScene[] = [
+  ...paintChapterSixScenes,
   ...paintLaterChapterScenes,
   ...paintChapterFourScenes,
   ...[
@@ -290,7 +294,8 @@ export function loadLibraryScenes(): LibraryScene[] {
   const installed = addBuiltinOnce(SCENE_KEY, addBuiltinOnce(SCENE_KEY, addBuiltinOnce(SCENE_KEY, normalizeList(SCENE_KEY, defaultScenes, normalizeScene), defaultScenes.filter(s => s.id.startsWith('seventh-')), 'seventh-row'), defaultScenes.filter(s => s.id.startsWith('curtain-')), 'curtain-call'), defaultScenes.filter(s => s.id.startsWith('paint-')), 'paint-prologue')
   const withProse = addBuiltinOnce(SCENE_KEY, installed, defaultScenes.filter(s => ['paint-home', 'paint-keepsake', 'paint-theatre-sea'].includes(s.id)), 'paint-prose')
   const withFourth = addBuiltinOnce(SCENE_KEY, withProse, paintChapterFourScenes, 'paint-chapter-four')
-  return addBuiltinOnce(SCENE_KEY, withFourth, paintLaterChapterScenes, 'paint-later-chapters')
+  const withLater = addBuiltinOnce(SCENE_KEY, withFourth, paintLaterChapterScenes, 'paint-later-chapters')
+  return addBuiltinOnce(SCENE_KEY, withLater, paintChapterSixScenes, 'paint-chapter-six')
 }
 
 function addBuiltinOnce<T extends { id: string }>(key: string, items: T[], additions: T[], pack: string): T[] {

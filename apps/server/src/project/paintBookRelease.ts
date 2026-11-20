@@ -138,7 +138,7 @@ export async function releasePaintBook(client: PrismaClient, ownerId: string, op
   const chapterTwo = (story as typeof story & { PAINT_CHAPTER_TWO?: PaintDefinition }).PAINT_CHAPTER_TWO
   const definitions = options.currentDefinitions || (chapterTwo ? [story.PAINT_PROLOGUE, story.PAINT_CHAPTER_ONE, chapterTwo] : [])
   const revision = options.revisionOnly === true
-  if ((revision ? release.length !== 6 || definitions.length !== 6 : ![2, 3, 4, 5].includes(release.length) || definitions.length !== release.length + 1) || [...release, ...definitions].some(d => d.id !== id)) throw new Error('拒绝发布：仅支持固定作品已登记的连续章节版本。')
+  if ((revision ? release.length !== 6 || definitions.length !== 6 : ![2, 3, 4, 5, 6].includes(release.length) || definitions.length !== release.length + 1) || [...release, ...definitions].some(d => d.id !== id)) throw new Error('拒绝发布：仅支持固定作品已登记的连续章节版本。')
   const oldBook = expectedPaintBook(release), newBook = expectedPaintBook(definitions)
   if (revision && (hash(expectedPaintBook(definitions.slice(0, 5))) !== hash(expectedPaintBook(release.slice(0, 5))) || hash({ ...definitions[5], graph: release[5].graph }) !== hash(release[5]))) throw new Error('拒绝发布：第五章修订只能修改第五章图谱。')
   const additions = release.length === 4 ? definitions.at(-1)!.characters.filter(c => !release[0].characters.some(old => old.slug === c.slug)) : []
@@ -147,8 +147,8 @@ export async function releasePaintBook(client: PrismaClient, ownerId: string, op
     if (additions.length !== 2 || !additions.some(c => c.slug === 'liu' && c.name === '刘济安' && c.defaultSprite === '/assets/paint-world/liu-jian-stage.webp') || !additions.some(c => c.slug === 'shen' && c.name === '沈芸' && c.defaultSprite === '/assets/paint-world/shen-yun-stage.webp') || definitions.at(-1)!.characters.length !== cast.length + 2 || cast.some(c => hash(c) !== hash(definitions.at(-1)!.characters.find(n => n.slug === c.slug)))) throw new Error('拒绝发布：第四章仅允许追加已登记的刘济安、沈芸，原角色设定必须不变。')
     if (hash(expectedPaintBook(definitions.slice(0, -1))) !== hash(oldBook)) throw new Error('拒绝发布：第四章发布不得改写前四章或原角色。')
   }
-  if (release.length === 5) {
-    if (hash(expectedPaintBook(definitions.slice(0, -1))) !== hash(oldBook) || hash(definitions.at(-1)!.characters) !== hash(release.at(-1)!.characters)) throw new Error('拒绝发布：第五章不得改写已发布章节或原角色。')
+  if (release.length >= 5 && !revision) {
+    if (hash(expectedPaintBook(definitions.slice(0, -1))) !== hash(oldBook) || hash(definitions.at(-1)!.characters) !== hash(release.at(-1)!.characters)) throw new Error('拒绝发布：新章节不得改写已发布章节或原角色。')
   } else if (!revision && [...release, ...definitions.slice(0, additions.length ? -1 : undefined)].some(d => hash(expectedPaintRelease(d).characters) !== hash(oldBook.characters))) throw new Error('拒绝发布：本次版本不得改写原角色设定。')
   const supporting = release.length >= 5 ? release.at(-1)!.characters.filter(c => !release[0].characters.some(old => old.slug === c.slug)) : additions
   const project = await client.project.findUnique({ where: { id }, include })

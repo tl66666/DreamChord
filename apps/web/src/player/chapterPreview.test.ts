@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { chapterStartId, mergeChaptersForPreview } from './chapterPreview'
 import { convertFlowToRuntime } from '../engine/converter'
 import type { ProjectDetail } from '../api/client'
-import { PAINT_PROLOGUE, PAINT_CHAPTER_ONE, PAINT_CHAPTER_TWO, PAINT_CHAPTER_THREE, PAINT_CHAPTER_FOUR, PAINT_CHAPTER_FIVE } from '@dreamchord/story-domain'
+import { PAINT_PROLOGUE, PAINT_CHAPTER_ONE, PAINT_CHAPTER_TWO, PAINT_CHAPTER_THREE, PAINT_CHAPTER_FOUR, PAINT_CHAPTER_FIVE, PAINT_CHAPTER_SIX } from '@dreamchord/story-domain'
 import { createRuntimeEngine } from '../engine/runtime'
 
 const chapter = (id: string, order: number) => ({ id, order, title: id, version: 1, nodes: [
@@ -55,8 +55,8 @@ describe('chapter entry', () => {
     expect(story.scenes.find(s => s.id === id)?.audio?.bgm?.url).toBe('/assets/one.ogg')
     for (const query of ['', '?chapter=-1', '?chapter=9', '?chapter=1.5', '?chapter=garbage']) expect(chapterStartId(story, project.chapters, query)).toBeNull()
   })
-  it.each(Array.from({ length: 64 }, (_, mask) => [mask >> 5 & 1, mask >> 4 & 1, mask >> 3 & 1, mask >> 2 & 1, mask >> 1 & 1, mask & 1]))('reads all six chapters on choice route %s/%s/%s/%s/%s/%s', (first, second, third, fourth, fifth, sixth) => {
-    const chapters = [PAINT_PROLOGUE, PAINT_CHAPTER_ONE, PAINT_CHAPTER_TWO, PAINT_CHAPTER_THREE, PAINT_CHAPTER_FOUR, PAINT_CHAPTER_FIVE].map((definition, order) => ({
+  it.each(Array.from({ length: 128 }, (_, mask) => [mask >> 6 & 1, mask >> 5 & 1, mask >> 4 & 1, mask >> 3 & 1, mask >> 2 & 1, mask >> 1 & 1, mask & 1]))('reads all seven chapters on choice route %s/%s/%s/%s/%s/%s/%s', (first, second, third, fourth, fifth, sixth, seventh) => {
+    const chapters = [PAINT_PROLOGUE, PAINT_CHAPTER_ONE, PAINT_CHAPTER_TWO, PAINT_CHAPTER_THREE, PAINT_CHAPTER_FOUR, PAINT_CHAPTER_FIVE, PAINT_CHAPTER_SIX].map((definition, order) => ({
       id: `chapter-${order}`, order, title: definition.chapterTitle, version: 1,
       nodes: definition.graph.nodes.map(n => ({ id: n.id, nodeId: n.id, type: n.type, positionX: n.position.x, positionY: n.position.y, data: JSON.stringify(n.data) })),
       edges: definition.graph.edges.map(e => ({ ...e, edgeId: e.id, sourceHandle: e.sourceHandle ?? null, label: e.label ?? null })),
@@ -69,10 +69,10 @@ describe('chapter entry', () => {
       const scene = engine.currentScene()!
       route.push(scene.id)
       if (route.length > 800) throw new Error('Unexpected loop: ' + route.slice(-8).join(','))
-      if (scene.choices?.length) engine.choose([first, second, third, fourth, fifth, sixth][choices++])
+      if (scene.choices?.length) engine.choose([first, second, third, fourth, fifth, sixth, seventh][choices++])
       else engine.next()
     }
-    expect(choices).toBe(6)
+    expect(choices).toBe(7)
     expect(route).toContain('chapter-0:p-ending')
     expect(route).toContain('chapter-1:pc1-night-return')
     expect(route).toContain('chapter-1:pc1-cup-evidence')
@@ -84,7 +84,10 @@ describe('chapter entry', () => {
     expect(route).toContain('chapter-3:pc3-ending')
     expect(route).toContain('chapter-4:pc4-rehearsal-merge')
     expect(route).toContain('chapter-4:pc4-ending')
-    expect(route.at(-1)).toBe('chapter-5:pc5-ending')
+    expect(route).toContain('chapter-5:pc5-ending')
+    expect(route.at(-1)).toBe('chapter-6:pc6-ending')
+    expect(route.includes('chapter-6:pc6-schedule-consequence')).toBe(seventh === 0)
+    expect(route.includes('chapter-6:pc6-question-consequence')).toBe(seventh === 1)
     expect(route.includes('chapter-5:pc5-paper-consequence')).toBe(sixth === 0)
     expect(route.includes('chapter-5:pc5-card-consequence')).toBe(sixth === 1)
     expect(route.includes('chapter-1:pc1-plan-1')).toBe(second === 1)

@@ -1,0 +1,15 @@
+{
+  "generator": "OpenAI image_gen",
+  "reference": "apps/web/public/assets/paint-chapter-three/archive-window.webp",
+  "direction": "Rainy old-town archive reading room, no people, no text",
+  "packaging": "Full-frame resize to 1920x1080, WebP",
+  "assets": [
+    {
+      "id": "archive-room",
+      "nativeFile": "source-assets/paint-chapter-six/archive-room-native.png",
+      "nativeSha256": "15549ed091aea1805184613eec5a0cfeabe81d0e7050d65963cb1a867fff8e82",
+      "publicFile": "apps/web/public/assets/paint-chapter-six/archive-room.webp",
+      "publicSha256": "80f925fa5c7c1c11c6ebfd1d4685eedb358a7c7687ad34cdb63e87a8977a212f"
+    }
+  ]
+}

@@ -27,6 +27,9 @@ describe('new official cinema assets', () => {
     const second = loadLibraryScenes()
     expect(second.some(s => s.id === 'paint5-river')).toBe(false)
     expect(second.find(s => s.id === 'custom-scene')?.url).toBe('/custom.webp')
+    expect(second.find(s => s.id === 'paint6-archive')?.url).toBe('/assets/paint-chapter-six/archive-room.webp')
+    localStorage.setItem(SCENE_KEY, JSON.stringify(second.filter(s => s.id !== 'paint6-archive')))
+    expect(loadLibraryScenes().some(s => s.id === 'paint6-archive')).toBe(false)
   })
   it('adds fourth chapter scenes once without replacing or resurrecting user entries', () => {
     localStorage.setItem(SCENE_KEY, JSON.stringify([{ id: 'custom-scene', name: '我的场景', url: '/mine.webp', type: '自定义', description: '', usage: '', updatedAt: '2026-11-01' }]))
