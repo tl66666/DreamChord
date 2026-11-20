@@ -11,7 +11,7 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../.
 const id = 'dreamchord-paint-prologue'
 type Stored = Prisma.ProjectGetPayload<{ include: typeof include }>
 type Prepared = Awaited<ReturnType<typeof preflightPaintDefinition>>
-export interface PaintBookReleaseOptions extends PaintOptions { releaseDefinitions?: PaintDefinition[]; currentDefinitions?: PaintDefinition[]; packRoots?: string[]; checkOnly?: boolean }
+export interface PaintBookReleaseOptions extends PaintOptions { releaseDefinitions?: PaintDefinition[]; currentDefinitions?: PaintDefinition[]; packRoots?: string[]; checkOnly?: boolean; revisionOnly?: boolean }
 
 /** The book's last chapter owns the synopsis; each graph keeps its own scene codes. */
 export function expectedPaintBook(definitions: PaintDefinition[]) {
@@ -137,8 +137,10 @@ export async function releasePaintBook(client: PrismaClient, ownerId: string, op
   const release = options.releaseDefinitions || (JSON.parse(await readFile(path.join(root, 'assets/story-packs/paint-book/release-two-chapters-v1.json'), 'utf8')) as { chapters: PaintDefinition[] }).chapters
   const chapterTwo = (story as typeof story & { PAINT_CHAPTER_TWO?: PaintDefinition }).PAINT_CHAPTER_TWO
   const definitions = options.currentDefinitions || (chapterTwo ? [story.PAINT_PROLOGUE, story.PAINT_CHAPTER_ONE, chapterTwo] : [])
-  if (![2, 3, 4, 5].includes(release.length) || definitions.length !== release.length + 1 || [...release, ...definitions].some(d => d.id !== id)) throw new Error('拒绝发布：仅支持固定作品已登记的连续章节版本。')
+  const revision = options.revisionOnly === true
+  if ((revision ? release.length !== 6 || definitions.length !== 6 : ![2, 3, 4, 5].includes(release.length) || definitions.length !== release.length + 1) || [...release, ...definitions].some(d => d.id !== id)) throw new Error('拒绝发布：仅支持固定作品已登记的连续章节版本。')
   const oldBook = expectedPaintBook(release), newBook = expectedPaintBook(definitions)
+  if (revision && (hash(expectedPaintBook(definitions.slice(0, 5))) !== hash(expectedPaintBook(release.slice(0, 5))) || hash({ ...definitions[5], graph: release[5].graph }) !== hash(release[5]))) throw new Error('拒绝发布：第五章修订只能修改第五章图谱。')
   const additions = release.length === 4 ? definitions.at(-1)!.characters.filter(c => !release[0].characters.some(old => old.slug === c.slug)) : []
   if (release.length === 4) {
     const cast = release[0].characters
@@ -147,13 +149,14 @@ export async function releasePaintBook(client: PrismaClient, ownerId: string, op
   }
   if (release.length === 5) {
     if (hash(expectedPaintBook(definitions.slice(0, -1))) !== hash(oldBook) || hash(definitions.at(-1)!.characters) !== hash(release.at(-1)!.characters)) throw new Error('拒绝发布：第五章不得改写已发布章节或原角色。')
-  } else if ([...release, ...definitions.slice(0, additions.length ? -1 : undefined)].some(d => hash(expectedPaintRelease(d).characters) !== hash(oldBook.characters))) throw new Error('拒绝发布：本次版本不得改写原角色设定。')
-  const supporting = release.length === 5 ? release.at(-1)!.characters.filter(c => !release[0].characters.some(old => old.slug === c.slug)) : additions
+  } else if (!revision && [...release, ...definitions.slice(0, additions.length ? -1 : undefined)].some(d => hash(expectedPaintRelease(d).characters) !== hash(oldBook.characters))) throw new Error('拒绝发布：本次版本不得改写原角色设定。')
+  const supporting = release.length >= 5 ? release.at(-1)!.characters.filter(c => !release[0].characters.some(old => old.slug === c.slug)) : additions
   const project = await client.project.findUnique({ where: { id }, include })
-  guard(project, ownerId, release.length === 5 ? release.at(-1)!.characters : release[0].characters, release.length, definitions.at(-1)!.characters)
+  guard(project, ownerId, release.length >= 5 ? release.at(-1)!.characters : release[0].characters, release.length, definitions.at(-1)!.characters)
+  if (revision && project.chapters.length !== 6) throw new Error('拒绝发布：第五章修订要求现有作品恰好包含六个篇章。')
   const before = fingerprint(project), target = hash(newBook)
   const currentBaseFingerprint = hash(expectedPaintBook(definitions.slice(0, -1)))
-  if (before !== target && before !== hash(oldBook) && before !== currentBaseFingerprint) throw new Error('拒绝发布：作品已有改写或额外章节，与冻结旧稿或当前基础章节发布指纹不匹配。')
+  if (before !== target && before !== hash(oldBook) && (revision || before !== currentBaseFingerprint)) throw new Error('拒绝发布：作品已有改写或额外章节，与冻结旧稿或当前基础章节发布指纹不匹配。')
   const packRoots = options.packRoots || ['paint-prologue', 'paint-chapter-one', 'paint-chapter-two'].map(name => path.join(root, 'assets/voice-packs', name))
   if (packRoots.length !== definitions.length) throw new Error('拒绝发布：必须预检本次发布全部章节音色包。')
   const prepared: Prepared[] = []
@@ -165,7 +168,8 @@ export async function releasePaintBook(client: PrismaClient, ownerId: string, op
   const createdFiles: string[] = []
   try { return await client.$transaction(async tx => {
     let fresh = await tx.project.findUnique({ where: { id }, include })
-    guard(fresh, ownerId, release.length === 5 ? release.at(-1)!.characters : release[0].characters, release.length, definitions.at(-1)!.characters)
+    guard(fresh, ownerId, release.length >= 5 ? release.at(-1)!.characters : release[0].characters, release.length, definitions.at(-1)!.characters)
+    if (revision && fresh.chapters.length !== 6) throw new Error('拒绝发布：预检期间章节数量已变化。')
     if (fingerprint(fresh) !== before || fresh.chapters.some(c => versions.get(c.id) !== c.version)) throw new Error('拒绝发布：预检期间作品指纹或章节版本已变化。')
     if (hash(fresh.characters) !== hash(project.characters) || hash(fresh.chapters) !== hash(project.chapters)) throw new Error('拒绝发布：预检期间原章节或角色引用已变化。')
     verifyReferences(fresh, definitions, prepared, ownerId, additions)

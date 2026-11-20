@@ -187,6 +187,25 @@ describe('guarded whole paint book release', () => {
     expect(after.characters).toEqual(before.characters)
     expect(after.chapters[5].title).toBe(sixth.chapterTitle)
     expect((await releasePaintBook(client, 'official', next)).status).toBe('current')
+    const revised = structuredClone(next.currentDefinitions)
+    revised[5].graph.nodes[0].position.y += 15
+    const revision = { ...next, revisionOnly: true, releaseDefinitions: structuredClone(next.currentDefinitions), currentDefinitions: revised }
+    expect((await releasePaintBook(client, 'official', { ...revision, checkOnly: true })).status).toBe('ready')
+    expect(await snapshot()).toEqual(after)
+    expect((await releasePaintBook(client, 'official', revision)).status).toBe('released')
+    const revisedBook = await snapshot()
+    expect(revisedBook.chapters.slice(0, 5)).toEqual(after.chapters.slice(0, 5))
+    expect(revisedBook.characters).toEqual(after.characters)
+    expect(revisedBook.chapters[5].version).toBe(after.chapters[5].version + 1)
+    expect((await releasePaintBook(client, 'official', revision)).status).toBe('current')
+    const tampered = structuredClone(revision)
+    tampered.currentDefinitions[0].graph.nodes[0].data.text = '不应覆盖旧章'
+    await expect(releasePaintBook(client, 'official', tampered)).rejects.toThrow()
+    expect(await snapshot()).toEqual(revisedBook)
+    await client.flowNode.update({ where: { id: revisedBook.chapters[5].nodes[0].id }, data: { positionX: 999 } })
+    const authorEdit = await snapshot()
+    await expect(releasePaintBook(client, 'official', revision)).rejects.toThrow(/改写/)
+    expect(await snapshot()).toEqual(authorEdit)
   })
   it('rolls back additive registration when an NPC profile ID already belongs to another owner', async () => {
     await installFour()

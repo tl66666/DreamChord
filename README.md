@@ -31,6 +31,8 @@
 
 第一至第五章的故事背景可在素材库和编辑器中使用；编辑器支持按作品名、章节、场景描述和氛围搜索，已修改或删除的个人素材不会被自动覆盖或恢复。
 
+已安装第五章初版的官方作品，可通过 `pnpm --filter dreamchord-server exec tsx prisma/revisePaintChapterFive.ts --check` 预检次日场景演出更新，确认后用 `--apply` 应用；更新前请备份数据库。具体保护范围见[第五章制作记录](docs/PAINT_CHAPTER_FIVE.md)。
+
 ![第一章实机：许野的炉前试排，完成后的海景与半身立绘](docs/screenshots/paint-chapter-one-rehearsal.webp)
 
 ![第二章实机：试演门外的约定，沿用角色日语配音与短框中文字幕](docs/screenshots/paint-chapter-two-corridor.webp)

@@ -6,6 +6,8 @@
 
 先构建故事包，执行 `pnpm --filter dreamchord-server exec tsx prisma/installPaintChapterFive.ts --check` 预检；确认目标为原样的官方五篇后，以 `--apply` 追加。保护逻辑检查旧篇章、角色与声音引用、资产及并发更改；不覆盖私人作品。此工作区在追加前通过 SQLite 在线备份，并验证完整性，追加后旧篇章版本保持原样。
 
+已有第五章初版的官方作品可执行 `pnpm --filter dreamchord-server exec tsx prisma/revisePaintChapterFive.ts --check`，预检通过后用 `--apply` 更新演出。稿页线的次日对白现在切到白天的杂货铺，并让夏禾和许野登场；明信片线也会切到次日的杂货铺，先让前夜在场的人退场，再让许野出现。更新只针对匹配冻结初版的官方作品，保留原对白和音轨；私人副本和有作者修改的作品不会被覆盖。执行前仍应备份数据库。
+
 ## 素材与验证
 
 杂货铺来信和雨后河岸背景使用 OpenAI image_gen 参照既有场景生成；前者经再次编辑修正杯沿。原图、实际使用文件及校验值见 `source-assets/paint-chapter-five/art-manifest.json`。24 句日语对白沿用既有角色参考音色，由 GPT-SoVITS 生成，已检查文件和削波。自动识别对 `pc5-letter-1-ja` 仍标记待检查；所有声音均未完成人耳听感验收，识别结果不能代替发音和表演评价。详情见 `assets/voice-packs/paint-chapter-five/asr-review.json`。

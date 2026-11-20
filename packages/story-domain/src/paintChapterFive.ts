@@ -61,6 +61,8 @@ n('paper-start', '程见把碗放在凳上，退到门边。许野没有叫他�
 l('paper-1', 'paper-2')
 n('paper-rehearsal', '他们重来一次。许野等程见走出门，才说完后半句。门外没人接，他在稿边写：等她回来，不等于她答应留下。', 'もう一度やり直す。僕が戸を出てから、イエは後半を言った。返事はない。原稿の端に「戻るのを待つことは、残る約束ではない」と書く。')
 l('paper-3')
+bg('paper-next-day', '/assets/paint-chapter-five/shop-letter.webp')
+show('paper-next-ye', '许野', 'left'); show('paper-next-xia', '夏禾', 'right')
 n('paper-consequence', '次日，许野拿回稿，看见自己写的那一行没有被改。他将空着的结尾翻给夏禾看。', '翌日、イエは原稿を受け取った。自分の一行は直されていない。空いた結末をホーに見せる。'); l('paper-day')
 const paperTail = previous!
 previous = undefined; scene = 5
@@ -70,6 +72,8 @@ n('river-start', '程见到河边时，夏禾正磕掉鞋底的沙。信已经�
 show('river-xia', '夏禾', 'center'); l('river-1', 'river-2', 'river-3', 'river-4')
 n('river-letter', '巡演组邀请她参加下一轮排练，不是正式录取。五月三日要离开两天，四月二十六日前答复；费用还需核实。', '巡演組から次の稽古への誘い。正式採用ではない。五月三日から二日間出かけ、四月二十六日までに返事をする。費用はまだ確認が必要だ。')
 l('river-5'); show('river-shen', '沈芸', 'left'); l('river-6')
+bg('card-next-day', '/assets/paint-chapter-five/shop-letter.webp')
+show('card-next-xia-out', '夏禾', 'center', 'hide'); show('card-next-shen-out', '沈芸', 'left', 'hide'); show('card-next-ye', '许野', 'left')
 n('card-consequence', '次日，许野收回明信片，没有接程见的玩笑。他说下次会亲自给夏禾；稿页仍在自己手里。', '翌日、イエは絵葉書を受け取り、僕の冗談には乗らなかった。次は自分でホーに渡すと言う。原稿はまだ彼の手元にある。'); l('card-day')
 const cardTail = previous!
 previous = undefined; scene = 6
