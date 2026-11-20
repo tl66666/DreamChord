@@ -29,6 +29,8 @@
 
 读完序章可带入自己的私有工作台继续创作，保留角色、声音、背景与音乐。已有四个篇章的官方作品可执行 `pnpm --filter dreamchord-server exec tsx prisma/installPaintChapterFour.ts --check` 预检第四章，再以 `--apply` 显式追加；安装前会校验旧章、媒体、音色绑定和作者改动，不覆盖私人副本。已有序章至第四章的官方作品可用 `pnpm --filter dreamchord-server exec tsx prisma/installPaintChapterFive.ts --check` 检查，再以 `--apply` 追加第五章。首次安装与素材说明见[第五章制作记录](docs/PAINT_CHAPTER_FIVE.md)；`pnpm test:paint` 验证素材与配音包。
 
+第一至第五章的故事背景可在素材库和编辑器中使用；编辑器支持按作品名、章节、场景描述和氛围搜索，已修改或删除的个人素材不会被自动覆盖或恢复。
+
 ![第一章实机：许野的炉前试排，完成后的海景与半身立绘](docs/screenshots/paint-chapter-one-rehearsal.webp)
 
 ![第二章实机：试演门外的约定，沿用角色日语配音与短框中文字幕](docs/screenshots/paint-chapter-two-corridor.webp)

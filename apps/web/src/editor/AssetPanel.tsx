@@ -111,8 +111,10 @@ export default function AssetPanel({
   }, [activeType, assets, query, selectionTypes])
 
   const filteredLibraryScenes = useMemo(() => {
-    if (!query.trim()) return libraryScenes
-    return libraryScenes.filter((s) => s.name.toLowerCase().includes(query.trim().toLowerCase()))
+    const term = query.trim().toLowerCase()
+    if (!term) return libraryScenes
+    return libraryScenes.filter((scene) => [scene.name, scene.usage, scene.description, scene.type, scene.place, scene.timeOfDay, ...(scene.moods || [])]
+      .some((value) => value?.toLowerCase().includes(term)))
   }, [libraryScenes, query])
 
   const filteredLibraryCharacters = useMemo(() => {
@@ -239,7 +241,7 @@ export default function AssetPanel({
           <input
             value={query}
             onChange={(event) => setQuery(event.target.value)}
-            placeholder="搜索素材名"
+            placeholder="搜索名称、作品或章节"
             className="w-full rounded-lg border border-dream-200 py-2 pl-8 pr-3 text-sm focus:border-dream-500 focus:outline-none"
           />
         </div>
@@ -292,6 +294,7 @@ export default function AssetPanel({
                 </div>
                 {activeType === 'BACKGROUND' ? (
                   <div className="grid grid-cols-2 gap-2">
+                    {filteredLibraryScenes.length === 0 && <p className="col-span-2 py-4 text-center text-xs text-dream-400">没有找到匹配的内置背景</p>}
                     {filteredLibraryScenes.map((scene) => (
                       <button
                         key={scene.id}

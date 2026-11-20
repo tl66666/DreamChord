@@ -14,6 +14,20 @@ describe('new official cinema assets', () => {
     expect(loadLibraryCharacters().some(c => c.id === 'paint-liu')).toBe(false)
     expect(loadLibraryCharacters().some(c => c.id === 'user')).toBe(true)
   })
+  it('makes later chapter backgrounds available once without overwriting custom scenes', () => {
+    localStorage.setItem(SCENE_KEY, JSON.stringify([
+      { id: 'paint5-shop', name: '我的来信场景', url: '/mine.webp', type: '自定义', description: '', usage: '', updatedAt: '2026-11-01' },
+      { id: 'custom-scene', name: '我的场景', url: '/custom.webp', type: '自定义', description: '', usage: '', updatedAt: '2026-11-01' },
+    ]))
+    const first = loadLibraryScenes()
+    expect(first.find(s => s.id === 'paint5-shop')?.url).toBe('/mine.webp')
+    const urls = first.map(s => s.url)
+    for (const url of ['/assets/paint-chapter-one/river.webp', '/assets/paint-chapter-one/cup-after.webp', '/assets/paint-chapter-two/audition-letter.webp', '/assets/paint-chapter-three/summer-atelier.webp', '/assets/paint-chapter-five/river-after-rain.webp']) expect(urls).toContain(url)
+    localStorage.setItem(SCENE_KEY, JSON.stringify(first.filter(s => s.id !== 'paint5-river')))
+    const second = loadLibraryScenes()
+    expect(second.some(s => s.id === 'paint5-river')).toBe(false)
+    expect(second.find(s => s.id === 'custom-scene')?.url).toBe('/custom.webp')
+  })
   it('adds fourth chapter scenes once without replacing or resurrecting user entries', () => {
     localStorage.setItem(SCENE_KEY, JSON.stringify([{ id: 'custom-scene', name: '我的场景', url: '/mine.webp', type: '自定义', description: '', usage: '', updatedAt: '2026-11-01' }]))
     const first = loadLibraryScenes()

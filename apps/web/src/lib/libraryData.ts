@@ -140,7 +140,24 @@ const paintChapterFourScenes: LibraryScene[] = [
   { id: 'paint4-commission', name: '画外 · 委托与草图', url: '/assets/paint-chapter-four/commission-desk.webp', type: '文学幻想', place: '室内', timeOfDay: '白天', moods: ['静谧', '细节'], description: '画桌上摊着委托材料和草图，适合调查、工作与内心独白。', usage: '原创《夏日来信与未完之画》第四章背景。', updatedAt: '2026-11-10' },
   { id: 'paint4-hall', name: '三点以前 · 午后礼堂', url: '/assets/paint-chapter-four/hall-afternoon.webp', type: '文学幻想', place: '室内', timeOfDay: '白天', moods: ['温暖', '日常'], description: '午后礼堂与排练台前，适合朋友排戏、日常对话与演出准备。', usage: '原创《夏日来信与未完之画》第四章背景。', updatedAt: '2026-11-10' },
 ]
+const paintLaterChapterScenes: LibraryScene[] = [
+  { id: 'paint1-shop', name: '街口 · 午后杂货铺', url: '/assets/paint-chapter-one/shop.webp', type: '文学幻想', place: '室内', timeOfDay: '白天', moods: ['温暖', '日常'], description: '木柜与日光下的小店，适合相遇和日常对话。', usage: '《夏日来信与未完之画》第一章。', updatedAt: '2026-11-20' },
+  { id: 'paint1-evening', name: '街口 · 傍晚杂货铺', url: '/assets/paint-chapter-one/shop-evening.webp', type: '文学幻想', place: '室内', timeOfDay: '黄昏', moods: ['温暖', '日常'], description: '同一间店的傍晚光线，适合收店和交谈。', usage: '《夏日来信与未完之画》第一章。', updatedAt: '2026-11-20' },
+  { id: 'paint1-river', name: '镇边 · 河岸', url: '/assets/paint-chapter-one/river.webp', type: '文学幻想', place: '户外', timeOfDay: '白天', moods: ['静谧', '日常'], description: '小镇河边的步道，适合同伴散步和谈心。', usage: '《夏日来信与未完之画》第一章。', updatedAt: '2026-11-20' },
+  { id: 'paint1-cup-before', name: '杯沿 · 修补之前', url: '/assets/paint-chapter-one/cup-before.webp', type: '文学幻想', place: '室内', timeOfDay: '白天', moods: ['细节', '悬疑'], description: '杯子的原有状态，可与修补后的画面配合使用。', usage: '《夏日来信与未完之画》第一章。', updatedAt: '2026-11-20' },
+  { id: 'paint1-cup-after', name: '杯沿 · 修补之后', url: '/assets/paint-chapter-one/cup-after.webp', type: '文学幻想', place: '室内', timeOfDay: '白天', moods: ['细节', '悬疑'], description: '修补后的杯子，与之前的画面形成对照。', usage: '《夏日来信与未完之画》第一章。', updatedAt: '2026-11-20' },
+  { id: 'paint1-stage', name: '礼堂 · 完成的海景', url: '/assets/paint-chapter-one/theatre-complete.webp', type: '文学幻想', place: '室内', timeOfDay: '黄昏', moods: ['温暖', '演出'], description: '完成的海景布景，适合排练与舞台演出。', usage: '《夏日来信与未完之画》第一章。', updatedAt: '2026-11-20' },
+  { id: 'paint2-corridor', name: '候场 · 文化站走廊', url: '/assets/paint-chapter-two/audition-corridor.webp', type: '文学幻想', place: '室内', timeOfDay: '白天', moods: ['静谧', '日常'], description: '文化站候场走廊，适合试演前的等待。', usage: '《夏日来信与未完之画》第二章。', updatedAt: '2026-11-20' },
+  { id: 'paint2-letter', name: '信纸 · 试演邀请', url: '/assets/paint-chapter-two/audition-letter.webp', type: '文学幻想', place: '室内', timeOfDay: '白天', moods: ['细节', '希望'], description: '信纸与邀约的特写，适合阅读与重要决定。', usage: '《夏日来信与未完之画》第二章。', updatedAt: '2026-11-20' },
+  { id: 'paint2-studies', name: '画外 · 修复资料', url: '/assets/paint-chapter-two/restoration-studies.webp', type: '文学幻想', place: '室内', timeOfDay: '白天', moods: ['细节', '静谧'], description: '画作与修复资料，适合调查和工作记录。', usage: '《夏日来信与未完之画》第二章。', updatedAt: '2026-11-20' },
+  { id: 'paint3-atelier', name: '手记 · 夏日工作室', url: '/assets/paint-chapter-three/summer-atelier.webp', type: '文学幻想', place: '室内', timeOfDay: '白天', moods: ['温暖', '回忆'], description: '夏日工作室的窗光与画具，适合回忆和创作。', usage: '《夏日来信与未完之画》第三章。', updatedAt: '2026-11-20' },
+  { id: 'paint3-seaside', name: '手记 · 海边候车处', url: '/assets/paint-chapter-three/seaside-afternoon.webp', type: '文学幻想', place: '户外', timeOfDay: '白天', moods: ['静谧', '回忆'], description: '海边候车处的午后，适合旅行、等待和回忆。', usage: '《夏日来信与未完之画》第三章。', updatedAt: '2026-11-20' },
+  { id: 'paint3-archive', name: '画外 · 档案桌', url: '/assets/paint-chapter-three/archive-window.webp', type: '文学幻想', place: '室内', timeOfDay: '白天', moods: ['细节', '静谧'], description: '靠窗的资料与档案，适合追查旧事。', usage: '《夏日来信与未完之画》第三章。', updatedAt: '2026-11-20' },
+  { id: 'paint5-shop', name: '街口 · 收信的午后', url: '/assets/paint-chapter-five/shop-letter.webp', type: '文学幻想', place: '室内', timeOfDay: '白天', moods: ['温暖', '日常'], description: '柜台上的信与秤，适合收信、等待和日常对话。', usage: '《夏日来信与未完之画》第五章。', updatedAt: '2026-11-20' },
+  { id: 'paint5-river', name: '镇边 · 雨后的河岸', url: '/assets/paint-chapter-five/river-after-rain.webp', type: '文学幻想', place: '户外', timeOfDay: '黄昏', moods: ['静谧', '日常'], description: '雨后河岸的暮色，适合谈心与道别。', usage: '《夏日来信与未完之画》第五章。', updatedAt: '2026-11-20' },
+]
 export const defaultScenes: LibraryScene[] = [
+  ...paintLaterChapterScenes,
   ...paintChapterFourScenes,
   ...[
     { slug: 'home', name: '一张入场券 · 程见的居室', description: '门闩、冷茶、书架与下午的窗光。适合人物入场、收信和第一人称日常。', timeOfDay: '白天', moods: ['温暖', '日常'] },
@@ -272,7 +289,8 @@ export function loadLibraryCharacters(): LibraryCharacter[] {
 export function loadLibraryScenes(): LibraryScene[] {
   const installed = addBuiltinOnce(SCENE_KEY, addBuiltinOnce(SCENE_KEY, addBuiltinOnce(SCENE_KEY, normalizeList(SCENE_KEY, defaultScenes, normalizeScene), defaultScenes.filter(s => s.id.startsWith('seventh-')), 'seventh-row'), defaultScenes.filter(s => s.id.startsWith('curtain-')), 'curtain-call'), defaultScenes.filter(s => s.id.startsWith('paint-')), 'paint-prologue')
   const withProse = addBuiltinOnce(SCENE_KEY, installed, defaultScenes.filter(s => ['paint-home', 'paint-keepsake', 'paint-theatre-sea'].includes(s.id)), 'paint-prose')
-  return addBuiltinOnce(SCENE_KEY, withProse, paintChapterFourScenes, 'paint-chapter-four')
+  const withFourth = addBuiltinOnce(SCENE_KEY, withProse, paintChapterFourScenes, 'paint-chapter-four')
+  return addBuiltinOnce(SCENE_KEY, withFourth, paintLaterChapterScenes, 'paint-later-chapters')
 }
 
 function addBuiltinOnce<T extends { id: string }>(key: string, items: T[], additions: T[], pack: string): T[] {
